@@ -2,16 +2,16 @@ package examples
 
 import (
 	"fmt"
+	cqie "github.com/Yatori-Dev/yatori-go-core/aggregation/cqie"
+	cqieApi "github.com/Yatori-Dev/yatori-go-core/api/cqie"
+	"github.com/Yatori-Dev/yatori-go-core/global"
+	"github.com/Yatori-Dev/yatori-go-core/utils"
 	"io/ioutil"
 	"net/http"
 	"strconv"
 	"strings"
 	"testing"
 	"time"
-	cqie "yatori-go-core/aggregation/cqie"
-	cqieApi "yatori-go-core/api/cqie"
-	"yatori-go-core/global"
-	"yatori-go-core/utils"
 )
 
 // 测试加密函数

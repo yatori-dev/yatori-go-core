@@ -2,12 +2,12 @@ package examples
 
 import (
 	"fmt"
+	"github.com/Yatori-Dev/yatori-go-core/aggregation/enaea"
+	enaeaApi "github.com/Yatori-Dev/yatori-go-core/api/enaea"
+	"github.com/Yatori-Dev/yatori-go-core/global"
+	"github.com/Yatori-Dev/yatori-go-core/utils"
 	"testing"
 	time2 "time"
-	"yatori-go-core/aggregation/enaea"
-	enaeaApi "yatori-go-core/api/enaea"
-	"yatori-go-core/global"
-	"yatori-go-core/utils"
 )
 
 // 测试学习公社登录

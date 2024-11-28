@@ -2,17 +2,17 @@ package examples
 
 import (
 	"fmt"
+	"github.com/Yatori-Dev/yatori-go-core/aggregation/yinghua"
+	yinghuaApi "github.com/Yatori-Dev/yatori-go-core/api/yinghua"
+	"github.com/Yatori-Dev/yatori-go-core/global"
+	"github.com/Yatori-Dev/yatori-go-core/utils"
+	log2 "github.com/Yatori-Dev/yatori-go-core/utils/log"
 	"github.com/thedevsaddam/gojsonq"
 	"log"
 	"strconv"
 	"sync"
 	"testing"
 	time2 "time"
-	"yatori-go-core/aggregation/yinghua"
-	yinghuaApi "yatori-go-core/api/yinghua"
-	"yatori-go-core/global"
-	"yatori-go-core/utils"
-	log2 "yatori-go-core/utils/log"
 )
 
 // 账号登录测试

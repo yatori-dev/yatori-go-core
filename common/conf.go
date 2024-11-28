@@ -1,11 +1,11 @@
 package common
 
 import (
+	"github.com/Yatori-Dev/yatori-go-core/config"
+	"github.com/Yatori-Dev/yatori-go-core/global"
+	log2 "github.com/Yatori-Dev/yatori-go-core/utils/log"
 	"github.com/spf13/viper"
 	"log"
-	"yatori-go-core/config"
-	"yatori-go-core/global"
-	log2 "yatori-go-core/utils/log"
 )
 
 // InitConfig 初始化配置文件

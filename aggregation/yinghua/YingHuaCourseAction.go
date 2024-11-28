@@ -3,6 +3,10 @@ package yinghua
 import (
 	"errors"
 	"fmt"
+	yinghuaApi "github.com/Yatori-Dev/yatori-go-core/api/yinghua"
+	"github.com/Yatori-Dev/yatori-go-core/models/ctype"
+	"github.com/Yatori-Dev/yatori-go-core/utils"
+	"github.com/Yatori-Dev/yatori-go-core/utils/log"
 	"github.com/thedevsaddam/gojsonq"
 	"math/rand"
 	"os"
@@ -10,10 +14,6 @@ import (
 	"strconv"
 	"strings"
 	"time"
-	yinghuaApi "yatori-go-core/api/yinghua"
-	"yatori-go-core/models/ctype"
-	"yatori-go-core/utils"
-	"yatori-go-core/utils/log"
 )
 
 // 课程必要数据得截取

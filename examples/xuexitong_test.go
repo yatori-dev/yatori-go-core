@@ -2,13 +2,13 @@ package examples
 
 import (
 	"fmt"
+	"github.com/Yatori-Dev/yatori-go-core/aggregation/xuexitong"
+	xuexitongApi "github.com/Yatori-Dev/yatori-go-core/api/xuexitong"
+	"github.com/Yatori-Dev/yatori-go-core/global"
+	"github.com/Yatori-Dev/yatori-go-core/utils"
 	"log"
 	"strconv"
 	"testing"
-	"yatori-go-core/aggregation/xuexitong"
-	xuexitongApi "yatori-go-core/api/xuexitong"
-	"yatori-go-core/global"
-	"yatori-go-core/utils"
 )
 
 // TestLoginXueXiTo 测试学习通登录以及课程数据拉取

@@ -2,13 +2,13 @@ package examples
 
 import (
 	"fmt"
+	"github.com/Yatori-Dev/yatori-go-core/common"
+	"github.com/Yatori-Dev/yatori-go-core/global"
+	"github.com/Yatori-Dev/yatori-go-core/utils"
 	"net/http"
 	"net/url"
 	"testing"
 	time2 "time"
-	"yatori-go-core/common"
-	"yatori-go-core/global"
-	"yatori-go-core/utils"
 )
 
 func setup() {

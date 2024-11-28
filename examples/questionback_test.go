@@ -2,9 +2,9 @@ package examples
 
 import (
 	"fmt"
+	"github.com/Yatori-Dev/yatori-go-core/api/yinghua"
+	"github.com/Yatori-Dev/yatori-go-core/utils/questionback"
 	"testing"
-	"yatori-go-core/api/yinghua"
-	"yatori-go-core/utils/questionback"
 )
 
 // 测试题库缓存插入

@@ -3,13 +3,13 @@ package enaea
 import (
 	"errors"
 	"fmt"
+	"github.com/Yatori-Dev/yatori-go-core/api/enaea"
 	"github.com/thedevsaddam/gojsonq"
 	"net/url"
 	"regexp"
 	"strconv"
 	"strings"
 	"time"
-	"yatori-go-core/api/enaea"
 )
 
 type EnaeaProject struct {

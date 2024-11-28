@@ -2,9 +2,9 @@ package log
 
 import (
 	"fmt"
+	"github.com/Yatori-Dev/yatori-go-core/utils"
 	"os"
 	"time"
-	"yatori-go-core/utils"
 )
 
 type LOGLEVEL int

@@ -2,11 +2,11 @@ package cqie
 
 import (
 	"errors"
+	cqieApi "github.com/Yatori-Dev/yatori-go-core/api/cqie"
+	"github.com/Yatori-Dev/yatori-go-core/utils"
+	"github.com/Yatori-Dev/yatori-go-core/utils/log"
 	"github.com/thedevsaddam/gojsonq"
 	ort "github.com/yalue/onnxruntime_go"
-	cqieApi "yatori-go-core/api/cqie"
-	"yatori-go-core/utils"
-	"yatori-go-core/utils/log"
 )
 
 // CqieLoginAction 登录API聚合整理

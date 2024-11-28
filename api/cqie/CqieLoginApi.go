@@ -2,6 +2,7 @@ package cqie
 
 import (
 	"fmt"
+	"github.com/Yatori-Dev/yatori-go-core/utils"
 	"github.com/google/uuid"
 	"io"
 	"io/ioutil"
@@ -10,7 +11,6 @@ import (
 	"net/http"
 	"os"
 	"strings"
-	"yatori-go-core/utils"
 )
 
 type CqieUserCache struct {
