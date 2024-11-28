@@ -1,6 +1,6 @@
 module github.com/Yatori-Dev/yatori-go-core
 
-go 1.22
+go 1.22.4
 
 
 require (
