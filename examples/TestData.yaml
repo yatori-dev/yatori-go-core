@@ -1,0 +1,32 @@
+setting:
+  basicSetting:
+    completionTone: 1 #是否开启完成提示音，0为关闭，1为开启
+    colorLog: 1 #是否开启彩色日志，0为关闭，1为开启，如果控制台乱码可以尝试改为0关闭
+    logOutFileSw: 1 #是否开启日志文件输出，0为关闭，1为开启
+    logLevel: "INFO" #日志类型，一般INFO即可
+    logModel: 0 #日志输出模式，0为以视屏提交学时为单位进行日志输出，1为以课程信息为单位进行输出
+  aiSetting:
+    aiType: "DOUBAO"
+    model: "ep-20241117171120-q5hb9"
+    API_KEY: "8875f53f-72ab-43c9-ac75-cdbeb903d8d0"
+users:
+  - accountType: YINGHUA
+    url: 'https://mooc.kmcc.edu.cn'
+    account: '23270012'
+    password: "Aaa20041211."
+  - accountType: XUEXITONG
+    url: ''
+    account: '17353878918'
+    password: "zxd2839182980."
+  - accountType: YINGHUA
+    url: 'https://zxshixun.bwgl.cn/'
+    account: '23090130'
+    password: "a011617"
+  - accountType: ENAEA
+    url: 'https://study.enaea.edu.cn/'
+    account: '19972900700'
+    password: "Enaea2013@"
+  - accountType: "CQIE"
+    url: "https://study.cqie.edu.cn/"
+    account: "243030232"
+    password: "qazplm789"
