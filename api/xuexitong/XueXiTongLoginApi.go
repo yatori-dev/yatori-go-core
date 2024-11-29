@@ -16,12 +16,18 @@ import (
 // 注意Api类文件主需要写最原始的接口请求和最后的json的string形式返回，不需要用结构体序列化。
 // 序列化和具体的功能实现请移步到Action代码文件中
 const (
-	ApiLoginWeb            = "https://passport2.chaoxing.com/fanyalogin"
-	ApiPullCourses         = "https://mooc1-api.chaoxing.com/mycourse/backclazzdata"
+	ApiLoginWeb = "https://passport2.chaoxing.com/fanyalogin"
+
+	ApiPullCourses = "https://mooc1-api.chaoxing.com/mycourse/backclazzdata"
+
+	// ApiChapterPoint 接口-课程章节任务点状态
+	ApiChapterPoint        = "https://mooc1-api.chaoxing.com/job/myjobsnodesmap"
 	ApiPullChapter         = "https://mooc1-api.chaoxing.com/gas/clazz"
 	APIChapterCardResource = "https://mooc1-api.chaoxing.com/ananas/status"
-	APIVideoPlayReport     = "https://mooc1-api.chaoxing.com/multimedia/log/a"
-	KEY                    = "u2oh6Vu^HWe4_AES" // 注意 Go 语言中字符串默认就是 UTF-8 编码
+
+	APIVideoPlayReport = "https://mooc1-api.chaoxing.com/multimedia/log/a"
+
+	KEY = "u2oh6Vu^HWe4_AES" // 注意 Go 语言中字符串默认就是 UTF-8 编码
 )
 
 type XueXiTUserCache struct {
