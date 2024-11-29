@@ -2,9 +2,8 @@ package xuexitong
 
 import (
 	"fmt"
-	"golang.org/x/text/encoding/charmap"
-	"golang.org/x/text/transform"
 	"io/ioutil"
+	"log"
 	"net/http"
 	"net/url"
 	"strconv"
@@ -108,7 +107,7 @@ func (cache *XueXiTUserCache) FetchChapterPointStatus(nodes []int, clazzID, user
 		return "", err
 	}
 	// 解码响应体（假设服务器返回的内容是 ISO-8859-1 编码）
-	decodedBody, _, err := transform.Bytes(charmap.ISO8859_1.NewDecoder(), body)
-
-	return string(decodedBody), nil
+	// decodedBody, _, err := transform.Bytes(charmap.ISO8859_1.NewDecoder(), body)
+	log.Println(string(body))
+	return string(body), nil
 }
