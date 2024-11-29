@@ -50,7 +50,7 @@ func XueXiTCourseDetailForCourseIdAction(cache *xuexitong.XueXiTUserCache, cours
 			CourseName: channel.Content.Name,
 			ClassId:    classId,
 			CourseId:   courseId,
-			Cpi:        strconv.FormatInt(channel.Cpi, 32),
+			Cpi:        strconv.Itoa(channel.Cpi),
 			PersonId:   personId,
 			UserId:     userId}
 		return course, nil
