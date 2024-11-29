@@ -20,7 +20,7 @@ type ChannelItem struct {
 	CataName string `json:"cataName"`
 	Cataid   string `json:"cataid"`
 	Id       int    `json:"id"`
-	Cpi      int64  `json:"cpi"`
+	Cpi      int    `json:"cpi"`
 	Key      any    `json:"key"`
 	Content  struct {
 		Studentcount int    `json:"studentcount"`
@@ -56,7 +56,7 @@ type ChannelItem struct {
 	Topsign int `json:"topsign"`
 }
 
-// 关键信息过滤截取最终的实体
+// XueXiTCourse 关键信息过滤截取最终的实体
 type XueXiTCourse struct {
 	CourseName string //课程名称
 	ClassId    string //classId
