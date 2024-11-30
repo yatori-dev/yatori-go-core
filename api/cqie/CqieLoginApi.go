@@ -2,8 +2,6 @@ package cqie
 
 import (
 	"fmt"
-	"github.com/Yatori-Dev/yatori-go-core/utils"
-	"github.com/google/uuid"
 	"io"
 	"io/ioutil"
 	"log"
@@ -11,9 +9,13 @@ import (
 	"net/http"
 	"os"
 	"strings"
+
+	"github.com/Yatori-Dev/yatori-go-core/utils"
+	"github.com/google/uuid"
 )
 
 type CqieUserCache struct {
+	studentId    string //信息id
 	Account      string //账号
 	Password     string //用户密码
 	verCode      string //验证码
@@ -26,65 +28,12 @@ type CqieUserCache struct {
 	appId        string //appId不知道啥玩意
 	ipaddr       string //这玩意还会记录IP？
 	deptId       string //不知道啥玩意
+	mobile       string //手机号
+	orgId        string //不知道啥玩意
+	orgMajorId   string //专业Id
 }
 
 var randChar = []string{"0", "1", "2", "3", "4", "5", "6", "7", "8", "9", "a", "b", "c", "d", "e", "f", "A", "B", "C", "D", "E", "F"}
-
-func (cache *CqieUserCache) GetCookie() string {
-	return cache.cookie
-}
-func (cache *CqieUserCache) SetCookie(cookie string) {
-	cache.cookie = cookie
-}
-
-func (cache *CqieUserCache) GetVerCode() string {
-	return cache.verCode
-}
-func (cache *CqieUserCache) SetVerCode(verCode string) {
-	cache.verCode = verCode
-}
-
-func (cache *CqieUserCache) GetAccess_Token() string {
-	return cache.access_token
-}
-func (cache *CqieUserCache) SetAccess_Token(access_token string) {
-	cache.access_token = access_token
-}
-
-func (cache *CqieUserCache) GetToken() string {
-	return cache.token
-}
-func (cache *CqieUserCache) SetToken(token string) {
-	cache.token = token
-}
-
-func (cache *CqieUserCache) GetUserId() string {
-	return cache.userId
-}
-func (cache *CqieUserCache) SetUserId(userId string) {
-	cache.userId = userId
-}
-
-func (cache *CqieUserCache) GetAppId() string {
-	return cache.appId
-}
-func (cache *CqieUserCache) SetAppId(appId string) {
-	cache.appId = appId
-}
-
-func (cache *CqieUserCache) GetIpaddr() string {
-	return cache.ipaddr
-}
-func (cache *CqieUserCache) SetIpaddr(ipaddr string) {
-	cache.ipaddr = ipaddr
-}
-
-func (cache *CqieUserCache) GetDeptId() string {
-	return cache.deptId
-}
-func (cache *CqieUserCache) SetDeptId(deptId string) {
-	cache.deptId = deptId
-}
 
 // VerificationCodeApi 获取验证码
 func (cache *CqieUserCache) VerificationCodeApi() (string, string) {
