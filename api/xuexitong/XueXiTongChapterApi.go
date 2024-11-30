@@ -3,7 +3,6 @@ package xuexitong
 import (
 	"fmt"
 	"io/ioutil"
-	"log"
 	"net/http"
 	"net/url"
 	"strconv"
@@ -73,11 +72,8 @@ func (cache *XueXiTUserCache) FetchChapterPointStatus(nodes []int, clazzID, user
 		"courseid": {strconv.Itoa(courseID)},
 	}
 	// 编码请求体
-	payloadStr := values.Encode()
-	payload := strings.NewReader(payloadStr)
+	payload := strings.NewReader(values.Encode())
 
-	// 计算 Content-Length
-	contentLength := strconv.Itoa(len(payloadStr))
 	client := &http.Client{}
 	req, err := http.NewRequest(method, ApiChapterPoint, payload)
 
@@ -85,13 +81,11 @@ func (cache *XueXiTUserCache) FetchChapterPointStatus(nodes []int, clazzID, user
 		fmt.Println(err)
 		return "", err
 	}
-	req.Header.Add("User-Agent", "Dalvik/2.1.0 (Linux; U; Android 12; SM-N9006 Build/70e2a6b.1) (schild:e9b05c3f9fb49fef2f516e86ac3c4ff1) (device:SM-N9006) Language/zh_CN com.chaoxing.mobile/ChaoXingStudy_3_6.3.7_android_phone_10822_249 (@Kalimdor)_4627cad9c4b6415cba5dc6cac39e6c96")
-	req.Header.Add("Accept-Language", "zh_CN")
-	req.Header.Add("Content-Type", "application/x-www-form-urlencoded")
-	req.Header.Add("Content-Length", contentLength)
+	req.Header.Add("User-Agent", "Apifox/1.0.0 (https://apifox.com)")
+	req.Header.Add("Accept", "*/*")
 	req.Header.Add("Host", "mooc1-api.chaoxing.com")
-	req.Header.Add("Connection", "Keep-Alive")
-	req.Header.Add("Accept-Encoding", "gzip")
+	req.Header.Add("Connection", "keep-alive")
+	req.Header.Add("Content-Type", "application/x-www-form-urlencoded")
 	req.Header.Add("Cookie", cache.cookie)
 
 	res, err := client.Do(req)
@@ -108,6 +102,5 @@ func (cache *XueXiTUserCache) FetchChapterPointStatus(nodes []int, clazzID, user
 	}
 	// 解码响应体（假设服务器返回的内容是 ISO-8859-1 编码）
 	// decodedBody, _, err := transform.Bytes(charmap.ISO8859_1.NewDecoder(), body)
-	log.Println(string(body))
 	return string(body), nil
 }

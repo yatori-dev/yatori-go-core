@@ -1,6 +1,7 @@
 package xuexitong
 
 import (
+	"bytes"
 	"encoding/json"
 	"fmt"
 	"github.com/Yatori-Dev/yatori-go-core/api/entity"
@@ -66,16 +67,18 @@ type ChaptersList struct {
 
 // KnowledgeItem 结构体用于存储 knowledge 中的每个项目
 type KnowledgeItem struct {
-	JobCount     int           `json:"jobcount"` // 作业数量
-	IsReview     int           `json:"isreview"` // 是否为复习
-	Attachment   []interface{} `json:"attachment"`
-	IndexOrder   int           `json:"indexorder"` // 节点顺序
-	Name         string        `json:"name"`       // 章节名称
-	ID           int           `json:"id"`
-	Label        string        `json:"label"`        // 节点标签
-	Layer        int           `json:"layer"`        // 节点层级
-	ParentNodeID int           `json:"parentnodeid"` // 父节点 ID
-	Status       string        `json:"status"`       // 节点状态
+	JobCount      int           `json:"jobcount"` // 作业数量
+	IsReview      int           `json:"isreview"` // 是否为复习
+	Attachment    []interface{} `json:"attachment"`
+	IndexOrder    int           `json:"indexorder"` // 节点顺序
+	Name          string        `json:"name"`       // 章节名称
+	ID            int           `json:"id"`
+	Label         string        `json:"label"`        // 节点标签
+	Layer         int           `json:"layer"`        // 节点层级
+	ParentNodeID  int           `json:"parentnodeid"` // 父节点 ID
+	Status        string        `json:"status"`       // 节点状态
+	PointTotal    int
+	PointFinished int
 }
 
 // PullCourseChapterAction 获取对应课程的章节信息包括节点信息
@@ -168,4 +171,53 @@ func PullCourseChapterAction(cache *xuexitong.XueXiTUserCache, cpi, key int) (Ch
 	fmt.Printf("获取课程章节成功 (共 %d 个)",
 		len(chaptersList.Knowledge)) //  [%s(Cou.%s/Cla.%s)]
 	return chaptersList, nil
+}
+
+type ChapterPointDTO map[string]struct {
+	ClickCount    int `json:"clickcount"`    // 是否还有节点
+	FinishCount   int `json:"finishcount"`   // 已完成节点
+	TotalCount    int `json:"totalcount"`    // 总节点
+	OpenLock      int `json:"openlock"`      // 是否有锁
+	UnFinishCount int `json:"unfinishcount"` // 未完成节点
+}
+
+// updatePointStatus 更新节点状态 单独对应ChaptersList每个KnowledgeItem
+func (c *KnowledgeItem) updatePointStatus(chapterPoint ChapterPointDTO) {
+	pointData, exists := chapterPoint[fmt.Sprintf("%d", c.ID)]
+	if !exists {
+		fmt.Printf("Chapter ID %d not found in API response\n", c.ID)
+		return
+	}
+	// 当存在未完成节点 Item 中Total 记录数为未完成数数量
+	// TotalCount == 0 没有节点 或者 属于顶级标签
+	// 两种条件都不符合 则 记录此章节总结点数量
+	if pointData.UnFinishCount != 0 && pointData.TotalCount == 0 {
+		c.PointTotal = pointData.UnFinishCount
+	} else {
+		c.PointTotal = pointData.TotalCount
+	}
+	c.PointFinished = pointData.FinishCount
+}
+
+// ChapterFetchPointAction 对应章节的作业点信息 刷新KnowledgeItem中对应节点完成状态
+func ChapterFetchPointAction(cache *xuexitong.XueXiTUserCache,
+	nodes []int,
+	chapters *ChaptersList,
+	clazzID, userID, cpi, courseID int,
+) (ChaptersList, error) {
+	status, err := cache.FetchChapterPointStatus(nodes, clazzID, userID, cpi, courseID)
+	if err != nil {
+		log2.Print(log2.INFO, "["+cache.Name+"] "+" 获取章节状态失败")
+	}
+
+	var cp ChapterPointDTO
+	if err := json.NewDecoder(bytes.NewReader([]byte(status))).Decode(&cp); err != nil {
+		return ChaptersList{}, fmt.Errorf("failed to decode JSON response: %v", err)
+	}
+
+	for i := range chapters.Knowledge {
+		chapters.Knowledge[i].updatePointStatus(cp)
+	}
+	fmt.Println("任务点状态已更新")
+	return *chapters, nil
 }
