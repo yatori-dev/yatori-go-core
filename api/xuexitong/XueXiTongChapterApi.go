@@ -104,3 +104,45 @@ func (cache *XueXiTUserCache) FetchChapterPointStatus(nodes []int, clazzID, user
 	// decodedBody, _, err := transform.Bytes(charmap.ISO8859_1.NewDecoder(), body)
 	return string(body), nil
 }
+
+// FetchChapterCords 以课程序号拉取对应“章节”的任务节点卡片资源
+// Args:
+//
+//	nodes: 任务点集合 , index: 任务点索引
+func (cache *XueXiTUserCache) FetchChapterCords(nodes []int, index, courseId int) (string, error) {
+	method := "GET"
+	values := url.Values{}
+	values.Add("id", strconv.Itoa(nodes[index]))
+	values.Add("courseid", strconv.Itoa(courseId))
+	values.Add("fields", "id,parentnodeid,indexorder,label,layer,name,begintime,createtime,lastmodifytime,status,jobUnfinishedCount,clickcount,openlock,card.fields(id,knowledgeid,title,knowledgeTitile,description,cardorder).contentcard(all)")
+	values.Add("view", "json")
+	values.Add("token", "4faa8662c59590c6f43ae9fe5b002b42")
+
+	client := &http.Client{}
+	req, err := http.NewRequest(method, ApiChapterCards+"?"+values.Encode(), nil)
+
+	if err != nil {
+		fmt.Println(err)
+		return "", err
+	}
+	req.Header.Add("User-Agent", " Dalvik/2.1.0 (Linux; U; Android 12; SM-N9006 Build/70e2a6b.1) (schild:e9b05c3f9fb49fef2f516e86ac3c4ff1) (device:SM-N9006) Language/zh_CN com.chaoxing.mobile/ChaoXingStudy_3_6.3.7_android_phone_10822_249 (@Kalimdor)_4627cad9c4b6415cba5dc6cac39e6c96")
+	req.Header.Add("Accept-Language", " zh_CN")
+	req.Header.Add("Host", " mooc1-api.chaoxing.com")
+	req.Header.Add("Connection", " Keep-Alive")
+	req.Header.Add("Cookie", cache.cookie)
+	req.Header.Add("Accept", "*/*")
+
+	res, err := client.Do(req)
+	if err != nil {
+		fmt.Println(err)
+		return "", nil
+	}
+	defer res.Body.Close()
+
+	body, err := ioutil.ReadAll(res.Body)
+	if err != nil {
+		fmt.Println(err)
+		return "", nil
+	}
+	return string(body), nil
+}
