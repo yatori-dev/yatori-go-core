@@ -22,6 +22,7 @@ const (
 
 	// ApiChapterPoint 接口-课程章节任务点状态
 	ApiChapterPoint        = "https://mooc1-api.chaoxing.com/job/myjobsnodesmap"
+	ApiChapterCards        = "https://mooc1-api.chaoxing.com/gas/knowledge"
 	ApiPullChapter         = "https://mooc1-api.chaoxing.com/gas/clazz"
 	APIChapterCardResource = "https://mooc1-api.chaoxing.com/ananas/status"
 

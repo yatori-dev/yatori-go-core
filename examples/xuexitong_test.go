@@ -135,6 +135,59 @@ func TestXueXiToChapterPoint(t *testing.T) {
 	}
 }
 
+func TestXueXiToChapterCord(t *testing.T) {
+	utils.YatoriCoreInit()
+	//测试账号
+	setup()
+	user := global.Config.Users[1]
+	userCache := xuexitongApi.XueXiTUserCache{
+		Name:     user.Account,
+		Password: user.Password,
+	}
+
+	err := xuexitong.XueXiTLoginAction(&userCache)
+	if err != nil {
+		log.Fatal(err)
+	}
+	course, err := xuexitong.XueXiTCourseDetailForCourseIdAction(&userCache, "261619055656961")
+	if err != nil {
+		log.Fatal(err)
+	}
+	cpi, _ := strconv.Atoi(course.Cpi)
+	key, _ := strconv.Atoi(course.ClassId)
+	action, _ := xuexitong.PullCourseChapterAction(&userCache, cpi, key)
+	var nodes []int
+	for _, item := range action.Knowledge {
+		nodes = append(nodes, item.ID)
+	}
+	courseId, _ := strconv.Atoi(course.CourseId)
+	cards, err := xuexitong.ChapterFetchCardsAction(&userCache, &action, nodes, 4, courseId, key, cpi)
+	if err != nil {
+		log.Fatal(err)
+	}
+	var (
+		videoDTO    *xuexitong.PointVideoDto
+		workDTO     *xuexitong.PointWorkDto
+		DocumentDTO *xuexitong.PointDocumentDto
+	)
+	// 处理返回的任务点对象
+	for _, pointObj := range cards {
+		switch p := pointObj.(type) {
+		case *xuexitong.PointVideoDto:
+			videoDTO = p
+			fmt.Printf("PointVideoDto: %+v\n\n", videoDTO)
+		case *xuexitong.PointWorkDto:
+			workDTO = p
+			fmt.Printf("PointWorkDto: %+v\n\n", workDTO)
+		case *xuexitong.PointDocumentDto:
+			DocumentDTO = p
+			fmt.Printf("PointDocumentDto: %+v\n\n", DocumentDTO)
+		default:
+			fmt.Printf("Unknown Task Point Type: %+v\n", p)
+		}
+	}
+}
+
 // 测试apifox直接生成的请求是否有误乱码现象，测试结果为没有
 func TestXueXiToChapterPointPostTest(t *testing.T) {
 
