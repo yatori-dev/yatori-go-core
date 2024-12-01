@@ -1,8 +1,8 @@
 package xuexitong
 
 import (
-	"github.com/Yatori-Dev/yatori-go-core/api/xuexitong"
-	log2 "github.com/Yatori-Dev/yatori-go-core/utils/log"
+	"github.com/yatori-dev/yatori-go-core/api/xuexitong"
+	log2 "github.com/yatori-dev/yatori-go-core/utils/log"
 )
 
 func XueXiTLoginAction(cache *xuexitong.XueXiTUserCache) error {

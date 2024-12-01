@@ -1,4 +1,4 @@
-module github.com/Yatori-Dev/yatori-go-core
+module github.com/yatori-dev/yatori-go-core
 
 go 1.22.4
 

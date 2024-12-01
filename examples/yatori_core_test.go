@@ -7,9 +7,9 @@ import (
 	"testing"
 	time2 "time"
 
-	"github.com/Yatori-Dev/yatori-go-core/common"
-	"github.com/Yatori-Dev/yatori-go-core/global"
-	"github.com/Yatori-Dev/yatori-go-core/utils"
+	"github.com/yatori-dev/yatori-go-core/common"
+	"github.com/yatori-dev/yatori-go-core/global"
+	"github.com/yatori-dev/yatori-go-core/utils"
 )
 
 func setup() {

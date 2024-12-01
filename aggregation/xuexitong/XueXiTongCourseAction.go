@@ -4,13 +4,14 @@ import (
 	"bytes"
 	"encoding/json"
 	"fmt"
-	"github.com/Yatori-Dev/yatori-go-core/api/entity"
-	"github.com/Yatori-Dev/yatori-go-core/api/xuexitong"
-	log2 "github.com/Yatori-Dev/yatori-go-core/utils/log"
 	"log"
 	"sort"
 	"strconv"
 	"strings"
+
+	"github.com/yatori-dev/yatori-go-core/api/entity"
+	"github.com/yatori-dev/yatori-go-core/api/xuexitong"
+	log2 "github.com/yatori-dev/yatori-go-core/utils/log"
 )
 
 func XueXiTPullCourseAction(cache *xuexitong.XueXiTUserCache) error {

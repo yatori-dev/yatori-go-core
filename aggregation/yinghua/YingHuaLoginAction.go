@@ -2,13 +2,14 @@ package yinghua
 
 import (
 	"errors"
-	yinghuaApi "github.com/Yatori-Dev/yatori-go-core/api/yinghua"
-	"github.com/Yatori-Dev/yatori-go-core/utils"
-	"github.com/Yatori-Dev/yatori-go-core/utils/log"
-	"github.com/thedevsaddam/gojsonq"
-	ort "github.com/yalue/onnxruntime_go"
 	"os"
 	"strings"
+
+	"github.com/thedevsaddam/gojsonq"
+	ort "github.com/yalue/onnxruntime_go"
+	yinghuaApi "github.com/yatori-dev/yatori-go-core/api/yinghua"
+	"github.com/yatori-dev/yatori-go-core/utils"
+	"github.com/yatori-dev/yatori-go-core/utils/log"
 )
 
 // YingHuaLoginAction 登录API聚合整理

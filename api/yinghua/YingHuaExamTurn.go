@@ -2,9 +2,10 @@ package yinghua
 
 import (
 	"fmt"
-	"github.com/Yatori-Dev/yatori-go-core/utils"
 	"regexp"
 	"strings"
+
+	"github.com/yatori-dev/yatori-go-core/utils"
 )
 
 // ExamTopics holds a map of ExamTopic indexed by answerId

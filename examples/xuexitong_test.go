@@ -9,10 +9,10 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/Yatori-Dev/yatori-go-core/aggregation/xuexitong"
-	xuexitongApi "github.com/Yatori-Dev/yatori-go-core/api/xuexitong"
-	"github.com/Yatori-Dev/yatori-go-core/global"
-	"github.com/Yatori-Dev/yatori-go-core/utils"
+	"github.com/yatori-dev/yatori-go-core/aggregation/xuexitong"
+	xuexitongApi "github.com/yatori-dev/yatori-go-core/api/xuexitong"
+	"github.com/yatori-dev/yatori-go-core/global"
+	"github.com/yatori-dev/yatori-go-core/utils"
 )
 
 // TestLoginXueXiTo 测试学习通登录以及课程数据拉取

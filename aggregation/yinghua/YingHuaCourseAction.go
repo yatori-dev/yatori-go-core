@@ -10,11 +10,11 @@ import (
 	"strings"
 	"time"
 
-	yinghuaApi "github.com/Yatori-Dev/yatori-go-core/api/yinghua"
-	"github.com/Yatori-Dev/yatori-go-core/models/ctype"
-	"github.com/Yatori-Dev/yatori-go-core/utils"
-	"github.com/Yatori-Dev/yatori-go-core/utils/log"
 	"github.com/thedevsaddam/gojsonq"
+	yinghuaApi "github.com/yatori-dev/yatori-go-core/api/yinghua"
+	"github.com/yatori-dev/yatori-go-core/models/ctype"
+	"github.com/yatori-dev/yatori-go-core/utils"
+	"github.com/yatori-dev/yatori-go-core/utils/log"
 )
 
 // 课程必要数据得截取

@@ -4,9 +4,6 @@ import (
 	"bytes"
 	"crypto/tls"
 	"fmt"
-	"github.com/Yatori-Dev/yatori-go-core/api/entity"
-	"github.com/Yatori-Dev/yatori-go-core/utils"
-	"github.com/thedevsaddam/gojsonq"
 	"io"
 	"io/ioutil"
 	"log"
@@ -17,6 +14,10 @@ import (
 	"strconv"
 	"strings"
 	"time"
+
+	"github.com/thedevsaddam/gojsonq"
+	"github.com/yatori-dev/yatori-go-core/api/entity"
+	"github.com/yatori-dev/yatori-go-core/utils"
 )
 
 type YingHuaUserCache struct {

@@ -2,9 +2,10 @@ package enaea
 
 import (
 	"errors"
-	"github.com/Yatori-Dev/yatori-go-core/api/enaea"
-	"github.com/Yatori-Dev/yatori-go-core/utils/log"
 	"strings"
+
+	"github.com/yatori-dev/yatori-go-core/api/enaea"
+	"github.com/yatori-dev/yatori-go-core/utils/log"
 )
 
 // EnaeaLoginAction 学习公社登录

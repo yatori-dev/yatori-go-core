@@ -10,8 +10,8 @@ import (
 	"os"
 	"strings"
 
-	"github.com/Yatori-Dev/yatori-go-core/utils"
 	"github.com/google/uuid"
+	"github.com/yatori-dev/yatori-go-core/utils"
 )
 
 type CqieUserCache struct {

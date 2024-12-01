@@ -5,13 +5,14 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
-	"github.com/Yatori-Dev/yatori-go-core/models/ctype"
 	"io/ioutil"
 	"log"
 	"net/http"
 	"strings"
 	"sync"
 	"time"
+
+	"github.com/yatori-dev/yatori-go-core/models/ctype"
 )
 
 // AIChatMessages ChatGLMChat struct that holds the chat messages.

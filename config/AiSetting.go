@@ -1,6 +1,6 @@
 package config
 
-import "github.com/Yatori-Dev/yatori-go-core/models/ctype"
+import "github.com/yatori-dev/yatori-go-core/models/ctype"
 
 type AiSetting struct {
 	AiType ctype.AiType `json:"aiType"`

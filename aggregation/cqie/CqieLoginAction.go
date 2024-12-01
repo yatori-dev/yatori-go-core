@@ -4,11 +4,11 @@ import (
 	"errors"
 	"time"
 
-	cqieApi "github.com/Yatori-Dev/yatori-go-core/api/cqie"
-	"github.com/Yatori-Dev/yatori-go-core/utils"
-	"github.com/Yatori-Dev/yatori-go-core/utils/log"
 	"github.com/thedevsaddam/gojsonq"
 	ort "github.com/yalue/onnxruntime_go"
+	cqieApi "github.com/yatori-dev/yatori-go-core/api/cqie"
+	"github.com/yatori-dev/yatori-go-core/utils"
+	"github.com/yatori-dev/yatori-go-core/utils/log"
 )
 
 type CqieCourse struct {
