@@ -6,9 +6,9 @@ setting:
     logLevel: "INFO" #日志类型，一般INFO即可
     logModel: 0 #日志输出模式，0为以视屏提交学时为单位进行日志输出，1为以课程信息为单位进行输出
   aiSetting:
-    aiType: "DOUBAO"
-    model: "ep-20241117171120-q5hb9"
-    API_KEY: "8875f53f-72ab-43c9-ac75-cdbeb903d8d0"
+    aiType: "TONGYI"
+    model: ""
+    API_KEY: "sk-bdc75ad31f0942c8b6a639746d12b6a0"
 users:
   - accountType: YINGHUA
     url: 'https://mooc.kmcc.edu.cn'
@@ -19,9 +19,12 @@ users:
     account: '17353878918'
     password: "zxd2839182980."
   - accountType: YINGHUA
-    url: 'https://zxshixun.bwgl.cn/'
-    account: '23090130'
-    password: "a011617"
+    url: 'https://wuhues.yinghuaonline.com/'
+    account: '3421240127'
+    password: "Ly158956"
+    coursesCustom:
+      videoModel: 1
+      autoExam: 1
   - accountType: ENAEA
     url: 'https://study.enaea.edu.cn/'
     account: '19972900700'

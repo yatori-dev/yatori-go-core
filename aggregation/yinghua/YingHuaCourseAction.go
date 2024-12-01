@@ -1,6 +1,7 @@
 package yinghua
 
 import (
+	"encoding/json"
 	"errors"
 	"fmt"
 	"math/rand"
@@ -325,12 +326,14 @@ func StartExamAction(
 	topic := yinghuaApi.TurnExamTopic(api)
 	//fmt.Println(topic)
 	//遍历题目map,并回答问题
-	var lastAnswer string
+	var lastAnswer yinghuaApi.YingHuaAnswer
 	var lastProblem string
 	for k, v := range topic.YingHuaExamTopics {
 		//构建统一AI消息
 		aiMessage := yinghuaApi.AIProblemMessage(exam.Title, v)
 		aiAnswer, err := utils.AggregationAIApi(url, model, aiType, aiMessage, apiKey)
+		answer := aiTurnYingHuaAnswer(userCache, aiAnswer, v)
+
 		if err != nil {
 			log.Print(log.INFO, `[`, userCache.Account, `] `, log.BoldRed, "Ai异常，返回信息：", err.Error())
 			//os.Exit(0)
@@ -338,7 +341,7 @@ func StartExamAction(
 			aiAnswer = randomAnswer(v)
 		}
 		//fmt.Println(aiAnswer)
-		subWorkApi, err := yinghuaApi.SubmitExamApi(*userCache, exam.ExamId, k, aiAnswer, "0", 8, nil)
+		subWorkApi, err := yinghuaApi.SubmitExamApi(*userCache, exam.ExamId, k, answer, "0", 8, nil)
 		if err != nil {
 			log.Print(log.INFO, `[`, userCache.Account, `] `, log.BoldRed, "Ai异常，返回信息：", err.Error())
 		}
@@ -346,7 +349,7 @@ func StartExamAction(
 		if gojsonq.New().JSONString(subWorkApi).Find("msg") != "答题保存成功" {
 			log.Print(log.INFO, log.BoldRed, `[`, userCache.Account, `] `, log.BoldRed, "提交答案异常，返回信息：", subWorkApi, "题目内容：", v, "AI回答信息：", aiAnswer)
 		}
-		lastAnswer = aiAnswer
+		lastAnswer = answer
 		lastProblem = k
 	}
 	//结束考试
@@ -408,6 +411,67 @@ func WorkDetailAction(userCache *yinghuaApi.YingHuaUserCache, nodeId string) ([]
 	return workList, nil
 }
 
+// 选项评分系统
+func selectMarkingSystem(text1, text2 string) float32 {
+	sum := float32(0)
+	for i := range text1 {
+		for j := range text2 {
+			if text1[i] == text2[j] {
+				sum += float32(1)
+			}
+		}
+	}
+	return float32(float32(sum) / float32(len(text1)))
+}
+
+// 竞争对手之间有激烈的价格竞争
+// 竞争对手之间有激烈的价格竞争
+// AI回复转答案
+func aiTurnYingHuaAnswer(cache *yinghuaApi.YingHuaUserCache, aiAnswer string, v yinghuaApi.YingHuaExamTopic) yinghuaApi.YingHuaAnswer {
+	answer := yinghuaApi.YingHuaAnswer{Type: v.Type}
+	if v.Type == "单选" || v.Type == "判断" || v.Type == "多选" {
+		var jsonStr []string
+		var res []string
+		json.Unmarshal([]byte(aiAnswer), &jsonStr)
+		for _, item := range jsonStr {
+			for _, v := range v.Selects {
+				if strings.Contains(v.Text, item) ||
+					strings.Contains(v.Num, item) ||
+					strings.Contains(strings.ReplaceAll(strings.ReplaceAll(v.Num+v.Text, " ", ""), " ", ""), strings.ReplaceAll(item, " ", "")) ||
+					strings.Contains(strings.ReplaceAll(v.Num+v.Text, " ", ""), strings.ReplaceAll(item, " ", "")) {
+					res = append(res, v.Value)
+				}
+			}
+
+		}
+		if len(res) == 0 {
+			for _, item := range jsonStr { //如果没有答案，采用第二方案，字符串评判法
+				for _, v := range v.Selects {
+					if selectMarkingSystem(item, v.Text) > 0.60 {
+						res = append(res, v.Value)
+					}
+				}
+
+			}
+		}
+
+		answer.Answers = res
+	} else if v.Type == "填空" || v.Type == "简答" {
+		var res []string
+		json.Unmarshal([]byte(aiAnswer), &res)
+		for _, item := range res {
+			answer.Answers = append(answer.Answers, item)
+		}
+	}
+	if len(answer.Answers) == 0 || answer.Answers == nil {
+		if v.Type == "单选" {
+			answer.Answers = []string{"A"}
+		}
+		log.Print(log.INFO, `[`, cache.Account, `] `, log.BoldRed, "Ai回答内容无法解析，使用使用随机答案策略")
+	}
+	return answer
+}
+
 // StartWorkAction 开始写作业
 func StartWorkAction(userCache *yinghuaApi.YingHuaUserCache,
 	work YingHuaWork,
@@ -432,18 +496,20 @@ func StartWorkAction(userCache *yinghuaApi.YingHuaUserCache,
 	topic := yinghuaApi.TurnExamTopic(api)
 	//fmt.Println(topic)
 	//遍历题目map,并回答问题
-	var lastAnswer string
+	var lastAnswer yinghuaApi.YingHuaAnswer
 	var lastProblem string
 	for k, v := range topic.YingHuaExamTopics {
 		//构建统一AI消息
 		aiMessage := yinghuaApi.AIProblemMessage(work.Title, v)
 		aiAnswer, err := utils.AggregationAIApi(url, model, aiType, aiMessage, apiKey)
+		answer := aiTurnYingHuaAnswer(userCache, aiAnswer, v)
+
 		if err != nil {
 			log.Print(log.INFO, `[`, userCache.Account, `] `, log.BoldRed, "Ai异常，返回信息：", err.Error())
 			os.Exit(0)
 		}
 		//fmt.Println(aiAnswer)
-		subWorkApi, err := yinghuaApi.SubmitWorkApi(*userCache, work.WorkId, k, aiAnswer, "0", 10, nil)
+		subWorkApi, err := yinghuaApi.SubmitWorkApi(*userCache, work.WorkId, k, answer, "0", 10, nil)
 		if err != nil {
 			log.Print(log.INFO, `[`, userCache.Account, `] `, log.BoldRed, "Ai异常，返回信息：", err.Error())
 		}
@@ -451,7 +517,7 @@ func StartWorkAction(userCache *yinghuaApi.YingHuaUserCache,
 		if gojsonq.New().JSONString(subWorkApi).Find("msg") != "答题保存成功" {
 			log.Print(log.INFO, log.BoldRed, `[`, userCache.Account, `] `, log.BoldRed, "提交答案异常，返回信息：", subWorkApi)
 		}
-		lastAnswer = aiAnswer
+		lastAnswer = aiTurnYingHuaAnswer(userCache, aiAnswer, v)
 		lastProblem = k
 	}
 	//结束考试

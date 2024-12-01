@@ -15,7 +15,6 @@ import (
 	"strings"
 	"time"
 
-	"github.com/thedevsaddam/gojsonq"
 	"github.com/yatori-dev/yatori-go-core/api/entity"
 	"github.com/yatori-dev/yatori-go-core/utils"
 )
@@ -709,7 +708,7 @@ func GetExamTopicApi(UserCache YingHuaUserCache, nodeId, examId string, retryNum
 }
 
 // SubmitExamApi 提交考试答案接口
-func SubmitExamApi(UserCache YingHuaUserCache, examId, answerId, answer, finish string, retryNum int, lastError error) (string, error) {
+func SubmitExamApi(UserCache YingHuaUserCache, examId, answerId string, answers YingHuaAnswer, finish string, retryNum int, lastError error) (string, error) {
 	if retryNum < 0 {
 		return "", lastError
 	}
@@ -736,11 +735,15 @@ func SubmitExamApi(UserCache YingHuaUserCache, examId, answerId, answer, finish 
 	writer.WriteField("token", UserCache.token)
 
 	// Add the answer fields
-	if len(answer) == 1 {
-		writer.WriteField("answer", string(answer[0]))
-	} else {
-		for i := 0; i < len(answer); i++ {
-			writer.WriteField("answer[]", string(answer[i]))
+	if answers.Type == "单选" || answers.Type == "判断" || answers.Type == "简答" {
+		writer.WriteField("answer", answers.Answers[0])
+	} else if answers.Type == "多选" {
+		for _, v := range answers.Answers {
+			writer.WriteField("answer[]", v)
+		}
+	} else if answers.Type == "填空" {
+		for i, v := range answers.Answers {
+			writer.WriteField("answer_"+strconv.Itoa(i+1), v)
 		}
 	}
 
@@ -751,7 +754,7 @@ func SubmitExamApi(UserCache YingHuaUserCache, examId, answerId, answer, finish 
 	req, err := http.NewRequest("POST", fmt.Sprintf("%s/api/exam/submit.json", UserCache.PreUrl), body)
 	if err != nil {
 		time.Sleep(100 * time.Millisecond)
-		return SubmitExamApi(UserCache, examId, answerId, answer, finish, retryNum-1, err)
+		return SubmitExamApi(UserCache, examId, answerId, answers, finish, retryNum-1, err)
 	}
 
 	// Set the headers
@@ -765,7 +768,7 @@ func SubmitExamApi(UserCache YingHuaUserCache, examId, answerId, answer, finish 
 	resp, err := client.Do(req)
 	if err != nil {
 		time.Sleep(100 * time.Millisecond)
-		return SubmitExamApi(UserCache, examId, answerId, answer, finish, retryNum-1, err)
+		return SubmitExamApi(UserCache, examId, answerId, answers, finish, retryNum-1, err)
 	}
 	defer resp.Body.Close()
 
@@ -777,7 +780,7 @@ func SubmitExamApi(UserCache YingHuaUserCache, examId, answerId, answer, finish 
 
 	if strings.Contains(string(bodyStr), "502 Bad Gateway") {
 		time.Sleep(time.Millisecond * 150) //延迟
-		return SubmitExamApi(UserCache, examId, answerId, answer, finish, retryNum, err)
+		return SubmitExamApi(UserCache, examId, answerId, answers, finish, retryNum, err)
 	}
 	return string(bodyStr), nil
 }
@@ -938,8 +941,13 @@ func GetWorkApi(UserCache YingHuaUserCache, nodeId, workId string, retryNum int,
 	return string(body), nil
 }
 
+type YingHuaAnswer struct {
+	Type    string   //题目类型
+	Answers []string //回答内容
+}
+
 // SubmitWorkApi 提交作业答案接口
-func SubmitWorkApi(UserCache YingHuaUserCache, workId, answerId, answer, finish string /*finish代表是否是最后提交并且结束考试，0代表不是，1代表是*/, retryNum int, lastError error) (string, error) {
+func SubmitWorkApi(UserCache YingHuaUserCache, workId, answerId string, answers YingHuaAnswer, finish string /*finish代表是否是最后提交并且结束考试，0代表不是，1代表是*/, retryNum int, lastError error) (string, error) {
 	if retryNum < 0 {
 		return "", lastError
 	}
@@ -964,16 +972,26 @@ func SubmitWorkApi(UserCache YingHuaUserCache, workId, answerId, answer, finish 
 	writer.WriteField("answerId", answerId)
 	writer.WriteField("finish", finish)
 	writer.WriteField("token", UserCache.token)
-
-	if len(answer) == 1 { //如果单选题
-		writer.WriteField("answer", string(answer[0]))
-	} else if gojsonq.New().JSONString(answer).Find("answer") != nil { //如果是简答题
-		writer.WriteField("answer", gojsonq.New().JSONString(answer).Find("answer").(string))
-	} else { //如果多选题或者填空题
-		for i := 0; i < len(answer); i++ {
-			writer.WriteField("answer[]", string(answer[i]))
+	if answers.Type == "单选" || answers.Type == "判断" || answers.Type == "简答" {
+		writer.WriteField("answer", answers.Answers[0])
+	} else if answers.Type == "多选" {
+		for _, v := range answers.Answers {
+			writer.WriteField("answer[]", v)
+		}
+	} else if answers.Type == "填空" {
+		for i, v := range answers.Answers {
+			writer.WriteField("answer_"+strconv.Itoa(i+1), v)
 		}
 	}
+	//if len(answer) == 1 { //如果单选题
+	//	writer.WriteField("answer", string(answer[0]))
+	//} else if gojsonq.New().JSONString(answer).Find("answer") != nil { //如果是简答题
+	//	writer.WriteField("answer", gojsonq.New().JSONString(answer).Find("answer").(string))
+	//} else { //如果多选题或者填空题
+	//	for i := 0; i < len(answer); i++ {
+	//		writer.WriteField("answer[]", string(answer[i]))
+	//	}
+	//}
 
 	// Close the writer to finalize the multipart form data
 	writer.Close()
@@ -996,14 +1014,14 @@ func SubmitWorkApi(UserCache YingHuaUserCache, workId, answerId, answer, finish 
 	resp, err := client.Do(req)
 	if err != nil {
 		time.Sleep(100 * time.Millisecond)
-		return SubmitWorkApi(UserCache, workId, answerId, answer, finish, retryNum-1, err)
+		return SubmitWorkApi(UserCache, workId, answerId, answers, finish, retryNum-1, err)
 	}
 	defer resp.Body.Close()
 	// Optionally, read the response body
 	bodyBytes, _ := ioutil.ReadAll(resp.Body)
 	if strings.Contains(string(bodyBytes), "502 Bad Gateway") {
 		time.Sleep(time.Millisecond * 150) //延迟
-		return SubmitWorkApi(UserCache, workId, answer, answer, finish, retryNum, err)
+		return SubmitWorkApi(UserCache, workId, answerId, answers, finish, retryNum, err)
 	}
 	return string(bodyBytes), nil
 }
