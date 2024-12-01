@@ -85,8 +85,8 @@ func CqiePullCourseListAction(cache *cqieApi.CqieUserCache) ([]CqieCourse, error
 		for _, item := range items {
 			// 每个 item 是 map[string]interface{} 类型
 			if obj, ok := item.(map[string]interface{}); ok {
-				sumTime, _ := time.Parse("15:04")
-				haveTime, _ := time.Parse("15:04")
+				sumTime, _ := time.Parse("15:04", obj["startTime"].(string))
+				haveTime, _ := time.Parse("15:04", obj["startTime"].(string))
 				courseList = append(courseList, CqieCourse{
 					Id:         obj["id"].(string),
 					CourseName: obj["name"].(string),
