@@ -2,6 +2,7 @@ package cqie
 
 import (
 	"errors"
+	"fmt"
 	"time"
 
 	"github.com/thedevsaddam/gojsonq"
@@ -12,22 +13,23 @@ import (
 )
 
 type CqieCourse struct {
-	Id         string    //这个是课程的id也就是courseId
-	CourseName string    //课程名称
-	SumUnit    int       //一共多少单元
-	HaveUnit   int       //以学单元
-	SumTime    time.Time //总时长
-	HaveTime   time.Time //以学时长
-	Learned    string    //已学进度
-
+	Id              string    //这个是课程的id也就是courseId
+	CourseName      string    //课程名称
+	StudentCourseId string    //对应学生课程ID
+	SumUnit         int       //一共多少单元
+	HaveUnit        int       //以学单元
+	SumTime         time.Time //总时长
+	HaveTime        time.Time //以学时长
+	Learned         string    //已学进度
 }
 
 type CqieVideo struct {
-	VideoId    string //视屏Id
-	CourseId   string //课程Id
-	UnitId     string //单元Id
-	VideoName  string //视屏名称
-	TimeLength int    //视屏时长
+	VideoId         string //视屏Id
+	CourseId        string //课程Id
+	UnitId          string //单元Id
+	VideoName       string //视屏名称
+	TimeLength      int    //视屏时长
+	StudentCourseId string //学时课程ID
 }
 
 // CqieLoginAction 登录API聚合整理
@@ -74,7 +76,7 @@ func CqieLoginAction(cache *cqieApi.CqieUserCache) error {
 // CqiePullCourseListAction 拉取课程列表信息
 func CqiePullCourseListAction(cache *cqieApi.CqieUserCache) ([]CqieCourse, error) {
 	var courseList []CqieCourse
-	courseApi, err := cache.PullCourseList(5, nil)
+	courseApi, err := cache.PullCourseListApi(5, nil)
 	if err != nil {
 	}
 	if gojsonq.New().JSONString(courseApi).Find("msg") != "操作成功" {
@@ -85,16 +87,17 @@ func CqiePullCourseListAction(cache *cqieApi.CqieUserCache) ([]CqieCourse, error
 		for _, item := range items {
 			// 每个 item 是 map[string]interface{} 类型
 			if obj, ok := item.(map[string]interface{}); ok {
-				sumTime, _ := time.Parse("15:04", obj["startTime"].(string))
-				haveTime, _ := time.Parse("15:04", obj["startTime"].(string))
+				sumTime, _ := time.Parse("15:04", obj["sumTime"].(string))
+				haveTime, _ := time.Parse("15:04", obj["haveTime"].(string))
 				courseList = append(courseList, CqieCourse{
-					Id:         obj["id"].(string),
-					CourseName: obj["name"].(string),
-					SumUnit:    int(obj["sumUnit"].(float64)),
-					HaveUnit:   int(obj["haveUnit"].(float64)),
-					SumTime:    sumTime,
-					HaveTime:   haveTime,
-					Learned:    obj["learned"].(string),
+					Id:              obj["id"].(string),
+					CourseName:      obj["name"].(string),
+					SumUnit:         int(obj["sumUnit"].(float64)),
+					HaveUnit:        int(obj["haveUnit"].(float64)),
+					SumTime:         sumTime,
+					HaveTime:        haveTime,
+					Learned:         obj["learned"].(string),
+					StudentCourseId: obj["studentCourseId"].(string),
 				})
 			}
 		}
@@ -103,6 +106,52 @@ func CqiePullCourseListAction(cache *cqieApi.CqieUserCache) ([]CqieCourse, error
 }
 
 // 拉取对应课程的所有视屏
-func PullCourseVideoListAction(cache *cqieApi.CqieUserCache, course *CqieCourse) {
+func PullCourseVideoListAction(cache *cqieApi.CqieUserCache, course *CqieCourse) ([]CqieVideo, error) {
+	var videoList []CqieVideo
+	courseApi, err := cache.PullCourseDetailApi(course.Id, course.StudentCourseId, 5, nil)
+	if err != nil {
+	}
+	if gojsonq.New().JSONString(courseApi).Find("msg") != "操作成功" {
+		return videoList, errors.New("获取数据失败：" + courseApi)
+	}
+	jsonList := gojsonq.New().JSONString(courseApi).Find("data.courseCatalogVos")
+	if items, ok := jsonList.([]interface{}); ok {
+		for _, item := range items {
+			// 每个 item 是 map[string]interface{} 类型
+			if obj, ok := item.(map[string]interface{}); ok { //进入到courseCatalogVos层，即章节层
+				if nodes, ok := obj["children"].([]interface{}); ok { //如果有对应章节子节点那么继续
+					for _, node := range nodes { //循环获取所有节点
+						if nodeObj, ok := node.(map[string]interface{}); ok { //检查是否为节点对象
+							if videos, ok := nodeObj["courseCatalogVideoVos"].([]interface{}); ok { //判断对应节点是否有视屏列表
+								for _, video := range videos { //循环获取节点视屏列表
+									// 每个 item 是 map[string]interface{} 类型
+									if obj, ok := video.(map[string]interface{}); ok {
+										videoList = append(videoList, CqieVideo{
+											VideoId:         obj["id"].(string),
+											CourseId:        obj["courseId"].(string),
+											UnitId:          obj["unitId"].(string),
+											VideoName:       obj["name"].(string),
+											TimeLength:      int(obj["timeLength"].(float64)),
+											StudentCourseId: course.StudentCourseId,
+										})
+									}
+								}
+							}
+						}
+					}
+				}
+			}
+		}
+	}
+	return videoList, nil
+}
 
+// 提交学时
+func SubmitStudyTimeAction(cache *cqieApi.CqieUserCache, video *CqieVideo, studyTime time.Time, coursewareId string, startPos int, stopPos int, maxPos int) error {
+	api, err := cache.SubmitStudyTimeApi(cache.GetStudentId(), video.CourseId, video.StudentCourseId, video.UnitId, video.VideoId, cache.GetStudentId(), studyTime, coursewareId, startPos, stopPos, maxPos, 5, nil)
+	if err != nil {
+		return err
+	}
+	fmt.Println(api)
+	return nil
 }
