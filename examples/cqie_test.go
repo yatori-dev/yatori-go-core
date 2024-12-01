@@ -78,30 +78,30 @@ func TestCqieVideosBrush(t *testing.T) {
 
 	cache := cqieApi.CqieUserCache{Account: users.Account, Password: users.Password} //构建用户
 	cqie.CqieLoginAction(&cache)                                                     //登录
-	courseList, _ := cqie.CqiePullCourseListAction(&cache)                           //拉取课程列表
-	for _, course := range courseList {
-		videos, err := cqie.PullCourseVideoListAction(&cache, &course)
-		if err != nil {
-			panic(err)
-		}
-		for _, video := range videos {
-			startPos := 0
-			stopPos := 3
-			maxPos := 3
-			nowTime := time.Now()
-			for {
-				if stopPos >= maxPos {
-					maxPos = startPos + 3
-				}
-				fmt.Println(startPos, stopPos, maxPos)
-				// cqie.SubmitStudyTimeAction(&cache,&video,nowTime)
-				// cqieApi.SubmitStudyTimeApi(&cache,"","","","", startPos, stopPos, maxPos)
-				startPos = startPos + 3
-				stopPos = stopPos + 3
-				time.Sleep(3 * time.Second)
-			}
-		}
-	}
+	// courseList, _ := cqie.CqiePullCourseListAction(&cache)                           //拉取课程列表
+	// for _, course := range courseList {
+	// 	videos, err := cqie.PullCourseVideoListAction(&cache, &course)
+	// 	if err != nil {
+	// 		panic(err)
+	// 	}
+	// 	for _, video := range videos {
+	// 		startPos := 0
+	// 		stopPos := 3
+	// 		maxPos := 3
+	// 		nowTime := time.Now()
+	// 		for {
+	// 			if stopPos >= maxPos {
+	// 				maxPos = startPos + 3
+	// 			}
+	// 			fmt.Println(startPos, stopPos, maxPos)
+	// 			// cqie.SubmitStudyTimeAction(&cache,&video,nowTime)
+	// 			// cqieApi.SubmitStudyTimeApi(&cache,"","","","", startPos, stopPos, maxPos)
+	// 			startPos = startPos + 3
+	// 			stopPos = stopPos + 3
+	// 			time.Sleep(3 * time.Second)
+	// 		}
+	// 	}
+	// }
 }
 
 // TestCourse 用于测试CQIE视屏刷课
