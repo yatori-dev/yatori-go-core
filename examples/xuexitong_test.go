@@ -2,6 +2,7 @@ package examples
 
 import (
 	"fmt"
+	"github.com/yatori-dev/yatori-go-core/api/entity"
 	"io/ioutil"
 	"log"
 	"net/http"
@@ -161,30 +162,31 @@ func TestXueXiToChapterCord(t *testing.T) {
 		nodes = append(nodes, item.ID)
 	}
 	courseId, _ := strconv.Atoi(course.CourseId)
-	cards, err := xuexitong.ChapterFetchCardsAction(&userCache, &action, nodes, 4, courseId, key, cpi)
+	_, fetchCards, err := xuexitong.ChapterFetchCardsAction(&userCache, &action, nodes, 1, courseId, key, cpi)
 	if err != nil {
 		log.Fatal(err)
 	}
 	var (
-		videoDTO    *xuexitong.PointVideoDto
-		workDTO     *xuexitong.PointWorkDto
-		DocumentDTO *xuexitong.PointDocumentDto
+		videoDTO entity.PointVideoDto
 	)
 	// 处理返回的任务点对象
-	for _, pointObj := range cards {
-		switch p := pointObj.(type) {
-		case *xuexitong.PointVideoDto:
-			videoDTO = p
-			fmt.Printf("PointVideoDto: %+v\n\n", videoDTO)
-		case *xuexitong.PointWorkDto:
-			workDTO = p
-			fmt.Printf("PointWorkDto: %+v\n\n", workDTO)
-		case *xuexitong.PointDocumentDto:
-			DocumentDTO = p
-			fmt.Printf("PointDocumentDto: %+v\n\n", DocumentDTO)
-		default:
-			fmt.Printf("Unknown Task Point Type: %+v\n", p)
+	fmt.Println(fetchCards[0])
+	videoDTO = fetchCards[0].PointVideoDto
+	videoCourseId, _ := strconv.Atoi(videoDTO.CourseID)
+	videoClassId, _ := strconv.Atoi(videoDTO.ClassID)
+	if courseId == videoCourseId && key == videoClassId {
+		// 测试只对单独一个卡片测试
+		card, err := xuexitong.PageMobileChapterCardAction(&userCache, key, courseId, videoDTO.KnowledgeID, videoDTO.CardIndex, cpi)
+		if err != nil {
+			log.Fatal(err)
 		}
+		fmt.Println(card)
+		flag, _ := videoDTO.AttachmentsDetection(card)
+		if flag {
+			fmt.Println(videoDTO)
+		}
+	} else {
+		log.Fatal("任务点对象错误")
 	}
 }
 

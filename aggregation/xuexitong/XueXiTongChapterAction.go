@@ -4,7 +4,9 @@ import (
 	"bytes"
 	"encoding/json"
 	"fmt"
+	"github.com/yatori-dev/yatori-go-core/api/entity"
 	"github.com/yatori-dev/yatori-go-core/api/xuexitong"
+	"github.com/yatori-dev/yatori-go-core/models/ctype"
 	"golang.org/x/net/html"
 	"log"
 	"regexp"
@@ -39,38 +41,6 @@ type DataItem struct {
 	Status       string `json:"status"`
 }
 
-// PointVideoDto 视频任务点
-type PointVideoDto struct {
-	CardIndex   int
-	CourseID    string
-	ClassID     string
-	KnowledgeID int
-	Cpi         string
-	ObjectID    string
-}
-
-// PointWorkDto 测验任务点
-type PointWorkDto struct {
-	CardIndex   int
-	CourseID    string
-	ClassID     string
-	KnowledgeID int
-	Cpi         string
-	WorkID      string
-	SchoolID    string
-	JobID       string
-}
-
-// PointDocumentDto 文档查看任务点
-type PointDocumentDto struct {
-	CardIndex   int
-	CourseID    string
-	ClassID     string
-	KnowledgeID int
-	Cpi         string
-	ObjectID    string
-}
-
 // APIResponse 代表API返回的完整JSON结构
 type APIResponse struct {
 	Data []DataItem `json:"data"`
@@ -85,10 +55,10 @@ func ChapterFetchCardsAction(
 	cache *xuexitong.XueXiTUserCache,
 	chapters *ChaptersList,
 	nodes []int,
-	index, courseId, classId, cpi int) ([]Card, []interface{}, error) {
+	index, courseId, classId, cpi int) ([]Card, []entity.PointDto, error) {
 	var apiResp APIResponse
 
-	var pointObj interface{}
+	var pointObj entity.PointDto
 
 	cords, err := cache.FetchChapterCords(nodes, index, courseId)
 	if err != nil {
@@ -109,7 +79,7 @@ func ChapterFetchCardsAction(
 		len(cards),
 		chapters.Knowledge[index].Label, chapters.Knowledge[index].Name, chapters.Knowledge[index].ID)
 
-	pointObjs := make([]interface{}, 0)
+	pointObjs := make([]entity.PointDto, 0)
 	for cardIndex, card := range cards {
 		if card.Description == "" {
 			log.Printf("(%d) 卡片 iframe 不存在 %+v", cardIndex, card)
@@ -137,9 +107,9 @@ func ChapterFetchCardsAction(
 			// 这里data的有些参数可能还会出现参数不存在的问题 导致interface{} is nil, not from string
 			// 在console正式发布后需要用户的实际反馈修改
 			switch pointType {
-			case "insertvideo":
+			case string(ctype.Video):
 				if objectID, ok := point.Data["objectid"].(string); ok && objectID != "" {
-					pointObj = &PointVideoDto{
+					pointObj.PointVideoDto = entity.PointVideoDto{
 						CardIndex:   cardIndex,
 						CourseID:    strconv.Itoa(courseId),
 						ClassID:     strconv.Itoa(classId),
@@ -151,7 +121,7 @@ func ChapterFetchCardsAction(
 					log.Printf("(%d, %d) 任务点 'objectid' 不存在或为空 %+v", cardIndex, pointIndex, point)
 					continue
 				}
-			case "work":
+			case string(ctype.Work):
 
 				workID, ok1 := point.Data["workid"].(string)
 				// 此ID可能有时候不存在 暂不知有何作用先不做强制处理
@@ -163,7 +133,7 @@ func ChapterFetchCardsAction(
 				}
 
 				if ok1 && workID != "" && ok3 && jobID != "" {
-					pointObj = &PointWorkDto{
+					pointObj.PointWorkDto = entity.PointWorkDto{
 						CardIndex:   cardIndex,
 						CourseID:    strconv.Itoa(courseId),
 						ClassID:     strconv.Itoa(classId),
@@ -177,9 +147,9 @@ func ChapterFetchCardsAction(
 					log.Printf("(%d, %d) 任务点 'workid', 'schoolid' 或 '_jobid' 不存在或为空 %+v", cardIndex, pointIndex, point)
 					continue
 				}
-			case "insertdoc":
+			case string(ctype.Document):
 				if objectID, ok := point.Data["objectid"].(string); ok && objectID != "" {
-					pointObj = &PointDocumentDto{
+					pointObj.PointDocumentDto = entity.PointDocumentDto{
 						CardIndex:   cardIndex,
 						CourseID:    strconv.Itoa(courseId),
 						ClassID:     strconv.Itoa(classId),
