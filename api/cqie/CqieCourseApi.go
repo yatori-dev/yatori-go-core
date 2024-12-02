@@ -95,6 +95,39 @@ func (cache *CqieUserCache) PullCourseListApi(retry int, lastErr error) (string,
 	return string(body), nil
 }
 
+// GetVideoStudyIdApi 学习视屏前需要先调用此接口获取id才能学习
+func (cache *CqieUserCache) GetVideoStudyIdApi(studentCourseId, videoId string, retry int, lastErr error) (string, error) {
+	if retry < 0 {
+		return "", lastErr
+	}
+	url := "https://study.cqie.edu.cn/gateway/system/orgStudent/studyVideo?studentCourseId=" + studentCourseId + "&videoId=" + videoId + "&studentId=" + cache.studentId + "&majorId=" + cache.orgMajorId + "&version=ZSB_DSJ_24"
+	method := "GET"
+
+	client := &http.Client{}
+	req, err := http.NewRequest(method, url, nil)
+
+	if err != nil {
+		time.Sleep(time.Millisecond * 150)
+		return cache.GetVideoStudyIdApi(studentCourseId, videoId, retry-1, lastErr)
+	}
+	req.Header.Add("Authorization", cache.access_token)
+	req.Header.Add("User-Agent", "Apifox/1.0.0 (https://apifox.com)")
+
+	res, err := client.Do(req)
+	if err != nil {
+		time.Sleep(time.Millisecond * 150)
+		return cache.GetVideoStudyIdApi(studentCourseId, videoId, retry-1, lastErr)
+	}
+	defer res.Body.Close()
+
+	body, err := ioutil.ReadAll(res.Body)
+	if err != nil {
+		time.Sleep(time.Millisecond * 150)
+		return cache.GetVideoStudyIdApi(studentCourseId, videoId, retry-1, lastErr)
+	}
+	return string(body), nil
+}
+
 // SubmitStudyTimeApi 提交学时
 func (cache *CqieUserCache) SubmitStudyTimeApi(
 	id string, //不知道是啥
@@ -102,7 +135,6 @@ func (cache *CqieUserCache) SubmitStudyTimeApi(
 	studentCourseId string,
 	unitId string,
 	videoId string,
-	studentId string, /*学生ID*/
 	studyTime time.Time, /**/
 	coursewareId string,
 	startPos int, /*开始点*/
@@ -134,32 +166,12 @@ func (cache *CqieUserCache) SubmitStudyTimeApi(
 	   "maxCurrentPos": ` + strconv.Itoa(maxPos) + `,
 	   "coursewareId": "` + coursewareId + `"
 	 }`)
-	// 	payload := strings.NewReader(`{
-	//    "id": "ce70b5cd1765f698788c84d0eec5a95a",
-	//   "orgId": "1",
-	//   "deptId": "f8955096610de9b61f0e89762fe44448",
-	//   "majorId": "966c92d8abcec472a717ca5af8c24a49",
-	//   "version": "ZSB_DSJ_24",
-	//   "courseId": "1cbcd0b22030fdf75117cb02d2c766ec",
-	//   "studentCourseId": "e256c4c26b3e0dc27901029755396bdd",
-	//   "unitId": "84ed9e4674d811bc10a9f55390231f5f",
-	//   "knowledgeId": null,
-	//   "videoId": "65da2135311dc5cc461d53c6c827cc45",
-	//   "studentId": "1e49b8b4ea23d07eb0724d0c927ed2bc",
-	//   "studyTime": "2024-11-27 19:49:24",
-	//   "startPos":` + strconv.Itoa(startPos) + `,
-	//   "stopPos": ` + strconv.Itoa(stopPos) + `,
-	//   "studyTime": "2024-11-27 19:49:24",
-	//   "maxCurrentPos": ` + strconv.Itoa(maxPos) + `,
-	//   "coursewareId": "558bf1e99f2727d493dbe2ed05983115"
-	// }`)
-
 	client := &http.Client{}
 	req, err := http.NewRequest(method, url, payload)
 
 	if err != nil {
 		time.Sleep(time.Millisecond * 150)
-		return cache.SubmitStudyTimeApi(id, courseId, studentCourseId, unitId, videoId, studentCourseId, studyTime, courseId, startPos, stopPos, maxPos, retry-1, err)
+		return cache.SubmitStudyTimeApi(id, courseId, studentCourseId, unitId, videoId, studyTime, courseId, startPos, stopPos, maxPos, retry-1, err)
 	}
 	req.Header.Add("Authorization", cache.GetAccess_Token())
 	req.Header.Add("Cookie", cache.GetCookie())
@@ -169,14 +181,61 @@ func (cache *CqieUserCache) SubmitStudyTimeApi(
 	res, err := client.Do(req)
 	if err != nil {
 		time.Sleep(time.Millisecond * 150)
-		return cache.SubmitStudyTimeApi(id, courseId, studentCourseId, unitId, videoId, studentCourseId, studyTime, courseId, startPos, stopPos, maxPos, retry-1, err)
+		return cache.SubmitStudyTimeApi(id, courseId, studentCourseId, unitId, videoId, studyTime, courseId, startPos, stopPos, maxPos, retry-1, err)
 	}
 	defer res.Body.Close()
 
 	body, err := ioutil.ReadAll(res.Body)
 	if err != nil {
 		time.Sleep(time.Millisecond * 150)
-		return cache.SubmitStudyTimeApi(id, courseId, studentCourseId, unitId, videoId, studentCourseId, studyTime, courseId, startPos, stopPos, maxPos, retry-1, err)
+		return cache.SubmitStudyTimeApi(id, courseId, studentCourseId, unitId, videoId, studyTime, courseId, startPos, stopPos, maxPos, retry-1, err)
+	}
+	return string(body), nil
+}
+
+// 用于保存学习点时间
+func (cache *CqieUserCache) SaveStudyTimeApi(courseId, studentCourseId, unitId, videoId, coursewareId string, startPos, stopPos int, retry int, lastErr error) (string, error) {
+	if retry < 0 {
+		return "", lastErr
+	}
+	url := "https://study.cqie.edu.cn/gateway/system/orgStudent/saveStudyVideoPlan"
+	method := "POST"
+
+	payload := strings.NewReader(`{
+	"courseId": "` + courseId + `",
+	"majorId": "` + cache.orgMajorId + `",
+	"startPos": "` + strconv.Itoa(startPos) + `",
+	"stopPos": "` + strconv.Itoa(stopPos) + `",
+	"studentCourseId": "` + studentCourseId + `",
+	"studentId": "` + cache.studentId + `",
+	"unitId": "` + unitId + `",
+	"videoId": "` + videoId + `",
+	"coursewareId": "` + coursewareId + `",
+	"version": "ZSB_DSJ_24"
+}`)
+
+	client := &http.Client{}
+	req, err := http.NewRequest(method, url, payload)
+
+	if err != nil {
+		time.Sleep(time.Millisecond * 150)
+		return cache.SaveStudyTimeApi(courseId, studentCourseId, unitId, videoId, coursewareId, startPos, stopPos, retry-1, err)
+	}
+	req.Header.Add("Authorization", cache.access_token)
+	req.Header.Add("User-Agent", "Apifox/1.0.0 (https://apifox.com)")
+	req.Header.Add("Content-Type", "application/json")
+
+	res, err := client.Do(req)
+	if err != nil {
+		time.Sleep(time.Millisecond * 150)
+		return cache.SaveStudyTimeApi(courseId, studentCourseId, unitId, videoId, coursewareId, startPos, stopPos, retry-1, err)
+	}
+	defer res.Body.Close()
+
+	body, err := ioutil.ReadAll(res.Body)
+	if err != nil {
+		time.Sleep(time.Millisecond * 150)
+		return cache.SaveStudyTimeApi(courseId, studentCourseId, unitId, videoId, coursewareId, startPos, stopPos, retry-1, err)
 	}
 	return string(body), nil
 }
@@ -210,6 +269,39 @@ func (cache *CqieUserCache) PullCourseDetailApi(courseId, studentCourseId string
 	if err != nil {
 		time.Sleep(time.Millisecond * 150)
 		return cache.PullCourseDetailApi(courseId, studentCourseId, retry-1, lastErr)
+	}
+	return string(body), nil
+}
+
+// PullProgressDetailApi 拉取进度
+func (cache *CqieUserCache) PullProgressDetailApi(courseId, studentCourseId string, retry int, lastErr error) (string, error) {
+	if retry < 0 {
+		return "", lastErr
+	}
+	url := "https://study.cqie.edu.cn/gateway/system/orgStudent/progressDetails?studentId=" + cache.studentId + "&id=" + courseId + "&majorId=" + cache.orgMajorId + "&studentCourseId=" + studentCourseId + "&version=ZSB_DSJ_24"
+	method := "GET"
+
+	client := &http.Client{}
+	req, err := http.NewRequest(method, url, nil)
+
+	if err != nil {
+		time.Sleep(time.Millisecond * 150)
+		return cache.PullProgressDetailApi(courseId, studentCourseId, retry-1, lastErr)
+	}
+	req.Header.Add("Authorization", cache.access_token)
+	req.Header.Add("User-Agent", "Apifox/1.0.0 (https://apifox.com)")
+
+	res, err := client.Do(req)
+	if err != nil {
+		time.Sleep(time.Millisecond * 150)
+		return cache.PullProgressDetailApi(courseId, studentCourseId, retry-1, lastErr)
+	}
+	defer res.Body.Close()
+
+	body, err := ioutil.ReadAll(res.Body)
+	if err != nil {
+		time.Sleep(time.Millisecond * 150)
+		return cache.PullProgressDetailApi(courseId, studentCourseId, retry-1, lastErr)
 	}
 	return string(body), nil
 }
