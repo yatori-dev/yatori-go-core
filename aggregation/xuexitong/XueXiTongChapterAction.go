@@ -3,9 +3,10 @@ package xuexitong
 import (
 	"bytes"
 	"encoding/json"
-	"errors"
 	"fmt"
+	"github.com/yatori-dev/yatori-go-core/api/entity"
 	"github.com/yatori-dev/yatori-go-core/api/xuexitong"
+	"github.com/yatori-dev/yatori-go-core/models/ctype"
 	"golang.org/x/net/html"
 	"log"
 	"regexp"
@@ -40,62 +41,36 @@ type DataItem struct {
 	Status       string `json:"status"`
 }
 
-// PointVideoDto 视频任务点
-type PointVideoDto struct {
-	CardIndex   int
-	CourseID    string
-	ClassID     string
-	KnowledgeID int
-	Cpi         string
-	ObjectID    string
-}
-
-// PointWorkDto 测验任务点
-type PointWorkDto struct {
-	CardIndex   int
-	CourseID    string
-	ClassID     string
-	KnowledgeID int
-	Cpi         string
-	WorkID      string
-	SchoolID    string
-	JobID       string
-}
-
-// PointDocumentDto 文档查看任务点
-type PointDocumentDto struct {
-	CardIndex   int
-	CourseID    string
-	ClassID     string
-	KnowledgeID int
-	Cpi         string
-	ObjectID    string
-}
-
 // APIResponse 代表API返回的完整JSON结构
 type APIResponse struct {
 	Data []DataItem `json:"data"`
 }
 
-var APIError = errors.New("API error occurred")
+// ChapterFetchCardsAction 解析章节节点
+// return: Card(节点总数结构), []interface{}(解析出可被刷取的节点结构), error
+// 三数据返回
+// 节点总数在界面请求中需要他们的index做对应渲染 解析后的需要与后续节点请求刷取中的参数对应
 
 func ChapterFetchCardsAction(
 	cache *xuexitong.XueXiTUserCache,
 	chapters *ChaptersList,
 	nodes []int,
-	index, courseId, classId, cpi int) ([]interface{}, error) {
+	index, courseId, classId, cpi int) ([]Card, []entity.PointDto, error) {
 	var apiResp APIResponse
+
+	var pointObj entity.PointDto
+
 	cords, err := cache.FetchChapterCords(nodes, index, courseId)
 	if err != nil {
-		return nil, nil
+		return []Card{}, nil, err
 	}
 	if err := json.NewDecoder(bytes.NewBuffer([]byte(cords))).Decode(&apiResp); err != nil {
-		return nil, err
+		return []Card{}, nil, err
 	}
 	if len(apiResp.Data) == 0 {
 		log.Printf("获取章节任务节点卡片失败 [%s:%s(Id.%d)]",
 			chapters.Knowledge[index].Label, chapters.Knowledge[index].Name, chapters.Knowledge[index].ID)
-		return nil, APIError
+		return []Card{}, nil, err
 	}
 
 	dataItem := apiResp.Data[0]
@@ -104,7 +79,7 @@ func ChapterFetchCardsAction(
 		len(cards),
 		chapters.Knowledge[index].Label, chapters.Knowledge[index].Name, chapters.Knowledge[index].ID)
 
-	pointObjs := make([]interface{}, 0)
+	pointObjs := make([]entity.PointDto, 0)
 	for cardIndex, card := range cards {
 		if card.Description == "" {
 			log.Printf("(%d) 卡片 iframe 不存在 %+v", cardIndex, card)
@@ -129,13 +104,12 @@ func ChapterFetchCardsAction(
 				continue
 			}
 
-			var pointObj interface{}
 			// 这里data的有些参数可能还会出现参数不存在的问题 导致interface{} is nil, not from string
 			// 在console正式发布后需要用户的实际反馈修改
 			switch pointType {
-			case "insertvideo":
+			case string(ctype.Video):
 				if objectID, ok := point.Data["objectid"].(string); ok && objectID != "" {
-					pointObj = &PointVideoDto{
+					pointObj.PointVideoDto = entity.PointVideoDto{
 						CardIndex:   cardIndex,
 						CourseID:    strconv.Itoa(courseId),
 						ClassID:     strconv.Itoa(classId),
@@ -147,7 +121,7 @@ func ChapterFetchCardsAction(
 					log.Printf("(%d, %d) 任务点 'objectid' 不存在或为空 %+v", cardIndex, pointIndex, point)
 					continue
 				}
-			case "work":
+			case string(ctype.Work):
 
 				workID, ok1 := point.Data["workid"].(string)
 				// 此ID可能有时候不存在 暂不知有何作用先不做强制处理
@@ -159,7 +133,7 @@ func ChapterFetchCardsAction(
 				}
 
 				if ok1 && workID != "" && ok3 && jobID != "" {
-					pointObj = &PointWorkDto{
+					pointObj.PointWorkDto = entity.PointWorkDto{
 						CardIndex:   cardIndex,
 						CourseID:    strconv.Itoa(courseId),
 						ClassID:     strconv.Itoa(classId),
@@ -173,9 +147,9 @@ func ChapterFetchCardsAction(
 					log.Printf("(%d, %d) 任务点 'workid', 'schoolid' 或 '_jobid' 不存在或为空 %+v", cardIndex, pointIndex, point)
 					continue
 				}
-			case "insertdoc":
+			case string(ctype.Document):
 				if objectID, ok := point.Data["objectid"].(string); ok && objectID != "" {
-					pointObj = &PointDocumentDto{
+					pointObj.PointDocumentDto = entity.PointDocumentDto{
 						CardIndex:   cardIndex,
 						CourseID:    strconv.Itoa(courseId),
 						ClassID:     strconv.Itoa(classId),
@@ -196,9 +170,9 @@ func ChapterFetchCardsAction(
 		}
 	}
 
-	log.Printf("章节 任务节点解析成功 共 %d 个 [%s:%s(Id.%d)]",
+	log.Printf("章节 可刷取任务节点解析成功 共 %d 个 [%s:%s(Id.%d)]",
 		len(pointObjs), chapters.Knowledge[index].Label, chapters.Knowledge[index].Name, chapters.Knowledge[index].ID)
-	return pointObjs, nil
+	return cards, pointObjs, nil
 }
 
 // IframeAttributes iframe 的属性

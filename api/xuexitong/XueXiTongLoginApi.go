@@ -21,11 +21,16 @@ const (
 	ApiPullCourses = "https://mooc1-api.chaoxing.com/mycourse/backclazzdata"
 
 	// ApiChapterPoint 接口-课程章节任务点状态
-	ApiChapterPoint        = "https://mooc1-api.chaoxing.com/job/myjobsnodesmap"
-	ApiChapterCards        = "https://mooc1-api.chaoxing.com/gas/knowledge"
-	ApiPullChapter         = "https://mooc1-api.chaoxing.com/gas/clazz"
-	APIChapterCardResource = "https://mooc1-api.chaoxing.com/ananas/status"
+	ApiChapterPoint = "https://mooc1-api.chaoxing.com/job/myjobsnodesmap"
+	ApiChapterCards = "https://mooc1-api.chaoxing.com/gas/knowledge"
+	ApiPullChapter  = "https://mooc1-api.chaoxing.com/gas/clazz"
 
+	// PageMobileChapterCard SSR页面-客户端章节任务卡片
+	PageMobileChapterCard = "https://mooc1-api.chaoxing.com/knowledge/cards"
+
+	// APIChapterCardResource 接口-课程章节卡片资源
+	APIChapterCardResource = "https://mooc1-api.chaoxing.com/ananas/status"
+	// APIVideoPlayReport 接口-视频播放上报
 	APIVideoPlayReport = "https://mooc1-api.chaoxing.com/multimedia/log/a"
 
 	KEY = "u2oh6Vu^HWe4_AES" // 注意 Go 语言中字符串默认就是 UTF-8 编码
