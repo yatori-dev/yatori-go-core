@@ -1,4 +1,4 @@
 # exclude exe
 *.exe
-./examples/*.yaml
 .idea
+examples/*.yaml
