@@ -3,7 +3,6 @@ package xuexitong
 import (
 	"bytes"
 	"encoding/json"
-	"errors"
 	"fmt"
 	"github.com/yatori-dev/yatori-go-core/api/xuexitong"
 	"golang.org/x/net/html"
@@ -77,25 +76,31 @@ type APIResponse struct {
 	Data []DataItem `json:"data"`
 }
 
-var APIError = errors.New("API error occurred")
+// ChapterFetchCardsAction 解析章节节点
+// return: Card(节点总数结构), []interface{}(解析出可被刷取的节点结构), error
+// 三数据返回
+// 节点总数在界面请求中需要他们的index做对应渲染 解析后的需要与后续节点请求刷取中的参数对应
 
 func ChapterFetchCardsAction(
 	cache *xuexitong.XueXiTUserCache,
 	chapters *ChaptersList,
 	nodes []int,
-	index, courseId, classId, cpi int) ([]interface{}, error) {
+	index, courseId, classId, cpi int) ([]Card, []interface{}, error) {
 	var apiResp APIResponse
+
+	var pointObj interface{}
+
 	cords, err := cache.FetchChapterCords(nodes, index, courseId)
 	if err != nil {
-		return nil, nil
+		return []Card{}, nil, err
 	}
 	if err := json.NewDecoder(bytes.NewBuffer([]byte(cords))).Decode(&apiResp); err != nil {
-		return nil, err
+		return []Card{}, nil, err
 	}
 	if len(apiResp.Data) == 0 {
 		log.Printf("获取章节任务节点卡片失败 [%s:%s(Id.%d)]",
 			chapters.Knowledge[index].Label, chapters.Knowledge[index].Name, chapters.Knowledge[index].ID)
-		return nil, APIError
+		return []Card{}, nil, err
 	}
 
 	dataItem := apiResp.Data[0]
@@ -129,7 +134,6 @@ func ChapterFetchCardsAction(
 				continue
 			}
 
-			var pointObj interface{}
 			// 这里data的有些参数可能还会出现参数不存在的问题 导致interface{} is nil, not from string
 			// 在console正式发布后需要用户的实际反馈修改
 			switch pointType {
@@ -196,9 +200,9 @@ func ChapterFetchCardsAction(
 		}
 	}
 
-	log.Printf("章节 任务节点解析成功 共 %d 个 [%s:%s(Id.%d)]",
+	log.Printf("章节 可刷取任务节点解析成功 共 %d 个 [%s:%s(Id.%d)]",
 		len(pointObjs), chapters.Knowledge[index].Label, chapters.Knowledge[index].Name, chapters.Knowledge[index].ID)
-	return pointObjs, nil
+	return cards, pointObjs, nil
 }
 
 // IframeAttributes iframe 的属性
