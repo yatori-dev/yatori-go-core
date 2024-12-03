@@ -226,26 +226,13 @@ func VideosListAction(UserCache *yinghuaApi.YingHuaUserCache, course YingHuaCour
 }
 
 // SubmitStudyTimeAction 提交学时
-func SubmitStudyTimeAction(userCache *yinghuaApi.YingHuaUserCache, nodeId string /*对应视屏节点ID*/, studyId string /*学习分配ID*/, studyTime int /*提交的学时*/, retryNum int /*学时提交失败重连次数*/, lastError error) (string, error) {
-	if retryNum < 0 { //如果达到最大重试次数则直接抛错
-		return "", lastError
-	}
+func SubmitStudyTimeAction(userCache *yinghuaApi.YingHuaUserCache, nodeId string /*对应视屏节点ID*/, studyId string /*学习分配ID*/, studyTime int /*提交的学时*/) (string, error) {
 	//提交学时
-	sub, err := yinghuaApi.SubmitStudyTimeApi(*userCache, nodeId, studyId, studyTime)
+	sub, err := yinghuaApi.SubmitStudyTimeApi(*userCache, nodeId, studyId, studyTime, 10, nil)
 	//避免502情况
-	if strings.Contains(sub, "502 Bad Gateway") {
-		time.Sleep(time.Millisecond * 150) //延迟
-		return SubmitStudyTimeAction(userCache, nodeId, studyId, studyTime, retryNum-1, err)
-	} else if err != nil {
-		time.Sleep(time.Millisecond * 150) //延迟
-		return SubmitStudyTimeAction(userCache, nodeId, studyId, studyTime, retryNum-1, err)
-	} else if err != nil && strings.Contains(err.Error(), "Timeout") { //超时则直接重试
-		time.Sleep(time.Millisecond * 150) //延迟
-		return SubmitStudyTimeAction(userCache, nodeId, studyId, studyTime, retryNum, err)
-	} else if err != nil { //其他错误
+	if err != nil { //其他错误
 		return "", err
 	}
-
 	return sub, nil
 }
 

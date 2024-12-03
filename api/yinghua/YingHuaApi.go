@@ -387,8 +387,10 @@ func CourseVideListApi(UserCache YingHuaUserCache, courseId string /*课程ID*/)
 }
 
 // SubmitStudyTimeApi 提交学时
-func SubmitStudyTimeApi(UserCache YingHuaUserCache, nodeId string /*对应视屏节点ID*/, studyId string /*学习分配ID*/, studyTime int /*提交的学时*/) (string, error) {
-
+func SubmitStudyTimeApi(UserCache YingHuaUserCache, nodeId string /*对应视屏节点ID*/, studyId string /*学习分配ID*/, studyTime int /*提交的学时*/, retry int, lastError error) (string, error) {
+	if retry < 0 {
+		return "", lastError
+	}
 	url := UserCache.PreUrl + "/api/node/study.json"
 	method := "POST"
 	payload := &bytes.Buffer{}
@@ -402,8 +404,8 @@ func SubmitStudyTimeApi(UserCache YingHuaUserCache, nodeId string /*对应视屏
 	_ = writer.WriteField("studyId", studyId)
 	err := writer.Close()
 	if err != nil {
-		//fmt.Println(err)
-		return "", err
+		time.Sleep(time.Millisecond * 150)
+		return SubmitStudyTimeApi(UserCache, nodeId, studyId, studyTime, retry-1, err)
 	}
 
 	tr := &http.Transport{
@@ -424,16 +426,23 @@ func SubmitStudyTimeApi(UserCache YingHuaUserCache, nodeId string /*对应视屏
 	req.Header.Set("Content-Type", writer.FormDataContentType())
 	res, err := client.Do(req)
 	if err != nil {
-		//fmt.Println(err)
-		return "", err
+		time.Sleep(time.Millisecond * 150)
+		return SubmitStudyTimeApi(UserCache, nodeId, studyId, studyTime, retry-1, err)
 	}
 	defer res.Body.Close()
 
 	body, err := ioutil.ReadAll(res.Body)
 	if err != nil {
-		//fmt.Println(err)
-		return "", err
+		time.Sleep(time.Millisecond * 150)
+		return SubmitStudyTimeApi(UserCache, nodeId, studyId, studyTime, retry-1, err)
 	}
+
+	//避免502情况
+	if strings.Contains(string(body), "502 Bad Gateway") {
+		time.Sleep(time.Millisecond * 150) //延迟
+		return SubmitStudyTimeApi(UserCache, nodeId, studyId, studyTime, retry-1, err)
+	}
+
 	return string(body), nil
 }
 
