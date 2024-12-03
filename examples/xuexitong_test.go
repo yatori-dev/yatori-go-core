@@ -2,13 +2,14 @@ package examples
 
 import (
 	"fmt"
-	"github.com/yatori-dev/yatori-go-core/api/entity"
 	"io/ioutil"
 	"log"
 	"net/http"
 	"strconv"
 	"strings"
 	"testing"
+
+	"github.com/yatori-dev/yatori-go-core/api/entity"
 
 	"github.com/yatori-dev/yatori-go-core/aggregation/xuexitong"
 	xuexitongApi "github.com/yatori-dev/yatori-go-core/api/xuexitong"
@@ -185,6 +186,12 @@ func TestXueXiToChapterCord(t *testing.T) {
 		if flag {
 			fmt.Println(videoDTO)
 		}
+		state, err := userCache.VideoDtoFetch(&videoDTO)
+		if err != nil {
+			log.Fatal(err)
+		}
+		fmt.Println(state)
+
 	} else {
 		log.Fatal("任务点对象错误")
 	}

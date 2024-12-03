@@ -5,12 +5,13 @@ import (
 	"encoding/hex"
 	"encoding/json"
 	"fmt"
-	"github.com/yatori-dev/yatori-go-core/api/entity"
 	"io/ioutil"
 	"net/http"
 	"net/url"
 	"strconv"
 	"time"
+
+	"github.com/yatori-dev/yatori-go-core/api/entity"
 )
 
 // PageMobileChapterCard 客户端章节任务卡片 原始html数据返回
@@ -62,20 +63,29 @@ func (e *APIError) Error() string {
 	return e.Message
 }
 
-func VideoDtoFetch(p *entity.PointVideoDto) (bool, error) {
+func (cache *XueXiTUserCache) VideoDtoFetch(p *entity.PointVideoDto) (bool, error) {
 	params := url.Values{}
 	params.Set("k", strconv.Itoa(p.FID))
 	params.Set("flag", "normal")
 	params.Set("_dc", strconv.FormatInt(time.Now().UnixNano()/1e6, 10))
-
-	resp, err := p.Session.Client.Get(fmt.Sprintf("%s/%s?%s", APIChapterCardResource, p.ObjectID, params.Encode()))
+	method := "GET"
+	client := &http.Client{}
+	resp, err := http.NewRequest(method, fmt.Sprintf("%s/%s?%s", APIChapterCardResource, p.ObjectID, params.Encode()), nil)
+	// resp, err := p.Session.Client.Get(fmt.Sprintf("%s/%s?%s", APIChapterCardResource, p.ObjectID, params.Encode()))
 	if err != nil {
 		return false, err
 	}
-	defer resp.Body.Close()
 
-	if resp.StatusCode != http.StatusOK {
-		return false, fmt.Errorf("failed to fetch video, status code: %d", resp.StatusCode)
+	resp.Header.Add("Cookie", cache.cookie)
+
+	res, err := client.Do(resp)
+	if err != nil {
+		return false, err
+	}
+	defer res.Body.Close()
+
+	if res.StatusCode != http.StatusOK {
+		return false, fmt.Errorf("failed to fetch video, status code: %d", res.StatusCode)
 	}
 
 	var jsonResponse map[string]interface{}
