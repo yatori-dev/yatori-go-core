@@ -27,3 +27,6 @@ yatori-go-core
 ├─ api 所有平台逆向的API接口
 └─ aggregation API聚合用于对api接口进行功能进行整合
 ```
+
+## 🎉贡献者
+<a href="https://github.com/yatori-dev/yatori-go-core/graphs/contributors">   <img src="https://contrib.rocks/image?repo=yatori-dev/yatori-go-core" /></a>
