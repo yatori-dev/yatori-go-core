@@ -4,6 +4,8 @@ import (
 	"bytes"
 	"encoding/json"
 	"fmt"
+	"github.com/thedevsaddam/gojsonq"
+	"github.com/yatori-dev/yatori-go-core/api/entity"
 	"github.com/yatori-dev/yatori-go-core/api/xuexitong"
 	"golang.org/x/net/html"
 	"log"
@@ -110,4 +112,25 @@ func PageMobileChapterCardAction(
 	log.Println("Attachment拉取成功")
 
 	return att, nil
+}
+
+func VideoDtoFetchAction(cache *xuexitong.XueXiTUserCache, p *entity.PointVideoDto) (bool, error) {
+	fetch, err := cache.VideoDtoFetch(p)
+	if err != nil {
+		log.Println("VideoDtoFetchAction:", err)
+		return false, err
+	}
+	dtoken := gojsonq.New().JSONString(fetch).Find("dtoken").(string)
+	duration := gojsonq.New().JSONString(fetch).Find("duration").(float64)
+
+	p.DToken = dtoken
+	p.Duration = int(duration)
+	p.Title = gojsonq.New().JSONString(fetch).Find("filename").(string)
+
+	if gojsonq.New().JSONString(fetch).Find("status").(string) == "success" {
+		return true, nil
+	}
+
+	log.Println("Fetch failed")
+	return false, nil
 }

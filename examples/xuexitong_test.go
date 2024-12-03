@@ -186,12 +186,11 @@ func TestXueXiToChapterCord(t *testing.T) {
 		if flag {
 			fmt.Println(videoDTO)
 		}
-		state, err := userCache.VideoDtoFetch(&videoDTO)
-		if err != nil {
-			log.Fatal(err)
+		if state, _ := xuexitong.VideoDtoFetchAction(&userCache, &videoDTO); state {
+			fmt.Println(videoDTO)
+		} else {
+			log.Fatal("视频解析失败")
 		}
-		fmt.Println(state)
-
 	} else {
 		log.Fatal("任务点对象错误")
 	}
