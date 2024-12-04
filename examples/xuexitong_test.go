@@ -8,6 +8,7 @@ import (
 	"strconv"
 	"strings"
 	"testing"
+	"time"
 
 	"github.com/yatori-dev/yatori-go-core/api/entity"
 
@@ -127,7 +128,8 @@ func TestXueXiToChapterPoint(t *testing.T) {
 	if err != nil {
 		log.Fatal(err)
 	}
-	for _, item := range pointAction.Knowledge {
+	for i, item := range pointAction.Knowledge {
+		fmt.Println(i)
 		fmt.Println("ID:" + strconv.Itoa(item.ID))
 		fmt.Println("章节名称:" + item.Name)
 		fmt.Println("标签:" + item.Label)
@@ -163,7 +165,7 @@ func TestXueXiToChapterCord(t *testing.T) {
 		nodes = append(nodes, item.ID)
 	}
 	courseId, _ := strconv.Atoi(course.CourseId)
-	_, fetchCards, err := xuexitong.ChapterFetchCardsAction(&userCache, &action, nodes, 1, courseId, key, cpi)
+	_, fetchCards, err := xuexitong.ChapterFetchCardsAction(&userCache, &action, nodes, 27, courseId, key, cpi)
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -181,19 +183,25 @@ func TestXueXiToChapterCord(t *testing.T) {
 		if err != nil {
 			log.Fatal(err)
 		}
-		fmt.Println(card)
-		flag, _ := videoDTO.AttachmentsDetection(card)
-		if flag {
-			fmt.Println(videoDTO)
-		}
+		videoDTO.AttachmentsDetection(card)
+
 		if state, _ := xuexitong.VideoDtoFetchAction(&userCache, &videoDTO); state {
 			fmt.Println(videoDTO)
+			videoDtoPlayReport, err := userCache.VideoDtoPlayReport(&videoDTO, 2)
+			time.Sleep(time.Second * 5)
+			videoDtoPlayReport2, err := userCache.VideoDtoPlayReport(&videoDTO, 7)
+			if err != nil {
+				log.Fatal(err)
+			}
+			fmt.Println(videoDtoPlayReport)
+			fmt.Println(videoDtoPlayReport2)
 		} else {
 			log.Fatal("视频解析失败")
 		}
 	} else {
 		log.Fatal("任务点对象错误")
 	}
+
 }
 
 // 测试apifox直接生成的请求是否有误乱码现象，测试结果为没有

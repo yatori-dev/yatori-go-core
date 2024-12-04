@@ -31,7 +31,7 @@ const (
 	// APIChapterCardResource 接口-课程章节卡片资源
 	APIChapterCardResource = "https://mooc1-api.chaoxing.com/ananas/status"
 	// APIVideoPlayReport 接口-视频播放上报
-	APIVideoPlayReport = "https://mooc1-api.chaoxing.com/multimedia/log/a"
+	APIVideoPlayReport = "https://mooc1.chaoxing.com/mooc-ans/multimedia/log/a"
 
 	KEY = "u2oh6Vu^HWe4_AES" // 注意 Go 语言中字符串默认就是 UTF-8 编码
 )
