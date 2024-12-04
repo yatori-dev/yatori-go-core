@@ -108,8 +108,16 @@ func (p *PointVideoDto) AttachmentsDetection(attachment interface{}) (bool, erro
 			if !ok {
 				// 如果 "rt" 键不存在，则使用默认值 0.9
 				rt = 0.9
+			} else {
+				rt = 0.9
 			}
-			p.PlayTime = int(attachment["playTime"].(float64)) / 1000
+			playTime, ok := attachment["playTime"].(float64)
+			if !ok {
+				p.PlayTime = 0
+			} else {
+				p.PlayTime = int(playTime) / 1000
+			}
+
 			p.RT = rt
 			p.Attachment = attachment
 			break
