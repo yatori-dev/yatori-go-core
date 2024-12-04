@@ -2,20 +2,18 @@ package examples
 
 import (
 	"fmt"
+	"github.com/yatori-dev/yatori-go-core/aggregation/xuexitong"
+	"github.com/yatori-dev/yatori-go-core/aggregation/xuexitong/point"
+	"github.com/yatori-dev/yatori-go-core/api/entity"
+	xuexitongApi "github.com/yatori-dev/yatori-go-core/api/xuexitong"
+	"github.com/yatori-dev/yatori-go-core/global"
+	"github.com/yatori-dev/yatori-go-core/utils"
 	"io/ioutil"
 	"log"
 	"net/http"
 	"strconv"
 	"strings"
 	"testing"
-	"time"
-
-	"github.com/yatori-dev/yatori-go-core/api/entity"
-
-	"github.com/yatori-dev/yatori-go-core/aggregation/xuexitong"
-	xuexitongApi "github.com/yatori-dev/yatori-go-core/api/xuexitong"
-	"github.com/yatori-dev/yatori-go-core/global"
-	"github.com/yatori-dev/yatori-go-core/utils"
 )
 
 // TestLoginXueXiTo 测试学习通登录以及课程数据拉取
@@ -173,7 +171,6 @@ func TestXueXiToChapterCord(t *testing.T) {
 		videoDTO entity.PointVideoDto
 	)
 	// 处理返回的任务点对象
-	fmt.Println(fetchCards[0])
 	videoDTO = fetchCards[0].PointVideoDto
 	videoCourseId, _ := strconv.Atoi(videoDTO.CourseID)
 	videoClassId, _ := strconv.Atoi(videoDTO.ClassID)
@@ -184,20 +181,8 @@ func TestXueXiToChapterCord(t *testing.T) {
 			log.Fatal(err)
 		}
 		videoDTO.AttachmentsDetection(card)
-
-		if state, _ := xuexitong.VideoDtoFetchAction(&userCache, &videoDTO); state {
-			fmt.Println(videoDTO)
-			videoDtoPlayReport, err := userCache.VideoDtoPlayReport(&videoDTO, 2)
-			time.Sleep(time.Second * 5)
-			videoDtoPlayReport2, err := userCache.VideoDtoPlayReport(&videoDTO, 7)
-			if err != nil {
-				log.Fatal(err)
-			}
-			fmt.Println(videoDtoPlayReport)
-			fmt.Println(videoDtoPlayReport2)
-		} else {
-			log.Fatal("视频解析失败")
-		}
+		fmt.Println(videoDTO)
+		point.ExecuteVideo(&userCache, &videoDTO)
 	} else {
 		log.Fatal("任务点对象错误")
 	}
