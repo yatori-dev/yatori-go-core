@@ -1,4 +1,4 @@
-![yatori-go-core](https://socialify.git.ci/Yatori-Dev/yatori-go-core/image?font=Source%20Code%20Pro&forks=1&language=1&logo=https%3A%2F%2Fraw.githubusercontent.com%2FYatori-Dev%2F.github%2Frefs%2Fheads%2Fmain%2Fprofile%2F1710254379397-modified.png&name=1&owner=1&pattern=Floating%20Cogs&pulls=1&stargazers=1&theme=Dark)
+![yatori-go-core](https://socialify.git.ci/Yatori-Dev/yatori-go-core/image?font=Source%20Code%20Pro&forks=1&language=1&logo=https%3A%2F%2Fyatori-dev.github.io%2Fyatori-docs%2Fimg%2Flogo.png&name=1&owner=1&pattern=Floating%20Cogs&pulls=1&stargazers=1&theme=Dark)
 
 <div align="center"><h1>Yatori-core系列</h1></div>
 
