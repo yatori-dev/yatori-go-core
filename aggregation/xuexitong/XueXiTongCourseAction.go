@@ -14,7 +14,8 @@ import (
 	log2 "github.com/yatori-dev/yatori-go-core/utils/log"
 )
 
-func XueXiTPullCourseAction(cache *xuexitong.XueXiTUserCache) error {
+// 拉取学习通所有课程列表并返回
+func XueXiTPullCourseAction(cache *xuexitong.XueXiTUserCache) (entity.XueXiTCourseJson, error) {
 	courses, err := cache.CourseListApi()
 	if err != nil {
 		log2.Print(log2.INFO, "["+cache.Name+"] "+" 拉取失败")
@@ -26,8 +27,8 @@ func XueXiTPullCourseAction(cache *xuexitong.XueXiTUserCache) error {
 		panic(err)
 	}
 	log2.Print(log2.INFO, "["+cache.Name+"] "+" 课程数量："+strconv.Itoa(len(xueXiTCourse.ChannelList)))
-	log2.Print(log2.INFO, "["+cache.Name+"] "+courses)
-	return nil
+	// log2.Print(log2.INFO, "["+cache.Name+"] "+courses)
+	return xueXiTCourse, nil
 }
 
 // XueXiTCourseDetailForCourseIdAction 根据课程ID拉取学习课程详细信息

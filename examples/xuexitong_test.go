@@ -2,18 +2,19 @@ package examples
 
 import (
 	"fmt"
-	"github.com/yatori-dev/yatori-go-core/aggregation/xuexitong"
-	"github.com/yatori-dev/yatori-go-core/aggregation/xuexitong/point"
-	"github.com/yatori-dev/yatori-go-core/api/entity"
-	xuexitongApi "github.com/yatori-dev/yatori-go-core/api/xuexitong"
-	"github.com/yatori-dev/yatori-go-core/global"
-	"github.com/yatori-dev/yatori-go-core/utils"
 	"io/ioutil"
 	"log"
 	"net/http"
 	"strconv"
 	"strings"
 	"testing"
+
+	"github.com/yatori-dev/yatori-go-core/aggregation/xuexitong"
+	"github.com/yatori-dev/yatori-go-core/aggregation/xuexitong/point"
+	"github.com/yatori-dev/yatori-go-core/api/entity"
+	xuexitongApi "github.com/yatori-dev/yatori-go-core/api/xuexitong"
+	"github.com/yatori-dev/yatori-go-core/global"
+	"github.com/yatori-dev/yatori-go-core/utils"
 )
 
 // TestLoginXueXiTo 测试学习通登录以及课程数据拉取
