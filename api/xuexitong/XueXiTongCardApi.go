@@ -3,12 +3,12 @@ package xuexitong
 import (
 	"crypto/md5"
 	"encoding/hex"
-	"encoding/json"
 	"fmt"
 	"io/ioutil"
 	"net/http"
 	"net/url"
 	"strconv"
+	"strings"
 	"time"
 
 	"github.com/yatori-dev/yatori-go-core/api/entity"
@@ -101,12 +101,12 @@ func (cache *XueXiTUserCache) VideoDtoFetch(p *entity.PointVideoDto) (string, er
 	return string(body), nil
 }
 
-func (cache *XueXiTUserCache) VideoDtoPlayReport(p *entity.PointVideoDto, playingTime int) (map[string]interface{}, error) {
+func (cache *XueXiTUserCache) VideoDtoPlayReport(p *entity.PointVideoDto, playingTime int) (string, error) {
 	clipTime := fmt.Sprintf("0_%d", p.Duration)
-	hash := md5.Sum([]byte(fmt.Sprintf("[%s][%s][%s][%d][%s][%d][%s]",
-		p.PUID, p.JobID, p.ObjectID, playingTime*1000, "d_yHJ!$pdA~5", p.Duration*1000, clipTime)))
+	hash := md5.Sum([]byte(fmt.Sprintf("[%s][%s][%s][%s][%d][%s][%d][%s]",
+		p.ClassID, p.PUID, p.JobID, p.ObjectID, playingTime*1000, "d_yHJ!$pdA~5", p.Duration*1000, clipTime)))
 	enc := hex.EncodeToString(hash[:])
-
+	fmt.Println(enc)
 	client := &http.Client{}
 	params := url.Values{}
 	params.Set("otherInfo", p.OtherInfo)
@@ -114,42 +114,62 @@ func (cache *XueXiTUserCache) VideoDtoPlayReport(p *entity.PointVideoDto, playin
 	params.Set("duration", strconv.Itoa(p.Duration))
 	params.Set("jobid", p.JobID)
 	params.Set("clipTime", clipTime)
-	params.Set("clazzId", strconv.Itoa(p.FID))
+	params.Set("clazzId", p.ClassID)
 	params.Set("objectId", p.ObjectID)
-	params.Set("userid", p.Session.Acc.PUID)
+	params.Set("userid", p.PUID)
 	params.Set("isdrag", "0")
 	params.Set("enc", enc)
 	params.Set("rt", fmt.Sprintf("%f", p.RT))
 	params.Set("dtype", "Video")
 	params.Set("view", "pc")
-	params.Set("_t", strconv.FormatInt(time.Now().UnixNano()/1e6, 10))
+	params.Set("_t", strconv.FormatInt(time.Now().UnixMilli(), 10))
+
+	// 自定义编码函数以保留 & 和 =
+	encodedParams := encodeWithSafeChars(params)
 	method := "GET"
 
-	resp, err := http.NewRequest(method, fmt.Sprintf("%s/%s?%s", APIChapterCardResource, p.ObjectID, params.Encode()), nil)
-	//reqURL := fmt.Sprintf("%s/%d/%s?%s", APIVideoPlayReport, p.FID, p.DToken, params.Encode())
-	//resp, err := p.Session.Client.Get(reqURL)
+	resp, err := http.NewRequest(method, fmt.Sprintf("%s/%s/%s?%s", APIVideoPlayReport, p.Cpi, p.DToken, encodedParams), nil)
 	if err != nil {
-		return nil, err
+		return "", err
 	}
+
+	resp.Header.Add("User-Agent", "Apifox/1.0.0 (https://apifox.com)")
+	resp.Header.Add("Accept", "*/*")
+	resp.Header.Add("Host", "mooc1.chaoxing.com")
+	resp.Header.Add("Connection", "keep-alive")
+	resp.Header.Add("Cookie", cache.cookie)
+	resp.Header.Add("Content-Type", " application/json")
 	res, err := client.Do(resp)
 	if err != nil {
-		return nil, err
+		return "", err
 	}
 	defer res.Body.Close()
 
 	if res.StatusCode != http.StatusOK {
-		return nil, fmt.Errorf("failed to fetch video, status code: %d", res.StatusCode)
+		return "", fmt.Errorf("failed to fetch video, status code: %d", res.StatusCode)
 	}
+	body, err := ioutil.ReadAll(res.Body)
+	return string(body), nil
+}
 
-	var jsonResponse map[string]interface{}
-	if err := json.NewDecoder(resp.Body).Decode(&jsonResponse); err != nil {
-		return nil, err
+// encodeWithSafeChars 自定义编码函数，保留 & 和 =
+func encodeWithSafeChars(values url.Values) string {
+	var result []string
+	for key, list := range values {
+		for _, value := range list {
+			// 手动编码键和值，但不编码 & 和 =
+			encodedKey := url.QueryEscape(key)
+			encodedValue := url.QueryEscape(value)
+			// 替换 %3D (等号) 和 %26 (与号) 回原字符
+			encodedKey = replaceSpecialChars(encodedKey)
+			encodedValue = replaceSpecialChars(encodedValue)
+			result = append(result, encodedKey+"="+encodedValue)
+		}
 	}
+	return strings.Join(result, "&")
+}
 
-	if errorMsg, exists := jsonResponse["error"].(string); exists {
-		return nil, &APIError{Message: errorMsg}
-	}
-
-	p.Logger.Printf("Play report successful: %d/%d", playingTime, p.Duration)
-	return jsonResponse, nil
+// replaceSpecialChars 将 %3D 和 %26 替换回等号和与号
+func replaceSpecialChars(s string) string {
+	return strings.NewReplacer("%3D", "=", "%26", "&").Replace(s)
 }

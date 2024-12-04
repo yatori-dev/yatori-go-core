@@ -5,6 +5,7 @@ import (
 	"log"
 	"net/http"
 	"strconv"
+	"strings"
 )
 
 type IAttachment interface {
@@ -29,6 +30,7 @@ type PointVideoDto struct {
 	isPassed   bool
 	FID        int
 	DToken     string
+	PlayTime   int
 	Duration   int
 	JobID      string
 	OtherInfo  string
@@ -88,15 +90,34 @@ func (p *PointVideoDto) AttachmentsDetection(attachment interface{}) (bool, erro
 			return false, errors.New("invalid property structure")
 		}
 		if property["objectid"] == p.ObjectID {
+			var otherInfo string
 			p.JobID = property["jobid"].(string)
-			p.OtherInfo = attachment["otherInfo"].(string)
-			p.isPassed = attachment["isPassed"].(bool)
+			parts := strings.SplitN(attachment["otherInfo"].(string), "&", 2)
+			if len(parts) > 0 {
+				otherInfo = parts[0]
+			}
+			p.OtherInfo = otherInfo
+			if isPassed, ok := attachment["isPassed"].(bool); ok {
+				p.isPassed = isPassed
+			} else {
+				p.isPassed = false
+			}
+
 			// 获取 "rt" 的值
 			rt, ok := property["rt"].(float64)
 			if !ok {
 				// 如果 "rt" 键不存在，则使用默认值 0.9
 				rt = 0.9
+			} else {
+				rt = 0.9
 			}
+			playTime, ok := attachment["playTime"].(float64)
+			if !ok {
+				p.PlayTime = 0
+			} else {
+				p.PlayTime = int(playTime) / 1000
+			}
+
 			p.RT = rt
 			p.Attachment = attachment
 			break

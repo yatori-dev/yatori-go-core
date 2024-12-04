@@ -34,7 +34,6 @@ func PageMobileChapterCardAction(
 	cache *xuexitong.XueXiTUserCache,
 	classId, courseId, knowledgeId, cardIndex, cpi int) (interface{}, error) {
 	cardHtml, err := cache.PageMobileChapterCard(classId, courseId, knowledgeId, cardIndex, cpi)
-
 	var att interface{}
 
 	if err != nil {
