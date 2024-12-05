@@ -57,6 +57,8 @@ type PointWorkDto struct {
 	WorkID      string
 	SchoolID    string
 	JobID       string
+	KToken      string
+	Enc         string
 
 	Type  ctype.CardType
 	IsSet bool
@@ -169,4 +171,38 @@ func (p *PointVideoDto) AttachmentsDetection(attachment interface{}) (bool, erro
 	p.PUID = defaults["userid"].(string)
 
 	return true, nil
+}
+
+func (p *PointWorkDto) AttachmentsDetection(attachment interface{}) (bool, error) {
+	attachmentMap, ok := attachment.(map[string]interface{})
+	var flag bool
+	if !ok {
+		return false, errors.New("无法将 Attachment 转换为 map[string]interface{}")
+	}
+	attachments, ok := attachmentMap["attachments"].([]interface{})
+	if !ok {
+		return false, errors.New("invalid attachment structure")
+	}
+	for _, a := range attachments {
+		att, _ := a.(map[string]interface{})
+		property, ok := att["property"].(map[string]interface{})
+		if !ok {
+			return false, errors.New("invalid property structure")
+		}
+		workId := property["workid"]
+		if workId == nil {
+			continue
+		}
+		if workId == p.WorkID {
+			p.Enc = att["enc"].(string)
+			flag = att["job"].(bool)
+			break
+		}
+	}
+	defaults, ok := attachmentMap["defaults"].(map[string]interface{})
+	if !ok {
+		return false, errors.New("invalid defaults structure")
+	}
+	p.KToken = defaults["ktoken"].(string)
+	return flag, nil
 }
