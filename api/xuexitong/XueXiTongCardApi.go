@@ -63,6 +63,7 @@ func (e *APIError) Error() string {
 	return e.Message
 }
 
+// VideoDtoFetch 视频数据
 func (cache *XueXiTUserCache) VideoDtoFetch(p *entity.PointVideoDto) (string, error) {
 	params := url.Values{}
 	params.Set("k", strconv.Itoa(p.FID))
@@ -172,4 +173,56 @@ func encodeWithSafeChars(values url.Values) string {
 // replaceSpecialChars 将 %3D 和 %26 替换回等号和与号
 func replaceSpecialChars(s string) string {
 	return strings.NewReplacer("%3D", "=", "%26", "&").Replace(s)
+}
+
+// WorkFetchQuestion 获取作业题目
+func (cache *XueXiTUserCache) WorkFetchQuestion(p *entity.PointWorkDto) (string, error) {
+	method := "GET"
+
+	params := url.Values{}
+	params.Add("courseid", p.CourseID)
+	var SorW func(string, string) string
+	SorW = func(s string, w string) string {
+		if s != "0" {
+			return fmt.Sprintf("%s-%s", s, w)
+		}
+		return w
+	}
+	params.Add("workid", SorW(p.SchoolID, p.WorkID))
+	params.Add("jobid", p.JobID)
+	params.Add("needRedirect", "true")
+	params.Add("knowledgeid", strconv.Itoa(p.KnowledgeID))
+	params.Add("userid", p.PUID)
+	params.Add("ut", "s")
+	params.Add("clazzId", p.ClassID)
+	params.Add("cpi", p.Cpi)
+	params.Add("ktoken", p.KToken)
+	params.Add("enc", p.Enc)
+	client := &http.Client{}
+	req, err := http.NewRequest(method, PageMobileWork+"?"+params.Encode(), nil)
+
+	if err != nil {
+		fmt.Println(err)
+		return "", err
+	}
+	req.Header.Add("User-Agent", "Apifox/1.0.0 (https://apifox.com)")
+	req.Header.Add("Accept", "*/*")
+	req.Header.Add("Host", "mooc1-api.chaoxing.com")
+	req.Header.Add("Connection", "keep-alive")
+	req.Header.Add("Cookie", cache.cookie)
+
+	res, err := client.Do(req)
+	if err != nil {
+		fmt.Println(err)
+		return "", nil
+	}
+	defer res.Body.Close()
+
+	body, err := ioutil.ReadAll(res.Body)
+	if err != nil {
+		fmt.Println(err)
+		return "", nil
+	}
+	fmt.Println(string(body))
+	return string(body), nil
 }

@@ -131,7 +131,7 @@ func ChapterFetchCardsAction(
 				jobID, ok3 := point.Data["_jobid"].(string)
 
 				if schoolID == "" {
-					schoolID = "此学校work卡片不存在schoolID"
+					schoolID = "0"
 				}
 
 				if ok1 && workID != "" && ok3 && jobID != "" {

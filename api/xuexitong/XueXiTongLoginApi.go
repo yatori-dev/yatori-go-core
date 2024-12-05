@@ -37,7 +37,8 @@ const (
 	ApiWorkCommit = "https://mooc1-api.chaoxing.com/work/addStudentWorkNew"
 
 	// PageMobileWork SSR页面-客户端单元测验答题页
-	PageMobileWork = "https://mooc1-api.chaoxing.com/android/mworkspecial"
+	PageMobileWork  = "https://mooc1-api.chaoxing.com/android/mworkspecial"           // 这是个cxkitty中的
+	PageMobileWorkY = "https://mooc1-api.chaoxing.com/mooc-ans/work/phone/doHomeWork" // 这个是自己爬的
 
 	KEY = "u2oh6Vu^HWe4_AES" // 注意 Go 语言中字符串默认就是 UTF-8 编码
 )

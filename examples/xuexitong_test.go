@@ -195,6 +195,9 @@ func TestXueXiToChapterCord(t *testing.T) {
 		workDTOs[0].AttachmentsDetection(card)
 		fmt.Println(videoDTOs)
 		fmt.Println(workDTOs)
+
+		question, _ := userCache.WorkFetchQuestion(&workDTOs[0])
+		fmt.Println(question)
 	} else {
 		log.Fatal("任务点对象错误")
 	}

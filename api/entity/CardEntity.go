@@ -57,6 +57,7 @@ type PointWorkDto struct {
 	WorkID      string
 	SchoolID    string
 	JobID       string
+	PUID        string
 	KToken      string
 	Enc         string
 
@@ -204,5 +205,6 @@ func (p *PointWorkDto) AttachmentsDetection(attachment interface{}) (bool, error
 		return false, errors.New("invalid defaults structure")
 	}
 	p.KToken = defaults["ktoken"].(string)
+	p.PUID = defaults["userid"].(string)
 	return flag, nil
 }
