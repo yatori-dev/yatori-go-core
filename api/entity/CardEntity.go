@@ -2,6 +2,7 @@ package entity
 
 import (
 	"errors"
+	"github.com/yatori-dev/yatori-go-core/models/ctype"
 	"log"
 	"net/http"
 	"strconv"
@@ -27,18 +28,22 @@ type PointVideoDto struct {
 	Cpi         string
 	ObjectID    string
 	// 从SSR视图中获取
-	isPassed   bool
-	FID        int
-	DToken     string
-	PlayTime   int
-	Duration   int
-	JobID      string
-	OtherInfo  string
-	Title      string
-	RT         float64
-	Logger     *log.Logger
-	PUID       string
-	Session    *Session
+	isPassed  bool
+	FID       int
+	DToken    string
+	PlayTime  int
+	Duration  int
+	JobID     string
+	OtherInfo string
+	Title     string
+	RT        float64
+	Logger    *log.Logger
+	PUID      string
+	Session   *Session
+
+	Type  ctype.CardType
+	IsSet bool
+
 	Attachment interface{} //视图获取后的原始map
 }
 
@@ -52,6 +57,9 @@ type PointWorkDto struct {
 	WorkID      string
 	SchoolID    string
 	JobID       string
+
+	Type  ctype.CardType
+	IsSet bool
 }
 
 // PointDocumentDto 文档查看任务点
@@ -62,6 +70,9 @@ type PointDocumentDto struct {
 	KnowledgeID int
 	Cpi         string
 	ObjectID    string
+
+	Type  ctype.CardType
+	IsSet bool
 }
 type Session struct {
 	Client *http.Client
@@ -70,6 +81,22 @@ type Session struct {
 
 type Account struct {
 	PUID string
+}
+
+func ParsePointDto(pointDTOs []PointDto) (videoDTOs []PointVideoDto, workDTOs []PointWorkDto, documentDTOs []PointDocumentDto) {
+	//处理返回的任务点对象
+	for _, card := range pointDTOs {
+		if card.PointWorkDto.IsSet == true {
+			workDTOs = append(workDTOs, card.PointWorkDto)
+		}
+		if card.PointVideoDto.IsSet == true {
+			videoDTOs = append(videoDTOs, card.PointVideoDto)
+		}
+		if card.PointDocumentDto.IsSet == true {
+			documentDTOs = append(documentDTOs, card.PointDocumentDto)
+		}
+	}
+	return
 }
 
 // AttachmentsDetection 使用接口对每种DTO进行检测再次赋值, 以对应后续的刷取请求
@@ -89,7 +116,13 @@ func (p *PointVideoDto) AttachmentsDetection(attachment interface{}) (bool, erro
 		if !ok {
 			return false, errors.New("invalid property structure")
 		}
-		if property["objectid"] == p.ObjectID {
+		//防止一个节点多种任务点类型 其他property中没有objectid报panic
+		objectid := property["objectid"]
+		if objectid == nil {
+			continue
+		}
+
+		if objectid == p.ObjectID {
 			var otherInfo string
 			p.JobID = property["jobid"].(string)
 			parts := strings.SplitN(attachment["otherInfo"].(string), "&", 2)

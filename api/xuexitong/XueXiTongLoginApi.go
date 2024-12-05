@@ -33,6 +33,12 @@ const (
 	// APIVideoPlayReport 接口-视频播放上报
 	APIVideoPlayReport = "https://mooc1.chaoxing.com/mooc-ans/multimedia/log/a"
 
+	// ApiWorkCommit 接口-单元作业答题提交
+	ApiWorkCommit = "https://mooc1-api.chaoxing.com/work/addStudentWorkNew"
+
+	// PageMobileWork SSR页面-客户端单元测验答题页
+	PageMobileWork = "https://mooc1-api.chaoxing.com/android/mworkspecial"
+
 	KEY = "u2oh6Vu^HWe4_AES" // 注意 Go 语言中字符串默认就是 UTF-8 编码
 )
 

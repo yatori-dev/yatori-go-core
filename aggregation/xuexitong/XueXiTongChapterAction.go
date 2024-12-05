@@ -116,6 +116,8 @@ func ChapterFetchCardsAction(
 						KnowledgeID: card.KnowledgeID,
 						Cpi:         strconv.Itoa(cpi),
 						ObjectID:    objectID,
+						Type:        ctype.Video,
+						IsSet:       ok,
 					}
 				} else {
 					log.Printf("(%d, %d) 任务点 'objectid' 不存在或为空 %+v", cardIndex, pointIndex, point)
@@ -142,6 +144,8 @@ func ChapterFetchCardsAction(
 						WorkID:      workID,
 						SchoolID:    schoolID,
 						JobID:       jobID,
+						Type:        ctype.Work,
+						IsSet:       ok,
 					}
 				} else {
 					log.Printf("(%d, %d) 任务点 'workid', 'schoolid' 或 '_jobid' 不存在或为空 %+v", cardIndex, pointIndex, point)
@@ -156,6 +160,8 @@ func ChapterFetchCardsAction(
 						KnowledgeID: card.KnowledgeID,
 						Cpi:         strconv.Itoa(cpi),
 						ObjectID:    objectID,
+						Type:        ctype.Document,
+						IsSet:       ok,
 					}
 				} else {
 					log.Printf("(%d, %d) 任务点 'objectid' 不存在或为空 %+v", cardIndex, pointIndex, point)
