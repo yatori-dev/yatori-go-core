@@ -2,7 +2,6 @@ package examples
 
 import (
 	"fmt"
-	"github.com/yatori-dev/yatori-go-core/api/entity"
 	"io/ioutil"
 	"log"
 	"net/http"
@@ -11,6 +10,8 @@ import (
 	"testing"
 
 	"github.com/yatori-dev/yatori-go-core/aggregation/xuexitong"
+	"github.com/yatori-dev/yatori-go-core/aggregation/xuexitong/point"
+	"github.com/yatori-dev/yatori-go-core/api/entity"
 	xuexitongApi "github.com/yatori-dev/yatori-go-core/api/xuexitong"
 	"github.com/yatori-dev/yatori-go-core/global"
 	"github.com/yatori-dev/yatori-go-core/utils"
@@ -31,18 +32,7 @@ func TestLoginXueXiTo(t *testing.T) {
 		log.Fatal(err)
 	}
 	//拉取课程列表并打印
-	action, err := xuexitong.XueXiTPullCourseAction(&userCache)
-	if err != nil {
-		return
-	}
-	for _, v := range action.ChannelList {
-		fmt.Println(v.Content.Chatid)
-		fmt.Println(v.Content.Name)
-		for _, d := range v.Content.Course.Data {
-			fmt.Println(d.Name)
-		}
-		fmt.Println()
-	}
+	xuexitong.XueXiTPullCourseAction(&userCache)
 }
 
 // 测试学习通单课程详情
@@ -59,7 +49,7 @@ func TestCourseDetailXueXiTo(t *testing.T) {
 	if err != nil {
 		log.Fatal(err)
 	}
-	action, err := xuexitong.XueXiTCourseDetailForCourseIdAction(&userCache, "259500784287745")
+	action, err := xuexitong.XueXiTCourseDetailForCourseIdAction(&userCache, "261619055656961")
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -82,7 +72,7 @@ func TestCourseXueXiToChapter(t *testing.T) {
 		log.Fatal(err)
 	}
 	//拉取对应课程信息
-	course, err := xuexitong.XueXiTCourseDetailForCourseIdAction(&userCache, "259500784287745")
+	course, err := xuexitong.XueXiTCourseDetailForCourseIdAction(&userCache, "261619055656961")
 	fmt.Println("name:" + course.CourseName)
 	fmt.Println("courseID:" + course.CourseId)
 	//拉取对应课程的章节信息
@@ -115,7 +105,7 @@ func TestXueXiToChapterPoint(t *testing.T) {
 	if err != nil {
 		log.Fatal(err)
 	}
-	course, err := xuexitong.XueXiTCourseDetailForCourseIdAction(&userCache, "259500784287745")
+	course, err := xuexitong.XueXiTCourseDetailForCourseIdAction(&userCache, "261619055656961")
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -162,7 +152,7 @@ func TestXueXiToChapterCord(t *testing.T) {
 	if err != nil {
 		log.Fatal(err)
 	}
-	course, err := xuexitong.XueXiTCourseDetailForCourseIdAction(&userCache, "259500784287745")
+	course, err := xuexitong.XueXiTCourseDetailForCourseIdAction(&userCache, "261619055656961")
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -174,33 +164,30 @@ func TestXueXiToChapterCord(t *testing.T) {
 		nodes = append(nodes, item.ID)
 	}
 	courseId, _ := strconv.Atoi(course.CourseId)
-	_, fetchCards, err := xuexitong.ChapterFetchCardsAction(&userCache, &action, nodes, 82, courseId, key, cpi)
+	_, fetchCards, err := xuexitong.ChapterFetchCardsAction(&userCache, &action, nodes, 27, courseId, key, cpi)
 	if err != nil {
 		log.Fatal(err)
 	}
-
-	videoDTOs, workDTOs, documentDTOs := entity.ParsePointDto(fetchCards)
-	fmt.Println(videoDTOs)
-	fmt.Println(workDTOs)
-	fmt.Println(documentDTOs)
-	videoCourseId, _ := strconv.Atoi(videoDTOs[0].CourseID)
-	videoClassId, _ := strconv.Atoi(videoDTOs[0].ClassID)
+	var (
+		videoDTO entity.PointVideoDto
+	)
+	// 处理返回的任务点对象
+	videoDTO = fetchCards[0].PointVideoDto
+	videoCourseId, _ := strconv.Atoi(videoDTO.CourseID)
+	videoClassId, _ := strconv.Atoi(videoDTO.ClassID)
 	if courseId == videoCourseId && key == videoClassId {
 		// 测试只对单独一个卡片测试
-		card, err := xuexitong.PageMobileChapterCardAction(&userCache, key, courseId, videoDTOs[0].KnowledgeID, videoDTOs[0].CardIndex, cpi)
+		card, err := xuexitong.PageMobileChapterCardAction(&userCache, key, courseId, videoDTO.KnowledgeID, videoDTO.CardIndex, cpi)
 		if err != nil {
 			log.Fatal(err)
 		}
-		videoDTOs[0].AttachmentsDetection(card)
-		workDTOs[0].AttachmentsDetection(card)
-		fmt.Println(videoDTOs)
-		fmt.Println(workDTOs)
-
-		question, _ := userCache.WorkFetchQuestion(&workDTOs[0])
-		fmt.Println(question)
+		videoDTO.AttachmentsDetection(card)
+		fmt.Println(videoDTO)
+		point.ExecuteVideo(&userCache, &videoDTO)
 	} else {
 		log.Fatal("任务点对象错误")
 	}
+
 }
 
 // 测试apifox直接生成的请求是否有误乱码现象，测试结果为没有

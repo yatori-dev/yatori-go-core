@@ -183,7 +183,7 @@ func AIProblemMessage(testPaperTitle string, examTopic YingHuaExamTopic) utils.A
 题目内容：` + examTopic.Content + "\n"
 
 	//选择题
-	if examTopic.Type == "单选" || examTopic.Type == "多选" || examTopic.Type == "判断" {
+	if examTopic.Type == "单选" || examTopic.Type == "多选" {
 		for _, v := range examTopic.Selects {
 			problem += v.Num + v.Text + "\n"
 		}
@@ -195,6 +195,21 @@ func AIProblemMessage(testPaperTitle string, examTopic YingHuaExamTopic) utils.A
 			{
 				Role:    "user",
 				Content: `就算你不知道选什么也随机选输出其选项内容，回答的格式为数组格式，比如：["选项1","选项二"]，注意回复的时候不要带选项字母，只需照抄选项对应的文字即可，`,
+			},
+			{
+				Role:    "user",
+				Content: problem,
+			},
+		}}
+	} else if examTopic.Type == "判断" {
+		return utils.AIChatMessages{Messages: []utils.Message{
+			{
+				Role:    "user",
+				Content: `接下来你只需要回答“正确”或者“错误”即可，不能回答任何无关的内容，包括解释以及标点符也不需要。`,
+			},
+			{
+				Role:    "user",
+				Content: `就算你不知道选什么也随机选输出其选项内容，回答的格式为数组格式，比如：["正确"]，注意回复的时候不要带选项字母，只需照抄选项对应的文字即可，`,
 			},
 			{
 				Role:    "user",
