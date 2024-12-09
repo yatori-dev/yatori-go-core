@@ -183,7 +183,39 @@ func AIProblemMessage(testPaperTitle string, examTopic YingHuaExamTopic) utils.A
 题目内容：` + examTopic.Content + "\n"
 
 	//选择题
-	if examTopic.Type == "单选" || examTopic.Type == "多选" {
+	if examTopic.Type == "单选" {
+		for _, v := range examTopic.Selects {
+			problem += v.Num + v.Text + "\n"
+		}
+		return utils.AIChatMessages{Messages: []utils.Message{
+			{
+				Role:    "user",
+				Content: `接下来你只需要回答选项对应内容即可，不能回答任何选项无关的任何内容，包括解释以及标点符也不需要。`,
+			},
+			{
+				Role:    "user",
+				Content: `就算你不知道选什么也随机选输出其选项内容，回答的格式为数组格式，比如：["选项1"]，注意回复的时候不要带选项字母，只需照抄选项对应的文字即可。`,
+			},
+			{
+				Role: "user",
+				Content: `比如：` + `
+				试卷名称：考试
+				题目类型：单选
+				题目内容：新中国是什么时候成立的
+				A. 1949年10月5日
+				B. 1949年10月1日
+				C. 1949年09月1日
+				D. 2002年10月1日
+				` + `
+				那么你应该回答选项B的内容：“["1949年10月1日"]”
+				`,
+			},
+			{
+				Role:    "user",
+				Content: problem,
+			},
+		}}
+	} else if examTopic.Type == "多选" {
 		for _, v := range examTopic.Selects {
 			problem += v.Num + v.Text + "\n"
 		}
@@ -197,11 +229,28 @@ func AIProblemMessage(testPaperTitle string, examTopic YingHuaExamTopic) utils.A
 				Content: `就算你不知道选什么也随机选输出其选项内容，回答的格式为数组格式，比如：["选项1","选项二"]，注意回复的时候不要带选项字母，只需照抄选项对应的文字即可，`,
 			},
 			{
+				Role: "user",
+				Content: `比如：` + `
+				试卷名称：考试
+				题目类型：多选选
+				题目内容：马克思关于资本积累的学说是剩余价值理论的重要组成部分。资本积累是
+				A. 资本主义扩大再生产的源泉
+				B. 资本有机构成呈现不断降低趋势的根本原因
+				C. 社会财富占有两极分化的重要原因
+				D. 资本主义社会失业现象产生的根源
+				` + `
+				那么你应该回答选项A、B、D的内容：“["资本主义扩大再生产的源泉","社会财富占有两极分化的重要原因","资本主义社会失业现象产生的根源"]”
+				`,
+			},
+			{
 				Role:    "user",
 				Content: problem,
 			},
 		}}
 	} else if examTopic.Type == "判断" {
+		for _, v := range examTopic.Selects {
+			problem += v.Num + v.Text + "\n"
+		}
 		return utils.AIChatMessages{Messages: []utils.Message{
 			{
 				Role:    "user",
@@ -210,6 +259,18 @@ func AIProblemMessage(testPaperTitle string, examTopic YingHuaExamTopic) utils.A
 			{
 				Role:    "user",
 				Content: `就算你不知道选什么也随机选输出其选项内容，回答的格式为数组格式，比如：["正确"]，注意回复的时候不要带选项字母，只需照抄选项对应的文字即可，`,
+			},
+			{
+				Role: "user",
+				Content: `比如：` + `
+				试卷名称：考试
+				题目类型：判断
+				题目内容：新中国是什么时候成立是1949年10月1日吗？
+				A. 正确
+				B. 错误
+				` + `
+				那么你应该回答选项A的内容：“["正确"]”
+				`,
 			},
 			{
 				Role:    "user",
