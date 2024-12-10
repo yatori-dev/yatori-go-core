@@ -223,6 +223,5 @@ func (cache *XueXiTUserCache) WorkFetchQuestion(p *entity.PointWorkDto) (string,
 		fmt.Println(err)
 		return "", nil
 	}
-	fmt.Println(string(body))
 	return string(body), nil
 }
