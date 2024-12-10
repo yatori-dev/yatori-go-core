@@ -65,6 +65,14 @@ type PointWorkDto struct {
 	IsSet bool
 }
 
+// WorkInputField represents an <input> element in the HTML form.
+type WorkInputField struct {
+	Name  string
+	Value string
+	Type  string // Optional: to store the type attribute if needed
+	ID    string // Store the id attribute if present
+}
+
 // PointDocumentDto 文档查看任务点
 type PointDocumentDto struct {
 	CardIndex   int
