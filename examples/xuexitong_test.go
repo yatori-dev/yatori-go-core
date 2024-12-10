@@ -32,7 +32,18 @@ func TestLoginXueXiTo(t *testing.T) {
 		log.Fatal(err)
 	}
 	//拉取课程列表并打印
-	xuexitong.XueXiTPullCourseAction(&userCache)
+	action, err := xuexitong.XueXiTPullCourseAction(&userCache)
+	if err != nil {
+		return
+	}
+	for _, v := range action.ChannelList {
+		fmt.Println(v.Content.Chatid)
+		fmt.Println(v.Content.Name)
+		for _, d := range v.Content.Course.Data {
+			fmt.Println(d.Name)
+		}
+		fmt.Println()
+	}
 }
 
 // 测试学习通单课程详情
@@ -187,7 +198,74 @@ func TestXueXiToChapterCord(t *testing.T) {
 	} else {
 		log.Fatal("任务点对象错误")
 	}
+}
 
+func TestXueXiToChapterCardWork(t *testing.T) {
+	utils.YatoriCoreInit()
+	//测试账号
+	setup()
+	user := global.Config.Users[1]
+	userCache := xuexitongApi.XueXiTUserCache{
+		Name:     user.Account,
+		Password: user.Password,
+	}
+
+	err := xuexitong.XueXiTLoginAction(&userCache)
+	if err != nil {
+		log.Fatal(err)
+	}
+	course, err := xuexitong.XueXiTCourseDetailForCourseIdAction(&userCache, "259500784287745")
+	if err != nil {
+		log.Fatal(err)
+	}
+	cpi, _ := strconv.Atoi(course.Cpi)
+	key, _ := strconv.Atoi(course.ClassId)
+	action, _ := xuexitong.PullCourseChapterAction(&userCache, cpi, key)
+	var nodes []int
+	for _, item := range action.Knowledge {
+		nodes = append(nodes, item.ID)
+	}
+	courseId, _ := strconv.Atoi(course.CourseId)
+	_, fetchCards, err := xuexitong.ChapterFetchCardsAction(&userCache, &action, nodes, 82, courseId, key, cpi)
+
+	videoDTOs, workDTOs, documentDTOs := entity.ParsePointDto(fetchCards)
+	fmt.Println(videoDTOs)
+	fmt.Println(workDTOs)
+	fmt.Println(documentDTOs)
+	videoCourseId, _ := strconv.Atoi(videoDTOs[0].CourseID)
+	videoClassId, _ := strconv.Atoi(videoDTOs[0].ClassID)
+	if courseId == videoCourseId && key == videoClassId {
+		// 测试只对单独一个卡片测试
+		card, err := xuexitong.PageMobileChapterCardAction(&userCache, key, courseId, videoDTOs[0].KnowledgeID, videoDTOs[0].CardIndex, cpi)
+		if err != nil {
+			log.Fatal(err)
+		}
+		videoDTOs[0].AttachmentsDetection(card)
+		workDTOs[0].AttachmentsDetection(card)
+		fmt.Println(videoDTOs)
+		fmt.Println(workDTOs)
+
+		fromAction, _ := xuexitong.WorkPageFromAction(&userCache, &workDTOs[0])
+
+		for _, input := range fromAction {
+			fmt.Printf("Name: %s, Value: %s, Type: %s, ID: %s\n", input.Name, input.Value, input.Type, input.ID)
+		}
+		//file, err := os.Create("xuexiTquestion.html")
+		//if err != nil {
+		//	fmt.Println("创建文件失败:", err)
+		//	return
+		//}
+		//defer file.Close()
+		//
+		//_, err = file.WriteString(question)
+		//if err != nil {
+		//	fmt.Println("写入文件失败:", err)
+		//	return
+		//}
+		//fmt.Println("HTML内容已成功写入文件!")
+	} else {
+		log.Fatal("任务点对象错误")
+	}
 }
 
 // 测试apifox直接生成的请求是否有误乱码现象，测试结果为没有

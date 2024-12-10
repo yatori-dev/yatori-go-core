@@ -133,3 +133,55 @@ func VideoDtoFetchAction(cache *xuexitong.XueXiTUserCache, p *entity.PointVideoD
 	log.Println("Fetch failed")
 	return false, nil
 }
+
+// WorkInputField represents an <input> element in the HTML form.
+type WorkInputField struct {
+	Name  string
+	Value string
+	Type  string // Optional: to store the type attribute if needed
+	ID    string // Store the id attribute if present
+}
+
+func WorkPageFromAction(cache *xuexitong.XueXiTUserCache, workPoint *entity.PointWorkDto) ([]WorkInputField, error) {
+	questionHtml, err := cache.WorkFetchQuestion(workPoint)
+	if err != nil {
+		log.Fatal("WorkAFetchQuestionErr:" + err.Error())
+		return nil, err
+	}
+
+	inputPattern := regexp.MustCompile(`<input\s+[^>]*>`)
+	attributePattern := regexp.MustCompile(`\b(name|value|type|id)\s*=\s*["']([^"']+)["']`)
+
+	var inputs []WorkInputField
+
+	// Find all matches of <input> tags in the HTML content.
+	inputTags := inputPattern.FindAllStringSubmatch(questionHtml, -1)
+	for _, tag := range inputTags {
+		var inputField WorkInputField
+		attributes := attributePattern.FindAllStringSubmatch(tag[0], -1)
+
+		for _, attr := range attributes {
+			if len(attr) == 3 { // Ensure we have a key-value pair
+				switch strings.ToLower(attr[1]) {
+				case "name":
+					inputField.Name = attr[2]
+				case "value":
+					inputField.Value = attr[2]
+				case "type":
+					inputField.Type = attr[2]
+				case "id":
+					inputField.ID = attr[2]
+				}
+			}
+		}
+
+		// Include the input field if it has either a name or an id attribute.
+		if inputField.Name != "" || inputField.ID != "" {
+			inputs = append(inputs, inputField)
+		} else {
+			fmt.Printf("Skipping input with no name or id attribute: %s\n", tag[0])
+		}
+	}
+
+	return inputs, nil
+}
