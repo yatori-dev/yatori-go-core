@@ -25,9 +25,9 @@ func ExecuteVideo(cache *api.XueXiTUserCache, p *entity.PointVideoDto) {
 					playingTime = p.Duration
 					break
 				}
+				log.Printf("播放中....%d:%d\n", playingTime, p.Duration)
 			}
 			flag += 1
-			log.Printf("播放中....%d:%d\n", playingTime, p.Duration)
 			time.Sleep(time.Second * 1)
 		}
 	} else {
