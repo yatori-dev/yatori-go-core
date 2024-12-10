@@ -250,6 +250,8 @@ func TestXueXiToChapterCardWork(t *testing.T) {
 		for _, input := range fromAction {
 			fmt.Printf("Name: %s, Value: %s, Type: %s, ID: %s\n", input.Name, input.Value, input.Type, input.ID)
 		}
+
+		xuexitong.ParseWorkQuestionAction(&userCache, &workDTOs[0])
 		//file, err := os.Create("xuexiTquestion.html")
 		//if err != nil {
 		//	fmt.Println("创建文件失败:", err)
