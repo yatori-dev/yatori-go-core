@@ -1,10 +1,9 @@
 module github.com/yatori-dev/yatori-go-core
 
-go 1.23
-
-toolchain go1.23.1
+go 1.23.4
 
 require (
+	github.com/PuerkitoBio/goquery v1.10.0
 	github.com/google/uuid v1.6.0
 	github.com/nfnt/resize v0.0.0-20180221191011-83c6a9932646
 	github.com/spf13/viper v1.19.0
@@ -17,7 +16,6 @@ require (
 )
 
 require (
-	github.com/PuerkitoBio/goquery v1.10.0 // indirect
 	github.com/andybalholm/cascadia v1.3.2 // indirect
 	github.com/fsnotify/fsnotify v1.8.0 // indirect
 	github.com/hashicorp/hcl v1.0.0 // indirect
