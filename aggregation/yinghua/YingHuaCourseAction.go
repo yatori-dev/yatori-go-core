@@ -451,10 +451,15 @@ func aiTurnYingHuaAnswer(cache *yinghuaApi.YingHuaUserCache, aiAnswer string, v 
 		}
 	}
 	if len(answer.Answers) == 0 || answer.Answers == nil {
-		if v.Type == "单选" {
+		if v.Type == "单选" || v.Type == "判断" {
 			answer.Answers = []string{"A"}
+		} else if v.Type == "多选" {
+			answer.Answers = []string{"B", "C"}
+		} else if v.Type == "简答" || v.Type == "填空" {
+			log.Print(log.INFO, `[`, cache.Account, `] `, log.BoldRed, "\n题目类型：", v.Type, "\n题目：", v.Content, "\n\nAi回答内容无法解析，因该题为填空或简答题，所以自动留空")
+			return answer
 		}
-		log.Print(log.INFO, `[`, cache.Account, `] `, log.BoldRed, "Ai回答内容无法解析，使用使用随机答案策略")
+		log.Print(log.INFO, `[`, cache.Account, `] `, log.BoldRed, "\n题目类型：", v.Type, "\n题目：", v.Content, "\n\nAi回答内容无法解析，使用使用随机答案策略")
 	}
 	return answer
 }
