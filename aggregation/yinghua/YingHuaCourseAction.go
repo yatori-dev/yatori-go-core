@@ -133,13 +133,13 @@ func VideosListAction(UserCache *yinghuaApi.YingHuaUserCache, course YingHuaCour
 	var videoList []YingHuaNode
 	videoSet := make(map[string]int)
 	//接口一爬取视屏信息
-	listJson := yinghuaApi.CourseVideListApi(*UserCache, course.Id, 8, nil)
+	listJson, err := yinghuaApi.CourseVideListApi(*UserCache, course.Id, 10, nil)
 	log.Print(log.DEBUG, `[`, UserCache.Account, `] `, `CourseListAction---`, listJson)
 	//超时重登检测
 	LoginTimeoutAfreshAction(UserCache, listJson)
 	//如果获取失败
 	if gojsonq.New().JSONString(listJson).Find("msg") != "获取数据成功" {
-		return []YingHuaNode{}, errors.New("获取数据失败")
+		return []YingHuaNode{}, errors.New("获取数据失败：" + err.Error())
 	}
 	jsonList := gojsonq.New().JSONString(listJson).Find("result.list")
 	// 断言为切片并遍历

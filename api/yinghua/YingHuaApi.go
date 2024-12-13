@@ -337,9 +337,9 @@ func (cache *YingHuaUserCache) CourseDetailApi(courseId string) (string, error) 
 }
 
 // CourseVideListApi 对应课程的视屏列表
-func CourseVideListApi(UserCache YingHuaUserCache, courseId string /*课程ID*/, retry int, lastError error) string {
+func CourseVideListApi(UserCache YingHuaUserCache, courseId string /*课程ID*/, retry int, lastError error) (string, error) {
 	if retry < 0 {
-		return ""
+		return "", lastError
 	}
 	url := UserCache.PreUrl + "/api/course/chapter.json"
 	method := "POST"
@@ -353,7 +353,7 @@ func CourseVideListApi(UserCache YingHuaUserCache, courseId string /*课程ID*/,
 	err := writer.Close()
 	if err != nil {
 		fmt.Println(err)
-		return ""
+		return "", err
 	}
 
 	tr := &http.Transport{
@@ -368,8 +368,8 @@ func CourseVideListApi(UserCache YingHuaUserCache, courseId string /*课程ID*/,
 	req, err := http.NewRequest(method, url, payload)
 	req.Header.Set("Cookie", UserCache.cookie)
 	if err != nil {
-		fmt.Println(err)
-		return ""
+		time.Sleep(time.Millisecond * 150) //延迟
+		return CourseVideListApi(UserCache, courseId, retry-1, err)
 	}
 	req.Header.Add("User-Agent", "Apifox/1.0.0 (https://apifox.com)")
 
@@ -377,20 +377,20 @@ func CourseVideListApi(UserCache YingHuaUserCache, courseId string /*课程ID*/,
 	res, err := client.Do(req)
 	if err != nil {
 		time.Sleep(time.Millisecond * 150) //延迟
-		return CourseVideListApi(UserCache, courseId, retry-1, lastError)
+		return CourseVideListApi(UserCache, courseId, retry-1, err)
 	}
 	defer res.Body.Close()
 
 	body, err := ioutil.ReadAll(res.Body)
 	if err != nil {
-		fmt.Println(err)
-		return ""
+		time.Sleep(time.Millisecond * 150) //延迟
+		return CourseVideListApi(UserCache, courseId, retry-1, err)
 	}
 	if strings.Contains(string(body), "502 Bad Gateway") {
 		time.Sleep(time.Millisecond * 150) //延迟
-		return CourseVideListApi(UserCache, courseId, retry, lastError)
+		return CourseVideListApi(UserCache, courseId, retry, err)
 	}
-	return string(body)
+	return string(body), nil
 }
 
 // SubmitStudyTimeApi 提交学时
