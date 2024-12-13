@@ -133,7 +133,7 @@ func VideosListAction(UserCache *yinghuaApi.YingHuaUserCache, course YingHuaCour
 	var videoList []YingHuaNode
 	videoSet := make(map[string]int)
 	//接口一爬取视屏信息
-	listJson := yinghuaApi.CourseVideListApi(*UserCache, course.Id)
+	listJson := yinghuaApi.CourseVideListApi(*UserCache, course.Id, 8, nil)
 	log.Print(log.DEBUG, `[`, UserCache.Account, `] `, `CourseListAction---`, listJson)
 	//超时重登检测
 	LoginTimeoutAfreshAction(UserCache, listJson)
@@ -240,7 +240,7 @@ func SubmitStudyTimeAction(userCache *yinghuaApi.YingHuaUserCache, nodeId string
 // {"_code":9,"status":false,"msg":"考试测试时间还未开始","result":{}}
 func ExamDetailAction(UserCache *yinghuaApi.YingHuaUserCache, nodeId string) ([]YingHuaExam, error) {
 	var examList []YingHuaExam
-	jsonStr := yinghuaApi.ExamDetailApi(*UserCache, nodeId)
+	jsonStr := yinghuaApi.ExamDetailApi(*UserCache, nodeId, 8, nil)
 	//超时重登检测
 	LoginTimeoutAfreshAction(UserCache, jsonStr)
 	jsonData := gojsonq.New().JSONString(jsonStr).Find("result.list")

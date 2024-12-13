@@ -63,8 +63,10 @@ func (cache *YingHuaUserCache) SetSign(sign string) {
 //}
 
 // LoginApi 登录接口
-func (cache *YingHuaUserCache) LoginApi() (string, error) {
-
+func (cache *YingHuaUserCache) LoginApi(retry int, lastError error) (string, error) {
+	if retry < 0 {
+		return "", lastError
+	}
 	url := cache.PreUrl + "/user/login.json"
 	method := "POST"
 
@@ -101,8 +103,8 @@ func (cache *YingHuaUserCache) LoginApi() (string, error) {
 	req.Header.Set("Content-Type", writer.FormDataContentType())
 	res, err := client.Do(req)
 	if err != nil {
-		fmt.Println(err)
-		return "", err
+		time.Sleep(150 * time.Millisecond)
+		return cache.LoginApi(retry-1, err)
 	}
 	defer res.Body.Close()
 
@@ -118,8 +120,10 @@ func (cache *YingHuaUserCache) LoginApi() (string, error) {
 // VerificationCodeApi 获取验证码和SESSION验证码,并返回文件路径和SESSION字符串
 var randChar []string = []string{"0", "1", "2", "3", "4", "5", "6", "7", "8", "9", "a", "b", "c", "d", "e", "f", "A", "B", "C", "D", "E", "F"}
 
-func (cache *YingHuaUserCache) VerificationCodeApi() (string, string) {
-
+func (cache *YingHuaUserCache) VerificationCodeApi(retry int, lastError error) (string, string) {
+	if retry < 0 {
+		return "", ""
+	}
 	url := cache.PreUrl + fmt.Sprintf("/service/code?r=%d", time.Now().Unix())
 	method := "GET"
 
@@ -145,7 +149,8 @@ func (cache *YingHuaUserCache) VerificationCodeApi() (string, string) {
 	res, err := client.Do(req)
 	if err != nil {
 		fmt.Println(err)
-		return "", ""
+		time.Sleep(150 * time.Millisecond)
+		return cache.VerificationCodeApi(retry-1, err)
 	}
 	defer res.Body.Close()
 
@@ -332,8 +337,10 @@ func (cache *YingHuaUserCache) CourseDetailApi(courseId string) (string, error) 
 }
 
 // CourseVideListApi 对应课程的视屏列表
-func CourseVideListApi(UserCache YingHuaUserCache, courseId string /*课程ID*/) string {
-
+func CourseVideListApi(UserCache YingHuaUserCache, courseId string /*课程ID*/, retry int, lastError error) string {
+	if retry < 0 {
+		return ""
+	}
 	url := UserCache.PreUrl + "/api/course/chapter.json"
 	method := "POST"
 
@@ -369,8 +376,8 @@ func CourseVideListApi(UserCache YingHuaUserCache, courseId string /*课程ID*/)
 	req.Header.Set("Content-Type", writer.FormDataContentType())
 	res, err := client.Do(req)
 	if err != nil {
-		fmt.Println(err)
-		return ""
+		time.Sleep(time.Millisecond * 150) //延迟
+		return CourseVideListApi(UserCache, courseId, retry-1, lastError)
 	}
 	defer res.Body.Close()
 
@@ -381,7 +388,7 @@ func CourseVideListApi(UserCache YingHuaUserCache, courseId string /*课程ID*/)
 	}
 	if strings.Contains(string(body), "502 Bad Gateway") {
 		time.Sleep(time.Millisecond * 150) //延迟
-		return CourseVideListApi(UserCache, courseId)
+		return CourseVideListApi(UserCache, courseId, retry, lastError)
 	}
 	return string(body)
 }
@@ -447,8 +454,10 @@ func SubmitStudyTimeApi(UserCache YingHuaUserCache, nodeId string /*对应视屏
 }
 
 // VideStudyTimeApi 获取单个视屏的学习进度
-func VideStudyTimeApi(userEntity entity.UserEntity, nodeId string) string {
-
+func VideStudyTimeApi(userEntity entity.UserEntity, nodeId string, retryNum int, lastError error) string {
+	if retryNum < 0 {
+		return ""
+	}
 	url := userEntity.PreUrl + "/api/node/video.json"
 	method := "POST"
 
@@ -476,27 +485,27 @@ func VideStudyTimeApi(userEntity entity.UserEntity, nodeId string) string {
 	req, err := http.NewRequest(method, url, payload)
 
 	if err != nil {
-		fmt.Println(err)
-		return ""
+		time.Sleep(time.Millisecond * 150) //延迟
+		return VideStudyTimeApi(userEntity, nodeId, retryNum-1, lastError)
 	}
 	req.Header.Add("User-Agent", "Mozilla/5.0 (Macintosh; Intel Mac OS X 10.13; rv:88.0) Gecko/20100101 Firefox/88.0")
 
 	req.Header.Set("Content-Type", writer.FormDataContentType())
 	res, err := client.Do(req)
 	if err != nil {
-		fmt.Println(err)
-		return ""
+		time.Sleep(time.Millisecond * 150) //延迟
+		return VideStudyTimeApi(userEntity, nodeId, retryNum-1, lastError)
 	}
 	defer res.Body.Close()
 
 	body, err := ioutil.ReadAll(res.Body)
 	if err != nil {
-		fmt.Println(err)
-		return ""
+		time.Sleep(time.Millisecond * 150) //延迟
+		return VideStudyTimeApi(userEntity, nodeId, retryNum-1, lastError)
 	}
 	if strings.Contains(string(body), "502 Bad Gateway") {
 		time.Sleep(time.Millisecond * 150) //延迟
-		return VideStudyTimeApi(userEntity, nodeId)
+		return VideStudyTimeApi(userEntity, nodeId, retryNum, lastError)
 	}
 	return string(body)
 }
@@ -560,8 +569,10 @@ func VideWatchRecodeApi(UserCache YingHuaUserCache, courseId string, page int, r
 }
 
 // ExamDetailApi 获取考试信息
-func ExamDetailApi(UserCache YingHuaUserCache, nodeId string) string {
-
+func ExamDetailApi(UserCache YingHuaUserCache, nodeId string, retryNum int, lastError error) string {
+	if retryNum < 0 {
+		return ""
+	}
 	url := UserCache.PreUrl + "/api/node/exam.json?nodeId=" + nodeId
 	method := "POST"
 
@@ -599,19 +610,19 @@ func ExamDetailApi(UserCache YingHuaUserCache, nodeId string) string {
 	req.Header.Set("Content-Type", writer.FormDataContentType())
 	res, err := client.Do(req)
 	if err != nil {
-		fmt.Println(err)
-		return ""
+		time.Sleep(time.Millisecond * 150) //延迟
+		return ExamDetailApi(UserCache, nodeId, retryNum-1, lastError)
 	}
 	defer res.Body.Close()
 
 	body, err := ioutil.ReadAll(res.Body)
 	if err != nil {
-		fmt.Println(err)
-		return ""
+		time.Sleep(time.Millisecond * 150) //延迟
+		return ExamDetailApi(UserCache, nodeId, retryNum-1, lastError)
 	}
 	if strings.Contains(string(body), "502 Bad Gateway") {
 		time.Sleep(time.Millisecond * 150) //延迟
-		return ExamDetailApi(UserCache, nodeId)
+		return ExamDetailApi(UserCache, nodeId, retryNum, lastError)
 	}
 	return string(body)
 }
@@ -992,15 +1003,6 @@ func SubmitWorkApi(UserCache YingHuaUserCache, workId, answerId string, answers 
 			writer.WriteField("answer_"+strconv.Itoa(i+1), v)
 		}
 	}
-	//if len(answer) == 1 { //如果单选题
-	//	writer.WriteField("answer", string(answer[0]))
-	//} else if gojsonq.New().JSONString(answer).Find("answer") != nil { //如果是简答题
-	//	writer.WriteField("answer", gojsonq.New().JSONString(answer).Find("answer").(string))
-	//} else { //如果多选题或者填空题
-	//	for i := 0; i < len(answer); i++ {
-	//		writer.WriteField("answer[]", string(answer[i]))
-	//	}
-	//}
 
 	// Close the writer to finalize the multipart form data
 	writer.Close()

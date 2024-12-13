@@ -17,13 +17,13 @@ import (
 // {"_code": 1, "status": false,"msg": "账号登录超时，请重新登录", "result": {}}
 func YingHuaLoginAction(cache *yinghuaApi.YingHuaUserCache) error {
 	for {
-		path, cookie := cache.VerificationCodeApi() //获取验证码
+		path, cookie := cache.VerificationCodeApi(5, nil) //获取验证码
 		cache.SetCookie(cookie)
 		img, _ := utils.ReadImg(path)                                  //读取验证码图片
 		codeResult := utils.AutoVerification(img, ort.NewShape(1, 18)) //自动识别
 		utils.DeleteFile(path)                                         //删除验证码文件
 		cache.SetVerCode(codeResult)                                   //填写验证码
-		jsonStr, _ := cache.LoginApi()                                 //执行登录
+		jsonStr, _ := cache.LoginApi(5, nil)                           //执行登录
 		log.Print(log.DEBUG, "["+cache.Account+"] "+"LoginAction---"+jsonStr)
 		if gojsonq.New().JSONString(jsonStr).Find("msg") == "验证码有误！" {
 			continue
