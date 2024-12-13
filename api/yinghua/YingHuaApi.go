@@ -569,9 +569,9 @@ func VideWatchRecodeApi(UserCache YingHuaUserCache, courseId string, page int, r
 }
 
 // ExamDetailApi 获取考试信息
-func ExamDetailApi(UserCache YingHuaUserCache, nodeId string, retryNum int, lastError error) string {
+func ExamDetailApi(UserCache YingHuaUserCache, nodeId string, retryNum int, lastError error) (string, error) {
 	if retryNum < 0 {
-		return ""
+		return "", lastError
 	}
 	url := UserCache.PreUrl + "/api/node/exam.json?nodeId=" + nodeId
 	method := "POST"
@@ -586,7 +586,7 @@ func ExamDetailApi(UserCache YingHuaUserCache, nodeId string, retryNum int, last
 	err := writer.Close()
 	if err != nil {
 		fmt.Println(err)
-		return ""
+		return "", err
 	}
 
 	tr := &http.Transport{
@@ -603,7 +603,7 @@ func ExamDetailApi(UserCache YingHuaUserCache, nodeId string, retryNum int, last
 
 	if err != nil {
 		fmt.Println(err)
-		return ""
+		return "", nil
 	}
 	req.Header.Add("User-Agent", "Mozilla/5.0 (Macintosh; Intel Mac OS X 10.13; rv:88.0) Gecko/20100101 Firefox/88.0")
 
@@ -611,20 +611,20 @@ func ExamDetailApi(UserCache YingHuaUserCache, nodeId string, retryNum int, last
 	res, err := client.Do(req)
 	if err != nil {
 		time.Sleep(time.Millisecond * 150) //延迟
-		return ExamDetailApi(UserCache, nodeId, retryNum-1, lastError)
+		return ExamDetailApi(UserCache, nodeId, retryNum-1, err)
 	}
 	defer res.Body.Close()
 
 	body, err := ioutil.ReadAll(res.Body)
 	if err != nil {
 		time.Sleep(time.Millisecond * 150) //延迟
-		return ExamDetailApi(UserCache, nodeId, retryNum-1, lastError)
+		return ExamDetailApi(UserCache, nodeId, retryNum-1, err)
 	}
 	if strings.Contains(string(body), "502 Bad Gateway") {
 		time.Sleep(time.Millisecond * 150) //延迟
-		return ExamDetailApi(UserCache, nodeId, retryNum, lastError)
+		return ExamDetailApi(UserCache, nodeId, retryNum, err)
 	}
-	return string(body)
+	return string(body), nil
 }
 
 // StartExam 开始考试接口

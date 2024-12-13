@@ -80,13 +80,17 @@ type YingHuaWork struct {
 // 课程列表
 func CourseListAction(cache *yinghuaApi.YingHuaUserCache) ([]YingHuaCourse, error) {
 	var courseList []YingHuaCourse
-	listJson, _ := cache.CourseListApi()
+	listJson, err := cache.CourseListApi()
+	if err != nil {
+		return []YingHuaCourse{}, errors.New("获取数据失败:" + err.Error())
+	}
+
 	log.Print(log.DEBUG, `[`, cache.Account, `] `, `CourseListAction---`, listJson)
 	//超时重登检测
 	LoginTimeoutAfreshAction(cache, listJson)
 	//如果获取失败
 	if gojsonq.New().JSONString(listJson).Find("msg") != "获取数据成功" {
-		return []YingHuaCourse{}, errors.New("获取数据失败")
+		return []YingHuaCourse{}, errors.New("获取数据失败:" + listJson)
 	}
 	jsonList := gojsonq.New().JSONString(listJson).Find("result.list")
 	// 断言为切片并遍历
@@ -107,12 +111,16 @@ func CourseListAction(cache *yinghuaApi.YingHuaUserCache) ([]YingHuaCourse, erro
 
 // CourseDetailAction 获取指定课程的信息
 func CourseDetailAction(cache *yinghuaApi.YingHuaUserCache, courseId string) (YingHuaCourse, error) {
-	courseDetailJson, _ := cache.CourseDetailApi(courseId)
+	courseDetailJson, err := cache.CourseDetailApi(courseId)
+	if err != nil {
+		return YingHuaCourse{}, errors.New("获取数据失败:" + err.Error())
+	}
+
 	//超时重登检测
 	LoginTimeoutAfreshAction(cache, courseDetailJson)
 	//如果获取失败
 	if gojsonq.New().JSONString(courseDetailJson).Find("msg") != "获取数据成功" {
-		return YingHuaCourse{}, errors.New("获取数据失败")
+		return YingHuaCourse{}, errors.New("获取数据失败:" + courseDetailJson)
 	}
 	json := gojsonq.New().JSONString(courseDetailJson).Find("result.data")
 	// 断言为切片并遍历
@@ -189,7 +197,7 @@ func VideosListAction(UserCache *yinghuaApi.YingHuaUserCache, course YingHuaCour
 		log.Print(log.DEBUG, `[`, UserCache.Account, `] `, `CourseListAction---`, listJson1)
 		//如果获取失败
 		if gojsonq.New().JSONString(listJson).Find("msg") != "获取数据成功" {
-			return []YingHuaNode{}, errors.New("获取数据失败")
+			return []YingHuaNode{}, errors.New("获取数据失败：" + err.Error())
 		}
 		jsonList1 := gojsonq.New().JSONString(listJson1).Find("result.list")
 		// 断言为切片并遍历
@@ -240,7 +248,10 @@ func SubmitStudyTimeAction(userCache *yinghuaApi.YingHuaUserCache, nodeId string
 // {"_code":9,"status":false,"msg":"考试测试时间还未开始","result":{}}
 func ExamDetailAction(UserCache *yinghuaApi.YingHuaUserCache, nodeId string) ([]YingHuaExam, error) {
 	var examList []YingHuaExam
-	jsonStr := yinghuaApi.ExamDetailApi(*UserCache, nodeId, 8, nil)
+	jsonStr, err := yinghuaApi.ExamDetailApi(*UserCache, nodeId, 8, nil)
+	if err != nil {
+		return []YingHuaExam{}, errors.New("获取数据失败" + err.Error())
+	}
 	//超时重登检测
 	LoginTimeoutAfreshAction(UserCache, jsonStr)
 	jsonData := gojsonq.New().JSONString(jsonStr).Find("result.list")
@@ -249,7 +260,7 @@ func ExamDetailAction(UserCache *yinghuaApi.YingHuaUserCache, nodeId string) ([]
 
 	//如果获取失败
 	if gojsonq.New().JSONString(jsonStr).Find("msg") != "获取数据成功" {
-		return []YingHuaExam{}, errors.New("获取数据失败")
+		return []YingHuaExam{}, errors.New("获取数据失败" + jsonStr)
 	}
 	jsonList := gojsonq.New().JSONString(jsonStr).Find("result.list")
 	// 断言为切片并遍历
@@ -367,7 +378,11 @@ func ExamFinallyScoreAction(userCache *yinghuaApi.YingHuaUserCache, work YingHua
 // WorkDetailAction 获取作业节点对应信息
 func WorkDetailAction(userCache *yinghuaApi.YingHuaUserCache, nodeId string) ([]YingHuaWork, error) {
 	var workList []YingHuaWork
-	jsonStr, _ := yinghuaApi.WorkDetailApi(*userCache, nodeId, 8, nil)
+	jsonStr, err := yinghuaApi.WorkDetailApi(*userCache, nodeId, 8, nil)
+	if err != nil {
+		return []YingHuaWork{}, errors.New("获取数据失败" + err.Error())
+	}
+
 	//超时重登检测
 	LoginTimeoutAfreshAction(userCache, jsonStr)
 	jsonData := gojsonq.New().JSONString(jsonStr).Find("result.list")
@@ -376,7 +391,7 @@ func WorkDetailAction(userCache *yinghuaApi.YingHuaUserCache, nodeId string) ([]
 
 	//如果获取失败
 	if gojsonq.New().JSONString(jsonStr).Find("msg") != "获取数据成功" {
-		return []YingHuaWork{}, errors.New("获取数据失败")
+		return []YingHuaWork{}, errors.New("获取数据失败" + jsonStr)
 	}
 	jsonList := gojsonq.New().JSONString(jsonStr).Find("result.list")
 	// 断言为切片并遍历
