@@ -36,13 +36,8 @@ func TestLoginXueXiTo(t *testing.T) {
 	if err != nil {
 		return
 	}
-	for _, v := range action.ChannelList {
-		fmt.Println(v.Content.Chatid)
-		fmt.Println(v.Content.Name)
-		for _, d := range v.Content.Course.Data {
-			fmt.Println(d.Name)
-		}
-		fmt.Println()
+	for _, v := range action {
+		fmt.Println(v.ToString())
 	}
 }
 
@@ -60,11 +55,11 @@ func TestCourseDetailXueXiTo(t *testing.T) {
 	if err != nil {
 		log.Fatal(err)
 	}
-	action, err := xuexitong.XueXiTCourseDetailForCourseIdAction(&userCache, "261619055656961")
+	action, err := xuexitong.XueXiTPullCourseAction(&userCache)
 	if err != nil {
 		log.Fatal(err)
 	}
-	fmt.Println(action)
+	fmt.Println(action[0].CourseID)
 }
 
 // TestCourseXueXiToChapter 用于测试学习通对应课程章节信息拉取
@@ -83,13 +78,19 @@ func TestCourseXueXiToChapter(t *testing.T) {
 		log.Fatal(err)
 	}
 	//拉取对应课程信息
-	course, err := xuexitong.XueXiTCourseDetailForCourseIdAction(&userCache, "261619055656961")
-	fmt.Println("name:" + course.CourseName)
-	fmt.Println("courseID:" + course.CourseId)
+	course, err := xuexitong.XueXiTPullCourseAction(&userCache)
+	var index int
+	for i, v := range course {
+		if v.ChatID == "261619055656961" {
+			index = i
+			break
+		}
+	}
+	fmt.Println("name:" + course[index].CourseName)
+	fmt.Println("courseID:" + course[index].CourseID)
 	//拉取对应课程的章节信息
-	cpi, _ := strconv.Atoi(course.Cpi)
-	key, _ := strconv.Atoi(course.ClassId)
-	chapter, err := xuexitong.PullCourseChapterAction(&userCache, cpi, key)
+	key, _ := strconv.Atoi(course[index].Key)
+	chapter, err := xuexitong.PullCourseChapterAction(&userCache, course[index].Cpi, key)
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -116,25 +117,29 @@ func TestXueXiToChapterPoint(t *testing.T) {
 	if err != nil {
 		log.Fatal(err)
 	}
-	course, err := xuexitong.XueXiTCourseDetailForCourseIdAction(&userCache, "261619055656961")
-	if err != nil {
-		log.Fatal(err)
+	//拉取对应课程信息
+	course, err := xuexitong.XueXiTPullCourseAction(&userCache)
+	var index int
+	for i, v := range course {
+		if v.CourseID == "261619055656961" {
+			index = i
+			break
+		}
 	}
-	cpi, _ := strconv.Atoi(course.Cpi)
-	key, _ := strconv.Atoi(course.ClassId)
-	action, _ := xuexitong.PullCourseChapterAction(&userCache, cpi, key)
+	key, _ := strconv.Atoi(course[index].Key)
+	action, _ := xuexitong.PullCourseChapterAction(&userCache, course[index].Cpi, key)
 	var nodes []int
 	for _, item := range action.Knowledge {
 		nodes = append(nodes, item.ID)
 	}
 
-	userId, _ := strconv.Atoi(course.UserId)
-	courseId, _ := strconv.Atoi(course.CourseId)
+	userId, _ := strconv.Atoi(userCache.UserID)
+	courseId, _ := strconv.Atoi(course[index].CourseID)
 
 	pointAction, err := xuexitong.ChapterFetchPointAction(&userCache,
 		nodes,
 		&action,
-		key, userId, cpi, courseId)
+		key, userId, course[index].Cpi, courseId)
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -163,19 +168,26 @@ func TestXueXiToChapterCord(t *testing.T) {
 	if err != nil {
 		log.Fatal(err)
 	}
-	course, err := xuexitong.XueXiTCourseDetailForCourseIdAction(&userCache, "261619055656961")
+	//拉取对应课程信息
+	course, err := xuexitong.XueXiTPullCourseAction(&userCache)
+	var index int
+	for i, v := range course {
+		if v.ChatID == "261619055656961" {
+			index = i
+			break
+		}
+	}
 	if err != nil {
 		log.Fatal(err)
 	}
-	cpi, _ := strconv.Atoi(course.Cpi)
-	key, _ := strconv.Atoi(course.ClassId)
-	action, _ := xuexitong.PullCourseChapterAction(&userCache, cpi, key)
+	key, _ := strconv.Atoi(course[index].Key)
+	action, _ := xuexitong.PullCourseChapterAction(&userCache, course[index].Cpi, key)
 	var nodes []int
 	for _, item := range action.Knowledge {
 		nodes = append(nodes, item.ID)
 	}
-	courseId, _ := strconv.Atoi(course.CourseId)
-	_, fetchCards, err := xuexitong.ChapterFetchCardsAction(&userCache, &action, nodes, 27, courseId, key, cpi)
+	courseId, _ := strconv.Atoi(course[index].CourseID)
+	_, fetchCards, err := xuexitong.ChapterFetchCardsAction(&userCache, &action, nodes, 27, courseId, key, course[index].Cpi)
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -188,7 +200,7 @@ func TestXueXiToChapterCord(t *testing.T) {
 	videoClassId, _ := strconv.Atoi(videoDTO.ClassID)
 	if courseId == videoCourseId && key == videoClassId {
 		// 测试只对单独一个卡片测试
-		card, err := xuexitong.PageMobileChapterCardAction(&userCache, key, courseId, videoDTO.KnowledgeID, videoDTO.CardIndex, cpi)
+		card, err := xuexitong.PageMobileChapterCardAction(&userCache, key, courseId, videoDTO.KnowledgeID, videoDTO.CardIndex, course[index].Cpi)
 		if err != nil {
 			log.Fatal(err)
 		}
@@ -214,19 +226,27 @@ func TestXueXiToChapterCardWork(t *testing.T) {
 	if err != nil {
 		log.Fatal(err)
 	}
-	course, err := xuexitong.XueXiTCourseDetailForCourseIdAction(&userCache, "259500784287745")
-	if err != nil {
-		log.Fatal(err)
+
+	//拉取对应课程信息
+	course, err := xuexitong.XueXiTPullCourseAction(&userCache)
+	var index int
+	for i, v := range course {
+		if v.ChatID == "259500784287745" {
+			index = i
+			break
+		}
 	}
-	cpi, _ := strconv.Atoi(course.Cpi)
-	key, _ := strconv.Atoi(course.ClassId)
-	action, _ := xuexitong.PullCourseChapterAction(&userCache, cpi, key)
+
+	key, _ := strconv.Atoi(course[index].Key)
+	action, _ := xuexitong.PullCourseChapterAction(&userCache, course[index].Cpi, key)
 	var nodes []int
 	for _, item := range action.Knowledge {
 		nodes = append(nodes, item.ID)
 	}
-	courseId, _ := strconv.Atoi(course.CourseId)
-	_, fetchCards, err := xuexitong.ChapterFetchCardsAction(&userCache, &action, nodes, 82, courseId, key, cpi)
+	courseId, _ := strconv.Atoi(course[index].CourseID)
+	fmt.Println(course[index].CourseDataID)
+	_, fetchCards, err := xuexitong.ChapterFetchCardsAction(&userCache, &action, nodes, 82, courseId,
+		key, course[index].Cpi)
 
 	videoDTOs, workDTOs, documentDTOs := entity.ParsePointDto(fetchCards)
 	fmt.Println(videoDTOs)
@@ -234,9 +254,16 @@ func TestXueXiToChapterCardWork(t *testing.T) {
 	fmt.Println(documentDTOs)
 	videoCourseId, _ := strconv.Atoi(videoDTOs[0].CourseID)
 	videoClassId, _ := strconv.Atoi(videoDTOs[0].ClassID)
+
 	if courseId == videoCourseId && key == videoClassId {
 		// 测试只对单独一个卡片测试
-		card, err := xuexitong.PageMobileChapterCardAction(&userCache, key, courseId, videoDTOs[0].KnowledgeID, videoDTOs[0].CardIndex, cpi)
+		card, err := xuexitong.PageMobileChapterCardAction(
+			&userCache,
+			key,
+			courseId,
+			videoDTOs[0].KnowledgeID,
+			videoDTOs[0].CardIndex,
+			course[index].Cpi)
 		if err != nil {
 			log.Fatal(err)
 		}
