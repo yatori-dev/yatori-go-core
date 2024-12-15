@@ -44,8 +44,10 @@ const (
 )
 
 type XueXiTUserCache struct {
-	Name        string //用户使用Phone
-	Password    string //用户密码
+	Name     string //用户使用Phone
+	Password string //用户密码
+
+	UserID      string // 用户ID
 	JsonContent map[string]interface{}
 	cookie      string //验证码用的session
 }

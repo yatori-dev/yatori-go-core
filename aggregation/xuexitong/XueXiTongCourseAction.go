@@ -14,8 +14,27 @@ import (
 	log2 "github.com/yatori-dev/yatori-go-core/utils/log"
 )
 
+type XueXiTCourse struct {
+	Cpi           int    `json:"cpi"`      // 用户唯一标识
+	Key           string `json:"key"`      // classID 在课程API中为key
+	CourseID      string `json:"courseId"` // 课程ID
+	ChatID        string `json:"chatId"`
+	CourseTeacher string `json:"courseTeacher"` // 课程老师
+	CourseName    string `json:"courseName"`    //课程名
+	// 两个标识 暂时不知道有什么用
+	CourseDataID int `json:"courseDataId"`
+	ContentID    int `json:"ContentID"`
+}
+
+func (x *XueXiTCourse) ToString() string {
+	return fmt.Sprintf(
+		"XueXiTCourse{Cpi: %d, Key: %v, CourseID: %s,Teacher: %s, CourseName: %s, CourseDataID: %d, ContentID: %d}",
+		x.Cpi, x.Key, x.CourseID, x.CourseTeacher, x.CourseName, x.CourseDataID, x.ContentID,
+	)
+}
+
 // 拉取学习通所有课程列表并返回
-func XueXiTPullCourseAction(cache *xuexitong.XueXiTUserCache) (entity.XueXiTCourseJson, error) {
+func XueXiTPullCourseAction(cache *xuexitong.XueXiTUserCache) ([]XueXiTCourse, error) {
 	courses, err := cache.CourseListApi()
 	if err != nil {
 		log2.Print(log2.INFO, "["+cache.Name+"] "+" 拉取失败")
@@ -28,39 +47,75 @@ func XueXiTPullCourseAction(cache *xuexitong.XueXiTUserCache) (entity.XueXiTCour
 	}
 	log2.Print(log2.INFO, "["+cache.Name+"] "+" 课程数量："+strconv.Itoa(len(xueXiTCourse.ChannelList)))
 	// log2.Print(log2.INFO, "["+cache.Name+"] "+courses)
-	return xueXiTCourse, nil
+
+	sqUrl := xueXiTCourse.ChannelList[0].Content.Course.Data[0].CourseSquareUrl
+	userID := strings.Split(sqUrl, "userId=")[1]
+	cache.UserID = userID
+	var courseList = make([]XueXiTCourse, 0)
+	for _, channel := range xueXiTCourse.ChannelList {
+
+		var (
+			teacher      string
+			courseName   string
+			courseDataID int
+			classId      string
+			courseID     string
+		)
+
+		for _, v := range channel.Content.Course.Data {
+			teacher = v.Teacherfactor
+			courseName = v.Name
+			courseDataID = v.Id
+			classId = strings.Split(strings.Split(v.CourseSquareUrl, "classId=")[1], "&userId")[0]
+			courseID = strings.Split(strings.Split(v.CourseSquareUrl, "courseId=")[1], "&personId")[0]
+		}
+
+		course := XueXiTCourse{
+			Cpi:           channel.Cpi,
+			Key:           classId,
+			CourseID:      courseID,
+			ChatID:        channel.Content.Chatid,
+			CourseTeacher: teacher,
+			CourseName:    courseName,
+			CourseDataID:  courseDataID,
+			ContentID:     channel.Content.Id,
+		}
+		courseList = append(courseList, course)
+	}
+	return courseList, nil
 }
 
+// TODO 优化掉
 // XueXiTCourseDetailForCourseIdAction 根据课程ID拉取学习课程详细信息
-func XueXiTCourseDetailForCourseIdAction(cache *xuexitong.XueXiTUserCache, courseId string) (entity.XueXiTCourse, error) {
-	courses, err := cache.CourseListApi()
-	if err != nil {
-		return entity.XueXiTCourse{}, err
-	}
-	var xueXiTCourse entity.XueXiTCourseJson
-	err = json.Unmarshal([]byte(courses), &xueXiTCourse)
-	for _, channel := range xueXiTCourse.ChannelList {
-		if channel.Content.Chatid != courseId {
-			continue
-		}
-		//marshal, _ := json.Marshal()
-		sqUrl := channel.Content.Course.Data[0].CourseSquareUrl
-		courseId := strings.Split(strings.Split(sqUrl, "courseId=")[1], "&personId")[0]
-		personId := strings.Split(strings.Split(sqUrl, "personId=")[1], "&classId")[0]
-		classId := strings.Split(strings.Split(sqUrl, "classId=")[1], "&userId")[0]
-		userId := strings.Split(sqUrl, "userId=")[1]
-		course := entity.XueXiTCourse{
-			CourseName: channel.Content.Name,
-			ClassId:    classId,
-			CourseId:   courseId,
-			Cpi:        strconv.Itoa(channel.Cpi),
-			PersonId:   personId,
-			UserId:     userId}
-		return course, nil
-	}
-	log2.Print(log2.INFO, "["+cache.Name+"] "+" 课程不存在")
-	return entity.XueXiTCourse{}, nil
-}
+//func XueXiTCourseDetailForCourseIdAction(cache *xuexitong.XueXiTUserCache, courseId string) (entity.XueXiTCourse, error) {
+//	courses, err := cache.CourseListApi()
+//	if err != nil {
+//		return entity.XueXiTCourse{}, err
+//	}
+//	var xueXiTCourse entity.XueXiTCourseJson
+//	err = json.Unmarshal([]byte(courses), &xueXiTCourse)
+//	for _, channel := range xueXiTCourse.ChannelList {
+//		if channel.Content.Chatid != courseId {
+//			continue
+//		}
+//		//marshal, _ := json.Marshal()
+//		sqUrl := channel.Content.Course.Data[0].CourseSquareUrl
+//		courseId := strings.Split(strings.Split(sqUrl, "courseId=")[1], "&personId")[0]
+//		personId := strings.Split(strings.Split(sqUrl, "personId=")[1], "&classId")[0]
+//		classId := strings.Split(strings.Split(sqUrl, "classId=")[1], "&userId")[0]
+//		userId := strings.Split(sqUrl, "userId=")[1]
+//		course := entity.XueXiTCourse{
+//			CourseName: channel.Content.Name,
+//			ClassId:    classId,
+//			CourseId:   courseId,
+//			Cpi:        strconv.Itoa(channel.Cpi),
+//			PersonId:   personId,
+//			UserId:     userId}
+//		return course, nil
+//	}
+//	log2.Print(log2.INFO, "["+cache.Name+"] "+" 课程不存在")
+//	return entity.XueXiTCourse{}, nil
+//}
 
 type ChaptersList struct {
 	ChatID    string          `json:"chatid"`
