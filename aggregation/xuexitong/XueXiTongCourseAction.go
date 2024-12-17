@@ -3,6 +3,7 @@ package xuexitong
 import (
 	"bytes"
 	"encoding/json"
+	"errors"
 	"fmt"
 	"log"
 	"sort"
@@ -146,6 +147,7 @@ func PullCourseChapterAction(cache *xuexitong.XueXiTUserCache, cpi, key int) (Ch
 		log2.Print(log2.INFO, "["+cache.Name+"] "+" 拉取章节失败")
 		return ChaptersList{}, err
 	}
+
 	var chaptersList ChaptersList
 	var chapterMap map[string]interface{}
 	err = json.Unmarshal([]byte(chapter), &chapterMap)
@@ -154,13 +156,17 @@ func PullCourseChapterAction(cache *xuexitong.XueXiTUserCache, cpi, key int) (Ch
 		return ChaptersList{}, err
 	}
 	chapterMapJson, err := json.Marshal(chapterMap["data"])
+	if len(chapterMapJson) == 2 {
+		return ChaptersList{}, errors.New("课程获取失败")
+	}
 	// 解析 JSON 数据为 map 切片
 	var chapterData []map[string]interface{}
 	if err := json.Unmarshal(chapterMapJson, &chapterData); err != nil {
 		log.Fatalf("Error parsing JSON: %v", err)
 	}
-	chatid := chapterData[0]["chatid"].(string)
 
+	chatid := chapterData[0]["chatid"].(string)
+	fmt.Println(chatid)
 	// 提取 knowledge
 	var knowledgeData []map[string]interface{}
 	course, ok := chapterData[0]["course"].(map[string]interface{})
