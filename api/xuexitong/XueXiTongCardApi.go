@@ -107,7 +107,7 @@ func (cache *XueXiTUserCache) VideoDtoPlayReport(p *entity.PointVideoDto, playin
 	hash := md5.Sum([]byte(fmt.Sprintf("[%s][%s][%s][%s][%d][%s][%d][%s]",
 		p.ClassID, p.PUID, p.JobID, p.ObjectID, playingTime*1000, "d_yHJ!$pdA~5", p.Duration*1000, clipTime)))
 	enc := hex.EncodeToString(hash[:])
-	fmt.Println(enc)
+	//fmt.Println(enc)
 	client := &http.Client{}
 	params := url.Values{}
 	params.Set("otherInfo", p.OtherInfo)
