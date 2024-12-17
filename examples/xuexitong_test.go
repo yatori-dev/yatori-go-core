@@ -313,8 +313,11 @@ func TestXueXiToCourseForVideo(t *testing.T) {
 
 	courseList, err := xuexitong.XueXiTPullCourseAction(&userCache) //拉取所有课程
 	for _, course := range courseList {                             //遍历课程
-		key, _ := strconv.Atoi(course.CourseID)
-		action, _ := xuexitong.PullCourseChapterAction(&userCache, course.Cpi, key) //获取对应章节信息
+		key, _ := strconv.Atoi(course.Key)
+		action, err := xuexitong.PullCourseChapterAction(&userCache, course.Cpi, key) //获取对应章节信息
+		if err != nil {
+			log.Fatal(err)
+		}
 		var nodes []int
 		for _, item := range action.Knowledge {
 			nodes = append(nodes, item.ID)
@@ -331,13 +334,15 @@ func TestXueXiToCourseForVideo(t *testing.T) {
 				return false
 			}
 			i := pointAction.Knowledge[index]
-			return i.PointTotal > 0 && i.PointTotal == i.PointFinished
+			return i.PointTotal >= 0 && i.PointTotal == i.PointFinished
 		}
 
 		for index, item := range nodes {
-			if pointAction.Knowledge[index].ID == item && !isFinished(index) {
-				log.Println("任务点已完成忽略")
-				time.Sleep(1 * time.Second)
+			if isFinished(index) {
+				log.Printf("ID.%d(%s/%s)任务点已完成忽略\n",
+					item,
+					pointAction.Knowledge[index].Label, pointAction.Knowledge[index].Name)
+				time.Sleep(500 * time.Millisecond)
 				continue
 			}
 			_, fetchCards, err := xuexitong.ChapterFetchCardsAction(&userCache, &action, nodes, index, courseId, key, course.Cpi)
@@ -360,6 +365,8 @@ func TestXueXiToCourseForVideo(t *testing.T) {
 					point.ExecuteVideo(&userCache, &videoDTO)
 					time.Sleep(5 * time.Second)
 				}
+			} else {
+				log.Println("暂时仅对视频刷取")
 			}
 		}
 	}
