@@ -348,7 +348,10 @@ func TestXueXiToChapterCardDocument(t *testing.T) {
 						log.Fatal(err)
 					}
 					documentDTO.AttachmentsDetection(card)
-					fmt.Println(documentDTO)
+					point.ExecuteDocument(&userCache, &documentDTO)
+					if err != nil {
+						log.Fatal(err)
+					}
 					time.Sleep(5 * time.Second)
 				}
 			} else {
