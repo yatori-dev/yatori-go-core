@@ -376,7 +376,7 @@ func TestXueXiToCourseForVideo(t *testing.T) {
 	utils.YatoriCoreInit()
 	//测试账号
 	setup()
-	user := global.Config.Users[7]
+	user := global.Config.Users[5]
 	userCache := xuexitongApi.XueXiTUserCache{
 		Name:     user.Account,
 		Password: user.Password,
