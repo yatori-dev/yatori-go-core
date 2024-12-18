@@ -2,7 +2,6 @@ package entity
 
 import (
 	"errors"
-	"fmt"
 	"github.com/yatori-dev/yatori-go-core/models/ctype"
 	"log"
 	"net/http"
@@ -83,7 +82,9 @@ type PointDocumentDto struct {
 	Cpi         string
 
 	ObjectID string
+	Title    string
 	JobID    string
+	Jtoken   string
 
 	Type  ctype.CardType
 	IsSet bool
@@ -225,6 +226,26 @@ func (p *PointDocumentDto) AttachmentsDetection(attachment interface{}) (bool, e
 	if !ok {
 		return false, errors.New("无法将 Attachment 转换为 map[string]interface{}")
 	}
-	fmt.Println(attachmentMap)
+	attachments, ok := attachmentMap["attachments"].([]interface{})
+	if !ok {
+		return false, errors.New("invalid attachment structure")
+	}
+
+	for _, a := range attachments {
+		att, _ := a.(map[string]interface{})
+		document := att["type"].(string)
+		if document == "document" {
+			property, ok := att["property"].(map[string]interface{})
+			if !ok {
+				return false, errors.New("invalid property structure")
+			}
+			objectid := property["objectid"]
+			if objectid == p.ObjectID {
+				p.Title = property["name"].(string)
+				p.JobID = property["jobid"].(string)
+				p.Jtoken = att["jtoken"].(string)
+			}
+		}
+	}
 	return true, nil
 }
