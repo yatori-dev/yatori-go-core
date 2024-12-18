@@ -36,6 +36,9 @@ const (
 	// ApiWorkCommit 接口-单元作业答题提交
 	ApiWorkCommit = "https://mooc1-api.chaoxing.com/work/addStudentWorkNew"
 
+	// 接口-课程文档阅读上报
+	ApiDocumentReadingReport = "https://mooc1.chaoxing.com/ananas/job/document"
+
 	// PageMobileWork SSR页面-客户端单元测验答题页
 	PageMobileWork  = "https://mooc1-api.chaoxing.com/android/mworkspecial"           // 这是个cxkitty中的
 	PageMobileWorkY = "https://mooc1-api.chaoxing.com/mooc-ans/work/phone/doHomeWork" // 这个是自己爬的

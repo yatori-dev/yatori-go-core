@@ -260,3 +260,42 @@ func (cache *XueXiTUserCache) WorkCommit(p *entity.PointWorkDto, fields []entity
 	}
 	return string(body), nil
 }
+
+func (cache *XueXiTUserCache) DocumentDtoReadingReport(p *entity.PointDocumentDto) (string, error) {
+	method := "GET"
+
+	client := &http.Client{}
+	params := url.Values{}
+
+	params.Add("jobid", p.JobID)
+	params.Add("knowledgeid", strconv.Itoa(p.KnowledgeID))
+	params.Add("courseid", p.CourseID)
+	params.Add("clazzid", p.ClassID)
+	params.Add("jtoken", p.Jtoken)
+	params.Add("_dc", strconv.FormatInt(time.Now().UnixMilli(), 10))
+
+	resp, err := http.NewRequest(method, ApiDocumentReadingReport+"?"+params.Encode(), nil)
+	if err != nil {
+		return "", err
+	}
+
+	resp.Header.Add("User-Agent", "Apifox/1.0.0 (https://apifox.com)")
+	resp.Header.Add("Accept", "*/*")
+	resp.Header.Add("Host", "mooc1.chaoxing.com")
+	resp.Header.Add("Connection", "keep-alive")
+	resp.Header.Add("Cookie", cache.cookie)
+	resp.Header.Add("Content-Type", " application/json")
+
+	res, err := client.Do(resp)
+	if err != nil {
+		return "", err
+	}
+	defer res.Body.Close()
+
+	if res.StatusCode != http.StatusOK {
+		return "", fmt.Errorf("failed to fetch video, status code: %d", res.StatusCode)
+	}
+
+	body, err := ioutil.ReadAll(res.Body)
+	return string(body), nil
+}
