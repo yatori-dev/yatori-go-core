@@ -44,7 +44,6 @@ func PageMobileChapterCardAction(
 		log.Fatal(err)
 		return nil, err
 	}
-
 	doc, err := html.Parse(bytes.NewReader([]byte(cardHtml)))
 	if err != nil {
 		return nil, fmt.Errorf("failed to parse HTML: %w", err)
