@@ -148,8 +148,10 @@ func (cache *YingHuaUserCache) VerificationCodeApi(retry int) (string, string) {
 
 	res, err := client.Do(req)
 	if err != nil {
-		fmt.Println(err)
 		time.Sleep(150 * time.Millisecond)
+		if strings.Contains(err.Error(), "A connection attempt failed because the connected party did not properly respond after a period of time") {
+			return cache.VerificationCodeApi(retry)
+		}
 		return cache.VerificationCodeApi(retry - 1)
 	}
 	defer res.Body.Close()
@@ -214,8 +216,8 @@ func KeepAliveApi(UserCache YingHuaUserCache) string {
 	req.Header.Set("Content-Type", writer.FormDataContentType())
 	res, err := client.Do(req)
 	if err != nil {
-		fmt.Println(err)
-		return ""
+		time.Sleep(time.Millisecond * 150) //延迟
+		return KeepAliveApi(UserCache)
 	}
 	defer res.Body.Close()
 
@@ -270,7 +272,11 @@ func (cache *YingHuaUserCache) CourseListApi(retry int, lastError error) (string
 	req.Header.Set("Content-Type", writer.FormDataContentType())
 	res, err := client.Do(req)
 	if err != nil {
-		return "", err
+		time.Sleep(time.Millisecond * 150) //延迟
+		if strings.Contains(err.Error(), "A connection attempt failed because the connected party did not properly respond after a period of time") {
+			return cache.CourseListApi(retry, err)
+		}
+		return cache.CourseListApi(retry-1, err)
 	}
 	defer res.Body.Close()
 
@@ -326,7 +332,11 @@ func (cache *YingHuaUserCache) CourseDetailApi(courseId string, retry int, lastE
 	req.Header.Set("Content-Type", writer.FormDataContentType())
 	res, err := client.Do(req)
 	if err != nil {
-		return "", err
+		time.Sleep(time.Millisecond * 150) //延迟
+		if strings.Contains(err.Error(), "A connection attempt failed because the connected party did not properly respond after a period of time") {
+			return cache.CourseDetailApi(courseId, retry, err)
+		}
+		return cache.CourseDetailApi(courseId, retry-1, err)
 	}
 	defer res.Body.Close()
 
@@ -383,6 +393,9 @@ func CourseVideListApi(UserCache YingHuaUserCache, courseId string /*课程ID*/,
 	res, err := client.Do(req)
 	if err != nil {
 		time.Sleep(time.Millisecond * 150) //延迟
+		if strings.Contains(err.Error(), "A connection attempt failed because the connected party did not properly respond after a period of time") {
+			return CourseVideListApi(UserCache, courseId, retry, err)
+		}
 		return CourseVideListApi(UserCache, courseId, retry-1, err)
 	}
 	defer res.Body.Close()
