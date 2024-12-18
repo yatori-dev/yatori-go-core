@@ -80,7 +80,11 @@ type PointDocumentDto struct {
 	ClassID     string
 	KnowledgeID int
 	Cpi         string
-	ObjectID    string
+
+	ObjectID string
+	Title    string
+	JobID    string
+	Jtoken   string
 
 	Type  ctype.CardType
 	IsSet bool
@@ -215,4 +219,33 @@ func (p *PointWorkDto) AttachmentsDetection(attachment interface{}) (bool, error
 	p.KToken = defaults["ktoken"].(string)
 	p.PUID = defaults["userid"].(string)
 	return flag, nil
+}
+
+func (p *PointDocumentDto) AttachmentsDetection(attachment interface{}) (bool, error) {
+	attachmentMap, ok := attachment.(map[string]interface{})
+	if !ok {
+		return false, errors.New("无法将 Attachment 转换为 map[string]interface{}")
+	}
+	attachments, ok := attachmentMap["attachments"].([]interface{})
+	if !ok {
+		return false, errors.New("invalid attachment structure")
+	}
+
+	for _, a := range attachments {
+		att, _ := a.(map[string]interface{})
+		document := att["type"].(string)
+		if document == "document" {
+			property, ok := att["property"].(map[string]interface{})
+			if !ok {
+				return false, errors.New("invalid property structure")
+			}
+			objectid := property["objectid"]
+			if objectid == p.ObjectID {
+				p.Title = property["name"].(string)
+				p.JobID = property["jobid"].(string)
+				p.Jtoken = att["jtoken"].(string)
+			}
+		}
+	}
+	return true, nil
 }
