@@ -17,7 +17,7 @@ import (
 // {"_code": 1, "status": false,"msg": "账号登录超时，请重新登录", "result": {}}
 func YingHuaLoginAction(cache *yinghuaApi.YingHuaUserCache) error {
 	for {
-		path, cookie := cache.VerificationCodeApi(5, nil) //获取验证码
+		path, cookie := cache.VerificationCodeApi(5) //获取验证码
 		cache.SetCookie(cookie)
 		img, _ := utils.ReadImg(path)                                  //读取验证码图片
 		codeResult := utils.AutoVerification(img, ort.NewShape(1, 18)) //自动识别
