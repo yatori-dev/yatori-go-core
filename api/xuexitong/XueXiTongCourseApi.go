@@ -33,3 +33,55 @@ func (cache *XueXiTUserCache) CourseListApi() (string, error) {
 	}
 	return string(body), nil
 }
+
+// 获取人脸二维码信息（未完成）
+func (cache *XueXiTUserCache) GetCourseFaceQrApi(uuid, classId string) (string, error) {
+	method := "POST"
+
+	client := &http.Client{}
+	req, err := http.NewRequest(method, "https://mooc1-api.chaoxing.com/mooc-ans/qr/updateqrstatus?uuid2="+uuid+"&clazzId2="+classId, nil)
+
+	if err != nil {
+		return "", err
+	}
+	req.Header.Add("Cookie", cache.cookie)
+	req.Header.Add("User-Agent", "Apifox/1.0.0 (https://apifox.com)")
+
+	res, err := client.Do(req)
+	if err != nil {
+		return "", err
+	}
+	defer res.Body.Close()
+
+	body, err := ioutil.ReadAll(res.Body)
+	if err != nil {
+		return "", err
+	}
+	return string(body), nil
+}
+
+// 获取人脸状态（二维码状态）
+func (cache *XueXiTUserCache) GetCourseFaceQrStateApi() (string, error) {
+	method := "GET"
+
+	client := &http.Client{}
+	req, err := http.NewRequest(method, "https://mooc1-api.chaoxing.com/knowledge/uploadInfo", nil)
+
+	if err != nil {
+		return "", err
+	}
+	req.Header.Add("Cookie", cache.cookie)
+	req.Header.Add("User-Agent", "Apifox/1.0.0 (https://apifox.com)")
+
+	res, err := client.Do(req)
+	if err != nil {
+		return "", err
+	}
+	defer res.Body.Close()
+
+	body, err := ioutil.ReadAll(res.Body)
+	if err != nil {
+		return "", err
+	}
+	return string(body), nil
+}
