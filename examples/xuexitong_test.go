@@ -374,6 +374,6 @@ func TestFaceQrScan(t *testing.T) {
 	if err != nil {
 		log.Fatal(err)
 	}
-	api, _ := userCache.GetCourseFaceQrApi("2c261aa3-d428-414c-a619-56535f85c8", "105533723")
-	fmt.Println(api)
+	//api, _ := userCache.GetCourseFaceQrApi("2c261aa3-d428-414c-a619-56535f85c8", "105533723")
+	//fmt.Println(api)
 }
