@@ -80,7 +80,7 @@ type YingHuaWork struct {
 // 课程列表
 func CourseListAction(cache *yinghuaApi.YingHuaUserCache) ([]YingHuaCourse, error) {
 	var courseList []YingHuaCourse
-	listJson, err := cache.CourseListApi()
+	listJson, err := cache.CourseListApi(10, nil)
 	if err != nil {
 		return []YingHuaCourse{}, errors.New("获取数据失败:" + err.Error())
 	}
@@ -111,7 +111,7 @@ func CourseListAction(cache *yinghuaApi.YingHuaUserCache) ([]YingHuaCourse, erro
 
 // CourseDetailAction 获取指定课程的信息
 func CourseDetailAction(cache *yinghuaApi.YingHuaUserCache, courseId string) (YingHuaCourse, error) {
-	courseDetailJson, err := cache.CourseDetailApi(courseId)
+	courseDetailJson, err := cache.CourseDetailApi(courseId, 10, nil)
 	if err != nil {
 		return YingHuaCourse{}, errors.New("获取数据失败:" + err.Error())
 	}
@@ -248,7 +248,7 @@ func SubmitStudyTimeAction(userCache *yinghuaApi.YingHuaUserCache, nodeId string
 // {"_code":9,"status":false,"msg":"考试测试时间还未开始","result":{}}
 func ExamDetailAction(UserCache *yinghuaApi.YingHuaUserCache, nodeId string) ([]YingHuaExam, error) {
 	var examList []YingHuaExam
-	jsonStr, err := yinghuaApi.ExamDetailApi(*UserCache, nodeId, 8, nil)
+	jsonStr, err := yinghuaApi.ExamDetailApi(*UserCache, nodeId, 10, nil)
 	if err != nil {
 		return []YingHuaExam{}, errors.New("获取数据失败" + err.Error())
 	}

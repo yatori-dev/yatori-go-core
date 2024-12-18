@@ -277,19 +277,6 @@ func TestXueXiToChapterCardWork(t *testing.T) {
 		}
 
 		xuexitong.ParseWorkQuestionAction(&userCache, &workDTOs[0])
-		//file, err := os.Create("xuexiTquestion.html")
-		//if err != nil {
-		//	fmt.Println("创建文件失败:", err)
-		//	return
-		//}
-		//defer file.Close()
-		//
-		//_, err = file.WriteString(question)
-		//if err != nil {
-		//	fmt.Println("写入文件失败:", err)
-		//	return
-		//}
-		//fmt.Println("HTML内容已成功写入文件!")
 	} else {
 		log.Fatal("任务点对象错误")
 	}
@@ -300,7 +287,7 @@ func TestXueXiToCourseForVideo(t *testing.T) {
 	utils.YatoriCoreInit()
 	//测试账号
 	setup()
-	user := global.Config.Users[1]
+	user := global.Config.Users[5]
 	userCache := xuexitongApi.XueXiTUserCache{
 		Name:     user.Account,
 		Password: user.Password,
@@ -362,7 +349,8 @@ func TestXueXiToCourseForVideo(t *testing.T) {
 						log.Fatal(err)
 					}
 					videoDTO.AttachmentsDetection(card)
-					point.ExecuteVideo(&userCache, &videoDTO)
+					//point.ExecuteVideo(&userCache, &videoDTO) //常规
+					point.ExecuteFastVideo(&userCache, &videoDTO) //秒刷
 					time.Sleep(5 * time.Second)
 				}
 			} else {

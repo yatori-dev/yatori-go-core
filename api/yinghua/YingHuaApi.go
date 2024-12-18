@@ -120,7 +120,7 @@ func (cache *YingHuaUserCache) LoginApi(retry int, lastError error) (string, err
 // VerificationCodeApi 获取验证码和SESSION验证码,并返回文件路径和SESSION字符串
 var randChar []string = []string{"0", "1", "2", "3", "4", "5", "6", "7", "8", "9", "a", "b", "c", "d", "e", "f", "A", "B", "C", "D", "E", "F"}
 
-func (cache *YingHuaUserCache) VerificationCodeApi(retry int, lastError error) (string, string) {
+func (cache *YingHuaUserCache) VerificationCodeApi(retry int) (string, string) {
 	if retry < 0 {
 		return "", ""
 	}
@@ -150,7 +150,7 @@ func (cache *YingHuaUserCache) VerificationCodeApi(retry int, lastError error) (
 	if err != nil {
 		fmt.Println(err)
 		time.Sleep(150 * time.Millisecond)
-		return cache.VerificationCodeApi(retry-1, err)
+		return cache.VerificationCodeApi(retry - 1)
 	}
 	defer res.Body.Close()
 
@@ -232,8 +232,10 @@ func KeepAliveApi(UserCache YingHuaUserCache) string {
 }
 
 // CourseListApi 拉取课程列表API
-func (cache *YingHuaUserCache) CourseListApi() (string, error) {
-
+func (cache *YingHuaUserCache) CourseListApi(retry int, lastError error) (string, error) {
+	if retry < 0 {
+		return "", lastError
+	}
 	url := cache.PreUrl + "/api/course/list.json"
 	method := "POST"
 
@@ -274,18 +276,21 @@ func (cache *YingHuaUserCache) CourseListApi() (string, error) {
 
 	body, err := ioutil.ReadAll(res.Body)
 	if err != nil {
-		return "", err
+		time.Sleep(time.Millisecond * 150) //延迟
+		return cache.CourseListApi(retry-1, err)
 	}
 	if strings.Contains(string(body), "502 Bad Gateway") {
 		time.Sleep(time.Millisecond * 150) //延迟
-		return cache.CourseListApi()
+		return cache.CourseListApi(retry, err)
 	}
 	return string(body), nil
 }
 
 // CourseDetailApi 获取课程详细信息API
-func (cache *YingHuaUserCache) CourseDetailApi(courseId string) (string, error) {
-
+func (cache *YingHuaUserCache) CourseDetailApi(courseId string, retry int, lastError error) (string, error) {
+	if retry < 0 {
+		return "", lastError
+	}
 	url := cache.PreUrl + "/api/course/detail.json"
 	method := "POST"
 
@@ -327,11 +332,12 @@ func (cache *YingHuaUserCache) CourseDetailApi(courseId string) (string, error) 
 
 	body, err := ioutil.ReadAll(res.Body)
 	if err != nil {
-		return "", err
+		time.Sleep(time.Millisecond * 150) //延迟
+		return cache.CourseDetailApi(courseId, retry-1, err)
 	}
 	if strings.Contains(string(body), "502 Bad Gateway") {
 		time.Sleep(time.Millisecond * 150) //延迟
-		return cache.CourseDetailApi(courseId)
+		return cache.CourseDetailApi(courseId, retry, err)
 	}
 	return string(body), err
 }
