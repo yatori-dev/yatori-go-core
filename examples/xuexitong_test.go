@@ -300,6 +300,11 @@ func TestXueXiToCourseForVideo(t *testing.T) {
 
 	courseList, err := xuexitong.XueXiTPullCourseAction(&userCache) //拉取所有课程
 	for _, course := range courseList {                             //遍历课程
+		if course.CourseName != "名侦探柯南与化学探秘" {
+			continue
+		}
+		// 6c444b8d5c6203ee2f2aef4b76f5b2ce qrcEnc
+
 		key, _ := strconv.Atoi(course.Key)
 		action, err := xuexitong.PullCourseChapterAction(&userCache, course.Cpi, key) //获取对应章节信息
 		if err != nil {
@@ -374,6 +379,11 @@ func TestFaceQrScan(t *testing.T) {
 	if err != nil {
 		log.Fatal(err)
 	}
+	//拉取人脸必要数据
+	//uuid, qrEnc, err := userCache.GetFaceQrCodeApi(course.CourseID, videoDTO.ClassID, strconv.Itoa(item), strconv.Itoa(course.Cpi))
+	//过人脸
+	api, _ := userCache.GetCourseFaceQrPlan1Api("245983363", "105533723", "48960c03-5e57-408c-bb97-1718b30032fd", "16eeb4b1d6d733a08785449c8d9784f7", "197217206d33b1af6d8118996e3762f8", "0")
+	fmt.Println(api)
 	//api, _ := userCache.GetCourseFaceQrApi("2c261aa3-d428-414c-a619-56535f85c8", "105533723")
 	//fmt.Println(api)
 }
