@@ -151,8 +151,14 @@ func ChapterFetchCardsAction(
 					log.Printf("(%d, %d) 任务点 'workid', 'schoolid' 或 '_jobid' 不存在或为空 %+v", cardIndex, pointIndex, point)
 					continue
 				}
+			case string(ctype.Insertdoc):
+				// 同为文档类型，暂未做区分
+				fallthrough
 			case string(ctype.Document):
-				if objectID, ok := point.Data["objectid"].(string); ok && objectID != "" {
+
+				jobID, ok3 := point.Data["_jobid"].(string)
+
+				if objectID, ok := point.Data["objectid"].(string); ok && objectID != "" && ok3 && jobID != "" {
 					pointObj.PointDocumentDto = entity.PointDocumentDto{
 						CardIndex:   cardIndex,
 						CourseID:    strconv.Itoa(courseId),
@@ -160,6 +166,7 @@ func ChapterFetchCardsAction(
 						KnowledgeID: card.KnowledgeID,
 						Cpi:         strconv.Itoa(cpi),
 						ObjectID:    objectID,
+						JobID:       jobID,
 						Type:        ctype.Document,
 						IsSet:       ok,
 					}
@@ -168,7 +175,8 @@ func ChapterFetchCardsAction(
 					continue
 				}
 			default:
-				log.Printf("未知的任务点类型: %s", pointType)
+				log.Printf("未知的任务点类型: %s\n", pointType)
+				log.Printf("%+v", point)
 				continue
 			}
 

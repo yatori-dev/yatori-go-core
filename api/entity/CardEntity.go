@@ -2,6 +2,7 @@ package entity
 
 import (
 	"errors"
+	"fmt"
 	"github.com/yatori-dev/yatori-go-core/models/ctype"
 	"log"
 	"net/http"
@@ -80,7 +81,9 @@ type PointDocumentDto struct {
 	ClassID     string
 	KnowledgeID int
 	Cpi         string
-	ObjectID    string
+
+	ObjectID string
+	JobID    string
 
 	Type  ctype.CardType
 	IsSet bool
@@ -215,4 +218,13 @@ func (p *PointWorkDto) AttachmentsDetection(attachment interface{}) (bool, error
 	p.KToken = defaults["ktoken"].(string)
 	p.PUID = defaults["userid"].(string)
 	return flag, nil
+}
+
+func (p *PointDocumentDto) AttachmentsDetection(attachment interface{}) (bool, error) {
+	attachmentMap, ok := attachment.(map[string]interface{})
+	if !ok {
+		return false, errors.New("无法将 Attachment 转换为 map[string]interface{}")
+	}
+	fmt.Println(attachmentMap)
+	return true, nil
 }

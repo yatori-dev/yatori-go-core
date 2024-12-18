@@ -295,12 +295,11 @@ func TestXueXiToChapterCardWork(t *testing.T) {
 	}
 }
 
-// 遍历所有课程对应视屏的例子
-func TestXueXiToCourseForVideo(t *testing.T) {
+func TestXueXiToChapterCardDocument(t *testing.T) {
 	utils.YatoriCoreInit()
 	//测试账号
 	setup()
-	user := global.Config.Users[1]
+	user := global.Config.Users[7]
 	userCache := xuexitongApi.XueXiTUserCache{
 		Name:     user.Account,
 		Password: user.Password,
@@ -351,7 +350,83 @@ func TestXueXiToCourseForVideo(t *testing.T) {
 			}
 			videoDTOs, workDTOs, documentDTOs := entity.ParsePointDto(fetchCards)
 			if videoDTOs == nil && workDTOs == nil && documentDTOs == nil {
-				log.Fatal("没有可学习的内容")
+				log.Println("没有可学习的内容")
+			}
+			// 暂时只测试视频
+			if documentDTOs != nil {
+				for _, documentDTO := range documentDTOs {
+					card, err := xuexitong.PageMobileChapterCardAction(
+						&userCache, key, courseId, documentDTO.KnowledgeID, documentDTO.CardIndex, course.Cpi)
+					if err != nil {
+						log.Fatal(err)
+					}
+					documentDTO.AttachmentsDetection(card)
+					time.Sleep(5 * time.Second)
+				}
+			} else {
+				log.Println("暂时仅对文档刷取")
+			}
+		}
+	}
+}
+
+// 遍历所有课程对应视屏的例子
+func TestXueXiToCourseForVideo(t *testing.T) {
+	utils.YatoriCoreInit()
+	//测试账号
+	setup()
+	user := global.Config.Users[7]
+	userCache := xuexitongApi.XueXiTUserCache{
+		Name:     user.Account,
+		Password: user.Password,
+	}
+
+	err := xuexitong.XueXiTLoginAction(&userCache)
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	courseList, err := xuexitong.XueXiTPullCourseAction(&userCache) //拉取所有课程
+	for _, course := range courseList {                             //遍历课程
+		key, _ := strconv.Atoi(course.Key)
+		action, err := xuexitong.PullCourseChapterAction(&userCache, course.Cpi, key) //获取对应章节信息
+		if err != nil {
+			log.Fatal(err)
+		}
+		var nodes []int
+		for _, item := range action.Knowledge {
+			nodes = append(nodes, item.ID)
+		}
+		courseId, _ := strconv.Atoi(course.CourseID)
+		userId, _ := strconv.Atoi(userCache.UserID)
+		// 检测节点完成情况
+		pointAction, err := xuexitong.ChapterFetchPointAction(&userCache, nodes, &action, key, userId, course.Cpi, courseId)
+		if err != nil {
+			log.Fatal(err)
+		}
+		var isFinished = func(index int) bool {
+			if index < 0 || index >= len(pointAction.Knowledge) {
+				return false
+			}
+			i := pointAction.Knowledge[index]
+			return i.PointTotal >= 0 && i.PointTotal == i.PointFinished
+		}
+
+		for index, item := range nodes {
+			if isFinished(index) {
+				log.Printf("ID.%d(%s/%s)任务点已完成忽略\n",
+					item,
+					pointAction.Knowledge[index].Label, pointAction.Knowledge[index].Name)
+				time.Sleep(500 * time.Millisecond)
+				continue
+			}
+			_, fetchCards, err := xuexitong.ChapterFetchCardsAction(&userCache, &action, nodes, index, courseId, key, course.Cpi)
+			if err != nil {
+				log.Fatal(err)
+			}
+			videoDTOs, workDTOs, documentDTOs := entity.ParsePointDto(fetchCards)
+			if videoDTOs == nil && workDTOs == nil && documentDTOs == nil {
+				log.Println("没有可学习的内容")
 			}
 			// 暂时只测试视频
 			if videoDTOs != nil {
