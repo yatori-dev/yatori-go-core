@@ -437,8 +437,22 @@ func TestXueXiToCourseForVideo(t *testing.T) {
 					point.ExecuteFastVideo(&userCache, &videoDTO) //秒刷
 					time.Sleep(5 * time.Second)
 				}
-			} else {
-				log.Println("暂时仅对视频刷取")
+			}
+
+			if documentDTOs != nil {
+				for _, documentDTO := range documentDTOs {
+					card, err := xuexitong.PageMobileChapterCardAction(
+						&userCache, key, courseId, documentDTO.KnowledgeID, documentDTO.CardIndex, course.Cpi)
+					if err != nil {
+						log.Fatal(err)
+					}
+					documentDTO.AttachmentsDetection(card)
+					point.ExecuteDocument(&userCache, &documentDTO)
+					if err != nil {
+						log.Fatal(err)
+					}
+					time.Sleep(5 * time.Second)
+				}
 			}
 		}
 	}
