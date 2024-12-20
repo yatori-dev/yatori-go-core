@@ -51,12 +51,10 @@ func XueXiTPullCourseAction(cache *xuexitong.XueXiTUserCache) ([]XueXiTCourse, e
 
 	var courseList = make([]XueXiTCourse, 0)
 	for i, channel := range xueXiTCourse.ChannelList {
-
 		if channel.Content.Course.Data == nil && i >= 0 && i < len(xueXiTCourse.ChannelList) {
 			xueXiTCourse.ChannelList = append(xueXiTCourse.ChannelList[:i], xueXiTCourse.ChannelList[i+1:]...)
 			continue
 		}
-
 		var (
 			teacher      string
 			courseName   string
@@ -212,7 +210,8 @@ func PullCourseChapterAction(cache *xuexitong.XueXiTUserCache, cpi, key int) (ch
 		Knowledge: knowledgeItems,
 	}
 	if len(chaptersList.Knowledge) == 0 {
-		return ChaptersList{}, false, errors.New("[" + cache.Name + "] " + "[" + chaptersList.ChatID + "] " + " 课程章节为空")
+		log2.Print(log2.INFO, "["+cache.Name+"] "+"["+chaptersList.ChatID+"] "+" 课程章节为空")
+		return ChaptersList{}, false, err
 	}
 	// 按照任务点节点重排顺序
 	sort.Slice(chaptersList.Knowledge, func(i, j int) bool {
