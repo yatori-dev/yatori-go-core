@@ -102,7 +102,10 @@ func (cache *XueXiTUserCache) VideoDtoFetch(p *entity.PointVideoDto) (string, er
 	return string(body), nil
 }
 
-func (cache *XueXiTUserCache) VideoDtoPlayReport(p *entity.PointVideoDto, playingTime int, isdrag int /*提交模式，0代表正常视屏播放提交，2代表暂停播放状态，3代表着点击开始播放状态*/) (string, error) {
+func (cache *XueXiTUserCache) VideoDtoPlayReport(p *entity.PointVideoDto, playingTime int, isdrag int /*提交模式，0代表正常视屏播放提交，2代表暂停播放状态，3代表着点击开始播放状态*/, retry int, lastErr error) (string, error) {
+	if retry < 0 {
+		return "", lastErr
+	}
 	clipTime := fmt.Sprintf("0_%d", p.Duration)
 	hash := md5.Sum([]byte(fmt.Sprintf("[%s][%s][%s][%s][%d][%s][%d][%s]",
 		p.ClassID, p.PUID, p.JobID, p.ObjectID, playingTime*1000, "d_yHJ!$pdA~5", p.Duration*1000, clipTime)))
@@ -142,7 +145,8 @@ func (cache *XueXiTUserCache) VideoDtoPlayReport(p *entity.PointVideoDto, playin
 	resp.Header.Add("Content-Type", " application/json")
 	res, err := client.Do(resp)
 	if err != nil {
-		return "", err
+		time.Sleep(150 * time.Millisecond)
+		return cache.VideoDtoPlayReport(p, playingTime, isdrag, retry-1, err)
 	}
 	defer res.Body.Close()
 
