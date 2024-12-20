@@ -65,7 +65,7 @@ func TestCourseXueXiToChapter(t *testing.T) {
 	utils.YatoriCoreInit()
 	//测试账号
 	setup()
-	user := global.Config.Users[1]
+	user := global.Config.Users[4]
 	userCache := xuexitongApi.XueXiTUserCache{
 		Name:     user.Account,
 		Password: user.Password,
@@ -79,7 +79,7 @@ func TestCourseXueXiToChapter(t *testing.T) {
 	course, err := xuexitong.XueXiTPullCourseAction(&userCache)
 	var index int
 	for i, v := range course {
-		if v.ChatID == "261619055656961" {
+		if v.Key == "103839833" {
 			index = i
 			break
 		}
@@ -88,11 +88,12 @@ func TestCourseXueXiToChapter(t *testing.T) {
 	fmt.Println("courseID:" + course[index].CourseID)
 	//拉取对应课程的章节信息
 	key, _ := strconv.Atoi(course[index].Key)
-	chapter, err := xuexitong.PullCourseChapterAction(&userCache, course[index].Cpi, key)
+	chapter, _, err := xuexitong.PullCourseChapterAction(&userCache, course[index].Cpi, key)
 	if err != nil {
 		log.Fatal(err)
 	}
 	fmt.Println("chatid:" + chapter.ChatID)
+
 	for _, item := range chapter.Knowledge {
 		fmt.Println("ID:" + strconv.Itoa(item.ID))
 		fmt.Println("章节名称:" + item.Name)
@@ -125,7 +126,7 @@ func TestXueXiToChapterPoint(t *testing.T) {
 		}
 	}
 	key, _ := strconv.Atoi(course[index].Key)
-	action, _ := xuexitong.PullCourseChapterAction(&userCache, course[index].Cpi, key)
+	action, _, _ := xuexitong.PullCourseChapterAction(&userCache, course[index].Cpi, key)
 	var nodes []int
 	for _, item := range action.Knowledge {
 		nodes = append(nodes, item.ID)
@@ -179,7 +180,7 @@ func TestXueXiToChapterCord(t *testing.T) {
 		log.Fatal(err)
 	}
 	key, _ := strconv.Atoi(course[index].Key)
-	action, _ := xuexitong.PullCourseChapterAction(&userCache, course[index].Cpi, key)
+	action, _, _ := xuexitong.PullCourseChapterAction(&userCache, course[index].Cpi, key)
 	var nodes []int
 	for _, item := range action.Knowledge {
 		nodes = append(nodes, item.ID)
@@ -236,7 +237,7 @@ func TestXueXiToChapterCardWork(t *testing.T) {
 	}
 
 	key, _ := strconv.Atoi(course[index].Key)
-	action, _ := xuexitong.PullCourseChapterAction(&userCache, course[index].Cpi, key)
+	action, _, _ := xuexitong.PullCourseChapterAction(&userCache, course[index].Cpi, key)
 	var nodes []int
 	for _, item := range action.Knowledge {
 		nodes = append(nodes, item.ID)
@@ -300,7 +301,7 @@ func TestXueXiToChapterCardDocument(t *testing.T) {
 	courseList, err := xuexitong.XueXiTPullCourseAction(&userCache) //拉取所有课程
 	for _, course := range courseList {                             //遍历课程
 		key, _ := strconv.Atoi(course.Key)
-		action, err := xuexitong.PullCourseChapterAction(&userCache, course.Cpi, key) //获取对应章节信息
+		action, _, err := xuexitong.PullCourseChapterAction(&userCache, course.Cpi, key) //获取对应章节信息
 		if err != nil {
 			log.Fatal(err)
 		}
@@ -379,15 +380,18 @@ func TestXueXiToCourseForVideo(t *testing.T) {
 
 	courseList, err := xuexitong.XueXiTPullCourseAction(&userCache) //拉取所有课程
 	for _, course := range courseList {                             //遍历课程
-		if course.CourseName != "名侦探柯南与化学探秘" {
-			continue
-		}
+		//if course.CourseName != "名侦探柯南与化学探秘" {
+		//	continue
+		//}
 		// 6c444b8d5c6203ee2f2aef4b76f5b2ce qrcEnc
 
 		key, _ := strconv.Atoi(course.Key)
-		action, err := xuexitong.PullCourseChapterAction(&userCache, course.Cpi, key) //获取对应章节信息
+		action, ok, err := xuexitong.PullCourseChapterAction(&userCache, course.Cpi, key) //获取对应章节信息
 		if err != nil {
 			log.Fatal(err)
+		}
+		if !ok {
+			continue
 		}
 		var nodes []int
 		for _, item := range action.Knowledge {
@@ -463,7 +467,7 @@ func TestFaceQrScan(t *testing.T) {
 	utils.YatoriCoreInit()
 	//测试账号
 	setup()
-	user := global.Config.Users[5]
+	user := global.Config.Users[1]
 	userCache := xuexitongApi.XueXiTUserCache{
 		Name:     user.Account,
 		Password: user.Password,
@@ -474,8 +478,10 @@ func TestFaceQrScan(t *testing.T) {
 	}
 	//拉取人脸必要数据
 	//uuid, qrEnc, err := userCache.GetFaceQrCodeApi(course.CourseID, videoDTO.ClassID, strconv.Itoa(item), strconv.Itoa(course.Cpi))
+	uuid, qrEnc, err := userCache.GetFaceQrCodeApi("245211886", "103839833", "891797235", "283918535")
+	fmt.Println(uuid, qrEnc, err)
 	//过人脸
-	api, _ := userCache.GetCourseFaceQrPlan1Api("245983363", "105533723", "48960c03-5e57-408c-bb97-1718b30032fd", "16eeb4b1d6d733a08785449c8d9784f7", "197217206d33b1af6d8118996e3762f8", "0")
+	api, _ := userCache.GetCourseFaceQrPlan1Api("245211886", "103839833", uuid, "16eeb4b1d6d733a08785449c8d9784f7", qrEnc, "0")
 	fmt.Println(api)
 	//api, _ := userCache.GetCourseFaceQrApi("2c261aa3-d428-414c-a619-56535f85c8", "105533723")
 	//fmt.Println(api)

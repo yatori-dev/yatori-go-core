@@ -49,12 +49,12 @@ func XueXiTPullCourseAction(cache *xuexitong.XueXiTUserCache) ([]XueXiTCourse, e
 	log2.Print(log2.INFO, "["+cache.Name+"] "+" 课程数量："+strconv.Itoa(len(xueXiTCourse.ChannelList)))
 	// log2.Print(log2.INFO, "["+cache.Name+"] "+courses)
 
-	sqUrl := xueXiTCourse.ChannelList[0].Content.Course.Data[0].CourseSquareUrl
-	userID := strings.Split(sqUrl, "userId=")[1]
-	cache.UserID = userID
 	var courseList = make([]XueXiTCourse, 0)
-	for _, channel := range xueXiTCourse.ChannelList {
-
+	for i, channel := range xueXiTCourse.ChannelList {
+		if channel.Content.Course.Data == nil && i >= 0 && i < len(xueXiTCourse.ChannelList) {
+			xueXiTCourse.ChannelList = append(xueXiTCourse.ChannelList[:i], xueXiTCourse.ChannelList[i+1:]...)
+			continue
+		}
 		var (
 			teacher      string
 			courseName   string
@@ -67,6 +67,8 @@ func XueXiTPullCourseAction(cache *xuexitong.XueXiTUserCache) ([]XueXiTCourse, e
 			teacher = v.Teacherfactor
 			courseName = v.Name
 			courseDataID = v.Id
+			userID := strings.Split(v.CourseSquareUrl, "userId=")[1]
+			cache.UserID = userID
 			classId = strings.Split(strings.Split(v.CourseSquareUrl, "classId=")[1], "&userId")[0]
 			courseID = strings.Split(strings.Split(v.CourseSquareUrl, "courseId=")[1], "&personId")[0]
 		}
@@ -140,24 +142,21 @@ type KnowledgeItem struct {
 }
 
 // PullCourseChapterAction 获取对应课程的章节信息包括节点信息
-func PullCourseChapterAction(cache *xuexitong.XueXiTUserCache, cpi, key int) (ChaptersList, error) {
+func PullCourseChapterAction(cache *xuexitong.XueXiTUserCache, cpi, key int) (chaptersList ChaptersList, ok bool, err error) {
 	//拉取对应课程的章节信息
 	chapter, err := cache.PullChapter(cpi, key)
 	if err != nil {
-		log2.Print(log2.INFO, "["+cache.Name+"] "+" 拉取章节失败")
-		return ChaptersList{}, err
+		return ChaptersList{}, false, errors.New("[" + cache.Name + "] " + " 拉取章节失败")
 	}
 
-	var chaptersList ChaptersList
 	var chapterMap map[string]interface{}
 	err = json.Unmarshal([]byte(chapter), &chapterMap)
 	if err != nil {
-		fmt.Println("Error parsing JSON: ", err)
-		return ChaptersList{}, err
+		return ChaptersList{}, false, errors.New(fmt.Sprintf("Error parsing JSON: %s", err))
 	}
 	chapterMapJson, err := json.Marshal(chapterMap["data"])
 	if len(chapterMapJson) == 2 {
-		return ChaptersList{}, errors.New("课程获取失败")
+		return ChaptersList{}, false, errors.New("[" + cache.Name + "] " + "[" + chaptersList.ChatID + "] " + " 课程获取失败")
 	}
 	// 解析 JSON 数据为 map 切片
 	var chapterData []map[string]interface{}
@@ -166,32 +165,27 @@ func PullCourseChapterAction(cache *xuexitong.XueXiTUserCache, cpi, key int) (Ch
 	}
 
 	chatid := chapterData[0]["chatid"].(string)
-	fmt.Println(chatid)
 	// 提取 knowledge
 	var knowledgeData []map[string]interface{}
 	course, ok := chapterData[0]["course"].(map[string]interface{})
 	if !ok {
-		fmt.Println("无法提取 course")
-		return ChaptersList{}, err
+		return ChaptersList{}, ok, errors.New("[" + cache.Name + "] " + "[" + chaptersList.ChatID + "] " + " 无法提取 course")
 	}
 	data, ok := course["data"].([]interface{})
 	if !ok {
-		fmt.Println("无法提取 course data")
-		return ChaptersList{}, err
+		return ChaptersList{}, ok, errors.New("[" + cache.Name + "] " + "[" + chaptersList.ChatID + "] " + " 无法提取 course data")
 	}
 	if len(data) > 0 {
 		knowledge, ok := data[0].(map[string]interface{})["knowledge"].(map[string]interface{})["data"].([]interface{})
 		if !ok {
-			fmt.Println("无法提取 knowledge")
-			return ChaptersList{}, err
+			return ChaptersList{}, ok, errors.New("[" + cache.Name + "] " + "[" + chaptersList.ChatID + "] " + " 无法提取 knowledge data")
 		}
 		for _, item := range knowledge {
 			knowledgeMap := item.(map[string]interface{})
 			knowledgeData = append(knowledgeData, knowledgeMap)
 		}
 	} else {
-		fmt.Println("course data 为空")
-		return ChaptersList{}, err
+		return ChaptersList{}, false, errors.New("[" + cache.Name + "] " + "[" + chaptersList.ChatID + "] " + " course data 为空")
 	}
 
 	// 将提取的数据封装到 CourseInfo 结构体中
@@ -215,6 +209,10 @@ func PullCourseChapterAction(cache *xuexitong.XueXiTUserCache, cpi, key int) (Ch
 		ChatID:    chatid,
 		Knowledge: knowledgeItems,
 	}
+	if len(chaptersList.Knowledge) == 0 {
+		log2.Print(log2.INFO, "["+cache.Name+"] "+"["+chaptersList.ChatID+"] "+" 课程章节为空")
+		return ChaptersList{}, false, err
+	}
 	// 按照任务点节点重排顺序
 	sort.Slice(chaptersList.Knowledge, func(i, j int) bool {
 		iLabelParts := strings.Split(chaptersList.Knowledge[i].Label, ".")
@@ -233,7 +231,7 @@ func PullCourseChapterAction(cache *xuexitong.XueXiTUserCache, cpi, key int) (Ch
 	})
 	fmt.Printf("获取课程章节成功 (共 %d 个)",
 		len(chaptersList.Knowledge)) //  [%s(Cou.%s/Cla.%s)]
-	return chaptersList, nil
+	return chaptersList, true, nil
 }
 
 type ChapterPointDTO map[string]struct {
@@ -272,7 +270,6 @@ func ChapterFetchPointAction(cache *xuexitong.XueXiTUserCache,
 	if err != nil {
 		log2.Print(log2.INFO, "["+cache.Name+"] "+" 获取章节状态失败")
 	}
-
 	var cp ChapterPointDTO
 	if err := json.NewDecoder(bytes.NewReader([]byte(status))).Decode(&cp); err != nil {
 		return ChaptersList{}, fmt.Errorf("failed to decode JSON response: %v", err)
