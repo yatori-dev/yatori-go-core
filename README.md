@@ -29,4 +29,10 @@ yatori-go-core
 ```
 
 ## 🎉贡献者
+
 <a href="https://github.com/yatori-dev/yatori-go-core/graphs/contributors">   <img src="https://contrib.rocks/image?repo=yatori-dev/yatori-go-core" /></a>
+
+
+
+[![Stargazers over time](https://starchart.cc/yatori-dev/yatori-go-core.svg?variant=adaptive)
+
