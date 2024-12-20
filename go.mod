@@ -10,7 +10,7 @@ require (
 	github.com/thedevsaddam/gojsonq v1.9.1
 	github.com/tjfoc/gmsm v1.4.1
 	github.com/yalue/onnxruntime_go v1.12.1
-	golang.org/x/net v0.32.0
+	golang.org/x/net v0.33.0
 	gorm.io/driver/sqlite v1.5.6
 	gorm.io/gorm v1.25.12
 )
