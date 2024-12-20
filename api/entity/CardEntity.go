@@ -103,11 +103,9 @@ func ParsePointDto(pointDTOs []PointDto) (videoDTOs []PointVideoDto, workDTOs []
 	for _, card := range pointDTOs {
 		if card.PointWorkDto.IsSet == true {
 			workDTOs = append(workDTOs, card.PointWorkDto)
-		}
-		if card.PointVideoDto.IsSet == true {
+		} else if card.PointVideoDto.IsSet == true {
 			videoDTOs = append(videoDTOs, card.PointVideoDto)
-		}
-		if card.PointDocumentDto.IsSet == true {
+		} else if card.PointDocumentDto.IsSet == true {
 			documentDTOs = append(documentDTOs, card.PointDocumentDto)
 		}
 	}
