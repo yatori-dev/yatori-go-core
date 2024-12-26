@@ -42,11 +42,24 @@ func TestTtcdwTestLogin(t *testing.T) {
 	//测试账号
 	setup()
 	cache := ttcdwApi.TtcdwUserCache{Account: global.Config.Users[6].Account, Password: global.Config.Users[6].Password}
-	cache.TtcdwLoginApi()                            //登录账号
+	cache.TtcdwLoginApi() //登录账号
+
 	projects, err := ttcdw.PullProjectAction(&cache) //拉取项目
 	if err != nil {
 		log.Fatal(err)
 	}
-	ttcdw.PullVideoAction(&cache, projects[0])
+	classRooms, err := ttcdw.PullClassRoomAction(&cache, projects[0]) //拉取ClassRoom
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	courses, err := ttcdw.PullCourseAction(&cache, classRooms[0]) //拉取对应的课程
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	//ttcdw.PullVideoAction(&cache, projects[0])
 	fmt.Println("Action:", projects)
+	fmt.Println("ClassRoom:", classRooms)
+	fmt.Println("Course:", courses)
 }
