@@ -304,7 +304,8 @@ func StartExamAction(
 	userCache *yinghuaApi.YingHuaUserCache,
 	exam YingHuaExam,
 	url, model, apiKey string,
-	aiType ctype.AiType) error {
+	aiType ctype.AiType,
+	isAutoSubExam int /*是否自动提交试卷，0为不自动提交，1为自动提交*/) error {
 	//开始考试
 	startExam, err := yinghuaApi.StartExam(*userCache, exam.CourseId, exam.NodeId, exam.ExamId, 10, nil)
 	if err != nil {
@@ -350,11 +351,13 @@ func StartExamAction(
 		lastAnswer = answer
 		lastProblem = k
 	}
-	//结束考试
-	subWorkApi, err := yinghuaApi.SubmitExamApi(*userCache, exam.ExamId, lastProblem, lastAnswer, "1", 8, nil)
-	//如果结束做题服务器端返回信息异常
-	if gojsonq.New().JSONString(subWorkApi).Find("msg") != "提交试卷成功" {
-		log.Print(log.INFO, log.BoldRed, `[`, userCache.Account, `] `, log.BoldRed, "提交试卷异常，返回信息：", subWorkApi)
+	if isAutoSubExam == 1 {
+		//结束考试
+		subWorkApi, err := yinghuaApi.SubmitExamApi(*userCache, exam.ExamId, lastProblem, lastAnswer, "1", 8, nil)
+		//如果结束做题服务器端返回信息异常
+		if gojsonq.New().JSONString(subWorkApi).Find("msg") != "提交试卷成功" || err != nil {
+			log.Print(log.INFO, log.BoldRed, `[`, userCache.Account, `] `, log.BoldRed, "提交试卷异常，返回信息：", subWorkApi, err.Error())
+		}
 	}
 	return nil
 }
@@ -483,7 +486,7 @@ func aiTurnYingHuaAnswer(cache *yinghuaApi.YingHuaUserCache, aiAnswer string, v 
 func StartWorkAction(userCache *yinghuaApi.YingHuaUserCache,
 	work YingHuaWork,
 	url, model, apiKey string,
-	aiType ctype.AiType) error {
+	aiType ctype.AiType, isAutoSubExam int /*是否自动提交试卷，0为不自动提交，1为自动提交*/) error {
 	//开始考试
 	startWork, err := yinghuaApi.StartWork(*userCache, work.CourseId, work.NodeId, work.WorkId, 8, nil)
 	if err != nil {
@@ -528,10 +531,12 @@ func StartWorkAction(userCache *yinghuaApi.YingHuaUserCache,
 		lastProblem = k
 	}
 	//结束考试
-	subWorkApi, err := yinghuaApi.SubmitWorkApi(*userCache, work.WorkId, lastProblem, lastAnswer, "1", 10, nil)
-	//如果结束做题服务器端返回信息异常
-	if gojsonq.New().JSONString(subWorkApi).Find("msg") != "提交作业成功" {
-		log.Print(log.INFO, log.BoldRed, `[`, userCache.Account, `] `, log.BoldRed, "提交试卷异常，返回信息：", subWorkApi)
+	if isAutoSubExam == 1 {
+		subWorkApi, err := yinghuaApi.SubmitWorkApi(*userCache, work.WorkId, lastProblem, lastAnswer, "1", 10, nil)
+		//如果结束做题服务器端返回信息异常
+		if gojsonq.New().JSONString(subWorkApi).Find("msg") != "提交作业成功" || err != nil {
+			log.Print(log.INFO, log.BoldRed, `[`, userCache.Account, `] `, log.BoldRed, "提交试卷异常，返回信息：", subWorkApi, err.Error())
+		}
 	}
 
 	return nil

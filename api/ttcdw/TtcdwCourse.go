@@ -85,6 +85,72 @@ func (cache *TtcdwUserCache) PullClassRoomApi(courseProjectId string, classId st
 	//fmt.Println(string(body))
 	return string(body), nil
 }
+func (cache *TtcdwUserCache) PullCourseInfoApi(segmentId, courseId string, retry int, lastErr error) (string, error) {
+
+	url := "https://www.ttcdw.cn/m/open/app/v1/course/basic/" + courseId + "?segId=" + segmentId
+	method := "GET"
+
+	client := &http.Client{}
+	req, err := http.NewRequest(method, url, nil)
+
+	if err != nil {
+		return "", nil
+	}
+	req.Header.Add("User-Agent", "Apifox/1.0.0 (https://apifox.com)")
+	req.Header.Add("Accept", "*/*")
+	req.Header.Add("Host", "www.ttcdw.cn")
+	req.Header.Add("Connection", "keep-alive")
+	//req.Header.Add("Cookie", "HWWAFSESID=c92a3799bef8ba22d2; HWWAFSESTIME=1734968345848; passport=https://www.ttcdw.cn/p/passport; u-lastLoginTime=1734968374078; u-activeState=1; u-mobileState=0; u-mobile=18837922277; u-preLoginTime=1734964883966; u-token=eyJhbGciOiJIUzI1NiJ9.eyJqdGkiOiI0Mjk0ZmUzOC0zMTBiLTRlMmQtOWQwMS0xN2EyYzZjNjA2ZmYiLCJpYXQiOjE3MzQ5NjgzNzQsInN1YiI6IjUyNzI4Mzc0NTk0NTcwMjQwMCIsImlzcyI6Imd1b3JlbnQiLCJhdHRlc3RTdGF0ZSI6MCwic3JjIjoid2ViIiwiYWN0aXZlU3RhdGUiOjEsIm1vYmlsZSI6IjE4ODM3OTIyMjc3IiwicGxhdGZvcm1JZCI6IjEzMTQ1ODU0OTgzMzExIiwiYWNjb3VudCI6IjE4ODM3OTIyMjc3IiwiZXhwIjoxNzM1MDA0Mzc0fQ.sln7IZEkCDgZNqVSOXHvZXj-EklcTkEoRHMgVinPFh4; u-token-legacy=eyJhbGciOiJIUzI1NiJ9.eyJqdGkiOiI0Mjk0ZmUzOC0zMTBiLTRlMmQtOWQwMS0xN2EyYzZjNjA2ZmYiLCJpYXQiOjE3MzQ5NjgzNzQsInN1YiI6IjUyNzI4Mzc0NTk0NTcwMjQwMCIsImlzcyI6Imd1b3JlbnQiLCJhdHRlc3RTdGF0ZSI6MCwic3JjIjoid2ViIiwiYWN0aXZlU3RhdGUiOjEsIm1vYmlsZSI6IjE4ODM3OTIyMjc3IiwicGxhdGZvcm1JZCI6IjEzMTQ1ODU0OTgzMzExIiwiYWNjb3VudCI6IjE4ODM3OTIyMjc3IiwiZXhwIjoxNzM1MDA0Mzc0fQ.sln7IZEkCDgZNqVSOXHvZXj-EklcTkEoRHMgVinPFh4; u-id=527283745945702400; u-account=18837922277; ufo-urn=MTg4Mzc5MjIyNzc=; ufo-un=5LqO5pif5qKF; ufo-id=527283745945702400; u-name=yx_user_tjAvr5JL")
+	//设置Cookie
+	for _, v := range cache.cookies {
+		req.AddCookie(v)
+	}
+	res, err := client.Do(req)
+	if err != nil {
+		return "", nil
+	}
+	defer res.Body.Close()
+
+	body, err := ioutil.ReadAll(res.Body)
+	if err != nil {
+		return "", nil
+	}
+	return string(body), nil
+}
+
+// 拉取对应项目的课程
+func (cache *TtcdwUserCache) PullCourseApi(segmentId, itemId string, retry int, lastErr error) (string, error) {
+
+	url := "https://www.ttcdw.cn/m/open/app/v1/items/bxk/course/list?types=&segmentId=" + segmentId + "&itemId=" + itemId + "&moduleId=&pageNum=1&pageSize=100"
+	method := "GET"
+
+	client := &http.Client{}
+	req, err := http.NewRequest(method, url, nil)
+
+	if err != nil {
+		return "", err
+	}
+	//设置Cookie
+	for _, v := range cache.cookies {
+		req.AddCookie(v)
+	}
+	req.Header.Add("User-Agent", "Apifox/1.0.0 (https://apifox.com)")
+	req.Header.Add("Accept", "*/*")
+	req.Header.Add("Host", "www.ttcdw.cn")
+	req.Header.Add("Connection", "keep-alive")
+
+	res, err := client.Do(req)
+	if err != nil {
+		return "", err
+	}
+	defer res.Body.Close()
+
+	body, err := ioutil.ReadAll(res.Body)
+	if err != nil {
+		return "", err
+	}
+	return string(body), nil
+}
 
 // 拉取项目对应课程章节列表
 func (cache *TtcdwUserCache) PullChapterListHtmlApi(cid string, retry int, lastErr error) (string, error) {
