@@ -137,7 +137,16 @@ func (p *PointVideoDto) AttachmentsDetection(attachment interface{}) (bool, erro
 
 		if objectid == p.ObjectID {
 			var otherInfo string
-			p.JobID = property["jobid"].(string)
+			jobID, ok := property["jobid"].(string)
+			if !ok {
+				jobID2, ok := property["jobid"].(float64)
+				if !ok {
+					return false, errors.New("invalid jobid structure")
+				}
+				p.JobID = strconv.FormatFloat(jobID2, 'f', -1, 64)
+			} else {
+				p.JobID = jobID
+			}
 			parts := strings.SplitN(attachment["otherInfo"].(string), "&", 2)
 			if len(parts) > 0 {
 				otherInfo = parts[0]
