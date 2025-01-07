@@ -194,12 +194,18 @@ func cleanText(text string) string {
 type ChoiceQue struct {
 	Type    ctype.QueType
 	Text    string
-	options map[string]string
-	answer  string // 答案
+	Options map[string]string
+	Answer  string // 答案
+}
+
+// Question TODO 这里考虑是否在其中直接将答案做出 直接上报提交 或 保存提交
+type Question struct {
+	Choice []ChoiceQue //选择类型
 }
 
 // ParseWorkQuestionAction 用于解析作业题目，包括题目类型和题目文本
-func ParseWorkQuestionAction(cache *xuexitong.XueXiTUserCache, workPoint *entity.PointWorkDto) {
+// TODO 同Question结构体问题 暂时返回未做 全部题目初始化
+func ParseWorkQuestionAction(cache *xuexitong.XueXiTUserCache, workPoint *entity.PointWorkDto) Question {
 	var workQuestion []ChoiceQue
 	question, _ := cache.WorkFetchQuestion(workPoint)
 
@@ -271,7 +277,7 @@ func ParseWorkQuestionAction(cache *xuexitong.XueXiTUserCache, workPoint *entity
 				}
 				options[optionLetter] = text
 			})
-			choiceQue.options = options
+			choiceQue.Options = options
 			workQuestion = append(workQuestion, choiceQue)
 			break
 			// 多选
@@ -299,14 +305,14 @@ func ParseWorkQuestionAction(cache *xuexitong.XueXiTUserCache, workPoint *entity
 				}
 				options[optionLetter] = text
 			})
-			choiceQue.options = options
+			choiceQue.Options = options
 			workQuestion = append(workQuestion, choiceQue)
 			break
 		}
 	}
 	// TODO 这里实例化部分没写
-	for j, q := range workQuestion {
-		fmt.Printf("Question %d:\nType: %s\nText: %s\noptions: %v\n\n", j+1, q.Type, q.Text, q.options)
-	}
-	fmt.Println()
+	//for j, q := range workQuestion {
+	//	fmt.Printf("Question %d:\nType: %s\nText: %s\noptions: %v\n\n", j+1, q.Type, q.Text, q.options)
+	//}
+	return Question{Choice: workQuestion}
 }

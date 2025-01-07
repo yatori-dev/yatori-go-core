@@ -22,6 +22,7 @@ type XueXiTCourse struct {
 	ChatID        string `json:"chatId"`
 	CourseTeacher string `json:"courseTeacher"` // 课程老师
 	CourseName    string `json:"courseName"`    //课程名
+	CourseImage   string `json:"courseImage"`
 	// 两个标识 暂时不知道有什么用
 	CourseDataID int `json:"courseDataId"`
 	ContentID    int `json:"ContentID"`
@@ -29,8 +30,8 @@ type XueXiTCourse struct {
 
 func (x *XueXiTCourse) ToString() string {
 	return fmt.Sprintf(
-		"XueXiTCourse{Cpi: %d, Key: %v, CourseID: %s,Teacher: %s, CourseName: %s, CourseDataID: %d, ContentID: %d}",
-		x.Cpi, x.Key, x.CourseID, x.CourseTeacher, x.CourseName, x.CourseDataID, x.ContentID,
+		"XueXiTCourse{Cpi: %d, Key: %v, CourseID: %s,Teacher: %s, CourseName: %s, CourseImage: %s\nCourseDataID: %d, ContentID: %d}",
+		x.Cpi, x.Key, x.CourseID, x.CourseTeacher, x.CourseName, x.CourseImage, x.CourseDataID, x.ContentID,
 	)
 }
 
@@ -61,6 +62,7 @@ func XueXiTPullCourseAction(cache *xuexitong.XueXiTUserCache) ([]XueXiTCourse, e
 			courseDataID int
 			classId      string
 			courseID     string
+			courseImage  string
 		)
 
 		for _, v := range channel.Content.Course.Data {
@@ -71,6 +73,7 @@ func XueXiTPullCourseAction(cache *xuexitong.XueXiTUserCache) ([]XueXiTCourse, e
 			cache.UserID = userID
 			classId = strings.Split(strings.Split(v.CourseSquareUrl, "classId=")[1], "&userId")[0]
 			courseID = strings.Split(strings.Split(v.CourseSquareUrl, "courseId=")[1], "&personId")[0]
+			courseImage = v.Imageurl
 		}
 
 		course := XueXiTCourse{
@@ -80,6 +83,7 @@ func XueXiTPullCourseAction(cache *xuexitong.XueXiTUserCache) ([]XueXiTCourse, e
 			ChatID:        channel.Content.Chatid,
 			CourseTeacher: teacher,
 			CourseName:    courseName,
+			CourseImage:   courseImage,
 			CourseDataID:  courseDataID,
 			ContentID:     channel.Content.Id,
 		}
