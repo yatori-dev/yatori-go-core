@@ -22,7 +22,7 @@ type XueXiTCourse struct {
 	ChatID        string `json:"chatId"`
 	CourseTeacher string `json:"courseTeacher"` // 课程老师
 	CourseName    string `json:"courseName"`    //课程名
-	CourseImage   string `json:"courseImage"`   // 课程图片
+	CourseImage   string `json:"courseImage"`
 	// 两个标识 暂时不知道有什么用
 	CourseDataID int `json:"courseDataId"`
 	ContentID    int `json:"ContentID"`
@@ -30,7 +30,7 @@ type XueXiTCourse struct {
 
 func (x *XueXiTCourse) ToString() string {
 	return fmt.Sprintf(
-		"XueXiTCourse{Cpi: %d, Key: %v, CourseID: %s,Teacher: %s, CourseName: %s, CourseImage: %s \n,CourseDataID: %d, ContentID: %d}",
+		"XueXiTCourse{Cpi: %d, Key: %v, CourseID: %s,Teacher: %s, CourseName: %s, CourseImage: %s\nCourseDataID: %d, ContentID: %d}",
 		x.Cpi, x.Key, x.CourseID, x.CourseTeacher, x.CourseName, x.CourseImage, x.CourseDataID, x.ContentID,
 	)
 }
