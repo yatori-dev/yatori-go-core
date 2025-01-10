@@ -52,6 +52,7 @@ func XueXiTPullCourseAction(cache *xuexitong.XueXiTUserCache) ([]XueXiTCourse, e
 
 	var courseList = make([]XueXiTCourse, 0)
 	for i, channel := range xueXiTCourse.ChannelList {
+		var flag = false
 		if channel.Content.Course.Data == nil && i >= 0 && i < len(xueXiTCourse.ChannelList) {
 			xueXiTCourse.ChannelList = append(xueXiTCourse.ChannelList[:i], xueXiTCourse.ChannelList[i+1:]...)
 			continue
@@ -86,6 +87,15 @@ func XueXiTPullCourseAction(cache *xuexitong.XueXiTUserCache) ([]XueXiTCourse, e
 			CourseImage:   courseImage,
 			CourseDataID:  courseDataID,
 			ContentID:     channel.Content.Id,
+		}
+		for _, course := range courseList {
+			if course.CourseID == courseID {
+				flag = true
+				break
+			}
+		}
+		if flag {
+			continue
 		}
 		courseList = append(courseList, course)
 	}
