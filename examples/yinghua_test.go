@@ -245,7 +245,7 @@ func TestWorkDetail(t *testing.T) {
 		detailAction, _ := yinghua.WorkDetailAction(&cache, node.Id)
 		////{"_code":9,"status":false,"msg":"考试测试时间还未开始","result":{}}
 		//开始写作业
-		yinghua.StartWorkAction(&cache, detailAction[0], global.Config.Setting.AiSetting.AiUrl, global.Config.Setting.AiSetting.Model, global.Config.Setting.AiSetting.APIKEY, global.Config.Setting.AiSetting.AiType)
+		yinghua.StartWorkAction(&cache, detailAction[0], global.Config.Setting.AiSetting.AiUrl, global.Config.Setting.AiSetting.Model, global.Config.Setting.AiSetting.APIKEY, global.Config.Setting.AiSetting.AiType, 1)
 		fmt.Println(detailAction)
 		//打印最终分数
 		s, error := yinghua.WorkedFinallyScoreAction(&cache, detailAction[0])
