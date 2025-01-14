@@ -282,7 +282,7 @@ func ChapterFetchPointAction(cache *xuexitong.XueXiTUserCache,
 ) (ChaptersList, error) {
 	status, err := cache.FetchChapterPointStatus(nodes, clazzID, userID, cpi, courseID)
 	if err != nil {
-		log2.Print(log2.INFO, "["+cache.Name+"] "+" 获取章节状态失败")
+		log2.Print(log2.DEBUG, "["+cache.Name+"] "+" 获取章节状态失败")
 	}
 	var cp ChapterPointDTO
 	if err := json.NewDecoder(bytes.NewReader([]byte(status))).Decode(&cp); err != nil {

@@ -7,8 +7,8 @@ import (
 	"github.com/yatori-dev/yatori-go-core/api/entity"
 	"github.com/yatori-dev/yatori-go-core/api/xuexitong"
 	"github.com/yatori-dev/yatori-go-core/models/ctype"
+	log2 "github.com/yatori-dev/yatori-go-core/utils/log"
 	"golang.org/x/net/html"
-	"log"
 	"regexp"
 	"strconv"
 	"strings"
@@ -68,7 +68,7 @@ func ChapterFetchCardsAction(
 		return []Card{}, nil, err
 	}
 	if len(apiResp.Data) == 0 {
-		log.Printf("获取章节任务节点卡片失败 [%s:%s(Id.%d)]",
+		log2.Print(log2.DEBUG, "获取章节任务节点卡片失败 [%s:%s(Id.%d)]",
 			chapters.Knowledge[index].Label, chapters.Knowledge[index].Name, chapters.Knowledge[index].ID)
 		return []Card{}, nil, err
 	}
@@ -82,25 +82,25 @@ func ChapterFetchCardsAction(
 	pointObjs := make([]entity.PointDto, 0)
 	for cardIndex, card := range cards {
 		if card.Description == "" {
-			log.Printf("(%d) 卡片 iframe 不存在 %+v", cardIndex, card)
+			log2.Print(log2.DEBUG, "(%d) 卡片 iframe 不存在 %+v", cardIndex, card)
 			continue
 		}
 		points, err := parseIframeData(card.Description)
 		if err != nil {
-			log.Printf("解析卡片失败 %v", err)
+			log2.Print(log2.DEBUG, "解析卡片失败 %v", err)
 			continue
 		}
-		log.Printf("(%d) 解析卡片成功 共 %d 个任务点", cardIndex, len(points))
+		log2.Print(log2.DEBUG, "(%d) 解析卡片成功 共 %d 个任务点", cardIndex, len(points))
 
 		for pointIndex, point := range points {
 			pointType, ok := point.Other["module"]
 			if !ok {
-				log.Printf("(%d, %d) 任务点 type 不存在 %+v", cardIndex, pointIndex, point)
+				log2.Print(log2.DEBUG, "(%d, %d) 任务点 type 不存在 %+v", cardIndex, pointIndex, point)
 				continue
 			}
 
 			if !point.HasData {
-				log.Printf("(%d, %d) 任务点 data 为空或不存在 %+v", cardIndex, pointIndex, point)
+				log2.Print(log2.DEBUG, "(%d, %d) 任务点 data 为空或不存在 %+v", cardIndex, pointIndex, point)
 				continue
 			}
 
@@ -120,7 +120,7 @@ func ChapterFetchCardsAction(
 						IsSet:       ok,
 					}
 				} else {
-					log.Printf("(%d, %d) 任务点 'objectid' 不存在或为空 %+v", cardIndex, pointIndex, point)
+					log2.Print(log2.DEBUG, "(%d, %d) 任务点 'objectid' 不存在或为空 %+v", cardIndex, pointIndex, point)
 					continue
 				}
 			case string(ctype.Work):
@@ -148,7 +148,7 @@ func ChapterFetchCardsAction(
 						IsSet:       ok,
 					}
 				} else {
-					log.Printf("(%d, %d) 任务点 'workid', 'schoolid' 或 '_jobid' 不存在或为空 %+v", cardIndex, pointIndex, point)
+					log2.Print(log2.DEBUG, "(%d, %d) 任务点 'workid', 'schoolid' 或 '_jobid' 不存在或为空 %+v", cardIndex, pointIndex, point)
 					continue
 				}
 			case string(ctype.Insertdoc):
@@ -171,12 +171,12 @@ func ChapterFetchCardsAction(
 						IsSet:       ok,
 					}
 				} else {
-					log.Printf("(%d, %d) 任务点 'objectid' 不存在或为空 %+v", cardIndex, pointIndex, point)
+					log2.Print(log2.DEBUG, "(%d, %d) 任务点 'objectid' 不存在或为空 %+v", cardIndex, pointIndex, point)
 					continue
 				}
 			default:
-				log.Printf("未知的任务点类型: %s\n", pointType)
-				log.Printf("%+v", point)
+				log2.Print(log2.DEBUG, "未知的任务点类型: %s\n", pointType)
+				log2.Print(log2.DEBUG, "%+v", point)
 				continue
 			}
 
