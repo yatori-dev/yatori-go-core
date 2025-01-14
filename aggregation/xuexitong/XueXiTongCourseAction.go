@@ -292,6 +292,6 @@ func ChapterFetchPointAction(cache *xuexitong.XueXiTUserCache,
 	for i := range chapters.Knowledge {
 		chapters.Knowledge[i].updatePointStatus(cp)
 	}
-	fmt.Println("任务点状态已更新")
+	//fmt.Println("任务点状态已更新")
 	return *chapters, nil
 }

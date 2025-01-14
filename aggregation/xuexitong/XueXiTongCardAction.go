@@ -3,6 +3,7 @@ package xuexitong
 import (
 	"bytes"
 	"encoding/json"
+	"errors"
 	"fmt"
 	"github.com/PuerkitoBio/goquery"
 	"github.com/thedevsaddam/gojsonq"
@@ -41,8 +42,7 @@ func PageMobileChapterCardAction(
 	var att interface{}
 
 	if err != nil {
-		log.Fatal(err)
-		return nil, err
+		return nil, fmt.Errorf("failed to fetch pageMobileChapterCard: %w", err)
 	}
 	doc, err := html.Parse(bytes.NewReader([]byte(cardHtml)))
 	if err != nil {
@@ -110,9 +110,7 @@ func PageMobileChapterCardAction(
 		}
 		return APIError{Message: blankTips}, nil
 	}
-
-	log.Println("Attachment拉取成功")
-
+	//log.Println("Attachment拉取成功")
 	return att, nil
 }
 
@@ -132,16 +130,13 @@ func VideoDtoFetchAction(cache *xuexitong.XueXiTUserCache, p *entity.PointVideoD
 	if gojsonq.New().JSONString(fetch).Find("status").(string) == "success" {
 		return true, nil
 	}
-
-	log.Println("Fetch failed")
-	return false, nil
+	return false, errors.New("fetch failed")
 }
 
 func WorkPageFromAction(cache *xuexitong.XueXiTUserCache, workPoint *entity.PointWorkDto) ([]entity.WorkInputField, error) {
 	questionHtml, err := cache.WorkFetchQuestion(workPoint)
 	if err != nil {
-		log.Fatal("WorkAFetchQuestionErr:" + err.Error())
-		return nil, err
+		return nil, fmt.Errorf("failed to fetch WorkFetchQuestion: %w", err)
 	}
 
 	inputPattern := regexp.MustCompile(`<input\s+[^>]*>`)
