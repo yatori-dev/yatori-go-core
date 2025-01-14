@@ -75,9 +75,9 @@ func ChapterFetchCardsAction(
 
 	dataItem := apiResp.Data[0]
 	cards := dataItem.Card.Data
-	log.Printf("获取章节任务节点卡片成功 共 %d 个 [%s:%s(Id.%d)]",
-		len(cards),
-		chapters.Knowledge[index].Label, chapters.Knowledge[index].Name, chapters.Knowledge[index].ID)
+	//log.Printf("获取章节任务节点卡片成功 共 %d 个 [%s:%s(Id.%d)]",
+	//	len(cards),
+	//	chapters.Knowledge[index].Label, chapters.Knowledge[index].Name, chapters.Knowledge[index].ID)
 
 	pointObjs := make([]entity.PointDto, 0)
 	for cardIndex, card := range cards {
@@ -184,8 +184,8 @@ func ChapterFetchCardsAction(
 		}
 	}
 
-	log.Printf("章节 可刷取任务节点解析成功 共 %d 个 [%s:%s(Id.%d)]",
-		len(pointObjs), chapters.Knowledge[index].Label, chapters.Knowledge[index].Name, chapters.Knowledge[index].ID)
+	//log.Printf("章节 可刷取任务节点解析成功 共 %d 个 [%s:%s(Id.%d)]",
+	//	len(pointObjs), chapters.Knowledge[index].Label, chapters.Knowledge[index].Name, chapters.Knowledge[index].ID)
 	return cards, pointObjs, nil
 }
 
