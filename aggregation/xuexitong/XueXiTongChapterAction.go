@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"encoding/json"
 	"fmt"
+	"github.com/thedevsaddam/gojsonq"
 	"github.com/yatori-dev/yatori-go-core/api/entity"
 	"github.com/yatori-dev/yatori-go-core/api/xuexitong"
 	"github.com/yatori-dev/yatori-go-core/models/ctype"
@@ -61,6 +62,7 @@ func ChapterFetchCardsAction(
 	var pointObj entity.PointDto
 
 	cords, err := cache.FetchChapterCords(nodes, index, courseId)
+
 	if err != nil {
 		return []Card{}, nil, err
 	}
@@ -119,6 +121,34 @@ func ChapterFetchCardsAction(
 						Type:        ctype.Video,
 						IsSet:       ok,
 					}
+					cords2, _ := cache.FetchChapterCords2(strconv.Itoa(classId), strconv.Itoa(courseId), strconv.Itoa(card.KnowledgeID), strconv.Itoa(cardIndex), strconv.Itoa(cpi))
+					find := gojsonq.New().JSONString(cords2).Find("attachments")
+					if find != nil {
+						list := gojsonq.New().JSONString(cords2).Find("attachments")
+						if item, ok := list.([]interface{}); ok {
+							for _, item1 := range item {
+								if obj, ok := item1.(map[string]interface{}); ok {
+									if obj["otherInfo"] != nil {
+										if len(obj["otherInfo"].(string)) > 80 {
+											pointObj.PointVideoDto.OtherInfo = obj["otherInfo"].(string)
+											pointObj.PointVideoDto.JobID = obj["jobid"].(string)
+										}
+									}
+								}
+
+							}
+						}
+					}
+					//if pointObj.PointVideoDto.OtherInfo == "" {
+					//	cords2, _ := cache.FetchChapterCords2(strconv.Itoa(classId), strconv.Itoa(courseId), strconv.Itoa(card.KnowledgeID), strconv.Itoa(cardIndex), strconv.Itoa(cpi))
+					//	//fmt.Println(cords2)
+					//	sprintf := fmt.Sprintf(`nodeId_[\d]*-cpi_[\d]*-rt_d-ds_[^&]*`)
+					//	compile := regexp.MustCompile(sprintf)
+					//	find := compile.FindAllStringSubmatch(cords2, -1)
+					//	for _, v := range find {
+					//		pointObj.PointVideoDto.OtherInfo = v[0]
+					//	}
+					//}
 				} else {
 					log2.Print(log2.DEBUG, "(%d, %d) 任务点 'objectid' 不存在或为空 %+v", cardIndex, pointIndex, point)
 					continue

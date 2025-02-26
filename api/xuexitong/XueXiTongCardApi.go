@@ -102,13 +102,52 @@ func (cache *XueXiTUserCache) VideoDtoFetch(p *entity.PointVideoDto) (string, er
 	return string(body), nil
 }
 
+func (cache *XueXiTUserCache) VideoSubmitStudyTime(p *entity.PointVideoDto, playingTime int, isdrag int /*提交模式，0代表正常视屏播放提交，2代表暂停播放状态，3代表着点击开始播放状态*/, retry int, lastErr error) (string, error) {
+	clipTime := fmt.Sprintf("0_%d", p.Duration)
+	hash := md5.Sum([]byte(fmt.Sprintf("[%s][%s][%s][%s][%d][%s][%d][%s]",
+		p.ClassID, cache.UserID, p.JobID, p.ObjectID, playingTime*1000, "d_yHJ!$pdA~5", p.Duration*1000, clipTime)))
+	enc := hex.EncodeToString(hash[:])
+	//
+	url := "https://mooc1.chaoxing.com/mooc-ans/multimedia/log/a/" + p.Cpi + "/" + p.DToken + "?clazzId=" + p.ClassID + "&playingTime=" + strconv.Itoa(playingTime) + "&duration=" + strconv.Itoa(p.Duration) + "&clipTime=" + clipTime + "&objectId=" + p.ObjectID + "&otherInfo=" + p.OtherInfo + "&jobid=" + p.JobID + "&userid=" + cache.UserID + "&isdrag=" + strconv.Itoa(isdrag) + "&view=pc&enc=" + enc + "&rt=0.9&dtype=Video&_t=" + strconv.FormatInt(time.Now().UnixMilli(), 10)
+
+	method := "GET"
+
+	client := &http.Client{}
+	req, err := http.NewRequest(method, url, nil)
+
+	if err != nil {
+		fmt.Println(err)
+		return "", nil
+	}
+	req.Header.Add("User-Agent", "Apifox/1.0.0 (https://apifox.com)")
+	req.Header.Add("Accept", "*/*")
+	req.Header.Add("Host", "mooc1.chaoxing.com")
+	req.Header.Add("Connection", "keep-alive")
+	//req.Header.Add("Cookie", "k8s=1740601804.712.17514.777640; jrose=702DC91E24ECD4078821D470F213E5C6.mooc-1385974980-0c6l3; route=0a65fa708818ad1416475328b69707fd")
+	req.Header.Add("Cookie", cache.cookie)
+
+	res, err := client.Do(req)
+	if err != nil {
+		fmt.Println(err)
+		return "", nil
+	}
+	defer res.Body.Close()
+
+	body, err := ioutil.ReadAll(res.Body)
+	if err != nil {
+		fmt.Println(err)
+		return "", nil
+	}
+	//fmt.Println(string(body))
+	return string(body), nil
+}
 func (cache *XueXiTUserCache) VideoDtoPlayReport(p *entity.PointVideoDto, playingTime int, isdrag int /*提交模式，0代表正常视屏播放提交，2代表暂停播放状态，3代表着点击开始播放状态*/, retry int, lastErr error) (string, error) {
 	if retry < 0 {
 		return "", lastErr
 	}
 	clipTime := fmt.Sprintf("0_%d", p.Duration)
 	hash := md5.Sum([]byte(fmt.Sprintf("[%s][%s][%s][%s][%d][%s][%d][%s]",
-		p.ClassID, p.PUID, p.JobID, p.ObjectID, playingTime*1000, "d_yHJ!$pdA~5", p.Duration*1000, clipTime)))
+		p.ClassID, cache.UserID, p.JobID, p.ObjectID, playingTime*1000, "d_yHJ!$pdA~5", p.Duration*1000, clipTime)))
 	enc := hex.EncodeToString(hash[:])
 	//fmt.Println(enc)
 	client := &http.Client{}
@@ -120,12 +159,14 @@ func (cache *XueXiTUserCache) VideoDtoPlayReport(p *entity.PointVideoDto, playin
 	params.Set("clipTime", clipTime)
 	params.Set("clazzId", p.ClassID)
 	params.Set("objectId", p.ObjectID)
-	params.Set("userid", p.PUID)
+	params.Set("userid", cache.UserID)
 	params.Set("isdrag", strconv.Itoa(isdrag)) //0为正常播放，2为点击暂停播放状态，3为点击开始播放
 	params.Set("enc", enc)
 	params.Set("rt", fmt.Sprintf("%f", p.RT))
+	//params.Set("retry", "0.9")
 	params.Set("dtype", "Video")
 	params.Set("view", "pc")
+	params.Set("rt", "0.9")
 	params.Set("_t", strconv.FormatInt(time.Now().UnixMilli(), 10))
 
 	// 自定义编码函数以保留 & 和 =
@@ -137,11 +178,12 @@ func (cache *XueXiTUserCache) VideoDtoPlayReport(p *entity.PointVideoDto, playin
 		return "", err
 	}
 
-	resp.Header.Add("User-Agent", "Apifox/1.0.0 (https://apifox.com)")
+	resp.Header.Add("User-Agent", "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/118.0.0.0 Safari/537.36")
 	resp.Header.Add("Accept", "*/*")
 	resp.Header.Add("Host", "mooc1.chaoxing.com")
 	resp.Header.Add("Connection", "keep-alive")
 	resp.Header.Add("Cookie", cache.cookie)
+	resp.Header.Add("Referer", "https://mooc1.chaoxing.com/ananas/modules/video/index.html?v=2023-1110-1610")
 	resp.Header.Add("Content-Type", " application/json")
 	res, err := client.Do(resp)
 	if err != nil {

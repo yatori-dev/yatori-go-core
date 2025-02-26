@@ -122,6 +122,9 @@ func (cache *XueXiTUserCache) LoginApi() (string, error) {
 	values := resp.Header.Values("Set-Cookie")
 	for _, v := range values {
 		cache.cookie += strings.ReplaceAll(strings.ReplaceAll(v, "HttpOnly", ""), "Path=/", "")
+		//if strings.Contains(v, "UUID=") {
+		//
+		//}
 	}
 
 	cache.JsonContent = jsonContent

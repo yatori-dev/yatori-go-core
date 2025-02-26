@@ -18,7 +18,8 @@ func ExecuteVideo(cache *api.XueXiTUserCache, p *entity.PointVideoDto) {
 		var flag = 0
 		for {
 			if flag == 58 {
-				playReport, _ := cache.VideoDtoPlayReport(p, playingTime, 0, 8, nil)
+				//playReport, _ := cache.VideoDtoPlayReport(p, playingTime, 3, 8, nil)
+				playReport, _ := cache.VideoSubmitStudyTime(p, playingTime, 3, 8, nil)
 				playingTime += flag
 				flag = 0
 				if gojsonq.New().JSONString(playReport).Find("isPassed").(bool) == true {
@@ -51,7 +52,7 @@ func ExecuteFastVideo(cache *api.XueXiTUserCache, p *entity.PointVideoDto) {
 		log.Printf("(%s)开始模拟播放....%d:%d开始\n", p.Title, p.PlayTime, p.Duration)
 		var playingTime = p.PlayTime
 		for {
-			playReport, _ := cache.VideoDtoPlayReport(p, p.Duration, 2, 8, nil)
+			playReport, _ := cache.VideoSubmitStudyTime(p, playingTime, 3, 8, nil)
 			if gojsonq.New().JSONString(playReport).Find("isPassed").(bool) == true {
 				log.Println("播放结束")
 				break
