@@ -138,9 +138,15 @@ func PullStudyCourseHTMLApi(cache *EnaeaUserCache, circleId string) (string, err
 }
 
 // 获取对项目课程列表
-func PullStudyCourseListApi(cache *EnaeaUserCache, circleId, syllabusId string) (string, error) {
+func PullStudyCourseListApi(cache *EnaeaUserCache, circleId, syllabusId, moudle string) (string, error) {
 	client := &http.Client{}
-	url := fmt.Sprintf("https://study.enaea.edu.cn/circleIndex.do?action=getMyClass&start=0&limit=200&isCompleted=&circleId=%s&syllabusId=%s&categoryRemark=all&_=%d", circleId, syllabusId, time.Now().UnixMilli())
+	buildAction := ""
+	if moudle == "" {
+		buildAction = "getMyClass"
+	} else {
+		buildAction = "getMyClassFor" + moudle
+	}
+	url := fmt.Sprintf("https://study.enaea.edu.cn/circleIndex.do?action=%s&start=0&limit=200&isCompleted=&circleId=%s&syllabusId=%s&categoryRemark=all&_=%d", buildAction, circleId, syllabusId, time.Now().UnixMilli())
 
 	// Create the HTTP request
 	req, err := http.NewRequest("GET", url, nil)

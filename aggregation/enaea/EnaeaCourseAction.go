@@ -87,12 +87,15 @@ func CourseListAction(cache *enaea.EnaeaUserCache, circleId string) ([]EnaeaCour
 	if err != nil {
 		return nil, err
 	}
+	//<li  class="left20">
+	//<a title="课程学习" href="circleIndexRedirect.do?action=toNewMyClass&type=courseCategory4jwu&circleId=304591&syllabusId=1814144&isRequired=false&studentProgress=11">课程学习</a>
+	//</li>
 	// Use regex to find the syllabusId in the response body
-	regexPattern := fmt.Sprintf(`<a title="([^"]*)" href="circleIndexRedirect.do\?action=toNewMyClass&type=course&circleId=%s&syllabusId=([^&]*?)&isRequired=[^&]*&studentProgress=([\d]+)+">[^<]*</a>`, circleId)
+	regexPattern := fmt.Sprintf(`<a title="([^"]*)" href="circleIndexRedirect.do\?action=toNewMyClass&type=course([^&]{0,50})&circleId=%s&syllabusId=([^&]*?)&isRequired=[^&]*&studentProgress=([\d]+)+">[^<]*</a>`, circleId)
 	re := regexp.MustCompile(regexPattern)
 	matches := re.FindAllStringSubmatch(courseHTML, -1)
 	for _, v := range matches {
-		api, err := enaea.PullStudyCourseListApi(cache, circleId, v[2])
+		api, err := enaea.PullStudyCourseListApi(cache, circleId, v[3], v[2])
 		if err != nil {
 			return nil, err
 		}
@@ -108,7 +111,7 @@ func CourseListAction(cache *enaea.EnaeaUserCache, circleId string) ([]EnaeaCour
 					courses = append(courses, EnaeaCourse{
 						TitleTag:          v[1],
 						CircleId:          circleId,
-						SyllabusId:        v[2],
+						SyllabusId:        v[3],
 						Remark:            remark,
 						StudyProgress:     float32(studyProgress),
 						CourseId:          strconv.Itoa(int(centerDTO["courseId"].(float64))),
