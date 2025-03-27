@@ -114,6 +114,9 @@ func CqiePullCourseListAction(cache *cqieApi.CqieUserCache) ([]CqieCourse, error
 		for _, item := range items {
 			// 每个 item 是 map[string]interface{} 类型
 			if obj, ok := item.(map[string]interface{}); ok {
+				if obj["sumTime"] == nil || obj["haveTime"] == nil { //没有视屏总时间的部分说明该部分不是视屏，那么直接跳过添加
+					continue
+				}
 				sumTime, _ := time.Parse("15:04", obj["sumTime"].(string))
 				haveTime, _ := time.Parse("15:04", obj["haveTime"].(string))
 				courseList = append(courseList, CqieCourse{
