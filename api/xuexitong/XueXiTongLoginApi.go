@@ -31,7 +31,8 @@ const (
 	// APIChapterCardResource 接口-课程章节卡片资源
 	APIChapterCardResource = "https://mooc1-api.chaoxing.com/ananas/status"
 	// APIVideoPlayReport 接口-视频播放上报
-	APIVideoPlayReport = "https://mooc1.chaoxing.com/mooc-ans/multimedia/log/a"
+	APIVideoPlayReport  = "https://mooc1.chaoxing.com/mooc-ans/multimedia/log/a"
+	APIVideoPlayReport2 = "https://mooc1-api.chaoxing.com/multimedia/log/a" // cxkitty的
 
 	// ApiWorkCommit 接口-单元作业答题提交
 	ApiWorkCommit = "https://mooc1-api.chaoxing.com/work/addStudentWorkNew"

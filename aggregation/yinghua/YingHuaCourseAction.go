@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+	"github.com/yatori-dev/yatori-go-core/api/entity"
 	"math/rand"
 	"os"
 	"regexp"
@@ -281,7 +282,7 @@ func ExamDetailAction(UserCache *yinghuaApi.YingHuaUserCache, nodeId string) ([]
 }
 
 // randomAnswer 如果AI出问题那么直接随机返回答案
-func randomAnswer(topic yinghuaApi.YingHuaExamTopic) string {
+func randomAnswer(topic entity.YingHuaExamTopic) string {
 	if topic.Type == "单选" {
 		sct := rand.Intn(len(topic.Selects))
 		return "[" + topic.Selects[sct].Value + "]"
@@ -329,7 +330,9 @@ func StartExamAction(
 	var lastProblem string
 	for k, v := range topic.YingHuaExamTopics {
 		//构建统一AI消息
-		aiMessage := yinghuaApi.AIProblemMessage(exam.Title, v)
+		aiMessage := yinghuaApi.AIProblemMessage(exam.Title, entity.ExamTurn{
+			YingHuaExamTopic: v,
+		})
 		aiAnswer, err := utils.AggregationAIApi(url, model, aiType, aiMessage, apiKey)
 		answer := aiTurnYingHuaAnswer(userCache, aiAnswer, v)
 
@@ -432,7 +435,7 @@ func selectMarkingSystem(text1, text2 string) float32 {
 // 竞争对手之间有激烈的价格竞争
 // 竞争对手之间有激烈的价格竞争
 // AI回复转答案
-func aiTurnYingHuaAnswer(cache *yinghuaApi.YingHuaUserCache, aiAnswer string, v yinghuaApi.YingHuaExamTopic) yinghuaApi.YingHuaAnswer {
+func aiTurnYingHuaAnswer(cache *yinghuaApi.YingHuaUserCache, aiAnswer string, v entity.YingHuaExamTopic) yinghuaApi.YingHuaAnswer {
 	answer := yinghuaApi.YingHuaAnswer{Type: v.Type}
 	if v.Type == "单选" || v.Type == "判断" || v.Type == "多选" {
 		var jsonStr []string
@@ -510,7 +513,9 @@ func StartWorkAction(userCache *yinghuaApi.YingHuaUserCache,
 	var lastProblem string
 	for k, v := range topic.YingHuaExamTopics {
 		//构建统一AI消息
-		aiMessage := yinghuaApi.AIProblemMessage(work.Title, v)
+		aiMessage := yinghuaApi.AIProblemMessage(work.Title, entity.ExamTurn{
+			YingHuaExamTopic: v,
+		})
 		aiAnswer, err := utils.AggregationAIApi(url, model, aiType, aiMessage, apiKey)
 		answer := aiTurnYingHuaAnswer(userCache, aiAnswer, v)
 
