@@ -2,39 +2,17 @@ package yinghua
 
 import (
 	"fmt"
+	"github.com/yatori-dev/yatori-go-core/api/entity"
 	"regexp"
 	"strings"
 
 	"github.com/yatori-dev/yatori-go-core/utils"
 )
 
-// ExamTopics holds a map of ExamTopic indexed by answerId
-type YingHuaExamTopics struct {
-	YingHuaExamTopics map[string]YingHuaExamTopic
-}
-
-// ExamTopic represents a single exam question
-type YingHuaExamTopic struct {
-	AnswerId string        `json:"answerId"`
-	Index    string        `json:"index"`
-	Source   string        `json:"source"`
-	Content  string        `json:"content"`
-	Type     string        `json:"type"`
-	Selects  []TopicSelect `json:"selects"`
-	Answers  string        `json:"answers"`
-}
-
-// TopicSelect represents a possible answer choice
-type TopicSelect struct {
-	Value string `json:"value"`
-	Num   string `json:"num"`
-	Text  string `json:"text"`
-}
-
 // 题目转换
-func TurnExamTopic(examHtml string) YingHuaExamTopics {
-	exchangeTopics := YingHuaExamTopics{
-		YingHuaExamTopics: make(map[string]YingHuaExamTopic),
+func TurnExamTopic(examHtml string) entity.YingHuaExamTopics {
+	exchangeTopics := entity.YingHuaExamTopics{
+		YingHuaExamTopics: make(map[string]entity.YingHuaExamTopic),
 	}
 
 	// Regular expression to extract the topic index and answerId
@@ -65,7 +43,7 @@ func TurnExamTopic(examHtml string) YingHuaExamTopics {
 		topicNumMatcher := topicNumRegexp.FindStringSubmatch(topicHtml)
 
 		var num, tag, source, content string
-		var selects []TopicSelect
+		var selects []entity.TopicSelect
 
 		if len(topicNumMatcher) > 0 {
 			num = topicNumMatcher[1]
@@ -102,7 +80,7 @@ func TurnExamTopic(examHtml string) YingHuaExamTopics {
 				selectValue := selectMatch[2]
 				selectNum := selectMatch[3]
 				selectText := selectMatch[4]
-				selects = append(selects, TopicSelect{
+				selects = append(selects, entity.TopicSelect{
 					Value: selectValue,
 					Num:   selectNum,
 					Text:  selectText,
@@ -128,7 +106,7 @@ func TurnExamTopic(examHtml string) YingHuaExamTopics {
 			fillMatches := fillRegexp.FindAllStringSubmatch(topicHtml, -1)
 			for _, fillMatch := range fillMatches {
 				answerId := fillMatch[1]
-				selects = append(selects, TopicSelect{
+				selects = append(selects, entity.TopicSelect{
 					Value: answerId,
 					Num:   answerId,
 					Text:  "",
@@ -160,7 +138,7 @@ func TurnExamTopic(examHtml string) YingHuaExamTopics {
 		}
 
 		// Construct the ExamTopic
-		examTopic := YingHuaExamTopic{
+		examTopic := entity.YingHuaExamTopic{
 			AnswerId: topicMap[num],
 			Index:    num,
 			Source:   source,
@@ -177,14 +155,15 @@ func TurnExamTopic(examHtml string) YingHuaExamTopics {
 }
 
 // 组装AI问题消息
-func AIProblemMessage(testPaperTitle string, examTopic YingHuaExamTopic) utils.AIChatMessages {
+func AIProblemMessage(testPaperTitle string, topic entity.ExamTurn) utils.AIChatMessages {
+	topicType := topic.YingHuaExamTopic.Type
 	problem := `试卷名称：` + testPaperTitle + `
-题目类型：` + examTopic.Type + `
-题目内容：` + examTopic.Content + "\n"
+题目类型：` + topicType + `
+题目内容：` + topic.Content + "\n"
 
 	//选择题
-	if examTopic.Type == "单选" {
-		for _, v := range examTopic.Selects {
+	if topicType == "单选" {
+		for _, v := range topic.Selects {
 			problem += v.Num + v.Text + "\n"
 		}
 		return utils.AIChatMessages{Messages: []utils.Message{
@@ -215,8 +194,8 @@ func AIProblemMessage(testPaperTitle string, examTopic YingHuaExamTopic) utils.A
 				Content: problem,
 			},
 		}}
-	} else if examTopic.Type == "多选" {
-		for _, v := range examTopic.Selects {
+	} else if topicType == "多选" {
+		for _, v := range topic.Selects {
 			problem += v.Num + v.Text + "\n"
 		}
 		return utils.AIChatMessages{Messages: []utils.Message{
@@ -247,8 +226,8 @@ func AIProblemMessage(testPaperTitle string, examTopic YingHuaExamTopic) utils.A
 				Content: problem,
 			},
 		}}
-	} else if examTopic.Type == "判断" {
-		for _, v := range examTopic.Selects {
+	} else if topicType == "判断" {
+		for _, v := range topic.Selects {
 			problem += v.Num + v.Text + "\n"
 		}
 		return utils.AIChatMessages{Messages: []utils.Message{
@@ -277,7 +256,7 @@ func AIProblemMessage(testPaperTitle string, examTopic YingHuaExamTopic) utils.A
 				Content: problem,
 			},
 		}}
-	} else if examTopic.Type == "填空" { //填空题
+	} else if topicType == "填空" { //填空题
 		return utils.AIChatMessages{Messages: []utils.Message{
 			{
 				Role:    "user",
@@ -288,7 +267,7 @@ func AIProblemMessage(testPaperTitle string, examTopic YingHuaExamTopic) utils.A
 				Content: problem,
 			},
 		}}
-	} else if examTopic.Type == "简答" { //简答
+	} else if topicType == "简答" { //简答
 		return utils.AIChatMessages{Messages: []utils.Message{
 			{
 				Role:    "user",

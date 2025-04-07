@@ -120,7 +120,7 @@ func TestXueXiToChapterPoint(t *testing.T) {
 	course, err := xuexitong.XueXiTPullCourseAction(&userCache)
 	var index int
 	for i, v := range course {
-		if v.CourseID == "261619055656961" {
+		if v.CourseName == "形势与政策" {
 			index = i
 			break
 		}
@@ -171,7 +171,7 @@ func TestXueXiToChapterCord(t *testing.T) {
 	course, err := xuexitong.XueXiTPullCourseAction(&userCache)
 	var index int
 	for i, v := range course {
-		if v.ChatID == "261619055656961" {
+		if v.CourseName == "形势与政策" {
 			index = i
 			break
 		}
@@ -186,7 +186,7 @@ func TestXueXiToChapterCord(t *testing.T) {
 		nodes = append(nodes, item.ID)
 	}
 	courseId, _ := strconv.Atoi(course[index].CourseID)
-	_, fetchCards, err := xuexitong.ChapterFetchCardsAction(&userCache, &action, nodes, 27, courseId, key, course[index].Cpi)
+	_, fetchCards, err := xuexitong.ChapterFetchCardsAction(&userCache, &action, nodes, 8, courseId, key, course[index].Cpi)
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -230,7 +230,7 @@ func TestXueXiToChapterCardWork(t *testing.T) {
 	course, err := xuexitong.XueXiTPullCourseAction(&userCache)
 	var index int
 	for i, v := range course {
-		if v.ChatID == "259500784287745" {
+		if v.CourseName == "形势与政策" {
 			index = i
 			break
 		}
@@ -244,15 +244,15 @@ func TestXueXiToChapterCardWork(t *testing.T) {
 	}
 	courseId, _ := strconv.Atoi(course[index].CourseID)
 	fmt.Println(course[index].CourseDataID)
-	_, fetchCards, err := xuexitong.ChapterFetchCardsAction(&userCache, &action, nodes, 82, courseId,
+	_, fetchCards, err := xuexitong.ChapterFetchCardsAction(&userCache, &action, nodes, 9, courseId,
 		key, course[index].Cpi)
 
 	videoDTOs, workDTOs, documentDTOs := entity.ParsePointDto(fetchCards)
 	fmt.Println(videoDTOs)
 	fmt.Println(workDTOs)
 	fmt.Println(documentDTOs)
-	videoCourseId, _ := strconv.Atoi(videoDTOs[0].CourseID)
-	videoClassId, _ := strconv.Atoi(videoDTOs[0].ClassID)
+	videoCourseId, _ := strconv.Atoi(workDTOs[0].CourseID)
+	videoClassId, _ := strconv.Atoi(workDTOs[0].ClassID)
 
 	if courseId == videoCourseId && key == videoClassId {
 		// 测试只对单独一个卡片测试
@@ -260,15 +260,13 @@ func TestXueXiToChapterCardWork(t *testing.T) {
 			&userCache,
 			key,
 			courseId,
-			videoDTOs[0].KnowledgeID,
-			videoDTOs[0].CardIndex,
+			workDTOs[0].KnowledgeID,
+			workDTOs[0].CardIndex,
 			course[index].Cpi)
 		if err != nil {
 			log.Fatal(err)
 		}
-		videoDTOs[0].AttachmentsDetection(card)
 		workDTOs[0].AttachmentsDetection(card)
-		fmt.Println(videoDTOs)
 		fmt.Println(workDTOs)
 
 		fromAction, _ := xuexitong.WorkPageFromAction(&userCache, &workDTOs[0])
@@ -277,7 +275,19 @@ func TestXueXiToChapterCardWork(t *testing.T) {
 			fmt.Printf("Name: %s, Value: %s, Type: %s, ID: %s\n", input.Name, input.Value, input.Type, input.ID)
 		}
 
-		xuexitong.ParseWorkQuestionAction(&userCache, &workDTOs[0])
+		questionAction := xuexitong.ParseWorkQuestionAction(&userCache, &workDTOs[0])
+		for i := range questionAction.Choice {
+			q := &questionAction.Choice[i] // 获取指向切片元素的指针
+			message := xuexitong.AIProblemMessage(q.Type.String(), entity.ExamTurn{
+				ChoiceQue: *q,
+			})
+			aiSetting := global.Config.Setting.AiSetting
+			q.AnswerAIGet(userCache.UserID,
+				aiSetting.AiUrl, aiSetting.Model, aiSetting.AiType, message, aiSetting.APIKEY)
+		}
+		for i, que := range questionAction.Choice {
+			fmt.Println(fmt.Sprintf("%d. %v", i, que.Answer))
+		}
 	} else {
 		log.Fatal("任务点对象错误")
 	}
@@ -367,7 +377,7 @@ func TestXueXiToCourseForVideo(t *testing.T) {
 	utils.YatoriCoreInit()
 	//测试账号
 	setup()
-	user := global.Config.Users[8]
+	user := global.Config.Users[1]
 	userCache := xuexitongApi.XueXiTUserCache{
 		Name:     user.Account,
 		Password: user.Password,
@@ -380,7 +390,7 @@ func TestXueXiToCourseForVideo(t *testing.T) {
 
 	courseList, err := xuexitong.XueXiTPullCourseAction(&userCache) //拉取所有课程
 	for _, course := range courseList {                             //遍历课程
-		if course.CourseName == "名侦探柯南与化学探秘" {
+		if course.CourseName != "形势与政策" {
 			continue
 		}
 		// 6c444b8d5c6203ee2f2aef4b76f5b2ce qrcEnc
@@ -437,8 +447,8 @@ func TestXueXiToCourseForVideo(t *testing.T) {
 						log.Fatal(err)
 					}
 					videoDTO.AttachmentsDetection(card)
-					//point.ExecuteVideo(&userCache, &videoDTO) //常规
-					point.ExecuteFastVideo(&userCache, &videoDTO) //秒刷
+					point.ExecuteVideo(&userCache, &videoDTO) //常规
+					//point.ExecuteFastVideo(&userCache, &videoDTO) //秒刷
 					time.Sleep(5 * time.Second)
 				}
 			}

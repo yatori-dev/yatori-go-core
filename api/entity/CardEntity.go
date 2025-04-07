@@ -251,7 +251,11 @@ func (p *PointDocumentDto) AttachmentsDetection(attachment interface{}) (bool, e
 			objectid := property["objectid"]
 			if objectid == p.ObjectID {
 				p.Title = property["name"].(string)
-				p.JobID = property["jobid"].(string)
+				if property["jobid"] == nil {
+					p.JobID = ""
+				} else {
+					p.JobID = property["jobid"].(string)
+				}
 				p.Jtoken = att["jtoken"].(string)
 			}
 		}

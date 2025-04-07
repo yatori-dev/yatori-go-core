@@ -1,5 +1,12 @@
 package entity
 
+import (
+	"github.com/yatori-dev/yatori-go-core/models/ctype"
+	"github.com/yatori-dev/yatori-go-core/utils"
+	"github.com/yatori-dev/yatori-go-core/utils/log"
+	"os"
+)
+
 // XueXiTCourse 课程所有信息
 type XueXiTCourseJson struct {
 	Result           int           `json:"result"`
@@ -64,4 +71,58 @@ type XueXiTCourse struct {
 	Cpi        string //不知道是啥玩意，反正需要
 	PersonId   string //个人Id
 	UserId     string //UserId
+}
+
+// ExamTopics holds a map of ExamTopic indexed by answerId
+type YingHuaExamTopics struct {
+	YingHuaExamTopics map[string]YingHuaExamTopic
+}
+
+// ExamTopic represents a single exam question
+type YingHuaExamTopic struct {
+	AnswerId string        `json:"answerId"`
+	Index    string        `json:"index"`
+	Source   string        `json:"source"`
+	Content  string        `json:"content"`
+	Type     string        `json:"type"`
+	Selects  []TopicSelect `json:"selects"`
+	Answers  string        `json:"answers"`
+}
+
+// TopicSelect represents a possible answer choice
+type TopicSelect struct {
+	Value string `json:"value"`
+	Num   string `json:"num"`
+	Text  string `json:"text"`
+}
+
+type ChoiceQue struct {
+	Type    ctype.QueType
+	Text    string
+	Options map[string]string
+	Answer  string // 答案
+}
+
+// Question TODO 这里考虑是否在其中直接将答案做出 直接上报提交 或 保存提交
+type Question struct {
+	Choice []ChoiceQue //选择类型
+}
+
+type ExamTurn struct {
+	ChoiceQue
+	YingHuaExamTopic
+}
+
+func (q *ChoiceQue) AnswerAIGet(userID string,
+	url,
+	model string,
+	aiType ctype.AiType,
+	aiChatMessages utils.AIChatMessages,
+	apiKey string) {
+	aiAnswer, err := utils.AggregationAIApi(url, model, aiType, aiChatMessages, apiKey)
+	if err != nil {
+		log.Print(log.INFO, `[`, userID, `] `, log.BoldRed, "Ai异常，返回信息：", err.Error())
+		os.Exit(0)
+	}
+	q.Answer = aiAnswer
 }
