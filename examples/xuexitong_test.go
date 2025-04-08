@@ -20,22 +20,44 @@ func TestLoginXueXiTo(t *testing.T) {
 	utils.YatoriCoreInit()
 	//测试账号
 	setup()
-	user := global.Config.Users[1]
-	userCache := xuexitongApi.XueXiTUserCache{
-		Name:     user.Account,
-		Password: user.Password,
-	}
-	err := xuexitong.XueXiTLoginAction(&userCache)
+	//user := global.Config.Users[1]
+	//userCache := xuexitongApi.XueXiTUserCache{
+	//	Name:     user.Account,
+	//	Password: user.Password,
+	//}
+	cache := xuexitongApi.NewCache(1)
+	err := xuexitong.XueXiTLoginAction(&cache)
 	if err != nil {
 		log.Fatal(err)
 	}
 	//拉取课程列表并打印
-	action, err := xuexitong.XueXiTPullCourseAction(&userCache)
+	action, err := xuexitong.XueXiTPullCourseAction(&cache)
 	if err != nil {
 		return
 	}
 	for _, v := range action {
 		fmt.Println(v.ToString())
+	}
+}
+
+func TestCourseDetailList(t *testing.T) {
+	utils.YatoriCoreInit()
+	setup()
+	cacheList := xuexitongApi.NewCacheList()
+	for _, cache := range cacheList {
+		err := xuexitong.XueXiTLoginAction(&cache)
+		if err != nil {
+			log.Fatal(err)
+		}
+		//拉取课程列表并打印
+		action, err := xuexitong.XueXiTPullCourseAction(&cache)
+		if err != nil {
+			return
+		}
+		for _, v := range action {
+			fmt.Println(v.ToString())
+		}
+		log.Print("----------------------------多账号-------------------------")
 	}
 }
 
@@ -215,12 +237,13 @@ func TestXueXiToChapterCardWork(t *testing.T) {
 	utils.YatoriCoreInit()
 	//测试账号
 	setup()
-	user := global.Config.Users[1]
-	userCache := xuexitongApi.XueXiTUserCache{
-		Name:     user.Account,
-		Password: user.Password,
-	}
-
+	//user := global.Config.Users[1]
+	//
+	//userCache := xuexitongApi.XueXiTUserCache{
+	//	Name:     user.Account,
+	//	Password: user.Password,
+	//}
+	userCache := xuexitongApi.NewCache(1)
 	err := xuexitong.XueXiTLoginAction(&userCache)
 	if err != nil {
 		log.Fatal(err)

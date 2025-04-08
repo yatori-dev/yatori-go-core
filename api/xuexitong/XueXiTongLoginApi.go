@@ -7,6 +7,7 @@ import (
 	"encoding/base64"
 	"encoding/json"
 	"fmt"
+	"github.com/yatori-dev/yatori-go-core/global"
 	"io/ioutil"
 	"net/http"
 	"net/url"
@@ -54,6 +55,24 @@ type XueXiTUserCache struct {
 	UserID      string // 用户ID
 	JsonContent map[string]interface{}
 	cookie      string //验证码用的session
+}
+
+func NewCache(input int) XueXiTUserCache {
+	return XueXiTUserCache{
+		Name:     global.Config.Users[input].Account,
+		Password: global.Config.Users[input].Password,
+	}
+}
+
+func NewCacheList() []XueXiTUserCache {
+	var cacheList []XueXiTUserCache
+	for i, user := range global.Config.Users {
+		if user.AccountType != "XUEXITONG" {
+			continue
+		}
+		cacheList = append(cacheList, NewCache(i))
+	}
+	return cacheList
 }
 
 func (cache *XueXiTUserCache) GetCookie() string {

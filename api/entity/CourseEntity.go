@@ -96,6 +96,7 @@ type TopicSelect struct {
 	Text  string `json:"text"`
 }
 
+// ChoiceQue 选择题部分
 type ChoiceQue struct {
 	Type    ctype.QueType
 	Text    string
@@ -103,11 +104,11 @@ type ChoiceQue struct {
 	Answer  string // 答案
 }
 
-// Question TODO 这里考虑是否在其中直接将答案做出 直接上报提交 或 保存提交
 type Question struct {
 	Choice []ChoiceQue //选择类型
 }
 
+// ExamTurn 后续所有可刷取不同客户端的总体集合
 type ExamTurn struct {
 	ChoiceQue
 	YingHuaExamTopic

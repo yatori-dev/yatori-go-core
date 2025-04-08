@@ -187,7 +187,6 @@ func cleanText(text string) string {
 }
 
 // ParseWorkQuestionAction 用于解析作业题目，包括题目类型和题目文本
-// TODO 同Question结构体问题 暂时返回未做 全部题目初始化
 func ParseWorkQuestionAction(cache *xuexitong.XueXiTUserCache, workPoint *entity.PointWorkDto) entity.Question {
 	var workQuestion []entity.ChoiceQue
 	question, _ := cache.WorkFetchQuestion(workPoint)
@@ -293,11 +292,9 @@ func ParseWorkQuestionAction(cache *xuexitong.XueXiTUserCache, workPoint *entity
 			break
 		}
 	}
-	// TODO 这里实例化部分没写
 	//for j, q := range workQuestion {
 	//	fmt.Printf("Question %d:\nType: %s\nText: %s\noptions: %v\n\n", j+1, q.Type, q.Text, q.options)
 	//}
-	// TODO 组装AI问答将英华部分整合减少代码重复耦合
 	return entity.Question{Choice: workQuestion}
 }
 
