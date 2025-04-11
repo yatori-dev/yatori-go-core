@@ -2,6 +2,7 @@ package examples
 
 import (
 	"fmt"
+	entity2 "github.com/yatori-dev/yatori-go-core/entity"
 	"log"
 	"strconv"
 	"testing"
@@ -9,7 +10,6 @@ import (
 
 	"github.com/yatori-dev/yatori-go-core/aggregation/xuexitong"
 	"github.com/yatori-dev/yatori-go-core/aggregation/xuexitong/point"
-	"github.com/yatori-dev/yatori-go-core/api/entity"
 	xuexitongApi "github.com/yatori-dev/yatori-go-core/api/xuexitong"
 	"github.com/yatori-dev/yatori-go-core/global"
 	"github.com/yatori-dev/yatori-go-core/utils"
@@ -213,7 +213,7 @@ func TestXueXiToChapterCord(t *testing.T) {
 		log.Fatal(err)
 	}
 	var (
-		videoDTO entity.PointVideoDto
+		videoDTO entity2.PointVideoDto
 	)
 	// 处理返回的任务点对象
 	videoDTO = fetchCards[0].PointVideoDto
@@ -270,7 +270,7 @@ func TestXueXiToChapterCardWork(t *testing.T) {
 	_, fetchCards, err := xuexitong.ChapterFetchCardsAction(&userCache, &action, nodes, 9, courseId,
 		key, course[index].Cpi)
 
-	videoDTOs, workDTOs, documentDTOs := entity.ParsePointDto(fetchCards)
+	videoDTOs, workDTOs, documentDTOs := entity2.ParsePointDto(fetchCards)
 	fmt.Println(videoDTOs)
 	fmt.Println(workDTOs)
 	fmt.Println(documentDTOs)
@@ -301,7 +301,7 @@ func TestXueXiToChapterCardWork(t *testing.T) {
 		questionAction := xuexitong.ParseWorkQuestionAction(&userCache, &workDTOs[0])
 		for i := range questionAction.Choice {
 			q := &questionAction.Choice[i] // 获取指向切片元素的指针
-			message := xuexitong.AIProblemMessage(q.Type.String(), entity.ExamTurn{
+			message := xuexitong.AIProblemMessage(q.Type.String(), entity2.ExamTurn{
 				ChoiceQue: *q,
 			})
 			aiSetting := global.Config.Setting.AiSetting
@@ -369,7 +369,7 @@ func TestXueXiToChapterCardDocument(t *testing.T) {
 			if err != nil {
 				log.Fatal(err)
 			}
-			videoDTOs, workDTOs, documentDTOs := entity.ParsePointDto(fetchCards)
+			videoDTOs, workDTOs, documentDTOs := entity2.ParsePointDto(fetchCards)
 			if videoDTOs == nil && workDTOs == nil && documentDTOs == nil {
 				log.Println("没有可学习的内容")
 			}
@@ -457,7 +457,7 @@ func TestXueXiToCourseForVideo(t *testing.T) {
 			if err != nil {
 				log.Fatal(err)
 			}
-			videoDTOs, workDTOs, documentDTOs := entity.ParsePointDto(fetchCards)
+			videoDTOs, workDTOs, documentDTOs := entity2.ParsePointDto(fetchCards)
 			if videoDTOs == nil && workDTOs == nil && documentDTOs == nil {
 				log.Println("没有可学习的内容")
 			}

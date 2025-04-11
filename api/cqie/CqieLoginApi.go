@@ -2,6 +2,7 @@ package cqie
 
 import (
 	"fmt"
+	"github.com/yatori-dev/yatori-go-core/global"
 	"io"
 	"io/ioutil"
 	"log"
@@ -31,6 +32,24 @@ type CqieUserCache struct {
 	mobile       string //手机号
 	orgId        string //不知道啥玩意
 	orgMajorId   string //专业Id
+}
+
+func NewCache(input int) CqieUserCache {
+	return CqieUserCache{
+		Account:  global.Config.Users[input].Account,
+		Password: global.Config.Users[input].Password,
+	}
+}
+
+func NewCacheList() []CqieUserCache {
+	var cacheList []CqieUserCache
+	for i, user := range global.Config.Users {
+		if user.AccountType != "CQIE" {
+			continue
+		}
+		cacheList = append(cacheList, NewCache(i))
+	}
+	return cacheList
 }
 
 var randChar = []string{"0", "1", "2", "3", "4", "5", "6", "7", "8", "9", "a", "b", "c", "d", "e", "f", "A", "B", "C", "D", "E", "F"}

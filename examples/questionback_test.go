@@ -2,9 +2,9 @@ package examples
 
 import (
 	"fmt"
+	"github.com/yatori-dev/yatori-go-core/entity"
 	"testing"
 
-	"github.com/yatori-dev/yatori-go-core/api/yinghua"
 	"github.com/yatori-dev/yatori-go-core/utils/questionback"
 )
 
@@ -51,7 +51,7 @@ func TestQuestionBack(t *testing.T) {
 }
 
 // 转为英华转缓存用的Question
-func YingHuaTopicTurnQuestion(topic yinghua.YingHuaExamTopic) questionback.Question {
+func YingHuaTopicTurnQuestion(topic entity.YingHuaExamTopic) questionback.Question {
 	question := questionback.Question{
 		Type:    topic.Type,
 		Content: topic.Content,
@@ -61,6 +61,6 @@ func YingHuaTopicTurnQuestion(topic yinghua.YingHuaExamTopic) questionback.Quest
 }
 
 // Question转英华
-func QuestionTurnYingHuaTopic(qu questionback.Question) yinghua.YingHuaExamTopic {
-	return yinghua.YingHuaExamTopic{}
+func QuestionTurnYingHuaTopic(qu questionback.Question) entity.YingHuaExamTopic {
+	return entity.YingHuaExamTopic{}
 }

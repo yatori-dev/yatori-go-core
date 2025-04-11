@@ -7,8 +7,8 @@ import (
 	"fmt"
 	"github.com/PuerkitoBio/goquery"
 	"github.com/thedevsaddam/gojsonq"
-	"github.com/yatori-dev/yatori-go-core/api/entity"
 	"github.com/yatori-dev/yatori-go-core/api/xuexitong"
+	entity2 "github.com/yatori-dev/yatori-go-core/entity"
 	"github.com/yatori-dev/yatori-go-core/models/ctype"
 	"github.com/yatori-dev/yatori-go-core/utils"
 	"golang.org/x/net/html"
@@ -114,7 +114,7 @@ func PageMobileChapterCardAction(
 	return att, nil
 }
 
-func VideoDtoFetchAction(cache *xuexitong.XueXiTUserCache, p *entity.PointVideoDto) (bool, error) {
+func VideoDtoFetchAction(cache *xuexitong.XueXiTUserCache, p *entity2.PointVideoDto) (bool, error) {
 	fetch, err := cache.VideoDtoFetch(p)
 	if err != nil {
 		log.Println("VideoDtoFetchAction:", err)
@@ -133,7 +133,7 @@ func VideoDtoFetchAction(cache *xuexitong.XueXiTUserCache, p *entity.PointVideoD
 	return false, errors.New("fetch failed")
 }
 
-func WorkPageFromAction(cache *xuexitong.XueXiTUserCache, workPoint *entity.PointWorkDto) ([]entity.WorkInputField, error) {
+func WorkPageFromAction(cache *xuexitong.XueXiTUserCache, workPoint *entity2.PointWorkDto) ([]entity2.WorkInputField, error) {
 	questionHtml, err := cache.WorkFetchQuestion(workPoint)
 	if err != nil {
 		return nil, fmt.Errorf("failed to fetch WorkFetchQuestion: %w", err)
@@ -142,12 +142,12 @@ func WorkPageFromAction(cache *xuexitong.XueXiTUserCache, workPoint *entity.Poin
 	inputPattern := regexp.MustCompile(`<input\s+[^>]*>`)
 	attributePattern := regexp.MustCompile(`\b(name|value|type|id)\s*=\s*["']([^"']+)["']`)
 
-	var inputs []entity.WorkInputField
+	var inputs []entity2.WorkInputField
 
 	// Find all matches of <input> tags in the HTML content.
 	inputTags := inputPattern.FindAllStringSubmatch(questionHtml, -1)
 	for _, tag := range inputTags {
-		var inputField entity.WorkInputField
+		var inputField entity2.WorkInputField
 		attributes := attributePattern.FindAllStringSubmatch(tag[0], -1)
 
 		for _, attr := range attributes {
@@ -187,8 +187,8 @@ func cleanText(text string) string {
 }
 
 // ParseWorkQuestionAction 用于解析作业题目，包括题目类型和题目文本
-func ParseWorkQuestionAction(cache *xuexitong.XueXiTUserCache, workPoint *entity.PointWorkDto) entity.Question {
-	var workQuestion []entity.ChoiceQue
+func ParseWorkQuestionAction(cache *xuexitong.XueXiTUserCache, workPoint *entity2.PointWorkDto) entity2.Question {
+	var workQuestion []entity2.ChoiceQue
 	question, _ := cache.WorkFetchQuestion(workPoint)
 
 	// 使用 goquery 解析 HTML
@@ -237,7 +237,7 @@ func ParseWorkQuestionAction(cache *xuexitong.XueXiTUserCache, workPoint *entity
 		// 单选
 		case ctype.SingleChoice.String():
 			options := make(map[string]string)
-			choiceQue := entity.ChoiceQue{}
+			choiceQue := entity2.ChoiceQue{}
 			choiceQue.Type = ctype.SingleChoice
 			choiceQue.Text = quesText
 			// 提取选项
@@ -265,7 +265,7 @@ func ParseWorkQuestionAction(cache *xuexitong.XueXiTUserCache, workPoint *entity
 			// 多选
 		case ctype.MultipleChoice.String():
 			options := make(map[string]string)
-			choiceQue := entity.ChoiceQue{}
+			choiceQue := entity2.ChoiceQue{}
 			choiceQue.Type = ctype.MultipleChoice
 			choiceQue.Text = quesText
 			// 提取选项
@@ -295,10 +295,10 @@ func ParseWorkQuestionAction(cache *xuexitong.XueXiTUserCache, workPoint *entity
 	//for j, q := range workQuestion {
 	//	fmt.Printf("Question %d:\nType: %s\nText: %s\noptions: %v\n\n", j+1, q.Type, q.Text, q.options)
 	//}
-	return entity.Question{Choice: workQuestion}
+	return entity2.Question{Choice: workQuestion}
 }
 
-func AIProblemMessage(testPaperTitle string, topic entity.ExamTurn) utils.AIChatMessages {
+func AIProblemMessage(testPaperTitle string, topic entity2.ExamTurn) utils.AIChatMessages {
 	topicType := topic.ChoiceQue.Type.String()
 	context := topic.ChoiceQue.Text
 	for c, q := range topic.ChoiceQue.Options {

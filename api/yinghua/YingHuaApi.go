@@ -4,6 +4,8 @@ import (
 	"bytes"
 	"crypto/tls"
 	"fmt"
+	"github.com/yatori-dev/yatori-go-core/entity"
+	"github.com/yatori-dev/yatori-go-core/global"
 	"io"
 	"io/ioutil"
 	"log"
@@ -15,7 +17,6 @@ import (
 	"strings"
 	"time"
 
-	"github.com/yatori-dev/yatori-go-core/api/entity"
 	"github.com/yatori-dev/yatori-go-core/utils"
 )
 
@@ -55,6 +56,25 @@ func (cache *YingHuaUserCache) GetSign() string {
 }
 func (cache *YingHuaUserCache) SetSign(sign string) {
 	cache.sign = sign
+}
+
+func NewCache(input int) YingHuaUserCache {
+	return YingHuaUserCache{
+		PreUrl:   global.Config.Users[input].URL,
+		Account:  global.Config.Users[input].Account,
+		Password: global.Config.Users[input].Password,
+	}
+}
+
+func NewCacheList() []YingHuaUserCache {
+	var cacheList []YingHuaUserCache
+	for i, user := range global.Config.Users {
+		if user.AccountType != "YINGHUA" {
+			continue
+		}
+		cacheList = append(cacheList, NewCache(i))
+	}
+	return cacheList
 }
 
 //func (cache YingHuaUserCache) String() string {

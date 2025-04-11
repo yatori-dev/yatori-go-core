@@ -4,14 +4,13 @@ import (
 	"crypto/md5"
 	"encoding/hex"
 	"fmt"
+	"github.com/yatori-dev/yatori-go-core/entity"
 	"io/ioutil"
 	"net/http"
 	"net/url"
 	"strconv"
 	"strings"
 	"time"
-
-	"github.com/yatori-dev/yatori-go-core/api/entity"
 )
 
 // PageMobileChapterCard 客户端章节任务卡片 原始html数据返回

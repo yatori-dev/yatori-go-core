@@ -4,7 +4,7 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
-	"github.com/yatori-dev/yatori-go-core/api/entity"
+	"github.com/yatori-dev/yatori-go-core/entity"
 	"math/rand"
 	"os"
 	"regexp"

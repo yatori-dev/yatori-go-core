@@ -2,7 +2,7 @@ package yinghua
 
 import (
 	"fmt"
-	"github.com/yatori-dev/yatori-go-core/api/entity"
+	"github.com/yatori-dev/yatori-go-core/entity"
 	"regexp"
 	"strings"
 

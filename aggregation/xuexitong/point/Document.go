@@ -2,8 +2,8 @@ package point
 
 import (
 	"github.com/thedevsaddam/gojsonq"
-	"github.com/yatori-dev/yatori-go-core/api/entity"
 	"github.com/yatori-dev/yatori-go-core/api/xuexitong"
+	"github.com/yatori-dev/yatori-go-core/entity"
 	"log"
 )
 
