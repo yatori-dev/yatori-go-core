@@ -23,7 +23,7 @@ func YingHuaLoginAction(cache *yinghuaApi.YingHuaUserCache) error {
 		codeResult := utils.AutoVerification(img, ort.NewShape(1, 18)) //自动识别
 		utils.DeleteFile(path)                                         //删除验证码文件
 		cache.SetVerCode(codeResult)                                   //填写验证码
-		jsonStr, _ := cache.LoginApi(5, nil)                           //执行登录
+		jsonStr, _ := cache.LoginApi(10, nil)                          //执行登录
 		log.Print(log.DEBUG, "["+cache.Account+"] "+"LoginAction---"+jsonStr)
 		if gojsonq.New().JSONString(jsonStr).Find("msg") == "验证码有误！" {
 			continue

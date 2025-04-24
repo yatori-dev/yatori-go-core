@@ -113,6 +113,11 @@ func (cache *YingHuaUserCache) LoginApi(retry int, lastError error) (string, err
 		fmt.Println(err)
 		return "", err
 	}
+	//502情况进行重新请求
+	if strings.Contains(string(body), "502 Bad Gateway") {
+		time.Sleep(time.Millisecond * 150) //延迟
+		return cache.LoginApi(retry, err)
+	}
 	//fmt.Println(string(body))
 	return string(body), nil
 }
@@ -176,6 +181,7 @@ func (cache *YingHuaUserCache) VerificationCodeApi(retry int) (string, string) {
 		return "", ""
 	}
 	if utils.IsBadImg(filepath) {
+		utils.DeleteFile(filepath) //删除坏的文件
 		return cache.VerificationCodeApi(retry - 1)
 	}
 	return filepath, res.Header.Get("Set-Cookie")
