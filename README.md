@@ -34,5 +34,5 @@ yatori-go-core
 
 
 
-[![Stargazers over time](https://starchart.cc/yatori-dev/yatori-go-core.svg?variant=adaptive)
+![Stargazers over time](https://starchart.cc/yatori-dev/yatori-go-core.svg?variant=adaptive)
 
