@@ -16,7 +16,7 @@ func TestENAEALogin(t *testing.T) {
 	utils.YatoriCoreInit()
 	//测试账号
 	setup()
-	users := global.Config.Users[3]
+	users := global.Config.Users[9]
 	cache := enaeaApi.EnaeaUserCache{Account: users.Account, Password: users.Password}
 	_, err := enaea.EnaeaLoginAction(&cache)
 	if err != nil {

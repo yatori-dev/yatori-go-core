@@ -175,6 +175,9 @@ func (cache *YingHuaUserCache) VerificationCodeApi(retry int) (string, string) {
 		log.Println(err)
 		return "", ""
 	}
+	if utils.IsBadImg(filepath) {
+		return cache.VerificationCodeApi(retry - 1)
+	}
 	return filepath, res.Header.Get("Set-Cookie")
 }
 

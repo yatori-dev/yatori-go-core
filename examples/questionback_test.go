@@ -4,7 +4,6 @@ import (
 	"fmt"
 	"testing"
 
-	"github.com/yatori-dev/yatori-go-core/api/yinghua"
 	"github.com/yatori-dev/yatori-go-core/utils/questionback"
 )
 
@@ -50,17 +49,17 @@ func TestQuestionBack(t *testing.T) {
 
 }
 
-// 转为英华转缓存用的Question
-func YingHuaTopicTurnQuestion(topic yinghua.YingHuaExamTopic) questionback.Question {
-	question := questionback.Question{
-		Type:    topic.Type,
-		Content: topic.Content,
-		Answers: topic.Answers,
-	}
-	return question
-}
-
-// Question转英华
-func QuestionTurnYingHuaTopic(qu questionback.Question) yinghua.YingHuaExamTopic {
-	return yinghua.YingHuaExamTopic{}
-}
+//// 转为英华转缓存用的Question
+//func YingHuaTopicTurnQuestion(topic yinghua.YingHuaExamTopic) questionback.Question {
+//	question := questionback.Question{
+//		Type:    topic.Type,
+//		Content: topic.Content,
+//		Answers: topic.Answers,
+//	}
+//	return question
+//}
+//
+//// Question转英华
+//func QuestionTurnYingHuaTopic(qu questionback.Question) yinghua.YingHuaExamTopic {
+//	return yinghua.YingHuaExamTopic{}
+//}
