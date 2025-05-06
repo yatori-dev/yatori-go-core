@@ -128,7 +128,7 @@ func (q *ChoiceQue) AnswerAIGet(userID string,
 }
 
 // 转标准题目格式
-func (q *YingHuaExamTopic) turnProblem() utils.Problem {
+func (q *YingHuaExamTopic) TurnProblem() utils.Problem {
 	problem := utils.Problem{
 		Hash:    "",
 		Type:    q.Type,

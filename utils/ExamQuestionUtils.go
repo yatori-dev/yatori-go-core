@@ -23,15 +23,18 @@ type Answer struct {
 }
 
 // 用于请求外部题库接口使用
-func (problem *Problem) ApiQueRequest(url string) Answer {
+func (problem *Problem) ApiQueRequest(url string, retry int, err error) (Answer, error) {
+	if retry <= 0 {
+		return Answer{}, err
+	}
 	data, _ := json.Marshal(problem)
 	resp, _ := http.Post(url, "application/json", strings.NewReader(string(data)))
 	defer resp.Body.Close()
 	body, _ := io.ReadAll(resp.Body)
 	var answers Answer
-	err := json.Unmarshal(body, &answers)
+	err1 := json.Unmarshal(body, &answers)
 	if err != nil {
-		panic(err)
+		problem.ApiQueRequest(url, retry-1, err1)
 	}
-	return answers
+	return answers, nil
 }

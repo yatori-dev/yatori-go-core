@@ -365,6 +365,60 @@ func StartExamAction(
 	return nil
 }
 
+// StartExamForExternalAction 开始考试
+func StartExamForExternalAction(
+	userCache *yinghuaApi.YingHuaUserCache,
+	exam YingHuaExam,
+	queBankUrl string,
+	isAutoSubExam int /*是否自动提交试卷，0为不自动提交，1为自动提交*/) error {
+	//开始考试
+	startExam, err := yinghuaApi.StartExam(*userCache, exam.CourseId, exam.NodeId, exam.ExamId, 10, nil)
+	if err != nil {
+		log.Print(log.INFO, err.Error())
+		return errors.New(err.Error())
+	}
+	//如果开始考试状态异常则直接抛错
+	if int(gojsonq.New().JSONString(startExam).Find("_code").(float64)) == 9 {
+		return errors.New(gojsonq.New().JSONString(startExam).Find("msg").(string))
+	}
+	//开始答题
+	api, err := yinghuaApi.GetExamTopicApi(*userCache, exam.NodeId, exam.ExamId, 8, nil)
+	if int(gojsonq.New().JSONString(startExam).Find("_code").(float64)) == 9 {
+		return errors.New(gojsonq.New().JSONString(startExam).Find("msg").(string))
+	}
+	//html转结构体
+	topic := yinghuaApi.TurnExamTopic(api)
+	//fmt.Println(topic)
+	//遍历题目map,并回答问题
+	var lastAnswer utils.Answer
+	var lastProblem string
+	for k, v := range topic.YingHuaExamTopics {
+		standardProblem := v.TurnProblem() //转为标准问题结构体
+		answer, err := standardProblem.ApiQueRequest(queBankUrl, 5, nil)
+
+		//fmt.Println(aiAnswer)
+		subWorkApi, err := yinghuaApi.SubmitExamApi(*userCache, exam.ExamId, k, answer, "0", 8, nil)
+		if err != nil {
+			log.Print(log.INFO, `[`, userCache.Account, `] `, log.BoldRed, "Ai异常，返回信息：", err.Error())
+		}
+		//如果提交答案服务器端返回信息异常
+		if gojsonq.New().JSONString(subWorkApi).Find("msg") != "答题保存成功" {
+			log.Print(log.INFO, log.BoldRed, `[`, userCache.Account, `] `, log.BoldRed, "提交答案异常，返回信息：", subWorkApi, "题目内容：", v, "外部接口回答信息：", answer)
+		}
+		lastAnswer = answer
+		lastProblem = k
+	}
+	if isAutoSubExam == 1 {
+		//结束考试
+		subWorkApi, err := yinghuaApi.SubmitExamApi(*userCache, exam.ExamId, lastProblem, lastAnswer, "1", 8, nil)
+		//如果结束做题服务器端返回信息异常
+		if gojsonq.New().JSONString(subWorkApi).Find("msg") != "提交试卷成功" || err != nil {
+			log.Print(log.INFO, log.BoldRed, `[`, userCache.Account, `] `, log.BoldRed, "提交试卷异常，返回信息：", subWorkApi, err.Error())
+		}
+	}
+	return nil
+}
+
 // ExamFinallyScoreAction 获取最终作业分数
 func ExamFinallyScoreAction(userCache *yinghuaApi.YingHuaUserCache, work YingHuaExam) (string, error) {
 	detail, err := yinghuaApi.ExamFinallyDetailApi(*userCache, work.CourseId, work.NodeId, work.ExamId, 8, nil)
@@ -533,6 +587,64 @@ func StartWorkAction(userCache *yinghuaApi.YingHuaUserCache,
 			log.Print(log.INFO, log.BoldRed, `[`, userCache.Account, `] `, log.BoldRed, "提交答案异常，返回信息：", subWorkApi)
 		}
 		lastAnswer = aiTurnYingHuaAnswer(userCache, aiAnswer, v)
+		lastProblem = k
+	}
+	//结束考试
+	if isAutoSubExam == 1 {
+		subWorkApi, err := yinghuaApi.SubmitWorkApi(*userCache, work.WorkId, lastProblem, lastAnswer, "1", 10, nil)
+		//如果结束做题服务器端返回信息异常
+		if gojsonq.New().JSONString(subWorkApi).Find("msg") != "提交作业成功" || err != nil {
+			log.Print(log.INFO, log.BoldRed, `[`, userCache.Account, `] `, log.BoldRed, "提交试卷异常，返回信息：", subWorkApi, err.Error())
+		}
+	}
+
+	return nil
+}
+
+// StartWorkForExternalAction 外部题库开始写作业
+func StartWorkForExternalAction(userCache *yinghuaApi.YingHuaUserCache,
+	queBankUrl string,
+	work YingHuaWork, isAutoSubExam int /*是否自动提交试卷，0为不自动提交，1为自动提交*/) error {
+	//开始考试
+	startWork, err := yinghuaApi.StartWork(*userCache, work.CourseId, work.NodeId, work.WorkId, 8, nil)
+	if err != nil {
+		log.Print(log.INFO, err.Error())
+		return errors.New(err.Error())
+	}
+	//如果开始考试状态异常则直接抛错
+	if int(gojsonq.New().JSONString(startWork).Find("_code").(float64)) == 9 {
+		return errors.New(gojsonq.New().JSONString(startWork).Find("msg").(string))
+	}
+	//开始答题
+	api, err := yinghuaApi.GetWorkApi(*userCache, work.NodeId, work.WorkId, 8, nil)
+	if int(gojsonq.New().JSONString(startWork).Find("_code").(float64)) == 9 {
+		return errors.New(gojsonq.New().JSONString(startWork).Find("msg").(string))
+	}
+	//html转结构体
+	topic := yinghuaApi.TurnExamTopic(api)
+	//fmt.Println(topic)
+	//遍历题目map,并回答问题
+	var lastAnswer utils.Answer
+	var lastProblem string
+	for k, v := range topic.YingHuaExamTopics {
+
+		standardProblem := v.TurnProblem() //转为标准问题结构体
+		answer, err := standardProblem.ApiQueRequest(queBankUrl, 5, nil)
+
+		if err != nil {
+			log.Print(log.INFO, `[`, userCache.Account, `] `, log.BoldRed, "Ai异常，返回信息：", err.Error())
+			os.Exit(0)
+		}
+		//fmt.Println(aiAnswer)
+		subWorkApi, err := yinghuaApi.SubmitWorkApi(*userCache, work.WorkId, k, answer, "0", 10, nil)
+		if err != nil {
+			log.Print(log.INFO, `[`, userCache.Account, `] `, log.BoldRed, "Ai异常，返回信息：", err.Error())
+		}
+		//如果提交答案服务器端返回信息异常
+		if gojsonq.New().JSONString(subWorkApi).Find("msg") != "答题保存成功" {
+			log.Print(log.INFO, log.BoldRed, `[`, userCache.Account, `] `, log.BoldRed, "提交答案异常，返回信息：", subWorkApi)
+		}
+		lastAnswer = answer
 		lastProblem = k
 	}
 	//结束考试
