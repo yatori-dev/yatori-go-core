@@ -6,6 +6,7 @@ import (
 	"io"
 	"net/http"
 	"strings"
+	"time"
 )
 
 // 题目结构体
@@ -27,8 +28,11 @@ func (problem *Problem) ApiQueRequest(url string, retry int, err error) (Answer,
 	if retry <= 0 {
 		return Answer{}, err
 	}
+	client := &http.Client{
+		Timeout: 30 * time.Second,
+	}
 	data, _ := json.Marshal(problem)
-	resp, _ := http.Post(url, "application/json", strings.NewReader(string(data)))
+	resp, _ := client.Post(url, "application/json", strings.NewReader(string(data)))
 	defer resp.Body.Close()
 	body, _ := io.ReadAll(resp.Body)
 	var answers Answer
