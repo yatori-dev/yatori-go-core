@@ -395,7 +395,7 @@ func StartExamForExternalAction(
 	for k, v := range topic.YingHuaExamTopics {
 		standardProblem := v.TurnProblem() //转为标准问题结构体
 		answer, err := standardProblem.ApiQueRequest(queBankUrl, 5, nil)
-
+		AnswerTurnResult(answer, v) //转换答案
 		//fmt.Println(aiAnswer)
 		subWorkApi, err := yinghuaApi.SubmitExamApi(*userCache, exam.ExamId, k, answer, "0", 8, nil)
 		if err != nil {
@@ -539,6 +539,27 @@ func aiTurnYingHuaAnswer(cache *yinghuaApi.YingHuaUserCache, aiAnswer string, v 
 	return answer
 }
 
+// 将答案转换为选项
+func AnswerTurnResult(answer utils.Answer, v entity.YingHuaExamTopic) utils.Answer {
+	var res []string
+	if v.Type == "单选" || v.Type == "判断" || v.Type == "多选" {
+
+		for _, item := range answer.Answers {
+			for _, v := range v.Selects {
+				if strings.Contains(v.Text, item) ||
+					strings.Contains(v.Num, item) ||
+					strings.Contains(strings.ReplaceAll(strings.ReplaceAll(v.Num+v.Text, " ", ""), " ", ""), strings.ReplaceAll(item, " ", "")) ||
+					strings.Contains(strings.ReplaceAll(v.Num+v.Text, " ", ""), strings.ReplaceAll(item, " ", "")) {
+					res = append(res, v.Value)
+				}
+			}
+		}
+		answer.Answers = res
+		return answer
+	}
+	return answer
+}
+
 // StartWorkAction 开始写作业
 func StartWorkAction(userCache *yinghuaApi.YingHuaUserCache,
 	work YingHuaWork,
@@ -630,6 +651,7 @@ func StartWorkForExternalAction(userCache *yinghuaApi.YingHuaUserCache,
 
 		standardProblem := v.TurnProblem() //转为标准问题结构体
 		answer, err := standardProblem.ApiQueRequest(queBankUrl, 5, nil)
+		AnswerTurnResult(answer, v) //转换答案
 
 		if err != nil {
 			log.Print(log.INFO, `[`, userCache.Account, `] `, log.BoldRed, "Ai异常，返回信息：", err.Error())
