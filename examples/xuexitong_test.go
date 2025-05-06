@@ -390,7 +390,7 @@ func TestXueXiToCourseForVideo(t *testing.T) {
 
 	courseList, err := xuexitong.XueXiTPullCourseAction(&userCache) //拉取所有课程
 	for _, course := range courseList {                             //遍历课程
-		if course.CourseName != "马克思主义基本原理" {
+		if course.CourseName != "语言学概论" {
 			continue
 		}
 		// 6c444b8d5c6203ee2f2aef4b76f5b2ce qrcEnc
@@ -447,8 +447,8 @@ func TestXueXiToCourseForVideo(t *testing.T) {
 						log.Fatal(err)
 					}
 					videoDTO.AttachmentsDetection(card)
-					//point.ExecuteVideo(&userCache, &videoDTO) //常规
-					point.ExecuteFastVideo(&userCache, &videoDTO) //秒刷
+					point.ExecuteVideo(&userCache, &videoDTO) //常规
+					//point.ExecuteFastVideo(&userCache, &videoDTO) //秒刷
 					time.Sleep(5 * time.Second)
 				}
 			}
