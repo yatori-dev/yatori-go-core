@@ -756,7 +756,7 @@ func GetExamTopicApi(UserCache YingHuaUserCache, nodeId, examId string, retryNum
 }
 
 // SubmitExamApi 提交考试答案接口
-func SubmitExamApi(UserCache YingHuaUserCache, examId, answerId string, answers YingHuaAnswer, finish string, retryNum int, lastError error) (string, error) {
+func SubmitExamApi(UserCache YingHuaUserCache, examId, answerId string, answers utils.Answer, finish string, retryNum int, lastError error) (string, error) {
 	if retryNum < 0 {
 		return "", lastError
 	}
@@ -995,7 +995,7 @@ type YingHuaAnswer struct {
 }
 
 // SubmitWorkApi 提交作业答案接口
-func SubmitWorkApi(UserCache YingHuaUserCache, workId, answerId string, answers YingHuaAnswer, finish string /*finish代表是否是最后提交并且结束考试，0代表不是，1代表是*/, retryNum int, lastError error) (string, error) {
+func SubmitWorkApi(UserCache YingHuaUserCache, workId, answerId string, answers utils.Answer, finish string /*finish代表是否是最后提交并且结束考试，0代表不是，1代表是*/, retryNum int, lastError error) (string, error) {
 	if retryNum < 0 {
 		return "", lastError
 	}

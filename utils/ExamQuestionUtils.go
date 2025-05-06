@@ -1,6 +1,12 @@
 package utils
 
-import "gorm.io/gorm"
+import (
+	"encoding/json"
+	"gorm.io/gorm"
+	"io"
+	"net/http"
+	"strings"
+)
 
 // 题目结构体
 type Problem struct {
@@ -10,4 +16,22 @@ type Problem struct {
 	Content string   //题目内容
 	Answer  []string //答案
 	Json    string   //json形式原内容
+}
+type Answer struct {
+	Type    string
+	Answers []string
+}
+
+// 用于请求外部题库接口使用
+func (problem *Problem) ApiQueRequest(url string) Answer {
+	data, _ := json.Marshal(problem)
+	resp, _ := http.Post(url, "application/json", strings.NewReader(string(data)))
+	defer resp.Body.Close()
+	body, _ := io.ReadAll(resp.Body)
+	var answers Answer
+	err := json.Unmarshal(body, &answers)
+	if err != nil {
+		panic(err)
+	}
+	return answers
 }

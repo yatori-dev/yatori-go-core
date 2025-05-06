@@ -326,7 +326,7 @@ func StartExamAction(
 	topic := yinghuaApi.TurnExamTopic(api)
 	//fmt.Println(topic)
 	//遍历题目map,并回答问题
-	var lastAnswer yinghuaApi.YingHuaAnswer
+	var lastAnswer utils.Answer
 	var lastProblem string
 	for k, v := range topic.YingHuaExamTopics {
 		//构建统一AI消息
@@ -435,8 +435,8 @@ func selectMarkingSystem(text1, text2 string) float32 {
 // 竞争对手之间有激烈的价格竞争
 // 竞争对手之间有激烈的价格竞争
 // AI回复转答案
-func aiTurnYingHuaAnswer(cache *yinghuaApi.YingHuaUserCache, aiAnswer string, v entity.YingHuaExamTopic) yinghuaApi.YingHuaAnswer {
-	answer := yinghuaApi.YingHuaAnswer{Type: v.Type}
+func aiTurnYingHuaAnswer(cache *yinghuaApi.YingHuaUserCache, aiAnswer string, v entity.YingHuaExamTopic) utils.Answer {
+	answer := utils.Answer{Type: v.Type}
 	if v.Type == "单选" || v.Type == "判断" || v.Type == "多选" {
 		var jsonStr []string
 		var res []string
@@ -509,7 +509,7 @@ func StartWorkAction(userCache *yinghuaApi.YingHuaUserCache,
 	topic := yinghuaApi.TurnExamTopic(api)
 	//fmt.Println(topic)
 	//遍历题目map,并回答问题
-	var lastAnswer yinghuaApi.YingHuaAnswer
+	var lastAnswer utils.Answer
 	var lastProblem string
 	for k, v := range topic.YingHuaExamTopics {
 		//构建统一AI消息
