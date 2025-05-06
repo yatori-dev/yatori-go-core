@@ -131,7 +131,10 @@ func ChapterFetchCardsAction(
 									if obj["otherInfo"] != nil {
 										if len(obj["otherInfo"].(string)) > 80 {
 											pointObj.PointVideoDto.OtherInfo = obj["otherInfo"].(string)
-											pointObj.PointVideoDto.JobID = obj["jobid"].(string)
+											if obj["jobid"] != nil {
+												pointObj.PointVideoDto.JobID = obj["jobid"].(string)
+											}
+
 										}
 									}
 								}
