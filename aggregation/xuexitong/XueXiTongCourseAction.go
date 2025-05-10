@@ -224,7 +224,7 @@ func PullCourseChapterAction(cache *xuexitong.XueXiTUserCache, cpi, key int) (ch
 		Knowledge: knowledgeItems,
 	}
 	if len(chaptersList.Knowledge) == 0 {
-		//log2.Print(log2.INFO, "["+cache.Name+"] "+"["+chaptersList.ChatID+"] "+" 课程章节为空")
+		log2.Print(log2.DEBUG, "["+cache.Name+"] "+"["+chaptersList.ChatID+"] "+" 课程章节为空")
 		//return ChaptersList{}, false, err
 		return ChaptersList{}, false, errors.New("[" + cache.Name + "] " + "[" + chaptersList.ChatID + "] " + " 课程章节为空")
 	}
@@ -244,8 +244,7 @@ func PullCourseChapterAction(cache *xuexitong.XueXiTUserCache, cpi, key int) (ch
 		}
 		return len(iLabelParts) < len(jLabelParts)
 	})
-	fmt.Printf("获取课程章节成功 (共 %d 个)",
-		len(chaptersList.Knowledge)) //  [%s(Cou.%s/Cla.%s)]
+	log2.Print(log2.DEBUG, "["+cache.Name+"] "+"获取课程章节成功 (共 ", log2.Yellow, strconv.Itoa(len(chaptersList.Knowledge)), log2.Default, " 个) ")
 	return chaptersList, true, nil
 }
 
