@@ -224,8 +224,9 @@ func PullCourseChapterAction(cache *xuexitong.XueXiTUserCache, cpi, key int) (ch
 		Knowledge: knowledgeItems,
 	}
 	if len(chaptersList.Knowledge) == 0 {
-		log2.Print(log2.INFO, "["+cache.Name+"] "+"["+chaptersList.ChatID+"] "+" 课程章节为空")
-		return ChaptersList{}, false, err
+		//log2.Print(log2.INFO, "["+cache.Name+"] "+"["+chaptersList.ChatID+"] "+" 课程章节为空")
+		//return ChaptersList{}, false, err
+		return ChaptersList{}, false, errors.New("[" + cache.Name + "] " + "[" + chaptersList.ChatID + "] " + " 课程章节为空")
 	}
 	// 按照任务点节点重排顺序
 	sort.Slice(chaptersList.Knowledge, func(i, j int) bool {
