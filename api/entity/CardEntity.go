@@ -242,8 +242,9 @@ func (p *PointDocumentDto) AttachmentsDetection(attachment interface{}) (bool, e
 
 	for _, a := range attachments {
 		att, _ := a.(map[string]interface{})
-		document := att["type"].(string)
-		if document == "document" {
+
+		// 如果未给出文档类型（垃圾学习通，一点都不规范），那么先进行文档解析尝试。
+		if att["type"] == nil {
 			property, ok := att["property"].(map[string]interface{})
 			if !ok {
 				return false, errors.New("invalid property structure")
@@ -258,6 +259,23 @@ func (p *PointDocumentDto) AttachmentsDetection(attachment interface{}) (bool, e
 				}
 				p.Jtoken = att["jtoken"].(string)
 			}
+		} else if att["type"].(string) == "document" {
+			property, ok := att["property"].(map[string]interface{})
+			if !ok {
+				return false, errors.New("invalid property structure")
+			}
+			objectid := property["objectid"]
+			if objectid == p.ObjectID {
+				p.Title = property["name"].(string)
+				if property["jobid"] == nil {
+					p.JobID = ""
+				} else {
+					p.JobID = property["jobid"].(string)
+				}
+				p.Jtoken = att["jtoken"].(string)
+			}
+		} else if att["type"].(string) == "wrodid" { //预留作业的
+
 		}
 	}
 	return true, nil
