@@ -173,13 +173,13 @@ func (cache *YingHuaUserCache) VerificationCodeApi(retry int) (string, string) {
 		log.Println(err)
 		return "", ""
 	}
-	defer file.Close()
 
 	_, err = io.Copy(file, res.Body)
 	if err != nil {
 		log.Println(err)
 		return "", ""
 	}
+	file.Close()
 	if utils.IsBadImg(filepath) {
 		utils.DeleteFile(filepath) //删除坏的文件
 		return cache.VerificationCodeApi(retry - 1)
