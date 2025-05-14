@@ -44,6 +44,7 @@ func ReadImg(imgFile string) (image.Image, error) {
 // 检测图片是否损坏,损坏为true，没损坏为false
 func IsBadImg(imgFile string) bool {
 	f, err := os.Open(imgFile)
+	defer f.Close()
 	if err != nil {
 		return true
 	}
