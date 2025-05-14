@@ -28,6 +28,9 @@ func YingHuaLoginAction(cache *yinghuaApi.YingHuaUserCache) error {
 		if gojsonq.New().JSONString(jsonStr).Find("msg") == "验证码有误！" {
 			continue
 		} else if gojsonq.New().JSONString(jsonStr).Find("redirect") == nil {
+			if gojsonq.New().JSONString(jsonStr).Find("msg") == nil { // 如果登录不成功并且msg也返回空那么直接重新再登录一遍
+				continue
+			}
 			return errors.New(gojsonq.New().JSONString(jsonStr).Find("msg").(string))
 		}
 		cache.SetToken(
