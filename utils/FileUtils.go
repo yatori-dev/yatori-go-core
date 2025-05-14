@@ -37,6 +37,7 @@ func ReadImg(imgFile string) (image.Image, error) {
 	if err != nil {
 		return nil, err
 	}
+	f.Close()
 	return img, nil
 }
 
