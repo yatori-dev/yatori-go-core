@@ -85,11 +85,19 @@ func TestPullCourseVideoList(t *testing.T) {
 
 // 用于登录保活
 func keepAliveLogin(UserCache yinghuaApi.YingHuaUserCache) {
+	ticker := time2.NewTicker(time2.Second * 60)
 	for {
-		api := yinghuaApi.KeepAliveApi(UserCache)
-		log2.Print(log2.INFO, " ", "登录保活状态：", api)
-		time2.Sleep(time2.Second * 60)
+		select {
+		case <-ticker.C:
+			api := yinghuaApi.KeepAliveApi(UserCache)
+			log2.Print(log2.INFO, " ", "登录保活状态：", api)
+		}
 	}
+	//for {
+	//	api := yinghuaApi.KeepAliveApi(UserCache)
+	//	log2.Print(log2.INFO, " ", "登录保活状态：", api)
+	//	time2.Sleep(time2.Second * 60)
+	//}
 }
 
 var wg sync.WaitGroup
