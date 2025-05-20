@@ -258,5 +258,43 @@ func TestWorkDetail(t *testing.T) {
 
 // 测试外部挂载题库
 func TestApiQueBack(t *testing.T) {
+	utils.YatoriCoreInit()
+	//测试账号
+	setup()
+	user := global.Config.Users[12]
+	cache := yinghuaApi.YingHuaUserCache{
+		PreUrl:   user.URL,
+		Account:  user.Account,
+		Password: user.Password,
+	}
 
+	error := yinghua.YingHuaLoginAction(&cache) // 登录
+	if error != nil {
+		log.Fatal(error) //登录失败则直接退出
+	}
+	list, _ := yinghua.CourseListAction(&cache) //拉取课程列表
+	//list[0]
+	action, error := yinghua.VideosListAction(&cache, list[0])
+	if error != nil {
+		log.Fatal(error)
+	}
+	for _, node := range action {
+		if node.Name != "绪论作业" {
+			continue
+		}
+		fmt.Println(node)
+		//获取作业详细信息
+		detailAction, _ := yinghua.WorkDetailAction(&cache, node.Id)
+		////{"_code":9,"status":false,"msg":"考试测试时间还未开始","result":{}}
+		//开始写作业
+		//yinghua.StartWorkAction(&cache, detailAction[0], global.Config.Setting.AiSetting.AiUrl, global.Config.Setting.AiSetting.Model, global.Config.Setting.AiSetting.APIKEY, global.Config.Setting.AiSetting.AiType, 1)
+		yinghua.StartWorkForExternalAction(&cache, "http://localhost:8083", detailAction[0], 0)
+		fmt.Println(detailAction)
+		//打印最终分数
+		s, error := yinghua.WorkedFinallyScoreAction(&cache, detailAction[0])
+		if error != nil {
+			log.Fatal(error)
+		}
+		fmt.Println("最高分：", s)
+	}
 }

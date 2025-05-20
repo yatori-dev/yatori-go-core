@@ -431,6 +431,7 @@ func TestXueXiToCourseForVideo(t *testing.T) {
 				continue
 			}
 			_, fetchCards, err := xuexitong.ChapterFetchCardsAction(&userCache, &action, nodes, index, courseId, key, course.Cpi)
+
 			if err != nil {
 				log.Fatal(err)
 			}
@@ -460,6 +461,7 @@ func TestXueXiToCourseForVideo(t *testing.T) {
 					if err != nil {
 						log.Fatal(err)
 					}
+
 					documentDTO.AttachmentsDetection(card)
 					point.ExecuteDocument(&userCache, &documentDTO)
 					if err != nil {

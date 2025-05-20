@@ -126,3 +126,19 @@ func (q *ChoiceQue) AnswerAIGet(userID string,
 	}
 	q.Answer = aiAnswer
 }
+
+// 转标准题目格式
+func (q *YingHuaExamTopic) TurnProblem() utils.Problem {
+	problem := utils.Problem{
+		Hash:    "",
+		Type:    q.Type,
+		Content: q.Content,
+		Options: []string{},
+		Answer:  []string{},
+		Json:    "",
+	}
+	for _, topicSelect := range q.Selects {
+		problem.Options = append(problem.Options, topicSelect.Num+topicSelect.Text)
+	}
+	return problem
+}

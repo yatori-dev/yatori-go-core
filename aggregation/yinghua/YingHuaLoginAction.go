@@ -18,6 +18,9 @@ import (
 func YingHuaLoginAction(cache *yinghuaApi.YingHuaUserCache) error {
 	for {
 		path, cookie := cache.VerificationCodeApi(5) //获取验证码
+		if path == "" {                              //如果path为空，那么可能是账号问题
+			return errors.New("无法正常获取对应网站验证码，请检查对应url是否正常")
+		}
 		cache.SetCookie(cookie)
 		img, _ := utils.ReadImg(path)                                  //读取验证码图片
 		codeResult := utils.AutoVerification(img, ort.NewShape(1, 18)) //自动识别
@@ -28,6 +31,9 @@ func YingHuaLoginAction(cache *yinghuaApi.YingHuaUserCache) error {
 		if gojsonq.New().JSONString(jsonStr).Find("msg") == "验证码有误！" {
 			continue
 		} else if gojsonq.New().JSONString(jsonStr).Find("redirect") == nil {
+			if gojsonq.New().JSONString(jsonStr).Find("msg") == nil { // 如果登录不成功并且msg也返回空那么直接重新再登录一遍
+				continue
+			}
 			return errors.New(gojsonq.New().JSONString(jsonStr).Find("msg").(string))
 		}
 		cache.SetToken(
