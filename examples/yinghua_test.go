@@ -255,3 +255,8 @@ func TestWorkDetail(t *testing.T) {
 		fmt.Println("最高分：", s)
 	}
 }
+
+// 测试外部挂载题库
+func TestApiQueBack(t *testing.T) {
+
+}

@@ -377,7 +377,7 @@ func TestXueXiToCourseForVideo(t *testing.T) {
 	utils.YatoriCoreInit()
 	//测试账号
 	setup()
-	user := global.Config.Users[10]
+	user := global.Config.Users[11]
 	userCache := xuexitongApi.XueXiTUserCache{
 		Name:     user.Account,
 		Password: user.Password,
@@ -390,7 +390,7 @@ func TestXueXiToCourseForVideo(t *testing.T) {
 
 	courseList, err := xuexitong.XueXiTPullCourseAction(&userCache) //拉取所有课程
 	for _, course := range courseList {                             //遍历课程
-		if course.CourseName != "语言学概论" {
+		if course.CourseName != "四史教育选修课" {
 			continue
 		}
 		// 6c444b8d5c6203ee2f2aef4b76f5b2ce qrcEnc
