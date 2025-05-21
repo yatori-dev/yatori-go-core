@@ -500,7 +500,7 @@ func TestXueXiToFlushCourse(t *testing.T) {
 					for i, que := range questionAction.Choice {
 						fmt.Println(fmt.Sprintf("%d. %v", i, que.Answers))
 					}
-					xuexitong.WorkNewSubmitAnswerAction(&userCache, questionAction)
+					xuexitong.WorkNewSubmitAnswerAction(&userCache, questionAction, false)
 				}
 			}
 

@@ -217,7 +217,12 @@ func (p *PointWorkDto) AttachmentsDetection(attachment interface{}) (bool, error
 		}
 		if workId == p.WorkID {
 			p.Enc = att["enc"].(string)
-			flag = att["job"].(bool)
+			if att["job"] == nil {
+				flag = false
+			} else {
+				flag = att["job"].(bool)
+			}
+
 			break
 		}
 	}
