@@ -372,7 +372,7 @@ func TestXueXiToChapterCardDocument(t *testing.T) {
 	}
 }
 
-// 遍历所有课程对应视屏的例子
+// 遍历所有课程并刷取
 func TestXueXiToCourseForVideo(t *testing.T) {
 	utils.YatoriCoreInit()
 	//测试账号
@@ -444,8 +444,8 @@ func TestXueXiToCourseForVideo(t *testing.T) {
 				log.Println("没有可学习的内容")
 			}
 
-			// 暂时只测试视频
-			if videoDTOs != nil {
+			// 视频刷取
+			if videoDTOs != nil && false {
 				for _, videoDTO := range videoDTOs {
 					card, err := xuexitong.PageMobileChapterCardAction(
 						&userCache, key, courseId, videoDTO.KnowledgeID, videoDTO.CardIndex, course.Cpi)
@@ -458,8 +458,8 @@ func TestXueXiToCourseForVideo(t *testing.T) {
 					time.Sleep(5 * time.Second)
 				}
 			}
-
-			if documentDTOs != nil {
+			// 文档刷取
+			if documentDTOs != nil && false {
 				for _, documentDTO := range documentDTOs {
 					card, err := xuexitong.PageMobileChapterCardAction(
 						&userCache, key, courseId, documentDTO.KnowledgeID, documentDTO.CardIndex, course.Cpi)
@@ -475,6 +475,14 @@ func TestXueXiToCourseForVideo(t *testing.T) {
 					time.Sleep(5 * time.Second)
 				}
 			}
+			//作业刷取
+			if workDTOs != nil {
+				for _, workDTO := range workDTOs {
+					questionAction := xuexitong.ParseWorkQuestionAction(&userCache, &workDTO)
+					fmt.Println(questionAction)
+				}
+			}
+
 		}
 	}
 }
