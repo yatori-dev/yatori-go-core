@@ -99,7 +99,7 @@ type Account struct {
 }
 
 func ParsePointDto(pointDTOs []PointDto) (videoDTOs []PointVideoDto, workDTOs []PointWorkDto, documentDTOs []PointDocumentDto) {
-	//处理返回的任务点对象
+	//处理返回的任务点对象,这里不要使用else，因为可能会有多个不同类型的任务对象
 	for _, card := range pointDTOs {
 		if card.PointWorkDto.IsSet == true {
 			workDTOs = append(workDTOs, card.PointWorkDto)

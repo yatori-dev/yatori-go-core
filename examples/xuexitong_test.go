@@ -377,7 +377,7 @@ func TestXueXiToCourseForVideo(t *testing.T) {
 	utils.YatoriCoreInit()
 	//测试账号
 	setup()
-	user := global.Config.Users[11]
+	user := global.Config.Users[13]
 	userCache := xuexitongApi.XueXiTUserCache{
 		Name:     user.Account,
 		Password: user.Password,
@@ -390,7 +390,7 @@ func TestXueXiToCourseForVideo(t *testing.T) {
 
 	courseList, err := xuexitong.XueXiTPullCourseAction(&userCache) //拉取所有课程
 	for _, course := range courseList {                             //遍历课程
-		if course.CourseName != "四史教育选修课" {
+		if course.CourseName != "现代仪器分析技术" {
 			continue
 		}
 		// 6c444b8d5c6203ee2f2aef4b76f5b2ce qrcEnc
@@ -430,6 +430,10 @@ func TestXueXiToCourseForVideo(t *testing.T) {
 				time.Sleep(500 * time.Millisecond)
 				continue
 			}
+			log.Printf("ID.%d(%s/%s)正在执行任务点\n",
+				item,
+				pointAction.Knowledge[index].Label, pointAction.Knowledge[index].Name)
+
 			_, fetchCards, err := xuexitong.ChapterFetchCardsAction(&userCache, &action, nodes, index, courseId, key, course.Cpi)
 
 			if err != nil {
@@ -439,6 +443,7 @@ func TestXueXiToCourseForVideo(t *testing.T) {
 			if videoDTOs == nil && workDTOs == nil && documentDTOs == nil {
 				log.Println("没有可学习的内容")
 			}
+
 			// 暂时只测试视频
 			if videoDTOs != nil {
 				for _, videoDTO := range videoDTOs {
