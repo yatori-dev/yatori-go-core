@@ -36,6 +36,8 @@ const (
 
 	// ApiWorkCommit 接口-单元作业答题提交
 	ApiWorkCommit = "https://mooc1-api.chaoxing.com/work/addStudentWorkNew"
+	// ApiWorkCommitNew 接口-新的作业提交答案接口
+	ApiWorkCommitNew = "https://mooc1.chaoxing.com/mooc-ans/work/addStudentWorkNew"
 
 	// 接口-课程文档阅读上报
 	ApiDocumentReadingReport = "https://mooc1.chaoxing.com/ananas/job/document"

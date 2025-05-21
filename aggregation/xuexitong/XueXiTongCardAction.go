@@ -186,10 +186,64 @@ func cleanText(text string) string {
 	}), " ")
 }
 
+// WorkInformInputWorkDTO workDTO赋值
+func WorkInformInputWorkDTO(informMap map[string]interface{}, question *entity.Question) {
+	if v, ok := informMap["jobid"]; ok {
+		question.JobId = v.(string)
+	}
+	if v, ok := informMap["cpi"]; ok {
+		question.Cpi = v.(string)
+	}
+	if v, ok := informMap["knowledgeid"]; ok {
+		question.Knowledgeid = v.(string)
+	}
+	if v, ok := informMap["userId"]; ok {
+		question.UserId = v.(string)
+	}
+	if v, ok := informMap["workAnswerId"]; ok {
+		question.WorkAnswerId = v.(string)
+	}
+	if v, ok := informMap["answerId"]; ok {
+		question.AnswerId = v.(string)
+	}
+	if v, ok := informMap["totalQuestionNum"]; ok {
+		question.TotalQuestionNum = v.(string)
+	}
+	if v, ok := informMap["workRelationId"]; ok {
+		question.WorkRelationId = v.(string)
+	}
+	if v, ok := informMap["oldSchoolId"]; ok {
+		question.OldSchoolId = v.(string)
+	}
+	if v, ok := informMap["oldWorkId"]; ok {
+		question.OldWorkId = v.(string)
+	}
+	if v, ok := informMap["enc_work"]; ok {
+		question.Enc_work = v.(string)
+	}
+	if v, ok := informMap["fullScore"]; ok {
+		question.FullScore = v.(string)
+	}
+	if v, ok := informMap["api"]; ok {
+		question.Api = v.(string)
+	}
+	if v, ok := informMap["courseId"]; ok {
+		question.CourseId = v.(string)
+	}
+	if v, ok := informMap["classId"]; ok {
+		question.ClassId = v.(string)
+	}
+	if v, ok := informMap["randomOptions"]; ok {
+		question.RandomOptions = v.(string)
+	}
+}
+
 // ParseWorkQuestionAction 用于解析作业题目，包括题目类型和题目文本
 // TODO 同Question结构体问题 暂时返回未做 全部题目初始化
 func ParseWorkQuestionAction(cache *xuexitong.XueXiTUserCache, workPoint *entity.PointWorkDto) entity.Question {
+	var questionEntity entity.Question
 	var workQuestion []entity.ChoiceQue
+	var judgeQuestion []entity.JudgeQue
 	question, _ := cache.WorkFetchQuestion(workPoint)
 
 	// 使用 goquery 解析 HTML
@@ -197,6 +251,10 @@ func ParseWorkQuestionAction(cache *xuexitong.XueXiTUserCache, workPoint *entity
 	if err != nil {
 		log.Fatal(err)
 	}
+
+	//用于拉取并完善workPointDto信息
+	informMap, err := utils.ParseWorkInform(doc)
+	WorkInformInputWorkDTO(informMap, &questionEntity) //转换
 
 	// 内置，用于从文本中提取题目类型
 	var extractQuestionType = func(text string) string {
@@ -211,7 +269,7 @@ func ParseWorkQuestionAction(cache *xuexitong.XueXiTUserCache, workPoint *entity
 	}
 
 	questionSets := utils.ParseQuestionSets(doc)
-	fmt.Println(questionSets[9].HTML)
+	//fmt.Println(questionSets[9].HTML)
 	for _, qs := range questionSets {
 		qdoc, err := goquery.NewDocumentFromReader(bytes.NewReader([]byte(qs.HTML)))
 		if err != nil {
@@ -240,6 +298,7 @@ func ParseWorkQuestionAction(cache *xuexitong.XueXiTUserCache, workPoint *entity
 			options := make(map[string]string)
 			choiceQue := entity.ChoiceQue{}
 			choiceQue.Type = ctype.SingleChoice
+			choiceQue.Qid = qs.ID
 			choiceQue.Text = quesText
 			// 提取选项
 			qdoc.Find(".answerList.singleChoice li").Each(func(i int, s *goquery.Selection) {
@@ -268,6 +327,7 @@ func ParseWorkQuestionAction(cache *xuexitong.XueXiTUserCache, workPoint *entity
 			options := make(map[string]string)
 			choiceQue := entity.ChoiceQue{}
 			choiceQue.Type = ctype.MultipleChoice
+			choiceQue.Qid = qs.ID
 			choiceQue.Text = quesText
 			// 提取选项
 			qdoc.Find(".answerList.multiChoice li").Each(func(i int, s *goquery.Selection) {
@@ -291,6 +351,24 @@ func ParseWorkQuestionAction(cache *xuexitong.XueXiTUserCache, workPoint *entity
 			choiceQue.Options = options
 			workQuestion = append(workQuestion, choiceQue)
 			break
+		case ctype.TrueOrFalse.String():
+			options := make(map[string]string)
+			judgeQue := entity.JudgeQue{}
+			judgeQue.Type = ctype.TrueOrFalse
+			judgeQue.Qid = qs.ID
+			judgeQue.Text = quesText
+			// 提取选项
+			qdoc.Find(".answerList.panduan li").Each(func(i int, s *goquery.Selection) {
+				optionLetter := s.Find("em").Text()
+
+				// 查找 <p> 内的内容
+				ccContent := s.Find("p").Contents().First()
+				text := ccContent.Text()
+
+				options[optionLetter] = text
+			})
+			judgeQue.Options = options
+			judgeQuestion = append(judgeQuestion, judgeQue)
 		}
 	}
 	// TODO 这里实例化部分没写
@@ -298,7 +376,9 @@ func ParseWorkQuestionAction(cache *xuexitong.XueXiTUserCache, workPoint *entity
 	//	fmt.Printf("Question %d:\nType: %s\nText: %s\noptions: %v\n\n", j+1, q.Type, q.Text, q.options)
 	//}
 	// TODO 组装AI问答将英华部分整合减少代码重复耦合
-	return entity.Question{Choice: workQuestion}
+	questionEntity.Choice = workQuestion
+	questionEntity.Judge = judgeQuestion
+	return questionEntity
 }
 
 func AIProblemMessage(testPaperTitle string, topic entity.ExamTurn) utils.AIChatMessages {

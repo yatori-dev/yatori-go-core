@@ -211,11 +211,12 @@ func TestXueXiToChapterCord(t *testing.T) {
 	}
 }
 
+// 测试拉取作业
 func TestXueXiToChapterCardWork(t *testing.T) {
 	utils.YatoriCoreInit()
 	//测试账号
 	setup()
-	user := global.Config.Users[1]
+	user := global.Config.Users[13]
 	userCache := xuexitongApi.XueXiTUserCache{
 		Name:     user.Account,
 		Password: user.Password,
@@ -230,7 +231,7 @@ func TestXueXiToChapterCardWork(t *testing.T) {
 	course, err := xuexitong.XueXiTPullCourseAction(&userCache)
 	var index int
 	for i, v := range course {
-		if v.CourseName == "形势与政策" {
+		if v.CourseName == "现代仪器分析技术" {
 			index = i
 			break
 		}
@@ -244,7 +245,7 @@ func TestXueXiToChapterCardWork(t *testing.T) {
 	}
 	courseId, _ := strconv.Atoi(course[index].CourseID)
 	fmt.Println(course[index].CourseDataID)
-	_, fetchCards, err := xuexitong.ChapterFetchCardsAction(&userCache, &action, nodes, 9, courseId,
+	_, fetchCards, err := xuexitong.ChapterFetchCardsAction(&userCache, &action, nodes, 7, courseId,
 		key, course[index].Cpi)
 
 	videoDTOs, workDTOs, documentDTOs := entity.ParsePointDto(fetchCards)
@@ -286,7 +287,7 @@ func TestXueXiToChapterCardWork(t *testing.T) {
 				aiSetting.AiUrl, aiSetting.Model, aiSetting.AiType, message, aiSetting.APIKEY)
 		}
 		for i, que := range questionAction.Choice {
-			fmt.Println(fmt.Sprintf("%d. %v", i, que.Answer))
+			fmt.Println(fmt.Sprintf("%d. %v", i, que.Answers))
 		}
 	} else {
 		log.Fatal("任务点对象错误")
@@ -373,7 +374,7 @@ func TestXueXiToChapterCardDocument(t *testing.T) {
 }
 
 // 遍历所有课程并刷取
-func TestXueXiToCourseForVideo(t *testing.T) {
+func TestXueXiToFlushCourse(t *testing.T) {
 	utils.YatoriCoreInit()
 	//测试账号
 	setup()
@@ -478,8 +479,28 @@ func TestXueXiToCourseForVideo(t *testing.T) {
 			//作业刷取
 			if workDTOs != nil {
 				for _, workDTO := range workDTOs {
+
+					//以手机端拉取章节卡片数据
+					mobileCard, _ := xuexitong.PageMobileChapterCardAction(&userCache, key, courseId, workDTO.KnowledgeID, workDTO.CardIndex, course.Cpi)
+					workDTO.AttachmentsDetection(mobileCard)
+					fromAction, _ := xuexitong.WorkPageFromAction(&userCache, &workDTO)
+					for _, input := range fromAction {
+						fmt.Printf("Name: %s, Value: %s, Type: %s, ID: %s\n", input.Name, input.Value, input.Type, input.ID)
+					}
 					questionAction := xuexitong.ParseWorkQuestionAction(&userCache, &workDTO)
 					fmt.Println(questionAction)
+					for i := range questionAction.Choice {
+						q := &questionAction.Choice[i] // 获取对应选项
+						message := xuexitong.AIProblemMessage(q.Type.String(), entity.ExamTurn{
+							ChoiceQue: *q,
+						})
+						aiSetting := global.Config.Setting.AiSetting //获取AI设置
+						q.AnswerAIGet(userCache.UserID, aiSetting.AiUrl, aiSetting.Model, aiSetting.AiType, message, aiSetting.APIKEY)
+					}
+					for i, que := range questionAction.Choice {
+						fmt.Println(fmt.Sprintf("%d. %v", i, que.Answers))
+					}
+					xuexitong.WorkNewSubmitAnswerAction(&userCache, questionAction)
 				}
 			}
 
