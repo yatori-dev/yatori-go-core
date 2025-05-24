@@ -157,7 +157,7 @@ func TestXueXiToChapterCord(t *testing.T) {
 	utils.YatoriCoreInit()
 	//测试账号
 	setup()
-	user := global.Config.Users[1]
+	user := global.Config.Users[13]
 	userCache := xuexitongApi.XueXiTUserCache{
 		Name:     user.Account,
 		Password: user.Password,
@@ -171,7 +171,7 @@ func TestXueXiToChapterCord(t *testing.T) {
 	course, err := xuexitong.XueXiTPullCourseAction(&userCache)
 	var index int
 	for i, v := range course {
-		if v.CourseName == "形势与政策" {
+		if v.CourseName == "现代仪器分析技术" {
 			index = i
 			break
 		}
@@ -186,29 +186,56 @@ func TestXueXiToChapterCord(t *testing.T) {
 		nodes = append(nodes, item.ID)
 	}
 	courseId, _ := strconv.Atoi(course[index].CourseID)
-	_, fetchCards, err := xuexitong.ChapterFetchCardsAction(&userCache, &action, nodes, 8, courseId, key, course[index].Cpi)
+	_, fetchCards, err := xuexitong.ChapterFetchCardsAction(&userCache, &action, nodes, 7, courseId, key, course[index].Cpi)
 	if err != nil {
 		log.Fatal(err)
 	}
-	var (
-		videoDTO entity.PointVideoDto
-	)
+	//var (
+	//	videoDTO entity.PointVideoDto
+	//)
 	// 处理返回的任务点对象
-	videoDTO = fetchCards[0].PointVideoDto
-	videoCourseId, _ := strconv.Atoi(videoDTO.CourseID)
-	videoClassId, _ := strconv.Atoi(videoDTO.ClassID)
-	if courseId == videoCourseId && key == videoClassId {
-		// 测试只对单独一个卡片测试
-		card, err := xuexitong.PageMobileChapterCardAction(&userCache, key, courseId, videoDTO.KnowledgeID, videoDTO.CardIndex, course[index].Cpi)
+	videoDTOs, _, _ := entity.ParsePointDto(fetchCards)
+
+	//card3, err := xuexitong.PageMobileChapterCardAction(
+	//	&userCache, key, courseId, videoDTOs[3].KnowledgeID, videoDTOs[3].CardIndex, course[index].Cpi)
+	//if err != nil {
+	//	log.Fatal(err)
+	//}
+	//videoDTOs[3].AttachmentsDetection(card3)
+	//fmt.Println(videoDTOs[3])
+	//
+	//card4, err := xuexitong.PageMobileChapterCardAction(
+	//	&userCache, key, courseId, videoDTOs[4].KnowledgeID, videoDTOs[4].CardIndex, course[index].Cpi)
+	//if err != nil {
+	//	log.Fatal(err)
+	//}
+	//videoDTOs[4].AttachmentsDetection(card4)
+	//fmt.Println(videoDTOs[4])
+	for _, videoDTO := range videoDTOs {
+		card, err := xuexitong.PageMobileChapterCardAction(
+			&userCache, key, courseId, videoDTO.KnowledgeID, videoDTO.CardIndex, course[index].Cpi)
 		if err != nil {
 			log.Fatal(err)
 		}
 		videoDTO.AttachmentsDetection(card)
 		fmt.Println(videoDTO)
-		point.ExecuteVideo(&userCache, &videoDTO)
-	} else {
-		log.Fatal("任务点对象错误")
 	}
+	fmt.Println(videoDTOs)
+	//videoDTO = fetchCards[0].PointVideoDto
+	//videoCourseId, _ := strconv.Atoi(videoDTO.CourseID)
+	//videoClassId, _ := strconv.Atoi(videoDTO.ClassID)
+	//if courseId == videoCourseId && key == videoClassId {
+	//	// 测试只对单独一个卡片测试
+	//	card, err := xuexitong.PageMobileChapterCardAction(&userCache, key, courseId, videoDTO.KnowledgeID, videoDTO.CardIndex, course[index].Cpi)
+	//	if err != nil {
+	//		log.Fatal(err)
+	//	}
+	//	videoDTO.AttachmentsDetection(card)
+	//	fmt.Println(videoDTO)
+	//	point.ExecuteVideo(&userCache, &videoDTO)
+	//} else {
+	//	log.Fatal("任务点对象错误")
+	//}
 }
 
 // 测试拉取作业
@@ -446,7 +473,7 @@ func TestXueXiToFlushCourse(t *testing.T) {
 			}
 
 			// 视频刷取
-			if videoDTOs != nil && false {
+			if videoDTOs != nil && true {
 				for _, videoDTO := range videoDTOs {
 					card, err := xuexitong.PageMobileChapterCardAction(
 						&userCache, key, courseId, videoDTO.KnowledgeID, videoDTO.CardIndex, course.Cpi)
@@ -477,7 +504,7 @@ func TestXueXiToFlushCourse(t *testing.T) {
 				}
 			}
 			//作业刷取
-			if workDTOs != nil {
+			if workDTOs != nil && false {
 				for _, workDTO := range workDTOs {
 
 					//以手机端拉取章节卡片数据

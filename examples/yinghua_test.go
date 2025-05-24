@@ -112,8 +112,11 @@ func videoListStudy(UserCache yinghuaApi.YingHuaUserCache, course yinghua.YingHu
 				time2.Sleep(5 * time2.Second)
 				continue
 			}
+			resStudyId := gojsonq.New().JSONString(sub).Find("result.data.studyId")
+			if resStudyId != nil {
+				studyId = strconv.Itoa(int(resStudyId.(float64)))
+			}
 
-			studyId = strconv.Itoa(int(gojsonq.New().JSONString(sub).Find("result.data.studyId").(float64)))
 			log2.Print(log2.INFO, " ", video.Name, " ", "提交状态：", gojsonq.New().JSONString(sub).Find("msg").(string), " ", "观看时间：", strconv.Itoa(time)+"/"+strconv.Itoa(video.VideoDuration), " ", "观看进度：", fmt.Sprintf("%.2f", float32(time)/float32(video.VideoDuration)*100), "%")
 			time += 5
 			time2.Sleep(5 * time2.Second)
@@ -131,7 +134,7 @@ func TestBrushOneLesson(t *testing.T) {
 	log2.NOWLOGLEVEL = log2.INFO //设置日志登记为DEBUG
 	//测试账号
 	setup()
-	user := global.Config.Users[0]
+	user := global.Config.Users[15]
 	cache := yinghuaApi.YingHuaUserCache{
 		PreUrl:   user.URL,
 		Account:  user.Account,
