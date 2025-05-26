@@ -6,6 +6,7 @@ import (
 	"crypto/cipher"
 	"encoding/base64"
 	"encoding/json"
+	"errors"
 	"fmt"
 	"io/ioutil"
 	"net/http"
@@ -120,7 +121,7 @@ func (cache *XueXiTUserCache) LoginApi() (string, error) {
 	}
 
 	if status, ok := jsonContent["status"].(bool); !ok || !status {
-		return "", err
+		return "", errors.New(string(body))
 	}
 	values := resp.Header.Values("Set-Cookie")
 	for _, v := range values {
