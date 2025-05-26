@@ -141,7 +141,7 @@ func (cache *XueXiTUserCache) VideoSubmitStudyTime(p *entity.PointVideoDto, play
 	//fmt.Println(string(body))
 	return string(body), nil
 }
-func (cache *XueXiTUserCache) VideoDtoPlayReport(p *entity.PointVideoDto, playingTime int, isdrag int /*提交模式，0代表正常视屏播放提交，2代表暂停播放状态，3代表着点击开始播放状态*/, retry int, lastErr error) (string, error) {
+func (cache *XueXiTUserCache) VideoDtoPlayReport(p *entity.PointVideoDto, playingTime int, isdrag int /*提交模式，0代表正常视屏播放提交，2代表暂停播放状态，3代表着点击开始播放状态，4代表播放结束*/, retry int, lastErr error) (string, error) {
 	if retry < 0 {
 		return "", lastErr
 	}

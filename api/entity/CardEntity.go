@@ -99,7 +99,7 @@ type Account struct {
 }
 
 func ParsePointDto(pointDTOs []PointDto) (videoDTOs []PointVideoDto, workDTOs []PointWorkDto, documentDTOs []PointDocumentDto) {
-	//处理返回的任务点对象
+	//处理返回的任务点对象,这里不要使用else，因为可能会有多个不同类型的任务对象
 	for _, card := range pointDTOs {
 		if card.PointWorkDto.IsSet == true {
 			workDTOs = append(workDTOs, card.PointWorkDto)
@@ -107,6 +107,7 @@ func ParsePointDto(pointDTOs []PointDto) (videoDTOs []PointVideoDto, workDTOs []
 			if card.OtherInfo == "" {
 			}
 			videoDTOs = append(videoDTOs, card.PointVideoDto)
+
 		} else if card.PointDocumentDto.IsSet == true {
 			documentDTOs = append(documentDTOs, card.PointDocumentDto)
 		}
@@ -217,7 +218,12 @@ func (p *PointWorkDto) AttachmentsDetection(attachment interface{}) (bool, error
 		}
 		if workId == p.WorkID {
 			p.Enc = att["enc"].(string)
-			flag = att["job"].(bool)
+			if att["job"] == nil {
+				flag = false
+			} else {
+				flag = att["job"].(bool)
+			}
+
 			break
 		}
 	}

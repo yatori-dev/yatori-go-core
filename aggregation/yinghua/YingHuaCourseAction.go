@@ -395,7 +395,7 @@ func StartExamForExternalAction(
 	for k, v := range topic.YingHuaExamTopics {
 		standardProblem := v.TurnProblem() //转为标准问题结构体
 		answer, err := standardProblem.ApiQueRequest(queBankUrl, 5, nil)
-		AnswerTurnResult(answer, v) //转换答案
+		answer = AnswerTurnResult(answer, v) //转换答案
 		//fmt.Println(aiAnswer)
 		subWorkApi, err := yinghuaApi.SubmitExamApi(*userCache, exam.ExamId, k, answer, "0", 8, nil)
 		if err != nil {
@@ -651,7 +651,7 @@ func StartWorkForExternalAction(userCache *yinghuaApi.YingHuaUserCache,
 
 		standardProblem := v.TurnProblem() //转为标准问题结构体
 		answer, err := standardProblem.ApiQueRequest(queBankUrl, 5, nil)
-		AnswerTurnResult(answer, v) //转换答案
+		answer = AnswerTurnResult(answer, v) //转换答案
 
 		if err != nil {
 			log.Print(log.INFO, `[`, userCache.Account, `] `, log.BoldRed, "Ai异常，返回信息：", err.Error())

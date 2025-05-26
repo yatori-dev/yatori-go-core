@@ -59,8 +59,6 @@ func ChapterFetchCardsAction(
 	index, courseId, classId, cpi int) ([]Card, []entity.PointDto, error) {
 	var apiResp APIResponse
 
-	var pointObj entity.PointDto
-
 	cords, err := cache.FetchChapterCords(nodes, index, courseId)
 
 	if err != nil {
@@ -95,6 +93,7 @@ func ChapterFetchCardsAction(
 		log2.Print(log2.DEBUG, "(%d) 解析卡片成功 共 %d 个任务点", cardIndex, len(points))
 
 		for pointIndex, point := range points {
+			var pointObj entity.PointDto //不要乱移动这玩意位置，OK？
 			pointType, ok := point.Other["module"]
 			if !ok {
 				log2.Print(log2.DEBUG, "(%d, %d) 任务点 type 不存在 %+v", cardIndex, pointIndex, point)

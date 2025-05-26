@@ -1,6 +1,8 @@
 package entity
 
 import (
+	"encoding/json"
+	"fmt"
 	"github.com/yatori-dev/yatori-go-core/models/ctype"
 	"github.com/yatori-dev/yatori-go-core/utils"
 	"github.com/yatori-dev/yatori-go-core/utils/log"
@@ -96,16 +98,61 @@ type TopicSelect struct {
 	Text  string `json:"text"`
 }
 
+// ChoiceQue 选择类型
 type ChoiceQue struct {
 	Type    ctype.QueType
+	Qid     string //题目ID
 	Text    string
 	Options map[string]string
-	Answer  string // 答案
+	Answers []string // 答案
+}
+
+// JudgeQue 判断类型
+type JudgeQue struct {
+	Type    ctype.QueType
+	Qid     string //题目ID
+	Text    string
+	Options map[string]string
+	Answers []string // 答案
+}
+
+// FillQue 填空类型
+type FillQue struct {
+	Type         ctype.QueType
+	Qid          string
+	Text         string
+	OpFromAnswer map[string]string // 位置与答案
 }
 
 // Question TODO 这里考虑是否在其中直接将答案做出 直接上报提交 或 保存提交
 type Question struct {
-	Choice []ChoiceQue //选择类型
+	Cpi              string
+	JobId            string
+	WorkId           string
+	ClassId          string
+	CourseId         string
+	Ua               string
+	FormType         string
+	SaveStatus       string
+	Version          string
+	Tempsave         string
+	PyFlag           string
+	UserId           string
+	Knowledgeid      string
+	OldWorkId        string //最原始作业id
+	FullScore        string //满分是多少
+	OldSchoolId      string //原始作业单位id
+	Api              string //api值
+	WorkRelationId   string
+	Enc_work         string
+	Isphone          string
+	RandomOptions    string
+	WorkAnswerId     string
+	AnswerId         string
+	TotalQuestionNum string
+	Choice           []ChoiceQue //选择类型
+	Judge            []JudgeQue  //判断类型
+	Fill             []FillQue   //填空类型
 }
 
 type ExamTurn struct {
@@ -124,17 +171,26 @@ func (q *ChoiceQue) AnswerAIGet(userID string,
 		log.Print(log.INFO, `[`, userID, `] `, log.BoldRed, "Ai异常，返回信息：", err.Error())
 		os.Exit(0)
 	}
-	q.Answer = aiAnswer
+	err = json.Unmarshal([]byte(aiAnswer), &q.Answers)
+	if err != nil {
+		q.Answers = []string{"A"}
+		fmt.Println("AI回复解析错误:", err)
+		return
+	}
 }
 
-// 转标准题目格式
+// TurnProblem 转标准题目格式
 func (q *YingHuaExamTopic) TurnProblem() utils.Problem {
 	problem := utils.Problem{
 		Hash:    "",
 		Type:    q.Type,
 		Content: q.Content,
+		Options: []string{},
 		Answer:  []string{},
 		Json:    "",
+	}
+	for _, topicSelect := range q.Selects {
+		problem.Options = append(problem.Options, topicSelect.Num+topicSelect.Text)
 	}
 	return problem
 }

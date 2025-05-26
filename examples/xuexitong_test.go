@@ -157,7 +157,7 @@ func TestXueXiToChapterCord(t *testing.T) {
 	utils.YatoriCoreInit()
 	//测试账号
 	setup()
-	user := global.Config.Users[1]
+	user := global.Config.Users[13]
 	userCache := xuexitongApi.XueXiTUserCache{
 		Name:     user.Account,
 		Password: user.Password,
@@ -171,7 +171,7 @@ func TestXueXiToChapterCord(t *testing.T) {
 	course, err := xuexitong.XueXiTPullCourseAction(&userCache)
 	var index int
 	for i, v := range course {
-		if v.CourseName == "形势与政策" {
+		if v.CourseName == "现代仪器分析技术" {
 			index = i
 			break
 		}
@@ -186,31 +186,59 @@ func TestXueXiToChapterCord(t *testing.T) {
 		nodes = append(nodes, item.ID)
 	}
 	courseId, _ := strconv.Atoi(course[index].CourseID)
-	_, fetchCards, err := xuexitong.ChapterFetchCardsAction(&userCache, &action, nodes, 8, courseId, key, course[index].Cpi)
+	_, fetchCards, err := xuexitong.ChapterFetchCardsAction(&userCache, &action, nodes, 7, courseId, key, course[index].Cpi)
 	if err != nil {
 		log.Fatal(err)
 	}
-	var (
-		videoDTO entity.PointVideoDto
-	)
+	//var (
+	//	videoDTO entity.PointVideoDto
+	//)
 	// 处理返回的任务点对象
-	videoDTO = fetchCards[0].PointVideoDto
-	videoCourseId, _ := strconv.Atoi(videoDTO.CourseID)
-	videoClassId, _ := strconv.Atoi(videoDTO.ClassID)
-	if courseId == videoCourseId && key == videoClassId {
-		// 测试只对单独一个卡片测试
-		card, err := xuexitong.PageMobileChapterCardAction(&userCache, key, courseId, videoDTO.KnowledgeID, videoDTO.CardIndex, course[index].Cpi)
+	videoDTOs, _, _ := entity.ParsePointDto(fetchCards)
+
+	//card3, err := xuexitong.PageMobileChapterCardAction(
+	//	&userCache, key, courseId, videoDTOs[3].KnowledgeID, videoDTOs[3].CardIndex, course[index].Cpi)
+	//if err != nil {
+	//	log.Fatal(err)
+	//}
+	//videoDTOs[3].AttachmentsDetection(card3)
+	//fmt.Println(videoDTOs[3])
+	//
+	//card4, err := xuexitong.PageMobileChapterCardAction(
+	//	&userCache, key, courseId, videoDTOs[4].KnowledgeID, videoDTOs[4].CardIndex, course[index].Cpi)
+	//if err != nil {
+	//	log.Fatal(err)
+	//}
+	//videoDTOs[4].AttachmentsDetection(card4)
+	//fmt.Println(videoDTOs[4])
+	for _, videoDTO := range videoDTOs {
+		card, err := xuexitong.PageMobileChapterCardAction(
+			&userCache, key, courseId, videoDTO.KnowledgeID, videoDTO.CardIndex, course[index].Cpi)
 		if err != nil {
 			log.Fatal(err)
 		}
 		videoDTO.AttachmentsDetection(card)
 		fmt.Println(videoDTO)
-		point.ExecuteVideo(&userCache, &videoDTO)
-	} else {
-		log.Fatal("任务点对象错误")
 	}
+	fmt.Println(videoDTOs)
+	//videoDTO = fetchCards[0].PointVideoDto
+	//videoCourseId, _ := strconv.Atoi(videoDTO.CourseID)
+	//videoClassId, _ := strconv.Atoi(videoDTO.ClassID)
+	//if courseId == videoCourseId && key == videoClassId {
+	//	// 测试只对单独一个卡片测试
+	//	card, err := xuexitong.PageMobileChapterCardAction(&userCache, key, courseId, videoDTO.KnowledgeID, videoDTO.CardIndex, course[index].Cpi)
+	//	if err != nil {
+	//		log.Fatal(err)
+	//	}
+	//	videoDTO.AttachmentsDetection(card)
+	//	fmt.Println(videoDTO)
+	//	point.ExecuteVideo(&userCache, &videoDTO)
+	//} else {
+	//	log.Fatal("任务点对象错误")
+	//}
 }
 
+// 测试拉取作业
 func TestXueXiToChapterCardWork(t *testing.T) {
 	utils.YatoriCoreInit()
 	//测试账号
@@ -230,7 +258,7 @@ func TestXueXiToChapterCardWork(t *testing.T) {
 	course, err := xuexitong.XueXiTPullCourseAction(&userCache)
 	var index int
 	for i, v := range course {
-		if v.CourseName == "形势与政策" {
+		if v.CourseName == "软件工程" {
 			index = i
 			break
 		}
@@ -244,7 +272,7 @@ func TestXueXiToChapterCardWork(t *testing.T) {
 	}
 	courseId, _ := strconv.Atoi(course[index].CourseID)
 	fmt.Println(course[index].CourseDataID)
-	_, fetchCards, err := xuexitong.ChapterFetchCardsAction(&userCache, &action, nodes, 9, courseId,
+	_, fetchCards, err := xuexitong.ChapterFetchCardsAction(&userCache, &action, nodes, 12, courseId,
 		key, course[index].Cpi)
 
 	videoDTOs, workDTOs, documentDTOs := entity.ParsePointDto(fetchCards)
@@ -286,8 +314,21 @@ func TestXueXiToChapterCardWork(t *testing.T) {
 				aiSetting.AiUrl, aiSetting.Model, aiSetting.AiType, message, aiSetting.APIKEY)
 		}
 		for i, que := range questionAction.Choice {
-			fmt.Println(fmt.Sprintf("%d. %v", i, que.Answer))
+			fmt.Println(fmt.Sprintf("%d. %v", i, que.Answers))
 		}
+
+		for i := range questionAction.Fill {
+			q := &questionAction.Fill[i]
+			fmt.Println(q)
+			fmt.Println(len(q.OpFromAnswer))
+		}
+
+		for i := range questionAction.Judge {
+			q := &questionAction.Judge[i]
+			fmt.Println(q)
+			fmt.Println(len(q.Answers))
+		}
+
 	} else {
 		log.Fatal("任务点对象错误")
 	}
@@ -372,12 +413,12 @@ func TestXueXiToChapterCardDocument(t *testing.T) {
 	}
 }
 
-// 遍历所有课程对应视屏的例子
-func TestXueXiToCourseForVideo(t *testing.T) {
+// 遍历所有课程并刷取
+func TestXueXiToFlushCourse(t *testing.T) {
 	utils.YatoriCoreInit()
 	//测试账号
 	setup()
-	user := global.Config.Users[11]
+	user := global.Config.Users[1]
 	userCache := xuexitongApi.XueXiTUserCache{
 		Name:     user.Account,
 		Password: user.Password,
@@ -390,7 +431,7 @@ func TestXueXiToCourseForVideo(t *testing.T) {
 
 	courseList, err := xuexitong.XueXiTPullCourseAction(&userCache) //拉取所有课程
 	for _, course := range courseList {                             //遍历课程
-		if course.CourseName != "中国共产党革命精神（2025春）" {
+		if course.CourseName != "现代仪器分析技术" {
 			continue
 		}
 		// 6c444b8d5c6203ee2f2aef4b76f5b2ce qrcEnc
@@ -430,6 +471,10 @@ func TestXueXiToCourseForVideo(t *testing.T) {
 				time.Sleep(500 * time.Millisecond)
 				continue
 			}
+			log.Printf("ID.%d(%s/%s)正在执行任务点\n",
+				item,
+				pointAction.Knowledge[index].Label, pointAction.Knowledge[index].Name)
+
 			_, fetchCards, err := xuexitong.ChapterFetchCardsAction(&userCache, &action, nodes, index, courseId, key, course.Cpi)
 
 			if err != nil {
@@ -439,8 +484,9 @@ func TestXueXiToCourseForVideo(t *testing.T) {
 			if videoDTOs == nil && workDTOs == nil && documentDTOs == nil {
 				log.Println("没有可学习的内容")
 			}
-			// 暂时只测试视频
-			if videoDTOs != nil {
+
+			// 视频刷取
+			if videoDTOs != nil && true {
 				for _, videoDTO := range videoDTOs {
 					card, err := xuexitong.PageMobileChapterCardAction(
 						&userCache, key, courseId, videoDTO.KnowledgeID, videoDTO.CardIndex, course.Cpi)
@@ -453,8 +499,8 @@ func TestXueXiToCourseForVideo(t *testing.T) {
 					time.Sleep(5 * time.Second)
 				}
 			}
-
-			if documentDTOs != nil {
+			// 文档刷取
+			if documentDTOs != nil && false {
 				for _, documentDTO := range documentDTOs {
 					card, err := xuexitong.PageMobileChapterCardAction(
 						&userCache, key, courseId, documentDTO.KnowledgeID, documentDTO.CardIndex, course.Cpi)
@@ -470,6 +516,34 @@ func TestXueXiToCourseForVideo(t *testing.T) {
 					time.Sleep(5 * time.Second)
 				}
 			}
+			//作业刷取
+			if workDTOs != nil && false {
+				for _, workDTO := range workDTOs {
+
+					//以手机端拉取章节卡片数据
+					mobileCard, _ := xuexitong.PageMobileChapterCardAction(&userCache, key, courseId, workDTO.KnowledgeID, workDTO.CardIndex, course.Cpi)
+					workDTO.AttachmentsDetection(mobileCard)
+					fromAction, _ := xuexitong.WorkPageFromAction(&userCache, &workDTO)
+					for _, input := range fromAction {
+						fmt.Printf("Name: %s, Value: %s, Type: %s, ID: %s\n", input.Name, input.Value, input.Type, input.ID)
+					}
+					questionAction := xuexitong.ParseWorkQuestionAction(&userCache, &workDTO)
+					fmt.Println(questionAction)
+					for i := range questionAction.Choice {
+						q := &questionAction.Choice[i] // 获取对应选项
+						message := xuexitong.AIProblemMessage(q.Type.String(), entity.ExamTurn{
+							ChoiceQue: *q,
+						})
+						aiSetting := global.Config.Setting.AiSetting //获取AI设置
+						q.AnswerAIGet(userCache.UserID, aiSetting.AiUrl, aiSetting.Model, aiSetting.AiType, message, aiSetting.APIKEY)
+					}
+					for i, que := range questionAction.Choice {
+						fmt.Println(fmt.Sprintf("%d. %v", i, que.Answers))
+					}
+					xuexitong.WorkNewSubmitAnswerAction(&userCache, questionAction, false)
+				}
+			}
+
 		}
 	}
 }
@@ -479,7 +553,7 @@ func TestFaceQrScan(t *testing.T) {
 	utils.YatoriCoreInit()
 	//测试账号
 	setup()
-	user := global.Config.Users[1]
+	user := global.Config.Users[0]
 	userCache := xuexitongApi.XueXiTUserCache{
 		Name:     user.Account,
 		Password: user.Password,
