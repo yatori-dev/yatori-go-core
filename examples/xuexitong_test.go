@@ -243,7 +243,7 @@ func TestXueXiToChapterCardWork(t *testing.T) {
 	utils.YatoriCoreInit()
 	//测试账号
 	setup()
-	user := global.Config.Users[13]
+	user := global.Config.Users[1]
 	userCache := xuexitongApi.XueXiTUserCache{
 		Name:     user.Account,
 		Password: user.Password,
@@ -258,7 +258,7 @@ func TestXueXiToChapterCardWork(t *testing.T) {
 	course, err := xuexitong.XueXiTPullCourseAction(&userCache)
 	var index int
 	for i, v := range course {
-		if v.CourseName == "现代仪器分析技术" {
+		if v.CourseName == "软件工程" {
 			index = i
 			break
 		}
@@ -272,7 +272,7 @@ func TestXueXiToChapterCardWork(t *testing.T) {
 	}
 	courseId, _ := strconv.Atoi(course[index].CourseID)
 	fmt.Println(course[index].CourseDataID)
-	_, fetchCards, err := xuexitong.ChapterFetchCardsAction(&userCache, &action, nodes, 7, courseId,
+	_, fetchCards, err := xuexitong.ChapterFetchCardsAction(&userCache, &action, nodes, 12, courseId,
 		key, course[index].Cpi)
 
 	videoDTOs, workDTOs, documentDTOs := entity.ParsePointDto(fetchCards)
@@ -316,6 +316,19 @@ func TestXueXiToChapterCardWork(t *testing.T) {
 		for i, que := range questionAction.Choice {
 			fmt.Println(fmt.Sprintf("%d. %v", i, que.Answers))
 		}
+
+		for i := range questionAction.Fill {
+			q := &questionAction.Fill[i]
+			fmt.Println(q)
+			fmt.Println(len(q.OpFromAnswer))
+		}
+
+		for i := range questionAction.Judge {
+			q := &questionAction.Judge[i]
+			fmt.Println(q)
+			fmt.Println(len(q.Answers))
+		}
+
 	} else {
 		log.Fatal("任务点对象错误")
 	}

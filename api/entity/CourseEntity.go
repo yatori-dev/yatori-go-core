@@ -98,6 +98,7 @@ type TopicSelect struct {
 	Text  string `json:"text"`
 }
 
+// ChoiceQue 选择类型
 type ChoiceQue struct {
 	Type    ctype.QueType
 	Qid     string //题目ID
@@ -106,12 +107,21 @@ type ChoiceQue struct {
 	Answers []string // 答案
 }
 
+// JudgeQue 判断类型
 type JudgeQue struct {
 	Type    ctype.QueType
 	Qid     string //题目ID
 	Text    string
 	Options map[string]string
 	Answers []string // 答案
+}
+
+// FillQue 填空类型
+type FillQue struct {
+	Type         ctype.QueType
+	Qid          string
+	Text         string
+	OpFromAnswer map[string]string // 位置与答案
 }
 
 // Question TODO 这里考虑是否在其中直接将答案做出 直接上报提交 或 保存提交
@@ -141,7 +151,8 @@ type Question struct {
 	AnswerId         string
 	TotalQuestionNum string
 	Choice           []ChoiceQue //选择类型
-	Judge            []JudgeQue  //选择类型
+	Judge            []JudgeQue  //判断类型
+	Fill             []FillQue   //填空类型
 }
 
 type ExamTurn struct {
@@ -168,7 +179,7 @@ func (q *ChoiceQue) AnswerAIGet(userID string,
 	}
 }
 
-// 转标准题目格式
+// TurnProblem 转标准题目格式
 func (q *YingHuaExamTopic) TurnProblem() utils.Problem {
 	problem := utils.Problem{
 		Hash:    "",

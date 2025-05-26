@@ -244,6 +244,7 @@ func ParseWorkQuestionAction(cache *xuexitong.XueXiTUserCache, workPoint *entity
 	var questionEntity entity.Question
 	var workQuestion []entity.ChoiceQue
 	var judgeQuestion []entity.JudgeQue
+	var fillQuestion []entity.FillQue
 	question, _ := cache.WorkFetchQuestion(workPoint)
 
 	// 使用 goquery 解析 HTML
@@ -284,7 +285,7 @@ func ParseWorkQuestionAction(cache *xuexitong.XueXiTUserCache, workPoint *entity
 		// TODO 这里获取图片怎么都拿不到 不会了ಠ_ಠ
 		var quesTextBuilder strings.Builder
 		quesText := qdoc.Find(".Py-m1-title").Contents().Each(func(i int, n *goquery.Selection) {
-			if n.Get(0).Type == 3 {
+			if n.Get(0).Type == html.TextNode || n.Is("span") {
 				quesTextBuilder.WriteString(n.Text())
 			}
 		}).End().Text()
@@ -369,6 +370,29 @@ func ParseWorkQuestionAction(cache *xuexitong.XueXiTUserCache, workPoint *entity
 			})
 			judgeQue.Options = options
 			judgeQuestion = append(judgeQuestion, judgeQue)
+		case ctype.FillInTheBlank.String():
+			options := make(map[string]string)
+			fillQue := entity.FillQue{}
+			fillQue.Type = ctype.FillInTheBlank
+			fillQue.Qid = qs.ID
+			fillQue.Text = quesText
+			// 提取填空题
+			qdoc.Find("ul.blankList2").Each(func(i int, selection *goquery.Selection) {
+				optionLetter := selection.Find("p").Text()
+				fmt.Println(optionLetter)
+				splitOptions := strings.Split(optionLetter, ":")
+				validParts := splitOptions[:0]
+				for _, part := range splitOptions {
+					if part != "" { // 忽略空值
+						validParts = append(validParts, part)
+					}
+				}
+				for j, s := range validParts {
+					options[s] = fmt.Sprintf("填空%d", j+1)
+				}
+			})
+			fillQue.OpFromAnswer = options
+			fillQuestion = append(fillQuestion, fillQue)
 		}
 	}
 	// TODO 这里实例化部分没写
@@ -378,6 +402,7 @@ func ParseWorkQuestionAction(cache *xuexitong.XueXiTUserCache, workPoint *entity
 	// TODO 组装AI问答将英华部分整合减少代码重复耦合
 	questionEntity.Choice = workQuestion
 	questionEntity.Judge = judgeQuestion
+	questionEntity.Fill = fillQuestion
 	return questionEntity
 }
 
