@@ -28,7 +28,7 @@ type PointVideoDto struct {
 	Cpi         string
 	ObjectID    string
 	// 从SSR视图中获取
-	isPassed  bool
+	IsPassed  bool
 	FID       int
 	DToken    string
 	PlayTime  int
@@ -156,9 +156,9 @@ func (p *PointVideoDto) AttachmentsDetection(attachment interface{}) (bool, erro
 			}
 			p.OtherInfo = otherInfo
 			if isPassed, ok := attachment["isPassed"].(bool); ok {
-				p.isPassed = isPassed
+				p.IsPassed = isPassed
 			} else {
-				p.isPassed = false
+				p.IsPassed = false
 			}
 
 			// 获取 "rt" 的值
