@@ -24,9 +24,10 @@ type YingHuaUserCache struct {
 	Account  string //账号
 	Password string //用户密码
 	verCode  string //验证码
-	cookie   string //验证码用的session
-	token    string //保持会话的Token
-	sign     string //签名
+	//cookie   string //验证码用的session
+	Cookie []*http.Cookie
+	token  string //保持会话的Token
+	sign   string //签名
 }
 
 func (cache *YingHuaUserCache) GetVerCode() string {
@@ -34,13 +35,6 @@ func (cache *YingHuaUserCache) GetVerCode() string {
 }
 func (cache *YingHuaUserCache) SetVerCode(verCode string) {
 	cache.verCode = verCode
-}
-
-func (cache *YingHuaUserCache) GetCookie() string {
-	return cache.cookie
-}
-func (cache *YingHuaUserCache) SetCookie(cookie string) {
-	cache.cookie = cookie
 }
 
 func (cache *YingHuaUserCache) GetToken() string {
@@ -63,19 +57,19 @@ func (cache *YingHuaUserCache) SetSign(sign string) {
 //}
 
 // LoginApi 登录接口
-func (cache *YingHuaUserCache) LoginApi(retry int, lastError error) (string, error) {
+func LoginApi(preUrl, account, password, verCode string, cookies []*http.Cookie, retry int, lastError error) (string, error) {
 	if retry < 0 {
 		return "", lastError
 	}
-	url := cache.PreUrl + "/user/login.json"
+	url := preUrl + "/user/login.json"
 	method := "POST"
 
 	payload := &bytes.Buffer{}
 	writer := multipart.NewWriter(payload)
-	_ = writer.WriteField("username", cache.Account)
-	_ = writer.WriteField("password", cache.Password)
-	_ = writer.WriteField("code", cache.verCode)
-	_ = writer.WriteField("redirect", cache.PreUrl)
+	_ = writer.WriteField("username", account)
+	_ = writer.WriteField("password", password)
+	_ = writer.WriteField("code", verCode)
+	_ = writer.WriteField("redirect", preUrl)
 	err := writer.Close()
 	if err != nil {
 		fmt.Println(err)
@@ -97,14 +91,18 @@ func (cache *YingHuaUserCache) LoginApi(retry int, lastError error) (string, err
 		fmt.Println(err)
 		return "", err
 	}
-	req.Header.Add("Cookie", cache.cookie)
+	//req.Header.Add("Cookie", cache.cookie)
+	for _, cookie := range cookies {
+		req.AddCookie(cookie)
+	}
+
 	req.Header.Add("User-Agent", "Apifox/1.0.0 (https://apifox.com)")
 
 	req.Header.Set("Content-Type", writer.FormDataContentType())
 	res, err := client.Do(req)
 	if err != nil {
 		time.Sleep(150 * time.Millisecond)
-		return cache.LoginApi(retry-1, err)
+		return LoginApi(preUrl, account, password, verCode, cookies, retry-1, err)
 	}
 	defer res.Body.Close()
 
@@ -116,7 +114,7 @@ func (cache *YingHuaUserCache) LoginApi(retry int, lastError error) (string, err
 	//502情况进行重新请求
 	if strings.Contains(string(body), "502 Bad Gateway") {
 		time.Sleep(time.Millisecond * 150) //延迟
-		return cache.LoginApi(retry, err)
+		return LoginApi(preUrl, account, password, verCode, cookies, retry, err)
 	}
 	//fmt.Println(string(body))
 	return string(body), nil
@@ -125,11 +123,11 @@ func (cache *YingHuaUserCache) LoginApi(retry int, lastError error) (string, err
 // VerificationCodeApi 获取验证码和SESSION验证码,并返回文件路径和SESSION字符串
 var randChar []string = []string{"0", "1", "2", "3", "4", "5", "6", "7", "8", "9", "a", "b", "c", "d", "e", "f", "A", "B", "C", "D", "E", "F"}
 
-func (cache *YingHuaUserCache) VerificationCodeApi(retry int) (string, string) {
+func VerificationCodeApi(preUrl string, cookies []*http.Cookie, retry int) (string, []*http.Cookie) {
 	if retry < 0 {
-		return "", ""
+		return "", nil
 	}
-	url := cache.PreUrl + fmt.Sprintf("/service/code?r=%d", time.Now().Unix())
+	url := preUrl + fmt.Sprintf("/service/code?r=%d", time.Now().Unix())
 	method := "GET"
 
 	tr := &http.Transport{
@@ -143,11 +141,14 @@ func (cache *YingHuaUserCache) VerificationCodeApi(retry int) (string, string) {
 	}
 
 	req, err := http.NewRequest(method, url, nil)
-	req.Header.Add("Cookie", cache.cookie)
+	//req.Header.Add("Cookie", cache.cookie)
+	for _, cookie := range cookies {
+		req.Header.Add("Cookie", cookie.String())
+	}
 
 	if err != nil {
 		fmt.Println(err)
-		return "", ""
+		return "", nil
 	}
 	req.Header.Add("User-Agent", "Apifox/1.0.0 (https://apifox.com)")
 
@@ -155,9 +156,9 @@ func (cache *YingHuaUserCache) VerificationCodeApi(retry int) (string, string) {
 	if err != nil {
 		time.Sleep(150 * time.Millisecond)
 		if strings.Contains(err.Error(), "A connection attempt failed because the connected party did not properly respond after a period of time") {
-			return cache.VerificationCodeApi(retry)
+			return VerificationCodeApi(preUrl, cookies, retry)
 		}
-		return cache.VerificationCodeApi(retry - 1)
+		return VerificationCodeApi(preUrl, cookies, retry-1)
 	}
 	defer res.Body.Close()
 
@@ -171,20 +172,20 @@ func (cache *YingHuaUserCache) VerificationCodeApi(retry int) (string, string) {
 	file, err := os.Create(filepath)
 	if err != nil {
 		log.Println(err)
-		return "", ""
+		return "", nil
 	}
 
 	_, err = io.Copy(file, res.Body)
 	if err != nil {
 		log.Println(err)
-		return "", ""
+		return "", nil
 	}
 	file.Close()
 	if utils.IsBadImg(filepath) {
 		utils.DeleteFile(filepath) //删除坏的文件
-		return cache.VerificationCodeApi(retry - 1)
+		return VerificationCodeApi(preUrl, cookies, retry-1)
 	}
-	return filepath, res.Header.Get("Set-Cookie")
+	return filepath, res.Cookies()
 }
 
 // KeepAliveApi 登录心跳保活
@@ -243,11 +244,11 @@ func KeepAliveApi(UserCache YingHuaUserCache) string {
 }
 
 // CourseListApi 拉取课程列表API
-func (cache *YingHuaUserCache) CourseListApi(retry int, lastError error) (string, error) {
+func CourseListApi(preUrl, token string, cookies []*http.Cookie, retry int, lastError error) (string, error) {
 	if retry < 0 {
 		return "", lastError
 	}
-	url := cache.PreUrl + "/api/course/list.json"
+	url := preUrl + "/api/course/list.json"
 	method := "POST"
 
 	payload := &bytes.Buffer{}
@@ -255,7 +256,7 @@ func (cache *YingHuaUserCache) CourseListApi(retry int, lastError error) (string
 	_ = writer.WriteField("platform", "Android")
 	_ = writer.WriteField("version", "1.4.8")
 	_ = writer.WriteField("type", "0")
-	_ = writer.WriteField("token", cache.token)
+	_ = writer.WriteField("token", token)
 	err := writer.Close()
 	if err != nil {
 		return "", err
@@ -271,7 +272,10 @@ func (cache *YingHuaUserCache) CourseListApi(retry int, lastError error) (string
 		Transport: tr,
 	}
 	req, err := http.NewRequest(method, url, payload)
-	req.Header.Set("Cookie", cache.cookie)
+	//req.Header.Set("Cookie", cache.cookie)
+	for _, cookie := range cookies {
+		req.AddCookie(cookie)
+	}
 	if err != nil {
 		return "", err
 	}
@@ -283,30 +287,30 @@ func (cache *YingHuaUserCache) CourseListApi(retry int, lastError error) (string
 	if err != nil {
 		time.Sleep(time.Millisecond * 150) //延迟
 		if strings.Contains(err.Error(), "A connection attempt failed because the connected party did not properly respond after a period of time") {
-			return cache.CourseListApi(retry, err)
+			return CourseListApi(preUrl, token, cookies, retry, err)
 		}
-		return cache.CourseListApi(retry-1, err)
+		return CourseListApi(preUrl, token, cookies, retry-1, err)
 	}
 	defer res.Body.Close()
 
 	body, err := ioutil.ReadAll(res.Body)
 	if err != nil {
 		time.Sleep(time.Millisecond * 150) //延迟
-		return cache.CourseListApi(retry-1, err)
+		return CourseListApi(preUrl, token, cookies, retry-1, err)
 	}
 	if strings.Contains(string(body), "502 Bad Gateway") {
 		time.Sleep(time.Millisecond * 150) //延迟
-		return cache.CourseListApi(retry, err)
+		return CourseListApi(preUrl, token, cookies, retry, err)
 	}
 	return string(body), nil
 }
 
 // CourseDetailApi 获取课程详细信息API
-func (cache *YingHuaUserCache) CourseDetailApi(courseId string, retry int, lastError error) (string, error) {
+func CourseDetailApi(preUrl, token string, cookies []*http.Cookie, courseId string, retry int, lastError error) (string, error) {
 	if retry < 0 {
 		return "", lastError
 	}
-	url := cache.PreUrl + "/api/course/detail.json"
+	url := preUrl + "/api/course/detail.json"
 	method := "POST"
 
 	payload := &bytes.Buffer{}
@@ -314,7 +318,7 @@ func (cache *YingHuaUserCache) CourseDetailApi(courseId string, retry int, lastE
 	_ = writer.WriteField("platform", "Android")
 	_ = writer.WriteField("version", "1.4.8")
 	_ = writer.WriteField("courseId", courseId)
-	_ = writer.WriteField("token", cache.token)
+	_ = writer.WriteField("token", token)
 	err := writer.Close()
 	if err != nil {
 		return "", err
@@ -330,7 +334,10 @@ func (cache *YingHuaUserCache) CourseDetailApi(courseId string, retry int, lastE
 		Transport: tr,
 	}
 	req, err := http.NewRequest(method, url, payload)
-	req.Header.Add("Cookie", cache.cookie)
+	//req.Header.Add("Cookie", cache.cookie)
+	for _, cookie := range cookies {
+		req.AddCookie(cookie)
+	}
 
 	if err != nil {
 		return "", err
@@ -343,26 +350,26 @@ func (cache *YingHuaUserCache) CourseDetailApi(courseId string, retry int, lastE
 	if err != nil {
 		time.Sleep(time.Millisecond * 150) //延迟
 		if strings.Contains(err.Error(), "A connection attempt failed because the connected party did not properly respond after a period of time") {
-			return cache.CourseDetailApi(courseId, retry, err)
+			return CourseDetailApi(preUrl, token, cookies, courseId, retry, err)
 		}
-		return cache.CourseDetailApi(courseId, retry-1, err)
+		return CourseDetailApi(preUrl, token, cookies, courseId, retry-1, err)
 	}
 	defer res.Body.Close()
 
 	body, err := ioutil.ReadAll(res.Body)
 	if err != nil {
 		time.Sleep(time.Millisecond * 150) //延迟
-		return cache.CourseDetailApi(courseId, retry-1, err)
+		return CourseDetailApi(preUrl, token, cookies, courseId, retry-1, err)
 	}
 	if strings.Contains(string(body), "502 Bad Gateway") {
 		time.Sleep(time.Millisecond * 150) //延迟
-		return cache.CourseDetailApi(courseId, retry, err)
+		return CourseDetailApi(preUrl, token, cookies, courseId, retry, err)
 	}
 	return string(body), err
 }
 
 // CourseVideListApi 对应课程的视屏列表
-func CourseVideListApi(UserCache YingHuaUserCache, courseId string /*课程ID*/, retry int, lastError error) (string, error) {
+func CourseVideListApi(UserCache YingHuaUserCache, courseId string /*课程ID*/, cookies []*http.Cookie, retry int, lastError error) (string, error) {
 	if retry < 0 {
 		return "", lastError
 	}
@@ -391,10 +398,13 @@ func CourseVideListApi(UserCache YingHuaUserCache, courseId string /*课程ID*/,
 		Transport: tr,
 	}
 	req, err := http.NewRequest(method, url, payload)
-	req.Header.Set("Cookie", UserCache.cookie)
+	//req.Header.Set("Cookie", UserCache.cookie)
+	for _, cookie := range cookies {
+		req.AddCookie(cookie)
+	}
 	if err != nil {
 		time.Sleep(time.Millisecond * 150) //延迟
-		return CourseVideListApi(UserCache, courseId, retry-1, err)
+		return CourseVideListApi(UserCache, courseId, cookies, retry-1, err)
 	}
 	req.Header.Add("User-Agent", "Apifox/1.0.0 (https://apifox.com)")
 
@@ -403,26 +413,26 @@ func CourseVideListApi(UserCache YingHuaUserCache, courseId string /*课程ID*/,
 	if err != nil {
 		time.Sleep(time.Millisecond * 150) //延迟
 		if strings.Contains(err.Error(), "A connection attempt failed because the connected party did not properly respond after a period of time") {
-			return CourseVideListApi(UserCache, courseId, retry, err)
+			return CourseVideListApi(UserCache, courseId, cookies, retry, err)
 		}
-		return CourseVideListApi(UserCache, courseId, retry-1, err)
+		return CourseVideListApi(UserCache, courseId, cookies, retry-1, err)
 	}
 	defer res.Body.Close()
 
 	body, err := ioutil.ReadAll(res.Body)
 	if err != nil {
 		time.Sleep(time.Millisecond * 150) //延迟
-		return CourseVideListApi(UserCache, courseId, retry-1, err)
+		return CourseVideListApi(UserCache, courseId, cookies, retry-1, err)
 	}
 	if strings.Contains(string(body), "502 Bad Gateway") {
 		time.Sleep(time.Millisecond * 150) //延迟
-		return CourseVideListApi(UserCache, courseId, retry, err)
+		return CourseVideListApi(UserCache, courseId, cookies, retry, err)
 	}
 	return string(body), nil
 }
 
 // SubmitStudyTimeApi 提交学时
-func SubmitStudyTimeApi(UserCache YingHuaUserCache, nodeId string /*对应视屏节点ID*/, studyId string /*学习分配ID*/, studyTime int /*提交的学时*/, retry int, lastError error) (string, error) {
+func SubmitStudyTimeApi(UserCache YingHuaUserCache, cookies []*http.Cookie, nodeId string /*对应视屏节点ID*/, studyId string /*学习分配ID*/, studyTime int /*提交的学时*/, retry int, lastError error) (string, error) {
 	if retry < 0 {
 		return "", lastError
 	}
@@ -440,7 +450,7 @@ func SubmitStudyTimeApi(UserCache YingHuaUserCache, nodeId string /*对应视屏
 	err := writer.Close()
 	if err != nil {
 		time.Sleep(time.Millisecond * 150)
-		return SubmitStudyTimeApi(UserCache, nodeId, studyId, studyTime, retry-1, err)
+		return SubmitStudyTimeApi(UserCache, cookies, nodeId, studyId, studyTime, retry-1, err)
 	}
 
 	tr := &http.Transport{
@@ -462,20 +472,20 @@ func SubmitStudyTimeApi(UserCache YingHuaUserCache, nodeId string /*对应视屏
 	res, err := client.Do(req)
 	if err != nil {
 		time.Sleep(time.Millisecond * 150)
-		return SubmitStudyTimeApi(UserCache, nodeId, studyId, studyTime, retry-1, err)
+		return SubmitStudyTimeApi(UserCache, cookies, nodeId, studyId, studyTime, retry-1, err)
 	}
 	defer res.Body.Close()
 
 	body, err := ioutil.ReadAll(res.Body)
 	if err != nil {
 		time.Sleep(time.Millisecond * 150)
-		return SubmitStudyTimeApi(UserCache, nodeId, studyId, studyTime, retry-1, err)
+		return SubmitStudyTimeApi(UserCache, cookies, nodeId, studyId, studyTime, retry-1, err)
 	}
 
 	//避免502情况
 	if strings.Contains(string(body), "502 Bad Gateway") {
 		time.Sleep(time.Millisecond * 150) //延迟
-		return SubmitStudyTimeApi(UserCache, nodeId, studyId, studyTime, retry-1, err)
+		return SubmitStudyTimeApi(UserCache, cookies, nodeId, studyId, studyTime, retry-1, err)
 	}
 
 	return string(body), nil
@@ -569,7 +579,10 @@ func VideWatchRecodeApi(UserCache YingHuaUserCache, courseId string, page int, r
 		Transport: tr,
 	}
 	req, err := http.NewRequest(method, url, payload)
-	req.Header.Set("Cookie", UserCache.cookie)
+	//req.Header.Set("Cookie", UserCache.cookie)
+	for _, cook := range UserCache.Cookie {
+		req.AddCookie(cook)
+	}
 	if err != nil {
 		//fmt.Println(err)
 		return VideWatchRecodeApi(UserCache, courseId, page, retry-1, err)
@@ -627,8 +640,10 @@ func ExamDetailApi(UserCache YingHuaUserCache, nodeId string, retryNum int, last
 		Transport: tr,
 	}
 	req, err := http.NewRequest(method, url, payload)
-	req.Header.Add("Cookie", UserCache.cookie)
-
+	//req.Header.Add("Cookie", UserCache.cookie)
+	for _, cook := range UserCache.Cookie {
+		req.AddCookie(cook)
+	}
 	if err != nil {
 		fmt.Println(err)
 		return "", nil
@@ -862,7 +877,10 @@ func WorkDetailApi(userCache YingHuaUserCache, nodeId string, retryNum int, last
 		Transport: tr,
 	}
 	req, err := http.NewRequest(method, url, payload)
-	req.Header.Add("Cookie", userCache.cookie)
+	//req.Header.Add("Cookie", userCache.cookie)
+	for _, cook := range userCache.Cookie {
+		req.AddCookie(cook)
+	}
 
 	if err != nil {
 		fmt.Println(err)
@@ -1047,7 +1065,10 @@ func SubmitWorkApi(UserCache YingHuaUserCache, workId, answerId string, answers 
 	req.Header.Add("Host", UserCache.PreUrl)
 	req.Header.Add("Connection", "keep-alive")
 	req.Header.Add("Content-Type", writer.FormDataContentType())
-	req.Header.Add("Cookie", UserCache.cookie)
+	//req.Header.Add("Cookie", UserCache.cookie)
+	for _, cook := range UserCache.Cookie {
+		req.AddCookie(cook)
+	}
 
 	// Perform the request
 	resp, err := client.Do(req)
@@ -1089,7 +1110,10 @@ func WorkedFinallyDetailApi(userCache YingHuaUserCache, courseId, nodeId, workId
 		fmt.Println(err)
 		return "", err
 	}
-	req.Header.Add("Cookie", userCache.cookie)
+	//req.Header.Add("Cookie", userCache.cookie)
+	for _, cook := range userCache.Cookie {
+		req.AddCookie(cook)
+	}
 	req.Header.Add("User-Agent", "Mozilla/5.0 (Macintosh; Intel Mac OS X 10.13; rv:88.0) Gecko/20100101 Firefox/88.0")
 
 	res, err := client.Do(req)
@@ -1135,7 +1159,10 @@ func ExamFinallyDetailApi(userCache YingHuaUserCache, courseId, nodeId, workId s
 		fmt.Println(err)
 		return "", err
 	}
-	req.Header.Add("Cookie", userCache.cookie)
+	//req.Header.Add("Cookie", userCache.cookie)
+	for _, cook := range userCache.Cookie {
+		req.AddCookie(cook)
+	}
 	req.Header.Add("User-Agent", "Mozilla/5.0 (Macintosh; Intel Mac OS X 10.13; rv:88.0) Gecko/20100101 Firefox/88.0")
 
 	res, err := client.Do(req)

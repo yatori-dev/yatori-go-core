@@ -81,7 +81,7 @@ type YingHuaWork struct {
 // 课程列表
 func CourseListAction(cache *yinghuaApi.YingHuaUserCache) ([]YingHuaCourse, error) {
 	var courseList []YingHuaCourse
-	listJson, err := cache.CourseListApi(10, nil)
+	listJson, err := yinghuaApi.CourseListApi(cache.PreUrl, cache.GetToken(), cache.Cookie, 10, nil)
 	if err != nil {
 		return []YingHuaCourse{}, errors.New("获取数据失败:" + err.Error())
 	}
@@ -112,7 +112,7 @@ func CourseListAction(cache *yinghuaApi.YingHuaUserCache) ([]YingHuaCourse, erro
 
 // CourseDetailAction 获取指定课程的信息
 func CourseDetailAction(cache *yinghuaApi.YingHuaUserCache, courseId string) (YingHuaCourse, error) {
-	courseDetailJson, err := cache.CourseDetailApi(courseId, 10, nil)
+	courseDetailJson, err := yinghuaApi.CourseDetailApi(cache.PreUrl, cache.GetToken(), cache.Cookie, courseId, 10, nil)
 	if err != nil {
 		return YingHuaCourse{}, errors.New("获取数据失败:" + err.Error())
 	}
@@ -142,7 +142,7 @@ func VideosListAction(UserCache *yinghuaApi.YingHuaUserCache, course YingHuaCour
 	var videoList []YingHuaNode
 	videoSet := make(map[string]int)
 	//接口一爬取视屏信息
-	listJson, err := yinghuaApi.CourseVideListApi(*UserCache, course.Id, 10, nil)
+	listJson, err := yinghuaApi.CourseVideListApi(*UserCache, course.Id, UserCache.Cookie, 10, nil)
 	log.Print(log.DEBUG, `[`, UserCache.Account, `] `, `CourseListAction---`, listJson)
 	//超时重登检测
 	LoginTimeoutAfreshAction(UserCache, listJson)
@@ -237,7 +237,7 @@ func VideosListAction(UserCache *yinghuaApi.YingHuaUserCache, course YingHuaCour
 // SubmitStudyTimeAction 提交学时
 func SubmitStudyTimeAction(userCache *yinghuaApi.YingHuaUserCache, nodeId string /*对应视屏节点ID*/, studyId string /*学习分配ID*/, studyTime int /*提交的学时*/) (string, error) {
 	//提交学时
-	sub, err := yinghuaApi.SubmitStudyTimeApi(*userCache, nodeId, studyId, studyTime, 10, nil)
+	sub, err := yinghuaApi.SubmitStudyTimeApi(*userCache, userCache.Cookie, nodeId, studyId, studyTime, 10, nil)
 	//避免502情况
 	if err != nil { //其他错误
 		return "", err

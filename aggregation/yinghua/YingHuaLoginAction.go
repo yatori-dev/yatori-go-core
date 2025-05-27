@@ -17,16 +17,16 @@ import (
 // {"_code": 1, "status": false,"msg": "账号登录超时，请重新登录", "result": {}}
 func YingHuaLoginAction(cache *yinghuaApi.YingHuaUserCache) error {
 	for {
-		path, cookie := cache.VerificationCodeApi(5) //获取验证码
-		if path == "" {                              //如果path为空，那么可能是账号问题
+		path, cookie := yinghuaApi.VerificationCodeApi(cache.PreUrl, cache.Cookie, 5) //获取验证码
+		if path == "" {                                                               //如果path为空，那么可能是账号问题
 			return errors.New("无法正常获取对应网站验证码，请检查对应url是否正常")
 		}
-		cache.SetCookie(cookie)
-		img, _ := utils.ReadImg(path)                                  //读取验证码图片
-		codeResult := utils.AutoVerification(img, ort.NewShape(1, 18)) //自动识别
-		utils.DeleteFile(path)                                         //删除验证码文件
-		cache.SetVerCode(codeResult)                                   //填写验证码
-		jsonStr, _ := cache.LoginApi(10, nil)                          //执行登录
+		cache.Cookie = cookie
+		img, _ := utils.ReadImg(path)                                                                                             //读取验证码图片
+		codeResult := utils.AutoVerification(img, ort.NewShape(1, 18))                                                            //自动识别
+		utils.DeleteFile(path)                                                                                                    //删除验证码文件
+		cache.SetVerCode(codeResult)                                                                                              //填写验证码
+		jsonStr, _ := yinghuaApi.LoginApi(cache.PreUrl, cache.Account, cache.Password, cache.GetVerCode(), cache.Cookie, 10, nil) //执行登录
 		log.Print(log.DEBUG, "["+cache.Account+"] "+"LoginAction---"+jsonStr)
 		if gojsonq.New().JSONString(jsonStr).Find("msg") == "验证码有误！" {
 			continue
