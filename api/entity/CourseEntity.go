@@ -121,7 +121,7 @@ type FillQue struct {
 	Type         ctype.QueType
 	Qid          string
 	Text         string
-	OpFromAnswer map[string]string // 位置与答案
+	OpFromAnswer map[string][]string // 位置与答案
 }
 
 // Question TODO 这里考虑是否在其中直接将答案做出 直接上报提交 或 保存提交
@@ -154,29 +154,62 @@ type Question struct {
 	Judge            []JudgeQue  //判断类型
 	Fill             []FillQue   //填空类型
 }
-
 type ExamTurn struct {
-	ChoiceQue
+	XueXChoiceQue ChoiceQue
+	XueXJudgeQue  JudgeQue
+	XueXFillQue   FillQue
 	YingHuaExamTopic
 }
 
-func (q *ChoiceQue) AnswerAIGet(userID string,
-	url,
-	model string,
-	aiType ctype.AiType,
-	aiChatMessages utils.AIChatMessages,
-	apiKey string) {
+type AnswerSetter interface {
+	SetAnswers([]string)
+}
+
+func (q *ChoiceQue) SetAnswers(answers []string) {
+	q.Answers = answers
+}
+
+func (q *JudgeQue) SetAnswers(answers []string) {
+	q.Answers = answers
+}
+
+func (q *FillQue) SetAnswers(answers []string) {
+	for key := range q.OpFromAnswer {
+		q.OpFromAnswer[key] = answers
+	}
+}
+
+func GetAIAnswer(as AnswerSetter, userID string, url, model string, aiType ctype.AiType, aiChatMessages utils.AIChatMessages, apiKey string) {
 	aiAnswer, err := utils.AggregationAIApi(url, model, aiType, aiChatMessages, apiKey)
 	if err != nil {
 		log.Print(log.INFO, `[`, userID, `] `, log.BoldRed, "Ai异常，返回信息：", err.Error())
 		os.Exit(0)
 	}
-	err = json.Unmarshal([]byte(aiAnswer), &q.Answers)
+	var answers []string
+	err = json.Unmarshal([]byte(aiAnswer), &answers)
 	if err != nil {
-		q.Answers = []string{"A"}
+		answers = []string{"A"}
 		fmt.Println("AI回复解析错误:", err)
-		return
 	}
+	as.SetAnswers(answers)
+}
+
+// AnswerAIGet ChoiceQue的AI回答获取方法
+func (q *ChoiceQue) AnswerAIGet(userID,
+	url, model string, aiType ctype.AiType, aiChatMessages utils.AIChatMessages, apiKey string) {
+	GetAIAnswer(q, userID, url, model, aiType, aiChatMessages, apiKey)
+}
+
+// AnswerAIGet JudgeQue的AI回答获取方法
+func (q *JudgeQue) AnswerAIGet(userID,
+	url, model string, aiType ctype.AiType, aiChatMessages utils.AIChatMessages, apiKey string) {
+	GetAIAnswer(q, userID, url, model, aiType, aiChatMessages, apiKey)
+}
+
+// AnswerAIGet FillQue的AI回答获取方法
+func (q *FillQue) AnswerAIGet(userID,
+	url, model string, aiType ctype.AiType, aiChatMessages utils.AIChatMessages, apiKey string) {
+	GetAIAnswer(q, userID, url, model, aiType, aiChatMessages, apiKey)
 }
 
 // TurnProblem 转标准题目格式
