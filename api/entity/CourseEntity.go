@@ -7,6 +7,8 @@ import (
 	"github.com/yatori-dev/yatori-go-core/utils"
 	"github.com/yatori-dev/yatori-go-core/utils/log"
 	"os"
+	"regexp"
+	"strconv"
 )
 
 // XueXiTCourse 课程所有信息
@@ -174,13 +176,44 @@ func (q *JudgeQue) SetAnswers(answers []string) {
 }
 
 func (q *FillQue) SetAnswers(answers []string) {
-	for key := range q.OpFromAnswer {
-		q.OpFromAnswer[key] = answers
+	if len(answers) == 0 {
+		return
 	}
+
+	for key := range q.OpFromAnswer {
+		// 提取键中的序号（假设格式为"0第X空"）
+		index := extractIndexFromKey(key)
+		if index >= 0 && index < len(answers) {
+			q.OpFromAnswer[key] = []string{answers[index]}
+		} else {
+			// 默认使用第一个答案或空列表
+			if len(answers) > 0 {
+				q.OpFromAnswer[key] = []string{answers[0]}
+			} else {
+				q.OpFromAnswer[key] = []string{}
+			}
+		}
+	}
+}
+
+// 从键中提取序号（例如："0第3空" → 2，注意索引从0开始）
+func extractIndexFromKey(key string) int {
+	// 简单实现，实际可能需要更复杂的字符串处理
+	// 这里假设key格式为"0第X空"，提取X并转换为整数
+	// 示例实现，需要根据实际格式调整
+	regex := regexp.MustCompile(`第(\d+)空`)
+	matches := regex.FindStringSubmatch(key)
+	if len(matches) >= 2 {
+		if idx, err := strconv.Atoi(matches[1]); err == nil {
+			return idx - 1 // 转换为0-based索引
+		}
+	}
+	return -1 // 无效索引
 }
 
 func GetAIAnswer(as AnswerSetter, userID string, url, model string, aiType ctype.AiType, aiChatMessages utils.AIChatMessages, apiKey string) {
 	aiAnswer, err := utils.AggregationAIApi(url, model, aiType, aiChatMessages, apiKey)
+	fmt.Println(aiAnswer)
 	if err != nil {
 		log.Print(log.INFO, `[`, userID, `] `, log.BoldRed, "Ai异常，返回信息：", err.Error())
 		os.Exit(0)

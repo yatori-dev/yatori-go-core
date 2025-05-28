@@ -418,9 +418,9 @@ var problemStrategies = map[string]problemMessageStrategy{
 	//"简答题": handleShortAnswer,
 }
 
-func AIProblemMessage(testPaperTitle string, topic entity.ExamTurn) utils.AIChatMessages {
+func AIProblemMessage(testPaperTitle, text string, topic entity.ExamTurn) utils.AIChatMessages {
 
-	context := buildProblemContext(testPaperTitle, topic)
+	context := buildProblemContext(testPaperTitle, text, topic)
 
 	// 查找对应的处理策略
 	if strategy, exists := problemStrategies[testPaperTitle]; exists {
@@ -432,10 +432,11 @@ func AIProblemMessage(testPaperTitle string, topic entity.ExamTurn) utils.AIChat
 }
 
 // buildProblemContext 构建通用的题目上下文
-func buildProblemContext(testPaperTitle string, topic entity.ExamTurn) (context string) {
+func buildProblemContext(testPaperTitle, text string, topic entity.ExamTurn) (context string) {
 	switch testPaperTitle {
 	case ctype.SingleChoice.String():
 		for c, q := range topic.XueXChoiceQue.Options {
+			context += text + "\n"
 			context += fmt.Sprintf("\n%v. %v", c, q)
 		}
 		for _, v := range topic.Selects {
@@ -443,6 +444,7 @@ func buildProblemContext(testPaperTitle string, topic entity.ExamTurn) (context 
 		}
 	case ctype.MultipleChoice.String():
 		for c, q := range topic.XueXChoiceQue.Options {
+			context += text + "\n"
 			context += fmt.Sprintf("\n%v. %v", c, q)
 		}
 		for _, v := range topic.Selects {
@@ -450,6 +452,7 @@ func buildProblemContext(testPaperTitle string, topic entity.ExamTurn) (context 
 		}
 	case ctype.FillInTheBlank.String():
 		for c, q := range topic.XueXFillQue.OpFromAnswer {
+			context += text + "\n"
 			context += fmt.Sprintf("\n%v. %v", c, q)
 		}
 		for _, v := range topic.Selects {
@@ -457,6 +460,7 @@ func buildProblemContext(testPaperTitle string, topic entity.ExamTurn) (context 
 		}
 	case ctype.TrueOrFalse.String():
 		for c, q := range topic.XueXJudgeQue.Options {
+			context += text + "\n"
 			context += fmt.Sprintf("\n%v. %v", c, q)
 		}
 		for _, v := range topic.Selects {
@@ -504,6 +508,8 @@ func handleFillInTheBlank(context string, topic entity.ExamTurn) utils.AIChatMes
 	problem := buildProblemHeader(topic.XueXFillQue.Type.String(), "填空题", context)
 	return utils.AIChatMessages{Messages: []utils.Message{
 		{Role: "user", Content: "其中，“（answer_数字）”相关字样的地方是你需要填写答案的地方...格式：[\"答案1\",\"答案2\"]"},
+		{Role: "user", Content: "就算你不知道选什么也随机选...无需回答任何解释！！！"},
+		{Role: "user", Content: exampleFillInTheBlank()},
 		{Role: "user", Content: problem},
 	}}
 }
@@ -562,6 +568,17 @@ A. 正确
 B. 错误
 
 那么你应该回答选项A的内容："["正确"]"`
+}
+
+// 填空题示例
+func exampleFillInTheBlank() string {
+	return ` 比如：
+试卷名称：考试
+题目类型：填空
+题目内容：新中国成立于（ ）年。
+答案：1949
+
+那么你应该回答："[1949]"`
 }
 
 //func AIProblemMessage(testPaperTitle string, topic entity.ExamTurn) utils.AIChatMessages {
