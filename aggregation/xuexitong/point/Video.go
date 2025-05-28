@@ -39,7 +39,7 @@ func ExecuteVideo(cache *api.XueXiTUserCache, p *entity.PointVideoDto) {
 							fmt.Println(err)
 						}
 						//上传人脸
-						ObjectId, err := cache.UploadFaceImage(token, "E:\\Yatori-Dev\\yatori-go-core\\img4.jpg")
+						ObjectId, err := cache.UploadFaceImage(token, "E:\\Yatori-Dev\\yatori-go-core\\img1.jpg")
 						if err != nil {
 							fmt.Println(err)
 						}

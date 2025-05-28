@@ -68,14 +68,15 @@ func (cache *XueXiTUserCache) UploadFaceImage(token, imgPath string) (string, er
 	writer := multipart.NewWriter(body)
 
 	//获取puid
-	puid := "244955941"
+	puid := ""
 	for _, cookie := range cache.cookies {
-		if cookie.Name == "puid" {
+		if cookie.Name == "UID" { //获取puid
 			puid = cookie.Value
+			break
 		}
 	}
 	// 添加参数字段
-	_ = writer.WriteField("uploadtype", "face")
+	_ = writer.WriteField("uploadtype", "face") //还有一种normal类型，一般用于上传文件
 	_ = writer.WriteField("_token", token)
 	_ = writer.WriteField("puid", puid)
 
