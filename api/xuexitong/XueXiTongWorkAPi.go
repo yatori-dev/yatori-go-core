@@ -88,7 +88,6 @@ func (cache *XueXiTUserCache) WorkNewSubmitAnswer(courseId string, classId strin
 			answers += item
 
 		}
-		fmt.Println(answers)
 		_ = writer.WriteField("answer"+ch.Qid, answers)
 		_ = writer.WriteField("answertype"+ch.Qid, "3")
 	}
