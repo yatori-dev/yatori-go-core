@@ -99,7 +99,8 @@ func (cache *XueXiTUserCache) WorkNewSubmitAnswer(courseId string, classId strin
 		for k, v := range ch.OpFromAnswer {
 			re := regexp.MustCompile(`\d+`)
 			numbers := re.FindAllString(k, -1)
-			_ = writer.WriteField("answer"+ch.Qid+numbers[0], "<p>"+v[0]+"</p>")
+			//answer := "<p>"+v[0]+"</p>"
+			_ = writer.WriteField("answer"+ch.Qid+numbers[0], v[0])
 		}
 		_ = writer.WriteField("tiankongsize"+ch.Qid, strconv.Itoa(len(ch.OpFromAnswer)))
 		_ = writer.WriteField("answertype"+ch.Qid, "2")

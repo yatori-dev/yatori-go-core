@@ -213,7 +213,6 @@ func extractIndexFromKey(key string) int {
 
 func GetAIAnswer(as AnswerSetter, userID string, url, model string, aiType ctype.AiType, aiChatMessages utils.AIChatMessages, apiKey string) {
 	aiAnswer, err := utils.AggregationAIApi(url, model, aiType, aiChatMessages, apiKey)
-	fmt.Println(aiAnswer)
 	if err != nil {
 		log.Print(log.INFO, `[`, userID, `] `, log.BoldRed, "Ai异常，返回信息：", err.Error())
 		os.Exit(0)
