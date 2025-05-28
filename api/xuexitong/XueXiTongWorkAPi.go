@@ -8,6 +8,8 @@ import (
 	"io/ioutil"
 	"mime/multipart"
 	"net/http"
+	"regexp"
+	"strconv"
 	"strings"
 )
 
@@ -77,15 +79,31 @@ func (cache *XueXiTUserCache) WorkNewSubmitAnswer(courseId string, classId strin
 		}
 		answers := ""
 		for _, item := range ch.Answers {
-			for k, v := range ch.Options {
-				if strings.Contains(v, item) {
-					answers += k
-				}
-
+			if item == "正确" {
+				item = "true"
 			}
+			if item == "错误" {
+				item = "false"
+			}
+			answers += item
+
 		}
-		_ = writer.WriteField("answer"+ch.Qid, "true")
+		fmt.Println(answers)
+		_ = writer.WriteField("answer"+ch.Qid, answers)
 		_ = writer.WriteField("answertype"+ch.Qid, "3")
+	}
+
+	for _, ch := range question.Fill {
+		if ch.Qid != "" {
+			answerwqbid += ch.Qid + ","
+		}
+		for k, v := range ch.OpFromAnswer {
+			re := regexp.MustCompile(`\d+`)
+			numbers := re.FindAllString(k, -1)
+			_ = writer.WriteField("answer"+ch.Qid+numbers[0], "<p>"+v[0]+"</p>")
+		}
+		_ = writer.WriteField("tiankongsize"+ch.Qid, strconv.Itoa(len(ch.OpFromAnswer)))
+		_ = writer.WriteField("answertype"+ch.Qid, "2")
 	}
 
 	_ = writer.WriteField("answerwqbid", answerwqbid)
