@@ -56,6 +56,7 @@ type XueXiTUserCache struct {
 
 	UserID      string // 用户ID
 	JsonContent map[string]interface{}
+	cookies     []*http.Cookie
 	cookie      string //验证码用的session
 }
 
@@ -130,6 +131,7 @@ func (cache *XueXiTUserCache) LoginApi() (string, error) {
 		//
 		//}
 	}
+	cache.cookies = resp.Cookies() //赋值cookie
 
 	cache.JsonContent = jsonContent
 	return string(body), nil
