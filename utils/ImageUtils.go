@@ -9,8 +9,10 @@ import (
 	"image/gif"
 	"image/jpeg"
 	"image/png"
+	"math/rand"
 	"os"
 	"strings"
+	"time"
 )
 
 // LoadImage 读取指定路径的图片并返回 image.Image 对象。
@@ -116,4 +118,44 @@ func ResizeImage(img image.Image, width, height uint) *image.RGBA {
 	draw.Draw(rgbImg, rgbImg.Bounds(), resized, image.Point{}, draw.Src)
 
 	return rgbImg
+}
+
+// 像素干扰
+func ImageRGBDisturb(img image.Image) image.Image {
+	bounds := img.Bounds()
+	rand.Seed(time.Now().UnixNano())
+	// 创建新图像
+	newImg := image.NewRGBA(bounds)
+
+	for y := bounds.Min.Y; y < bounds.Max.Y; y++ {
+		for x := bounds.Min.X; x < bounds.Max.X; x++ {
+			r, g, b, a := img.At(x, y).RGBA()
+
+			// 转换为 8-bit
+			r8 := uint8(r >> 8)
+			g8 := uint8(g >> 8)
+			b8 := uint8(b >> 8)
+
+			// 随机扰动 LSB
+			r8 = (r8 & 0xFE) | uint8(rand.Intn(2))
+			g8 = (g8 & 0xFE) | uint8(rand.Intn(2))
+			b8 = (b8 & 0xFE) | uint8(rand.Intn(2))
+
+			newColor := color.RGBA{r8, g8, b8, uint8(a >> 8)}
+			newImg.Set(x, y, newColor)
+		}
+	}
+
+	//// 保存扰动后的图像
+	//outputFile, err := os.Create("output.png")
+	//if err != nil {
+	//	panic(err)
+	//}
+	//defer outputFile.Close()
+	//
+	//err = png.Encode(outputFile, newImg)
+	//if err != nil {
+	//	panic(err)
+	//}
+	return newImg
 }
