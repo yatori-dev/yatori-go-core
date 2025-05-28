@@ -7,6 +7,8 @@ import (
 	"github.com/yatori-dev/yatori-go-core/utils"
 	"github.com/yatori-dev/yatori-go-core/utils/log"
 	"os"
+	"regexp"
+	"strconv"
 )
 
 // XueXiTCourse 课程所有信息
@@ -121,7 +123,7 @@ type FillQue struct {
 	Type         ctype.QueType
 	Qid          string
 	Text         string
-	OpFromAnswer map[string]string // 位置与答案
+	OpFromAnswer map[string][]string // 位置与答案
 }
 
 // Question TODO 这里考虑是否在其中直接将答案做出 直接上报提交 或 保存提交
@@ -154,29 +156,92 @@ type Question struct {
 	Judge            []JudgeQue  //判断类型
 	Fill             []FillQue   //填空类型
 }
-
 type ExamTurn struct {
-	ChoiceQue
+	XueXChoiceQue ChoiceQue
+	XueXJudgeQue  JudgeQue
+	XueXFillQue   FillQue
 	YingHuaExamTopic
 }
 
-func (q *ChoiceQue) AnswerAIGet(userID string,
-	url,
-	model string,
-	aiType ctype.AiType,
-	aiChatMessages utils.AIChatMessages,
-	apiKey string) {
+type AnswerSetter interface {
+	SetAnswers([]string)
+}
+
+func (q *ChoiceQue) SetAnswers(answers []string) {
+	q.Answers = answers
+}
+
+func (q *JudgeQue) SetAnswers(answers []string) {
+	q.Answers = answers
+}
+
+func (q *FillQue) SetAnswers(answers []string) {
+	if len(answers) == 0 {
+		return
+	}
+
+	for key := range q.OpFromAnswer {
+		// 提取键中的序号（假设格式为"0第X空"）
+		index := extractIndexFromKey(key)
+		if index >= 0 && index < len(answers) {
+			q.OpFromAnswer[key] = []string{answers[index]}
+		} else {
+			// 默认使用第一个答案或空列表
+			if len(answers) > 0 {
+				q.OpFromAnswer[key] = []string{answers[0]}
+			} else {
+				q.OpFromAnswer[key] = []string{}
+			}
+		}
+	}
+}
+
+// 从键中提取序号（例如："0第3空" → 2，注意索引从0开始）
+func extractIndexFromKey(key string) int {
+	// 简单实现，实际可能需要更复杂的字符串处理
+	// 这里假设key格式为"0第X空"，提取X并转换为整数
+	// 示例实现，需要根据实际格式调整
+	regex := regexp.MustCompile(`第(\d+)空`)
+	matches := regex.FindStringSubmatch(key)
+	if len(matches) >= 2 {
+		if idx, err := strconv.Atoi(matches[1]); err == nil {
+			return idx - 1 // 转换为0-based索引
+		}
+	}
+	return -1 // 无效索引
+}
+
+func GetAIAnswer(as AnswerSetter, userID string, url, model string, aiType ctype.AiType, aiChatMessages utils.AIChatMessages, apiKey string) {
 	aiAnswer, err := utils.AggregationAIApi(url, model, aiType, aiChatMessages, apiKey)
 	if err != nil {
 		log.Print(log.INFO, `[`, userID, `] `, log.BoldRed, "Ai异常，返回信息：", err.Error())
 		os.Exit(0)
 	}
-	err = json.Unmarshal([]byte(aiAnswer), &q.Answers)
+	var answers []string
+	err = json.Unmarshal([]byte(aiAnswer), &answers)
 	if err != nil {
-		q.Answers = []string{"A"}
+		answers = []string{"A"}
 		fmt.Println("AI回复解析错误:", err)
-		return
 	}
+	as.SetAnswers(answers)
+}
+
+// AnswerAIGet ChoiceQue的AI回答获取方法
+func (q *ChoiceQue) AnswerAIGet(userID,
+	url, model string, aiType ctype.AiType, aiChatMessages utils.AIChatMessages, apiKey string) {
+	GetAIAnswer(q, userID, url, model, aiType, aiChatMessages, apiKey)
+}
+
+// AnswerAIGet JudgeQue的AI回答获取方法
+func (q *JudgeQue) AnswerAIGet(userID,
+	url, model string, aiType ctype.AiType, aiChatMessages utils.AIChatMessages, apiKey string) {
+	GetAIAnswer(q, userID, url, model, aiType, aiChatMessages, apiKey)
+}
+
+// AnswerAIGet FillQue的AI回答获取方法
+func (q *FillQue) AnswerAIGet(userID,
+	url, model string, aiType ctype.AiType, aiChatMessages utils.AIChatMessages, apiKey string) {
+	GetAIAnswer(q, userID, url, model, aiType, aiChatMessages, apiKey)
 }
 
 // TurnProblem 转标准题目格式
