@@ -345,27 +345,65 @@ func (cache *XueXiTUserCache) GetCourseFaceQrPlan3Api(uuid, clazzId, courseId, q
 }
 
 // 获取人脸状态（二维码状态）
-func (cache *XueXiTUserCache) GetCourseFaceQrStateApi() (string, error) {
+//
+//	func (cache *XueXiTUserCache) GetCourseFaceQrStateApi() (string, error) {
+//		method := "GET"
+//
+//		client := &http.Client{}
+//		req, err := http.NewRequest(method, "https://mooc1-api.chaoxing.com/knowledge/uploadInfo", nil)
+//
+//		if err != nil {
+//			return "", err
+//		}
+//		req.Header.Add("Cookie", cache.cookie)
+//		req.Header.Add("User-Agent", "Apifox/1.0.0 (https://apifox.com)")
+//
+//		res, err := client.Do(req)
+//		if err != nil {
+//			return "", err
+//		}
+//		defer res.Body.Close()
+//
+//		body, err := ioutil.ReadAll(res.Body)
+//		if err != nil {
+//			return "", err
+//		}
+//		return string(body), nil
+//	}
+//
+// 获取人脸状态
+func (cache *XueXiTUserCache) GetCourseFaceQrStateApi(uuid, enc, clazzid, courseid, cpi string) (string, error) {
+
+	url := "https://mooc1.chaoxing.com/mooc-ans/qr/getqrstatus?uuid=" + uuid + "&enc=" + enc + "&clazzid=" + clazzid + "&courseid=" + courseid + "&cpi=" + cpi + "&ismooc2=1&v=0&pageHeader=-1&taskrefId=&workOrExam="
 	method := "GET"
 
 	client := &http.Client{}
-	req, err := http.NewRequest(method, "https://mooc1-api.chaoxing.com/knowledge/uploadInfo", nil)
+	req, err := http.NewRequest(method, url, nil)
 
 	if err != nil {
-		return "", err
+		fmt.Println(err)
+		return "", nil
 	}
-	req.Header.Add("Cookie", cache.cookie)
+	for _, cookie := range cache.cookies {
+		req.AddCookie(cookie)
+	}
 	req.Header.Add("User-Agent", "Apifox/1.0.0 (https://apifox.com)")
+	req.Header.Add("Accept", "*/*")
+	req.Header.Add("Host", "mooc1.chaoxing.com")
+	req.Header.Add("Connection", "keep-alive")
 
 	res, err := client.Do(req)
 	if err != nil {
-		return "", err
+		fmt.Println(err)
+		return "", nil
 	}
 	defer res.Body.Close()
 
 	body, err := ioutil.ReadAll(res.Body)
 	if err != nil {
-		return "", err
+		fmt.Println(err)
+		return "", nil
 	}
+	//fmt.Println(string(body))
 	return string(body), nil
 }
