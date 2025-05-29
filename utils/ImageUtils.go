@@ -185,11 +185,10 @@ func Base64ToImage(base64Str string) (image.Image, error) {
 	reader := bytes.NewReader(decoded)
 
 	// 3. 解码图像（自动检测格式）
-	img, format, err := image.Decode(reader)
+	img, _, err := image.Decode(reader)
 	if err != nil {
 		return nil, fmt.Errorf("图像解码失败: %w", err)
 	}
-	fmt.Printf("成功解码 %s 图像\n", format)
 
 	return img, nil
 }
