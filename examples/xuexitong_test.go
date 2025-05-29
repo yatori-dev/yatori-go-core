@@ -306,7 +306,8 @@ func TestXueXiToChapterCardWork(t *testing.T) {
 		questionAction := xuexitong.ParseWorkQuestionAction(&userCache, &workDTOs[0])
 		for i := range questionAction.Choice {
 			q := &questionAction.Choice[i] // 获取指向切片元素的指针
-			message := xuexitong.AIProblemMessage(q.Type.String(), entity.ExamTurn{
+
+			message := xuexitong.AIProblemMessage(q.Type.String(), "", entity.ExamTurn{
 				XueXChoiceQue: *q,
 			})
 			aiSetting := global.Config.Setting.AiSetting
@@ -319,7 +320,7 @@ func TestXueXiToChapterCardWork(t *testing.T) {
 
 		for i := range questionAction.Fill {
 			q := &questionAction.Fill[i]
-			message := xuexitong.AIProblemMessage(q.Type.String(), entity.ExamTurn{
+			message := xuexitong.AIProblemMessage(q.Type.String(), "", entity.ExamTurn{
 				XueXFillQue: *q,
 			})
 			aiSetting := global.Config.Setting.AiSetting
@@ -334,7 +335,7 @@ func TestXueXiToChapterCardWork(t *testing.T) {
 		}
 		for i := range questionAction.Judge {
 			q := &questionAction.Judge[i]
-			message := xuexitong.AIProblemMessage(q.Type.String(), entity.ExamTurn{
+			message := xuexitong.AIProblemMessage(q.Type.String(), "", entity.ExamTurn{
 				XueXJudgeQue: *q,
 			})
 			aiSetting := global.Config.Setting.AiSetting
@@ -434,7 +435,7 @@ func TestXueXiToFlushCourse(t *testing.T) {
 	utils.YatoriCoreInit()
 	//测试账号
 	setup()
-	user := global.Config.Users[8]
+	user := global.Config.Users[13]
 
 	userCache := xuexitongApi.XueXiTUserCache{
 		Name:     user.Account,
@@ -449,7 +450,7 @@ func TestXueXiToFlushCourse(t *testing.T) {
 	courseList, err := xuexitong.XueXiTPullCourseAction(&userCache) //拉取所有课程
 	for _, course := range courseList {                             //遍历课程
 
-		if course.CourseName != "名侦探柯南与化学探秘" {
+		if course.CourseName != "军事理论" {
 			continue
 		}
 		// 6c444b8d5c6203ee2f2aef4b76f5b2ce qrcEnc
@@ -553,7 +554,7 @@ func TestXueXiToFlushCourse(t *testing.T) {
 					fmt.Println(questionAction)
 					for i := range questionAction.Choice {
 						q := &questionAction.Choice[i] // 获取对应选项
-						message := xuexitong.AIProblemMessage(q.Type.String(), entity.ExamTurn{
+						message := xuexitong.AIProblemMessage(q.Type.String(), "", entity.ExamTurn{
 							XueXChoiceQue: *q,
 						})
 						aiSetting := global.Config.Setting.AiSetting //获取AI设置

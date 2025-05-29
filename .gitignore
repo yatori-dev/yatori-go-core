@@ -2,4 +2,4 @@
 *.exe
 .idea
 examples/*.yaml
-*.jpg
+face/*

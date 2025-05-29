@@ -5,7 +5,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"github.com/PuerkitoBio/goquery"
-	"github.com/yatori-dev/yatori-go-core/utils"
+	"image"
 	"image/jpeg"
 	"io/ioutil"
 	"log"
@@ -57,9 +57,7 @@ func (cache *XueXiTUserCache) GetFaceUpLoadToken() (string, error) {
 }
 
 // 上传人脸图片
-func (cache *XueXiTUserCache) UploadFaceImage(token, imgPath string) (string, error) {
-	image, _ := utils.LoadImage(imgPath)
-	disturbImage := utils.ImageRGBDisturb(image)
+func (cache *XueXiTUserCache) UploadFaceImage(token string, image image.Image) (string, error) {
 
 	url := "https://pan-yz.chaoxing.com/upload"
 	method := "POST"
@@ -85,7 +83,7 @@ func (cache *XueXiTUserCache) UploadFaceImage(token, imgPath string) (string, er
 	if err != nil {
 		return "", err
 	}
-	err = jpeg.Encode(part, disturbImage, nil)
+	err = jpeg.Encode(part, image, nil)
 	if err != nil {
 		return "", err
 	}
@@ -127,10 +125,10 @@ func (cache *XueXiTUserCache) UploadFaceImage(token, imgPath string) (string, er
 	}
 
 	objectId, _ := jsonResp["objectId"].(string)
-	data, _ := jsonResp["data"].(map[string]interface{})
-	previewUrl, _ := data["previewUrl"].(string)
+	//data, _ := jsonResp["data"].(map[string]interface{})
+	//previewUrl, _ := data["previewUrl"].(string)
 
-	log.Printf("人脸上传成功 I.%s/U.%s\n", objectId, previewUrl)
+	//log.Printf("人脸上传成功 I.%s/U.%s\n", objectId, previewUrl)
 	return objectId, nil
 }
 
