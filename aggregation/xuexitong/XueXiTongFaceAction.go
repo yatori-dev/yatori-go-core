@@ -2,7 +2,6 @@ package xuexitong
 
 import (
 	"errors"
-	"fmt"
 	"github.com/thedevsaddam/gojsonq"
 	"github.com/yatori-dev/yatori-go-core/api/xuexitong"
 	"image"
@@ -25,7 +24,7 @@ func PassFaceAction(cache *xuexitong.XueXiTUserCache, courseId, classId, cpi str
 		return err
 	}
 	//上传人脸
-	ObjectId, err := cache.UploadFaceImage(token, face)
+	ObjectId, err := cache.UploadFaceImageApi(token, face)
 	if err != nil {
 		return err
 	}
@@ -45,11 +44,12 @@ func PassFaceAction(cache *xuexitong.XueXiTUserCache, courseId, classId, cpi str
 	//获取人脸状态
 	stateApi, err := cache.GetCourseFaceQrStateApi(uuid, qrEnc, classId, courseId, cpi)
 	if err != nil {
-		fmt.Println(err)
+		return err
 	}
-	stateMsg := gojsonq.New().JSONString(plan3Api).Find("code")
-	if stateMsg != nil {
-		if stateMsg != "0" {
+	stateCode := gojsonq.New().JSONString(plan3Api).Find("code")
+	if stateCode != nil {
+
+		if int(stateCode.(float64)) != 0 {
 			return errors.New(stateApi)
 		}
 	}

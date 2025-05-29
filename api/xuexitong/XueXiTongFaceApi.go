@@ -5,10 +5,10 @@ import (
 	"encoding/json"
 	"fmt"
 	"github.com/PuerkitoBio/goquery"
+	log2 "github.com/yatori-dev/yatori-go-core/utils/log"
 	"image"
 	"image/jpeg"
 	"io/ioutil"
-	"log"
 	"mime/multipart"
 	"net/http"
 	"regexp"
@@ -57,7 +57,7 @@ func (cache *XueXiTUserCache) GetFaceUpLoadToken() (string, error) {
 }
 
 // 上传人脸图片
-func (cache *XueXiTUserCache) UploadFaceImage(token string, image image.Image) (string, error) {
+func (cache *XueXiTUserCache) UploadFaceImageApi(token string, image image.Image) (string, error) {
 
 	url := "https://pan-yz.chaoxing.com/upload"
 	method := "POST"
@@ -118,22 +118,22 @@ func (cache *XueXiTUserCache) UploadFaceImage(token string, image image.Image) (
 		return "", err
 	}
 
-	log.Printf("人脸上传 resp: %+v\n", jsonResp)
+	log2.Print(log2.DEBUG, "人脸上传 resp: ", jsonResp)
 
 	if jsonResp["result"] != true {
 		return "", fmt.Errorf("人脸上传失败")
 	}
 
 	objectId, _ := jsonResp["objectId"].(string)
-	//data, _ := jsonResp["data"].(map[string]interface{})
-	//previewUrl, _ := data["previewUrl"].(string)
+	data, _ := jsonResp["data"].(map[string]interface{})
+	previewUrl, _ := data["previewUrl"].(string)
 
-	//log.Printf("人脸上传成功 I.%s/U.%s\n", objectId, previewUrl)
+	log2.Print(log2.DEBUG, "人脸上传成功 ", objectId, " ", previewUrl)
 	return objectId, nil
 }
 
 // 根据PUID查找人脸图片上传
-func (cache *XueXiTUserCache) UploadFaceImageForPUID(puid string) (string, error) {
+func (cache *XueXiTUserCache) UploadFaceImageForPUIDApi(puid string) (string, error) {
 	if puid == "" {
 		cookies := cache.cookies
 		for _, cookie := range cookies {
@@ -404,6 +404,6 @@ func (cache *XueXiTUserCache) GetCourseFaceQrStateApi(uuid, enc, clazzid, course
 		fmt.Println(err)
 		return "", nil
 	}
-	//fmt.Println(string(body))
+	log2.Print(log2.DEBUG, string(body))
 	return string(body), nil
 }

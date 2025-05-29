@@ -71,13 +71,14 @@ func ExecuteVideo(cache *api.XueXiTUserCache, p *entity.PointVideoDto) {
 						//	fmt.Println(err)
 						//}
 						//fmt.Println(stateApi)
-
+						log.Println("触发人脸识别，正在进行绕过...")
 						image, _ := utils.LoadImage("E:\\Yatori-Dev\\yatori-go-core\\face\\test2.jpg")
 						disturbImage := utils.ImageRGBDisturb(image)
 						err := action.PassFaceAction(cache, p.CourseID, p.ClassID, p.Cpi, disturbImage)
 						if err != nil {
 							log.Println(err.Error())
 						}
+						log.Println("绕过成功")
 						continue
 					}
 				}
