@@ -78,10 +78,11 @@ func ExecuteVideo(cache *api.XueXiTUserCache, p *entity.PointVideoDto) {
 							log.Println(err)
 						}
 						disturbImage := utils.ImageRGBDisturb(image)
-						err := action.PassFaceAction(cache, p.CourseID, p.ClassID, p.Cpi, disturbImage)
+						uuid, qrEnc, ObjectId, err := action.PassFaceAction(cache, p.CourseID, p.ClassID, p.Cpi, disturbImage)
 						if err != nil {
-							log.Println(err.Error())
+							log.Println(uuid, qrEnc, ObjectId, err.Error())
 						}
+						p.VideoFaceCaptureEnc = qrEnc
 						log.Println("绕过成功")
 						continue
 					}
