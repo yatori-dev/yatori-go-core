@@ -72,7 +72,11 @@ func ExecuteVideo(cache *api.XueXiTUserCache, p *entity.PointVideoDto) {
 						//}
 						//fmt.Println(stateApi)
 						log.Println("触发人脸识别，正在进行绕过...")
-						image, _ := utils.LoadImage("E:\\Yatori-Dev\\yatori-go-core\\face\\test2.jpg")
+						//image, _ := utils.LoadImage("E:\\Yatori-Dev\\yatori-go-core\\face\\test2.jpg")
+						image, err1 := utils.GetFaceBase64()
+						if err1 != nil {
+							log.Println(err)
+						}
 						disturbImage := utils.ImageRGBDisturb(image)
 						err := action.PassFaceAction(cache, p.CourseID, p.ClassID, p.Cpi, disturbImage)
 						if err != nil {

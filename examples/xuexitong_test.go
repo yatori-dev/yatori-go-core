@@ -435,7 +435,7 @@ func TestXueXiToFlushCourse(t *testing.T) {
 	utils.YatoriCoreInit()
 	//测试账号
 	setup()
-	user := global.Config.Users[13]
+	user := global.Config.Users[17]
 
 	userCache := xuexitongApi.XueXiTUserCache{
 		Name:     user.Account,

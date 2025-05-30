@@ -220,13 +220,13 @@ func (cache *XueXiTUserCache) GetFaceQrCodeApi2(courseId, clazzId, cpi string) (
 	}
 	defer res.Body.Close()
 
-	//body, err := ioutil.ReadAll(res.Body)
-	//if err != nil {
-	//	fmt.Println(err)
-	//	return "", "", nil
-	//}
+	body, err := ioutil.ReadAll(res.Body)
+	if err != nil {
+		fmt.Println(err)
+		return "", "", nil
+	}
 	//fmt.Println(string(body))
-	doc, err := goquery.NewDocumentFromReader(res.Body)
+	doc, err := goquery.NewDocumentFromReader(bytes.NewReader(body))
 	if err != nil {
 		return "", "", err
 	}
@@ -234,6 +234,14 @@ func (cache *XueXiTUserCache) GetFaceQrCodeApi2(courseId, clazzId, cpi string) (
 	uuidVal, _ := uuidFirst.Attr("value")
 	qrcEncFirst := doc.Find("input#qrcEnc").First()
 	qrcEncVal, _ := qrcEncFirst.Attr("value")
+	//if qrcEncVal == "" {
+	//	uploadEnc := doc.Find("input#uploadEnc").First()
+	//	qrcEncVal, _ = uploadEnc.Attr("value")
+	//}
+	//if uuidVal == "" {
+	//	uploadUid := doc.Find("input#uploadUid").First()
+	//	uuidVal, _ = uploadUid.Attr("value")
+	//}
 	return uuidVal, qrcEncVal, nil
 }
 
