@@ -28,18 +28,20 @@ type PointVideoDto struct {
 	Cpi         string
 	ObjectID    string
 	// 从SSR视图中获取
-	IsPassed  bool
-	FID       int
-	DToken    string
-	PlayTime  int
-	Duration  int
-	JobID     string
-	OtherInfo string
-	Title     string
-	RT        float64
-	Logger    *log.Logger
-	PUID      string
-	Session   *Session
+	IsPassed            bool
+	FID                 int
+	DToken              string
+	PlayTime            int
+	Duration            int
+	JobID               string
+	OtherInfo           string
+	Title               string
+	RT                  float64
+	VideoFaceCaptureEnc string
+	AttDurationEnc      string
+	Logger              *log.Logger
+	PUID                string
+	Session             *Session
 
 	Type  ctype.CardType
 	IsSet bool
@@ -176,6 +178,18 @@ func (p *PointVideoDto) AttachmentsDetection(attachment interface{}) (bool, erro
 				p.PlayTime = int(playTime) / 1000
 			}
 
+			attDurationEnc, ok := attachment["attDurationEnc"].(string)
+			if !ok {
+				p.AttDurationEnc = ""
+			} else {
+				p.AttDurationEnc = attDurationEnc
+			}
+			videoFaceCaptureEnc, ok := attachment["videoFaceCaptureEnc"].(string)
+			if !ok {
+				p.VideoFaceCaptureEnc = ""
+			} else {
+				p.VideoFaceCaptureEnc = videoFaceCaptureEnc
+			}
 			p.RT = rt
 			p.Attachment = attachment
 			break

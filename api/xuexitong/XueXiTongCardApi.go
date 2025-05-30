@@ -167,6 +167,10 @@ func (cache *XueXiTUserCache) VideoDtoPlayReport(p *entity.PointVideoDto, playin
 	params.Set("dtype", "Video")
 	params.Set("view", "pc")
 	params.Set("rt", "0.9")
+	params.Set("courseId", p.CourseID)
+	params.Set("videoFaceCaptureEnc", p.VideoFaceCaptureEnc)
+	params.Set("attDuration", strconv.Itoa(p.Duration))
+	params.Set("attDurationEnc", p.AttDurationEnc)
 	params.Set("_t", strconv.FormatInt(time.Now().UnixMilli(), 10))
 
 	// 自定义编码函数以保留 & 和 =

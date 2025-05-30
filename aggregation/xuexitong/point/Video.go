@@ -19,7 +19,7 @@ func ExecuteVideo(cache *api.XueXiTUserCache, p *entity.PointVideoDto) {
 		var playingTime = p.PlayTime
 		var flag = 0
 		for {
-			if flag == 7 {
+			if flag == 58 {
 				playReport, err := cache.VideoDtoPlayReport(p, playingTime, 3, 8, nil)
 				log.Println(playReport, err)
 				if err != nil {
