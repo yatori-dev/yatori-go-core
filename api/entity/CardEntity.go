@@ -39,6 +39,7 @@ type PointVideoDto struct {
 	RT                  float64
 	VideoFaceCaptureEnc string
 	AttDurationEnc      string
+	Enc                 string
 	Logger              *log.Logger
 	PUID                string
 	Session             *Session

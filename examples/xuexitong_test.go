@@ -212,7 +212,7 @@ func TestXueXiToChapterCord(t *testing.T) {
 	//videoDTOs[4].AttachmentsDetection(card4)
 	//fmt.Println(videoDTOs[4])
 	for _, videoDTO := range videoDTOs {
-		card, err := xuexitong.PageMobileChapterCardAction(
+		card, _, err := xuexitong.PageMobileChapterCardAction(
 			&userCache, key, courseId, videoDTO.KnowledgeID, videoDTO.CardIndex, course[index].Cpi)
 		if err != nil {
 			log.Fatal(err)
@@ -284,7 +284,7 @@ func TestXueXiToChapterCardWork(t *testing.T) {
 
 	if courseId == videoCourseId && key == videoClassId {
 		// 测试只对单独一个卡片测试
-		card, err := xuexitong.PageMobileChapterCardAction(
+		card, _, err := xuexitong.PageMobileChapterCardAction(
 			&userCache,
 			key,
 			courseId,
@@ -411,7 +411,7 @@ func TestXueXiToChapterCardDocument(t *testing.T) {
 			// 暂时只测试视频
 			if documentDTOs != nil {
 				for _, documentDTO := range documentDTOs {
-					card, err := xuexitong.PageMobileChapterCardAction(
+					card, _, err := xuexitong.PageMobileChapterCardAction(
 						&userCache, key, courseId, documentDTO.KnowledgeID, documentDTO.CardIndex, course.Cpi)
 					if err != nil {
 						log.Fatal(err)
@@ -508,15 +508,17 @@ func TestXueXiToFlushCourse(t *testing.T) {
 			// 视频刷取
 			if videoDTOs != nil && true {
 				for _, videoDTO := range videoDTOs {
-					card, err := xuexitong.PageMobileChapterCardAction(
+					card, enc, err := xuexitong.PageMobileChapterCardAction(
 						&userCache, key, courseId, videoDTO.KnowledgeID, videoDTO.CardIndex, course.Cpi)
 					if err != nil {
 						log.Fatal(err)
 					}
 					videoDTO.AttachmentsDetection(card)
+
 					if videoDTO.IsPassed == true { //过滤完成的
 						continue
 					}
+					videoDTO.Enc = enc
 					point.ExecuteVideo(&userCache, &videoDTO) //常规
 					//point.ExecuteFastVideo(&userCache, &videoDTO) //秒刷
 					time.Sleep(5 * time.Second)
@@ -525,7 +527,7 @@ func TestXueXiToFlushCourse(t *testing.T) {
 			// 文档刷取
 			if documentDTOs != nil && true {
 				for _, documentDTO := range documentDTOs {
-					card, err := xuexitong.PageMobileChapterCardAction(
+					card, _, err := xuexitong.PageMobileChapterCardAction(
 						&userCache, key, courseId, documentDTO.KnowledgeID, documentDTO.CardIndex, course.Cpi)
 					if err != nil {
 						log.Fatal(err)
@@ -544,7 +546,7 @@ func TestXueXiToFlushCourse(t *testing.T) {
 				for _, workDTO := range workDTOs {
 
 					//以手机端拉取章节卡片数据
-					mobileCard, _ := xuexitong.PageMobileChapterCardAction(&userCache, key, courseId, workDTO.KnowledgeID, workDTO.CardIndex, course.Cpi)
+					mobileCard, _, _ := xuexitong.PageMobileChapterCardAction(&userCache, key, courseId, workDTO.KnowledgeID, workDTO.CardIndex, course.Cpi)
 					workDTO.AttachmentsDetection(mobileCard)
 					fromAction, _ := xuexitong.WorkPageFromAction(&userCache, &workDTO)
 					for _, input := range fromAction {
@@ -672,7 +674,7 @@ func TestFaceQrScanPlan1(t *testing.T) {
 			// 视频刷取
 			if videoDTOs != nil && true {
 				for _, videoDTO := range videoDTOs {
-					card, err := xuexitong.PageMobileChapterCardAction(
+					card, _, err := xuexitong.PageMobileChapterCardAction(
 						&userCache, key, courseId, videoDTO.KnowledgeID, videoDTO.CardIndex, course.Cpi)
 					if err != nil {
 						log.Fatal(err)

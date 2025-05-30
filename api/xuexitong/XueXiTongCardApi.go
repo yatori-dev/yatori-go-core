@@ -108,7 +108,7 @@ func (cache *XueXiTUserCache) VideoSubmitStudyTime(p *entity.PointVideoDto, play
 		p.ClassID, cache.UserID, p.JobID, p.ObjectID, playingTime*1000, "d_yHJ!$pdA~5", p.Duration*1000, clipTime)))
 	enc := hex.EncodeToString(hash[:])
 	//
-	url := "https://mooc1.chaoxing.com/mooc-ans/multimedia/log/a/" + p.Cpi + "/" + p.DToken + "?clazzId=" + p.ClassID + "&playingTime=" + strconv.Itoa(playingTime) + "&duration=" + strconv.Itoa(p.Duration) + "&clipTime=" + clipTime + "&objectId=" + p.ObjectID + "&otherInfo=" + p.OtherInfo + "&jobid=" + p.JobID + "&userid=" + cache.UserID + "&isdrag=" + strconv.Itoa(isdrag) + "&view=pc&enc=" + enc + "&rt=0.9&dtype=Video&_t=" + strconv.FormatInt(time.Now().UnixMilli(), 10)
+	url := "https://mooc1.chaoxing.com/mooc-ans/multimedia/log/a/" + p.Cpi + "/" + p.DToken + "?clazzId=" + p.ClassID + "&playingTime=" + strconv.Itoa(playingTime) + "&duration=" + strconv.Itoa(p.Duration) + "&clipTime=" + clipTime + "&objectId=" + p.ObjectID + "&otherInfo=" + p.OtherInfo + "&courseId=" + p.CourseID + "&jobid=" + p.JobID + "&userid=" + cache.UserID + "&isdrag=" + strconv.Itoa(isdrag) + "&view=pc&enc=" + enc + "&rt=0.9" + "&videoFaceCaptureEnc=" + p.VideoFaceCaptureEnc + "&dtype=Video&_t=" + strconv.FormatInt(time.Now().UnixMilli(), 10) + "&attDuration=" + strconv.Itoa(p.Duration) + "&attDurationEnc=" + p.AttDurationEnc
 
 	method := "GET"
 
@@ -119,13 +119,20 @@ func (cache *XueXiTUserCache) VideoSubmitStudyTime(p *entity.PointVideoDto, play
 		fmt.Println(err)
 		return "", nil
 	}
+
 	req.Header.Add("User-Agent", "Apifox/1.0.0 (https://apifox.com)")
 	req.Header.Add("Accept", "*/*")
 	req.Header.Add("Host", "mooc1.chaoxing.com")
 	req.Header.Add("Connection", "keep-alive")
-	//req.Header.Add("Cookie", "k8s=1740601804.712.17514.777640; jrose=702DC91E24ECD4078821D470F213E5C6.mooc-1385974980-0c6l3; route=0a65fa708818ad1416475328b69707fd")
-	req.Header.Add("Cookie", cache.cookie)
-
+	req.Header.Add("Content-Type", "application/json")
+	req.Header.Add("Sec-Ch-Ua-Platform", "Windows")
+	req.Header.Add("Sec-Fetch-Site", "same-origin")
+	req.Header.Add("Sec-Fetch-Mode", " cors")
+	req.Header.Add("Sec-Fetch-Dest", " empty")
+	req.Header.Add("Pragam", "no-cache")
+	for _, cookie := range cache.cookies {
+		req.AddCookie(cookie)
+	}
 	res, err := client.Do(req)
 	if err != nil {
 		fmt.Println(err)
@@ -137,6 +144,10 @@ func (cache *XueXiTUserCache) VideoSubmitStudyTime(p *entity.PointVideoDto, play
 	if err != nil {
 		fmt.Println(err)
 		return "", nil
+	}
+
+	if res.StatusCode != http.StatusOK {
+		return "", fmt.Errorf("failed to fetch video, status code: %d", res.StatusCode)
 	}
 	//fmt.Println(string(body))
 	return string(body), nil

@@ -8,8 +8,9 @@ import (
 )
 
 // PassFaceAction 过人脸
-func PassFaceAction(cache *xuexitong.XueXiTUserCache, courseId, classId, cpi string, face image.Image) (string, string, string, error) {
-	uuid, qrEnc, err := cache.GetFaceQrCodeApi2(courseId, classId, cpi)
+func PassFaceAction(cache *xuexitong.XueXiTUserCache, courseId, classId, cpi, chapterId, enc, videojobid, chaptervideoobjectid string, face image.Image) (string, string, string, error) {
+	//uuid, qrEnc, err := cache.GetFaceQrCodeApi2(courseId, classId, cpi)
+	uuid, qrEnc, err := cache.GetFaceQrCodeApi3(courseId, classId, chapterId, cpi, enc, videojobid, chaptervideoobjectid)
 	if err != nil {
 		return "", "", "", err
 	}

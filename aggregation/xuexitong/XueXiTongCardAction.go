@@ -37,16 +37,16 @@ func (e APIError) Error() string {
 
 func PageMobileChapterCardAction(
 	cache *xuexitong.XueXiTUserCache,
-	classId, courseId, knowledgeId, cardIndex, cpi int) (interface{}, error) {
+	classId, courseId, knowledgeId, cardIndex, cpi int) (interface{}, string, error) {
 	cardHtml, err := cache.PageMobileChapterCard(classId, courseId, knowledgeId, cardIndex, cpi)
 	var att interface{}
 
 	if err != nil {
-		return nil, fmt.Errorf("failed to fetch pageMobileChapterCard: %w", err)
+		return nil, "", fmt.Errorf("failed to fetch pageMobileChapterCard: %w", err)
 	}
 	doc, err := html.Parse(bytes.NewReader([]byte(cardHtml)))
 	if err != nil {
-		return nil, fmt.Errorf("failed to parse HTML: %w", err)
+		return nil, "", fmt.Errorf("failed to parse HTML: %w", err)
 	}
 
 	var scriptContent string
@@ -84,7 +84,7 @@ func PageMobileChapterCardAction(
 	if len(matches) > 1 {
 		var attachment interface{}
 		if err := json.Unmarshal([]byte(matches[1]), &attachment); err != nil {
-			return nil, fmt.Errorf("failed to parse JSON: %w", err)
+			return nil, "", fmt.Errorf("failed to parse JSON: %w", err)
 		}
 		att = attachment
 	} else {
@@ -106,12 +106,19 @@ func PageMobileChapterCardAction(
 
 		if strings.TrimSpace(blankTips) == "章节未开放！" {
 			log.Println("章节未开放")
-			return ChapterNotOpened{}, nil
+			return ChapterNotOpened{}, "", nil
 		}
-		return APIError{Message: blankTips}, nil
+		return APIError{Message: blankTips}, "", nil
+	}
+	// 截取
+	reEnc := regexp.MustCompile(`<input type="hidden" id="from" value="[^_]+_[^_]+_[^_]+_([^"]+)"/>`)
+	matchesEnc := reEnc.FindStringSubmatch(cardHtml)
+	enc := ""
+	if len(matchesEnc) > 1 {
+		enc = matchesEnc[1]
 	}
 	//log.Println("Attachment拉取成功")
-	return att, nil
+	return att, enc, nil
 }
 
 func VideoDtoFetchAction(cache *xuexitong.XueXiTUserCache, p *entity.PointVideoDto) (bool, error) {
