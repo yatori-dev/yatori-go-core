@@ -9,9 +9,11 @@ import (
 	"errors"
 	"fmt"
 	"io/ioutil"
+	"math/rand"
 	"net/http"
 	"net/url"
 	"strings"
+	"time"
 )
 
 // 注意Api类文件主需要写最原始的接口请求和最后的json的string形式返回，不需要用结构体序列化。
@@ -141,4 +143,59 @@ func (cache *XueXiTUserCache) LoginApi() (string, error) {
 func (cache *XueXiTUserCache) VerificationCodeApi() (string, string) {
 	//TODO 待完成
 	return "", ""
+}
+
+// 学习通不知道用来干嘛的接口，但是每隔一段时间都会发送一次
+func (cache *XueXiTUserCache) MonitorApi() (string, error) {
+	fid := ""
+	for _, cookie := range cache.cookies {
+		if cookie.Name == "fid" {
+			fid = cookie.Value
+		}
+	}
+	url := fmt.Sprintf("https://detect.chaoxing.com/api/monitor?version=%s&refer=%s&from=&fid=%s&jsoncallback=jsonp%s&t=%d", "1748603971011", "http%%253A%252F%252Fi.mooc.chaoxing.com", fid, generate17DigitNumber(), time.Now().UnixMilli())
+	method := "GET"
+
+	client := &http.Client{}
+	req, err := http.NewRequest(method, url, nil)
+
+	if err != nil {
+		fmt.Println(err)
+		return "", nil
+	}
+	req.Header.Add("User-Agent", "Apifox/1.0.0 (https://apifox.com)")
+	req.Header.Add("Accept", "*/*")
+	req.Header.Add("Host", "detect.chaoxing.com")
+	req.Header.Add("Connection", "keep-alive")
+	//req.Header.Add("Cookie", "JSESSIONID=965F54A70062952629CC029FA92F2AA1")
+	for _, cookie := range cache.cookies {
+		req.AddCookie(cookie)
+	}
+
+	res, err := client.Do(req)
+	if err != nil {
+		fmt.Println(err)
+		return "", nil
+	}
+	defer res.Body.Close()
+
+	body, err := ioutil.ReadAll(res.Body)
+	if err != nil {
+		fmt.Println(err)
+		return "", nil
+	}
+	fmt.Println(string(body))
+	return string(body), nil
+}
+
+// 随机生成17位置数字，带前导0
+func generate17DigitNumber() string {
+	rand.Seed(time.Now().UnixNano())
+
+	result := ""
+	for i := 0; i < 17; i++ {
+		digit := rand.Intn(10) // 生成0-9的随机数字
+		result += fmt.Sprintf("%d", digit)
+	}
+	return result
 }
