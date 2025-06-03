@@ -46,10 +46,10 @@ func ExecuteVideo(cache *api.XueXiTUserCache, p *entity.PointVideoDto, key, cour
 		var playingTime = p.PlayTime
 		var flag = 0
 		for {
-			if flag == 30 {
-				//monitorApi, _ := cache.MonitorApi()
-				//fmt.Println(monitorApi)
-			}
+			//if flag == 30 {
+			//	monitorApi, _ := cache.MonitorApi()
+			//	fmt.Println(monitorApi)
+			//}
 			if flag == 58 {
 				//playReport, err := cache.VideoDtoPlayReport(p, playingTime, 3, 8, nil)
 				playReport, err := cache.VideoSubmitStudyTime(p, playingTime, 0, 8, nil)

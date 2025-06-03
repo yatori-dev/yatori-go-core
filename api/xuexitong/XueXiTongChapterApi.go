@@ -130,7 +130,10 @@ func (cache *XueXiTUserCache) FetchChapterCords(nodes []int, index, courseId int
 	req.Header.Add("Accept-Language", " zh_CN")
 	req.Header.Add("Host", " mooc1-api.chaoxing.com")
 	req.Header.Add("Connection", " Keep-Alive")
-	req.Header.Add("Cookie", cache.cookie)
+	//req.Header.Add("Cookie", cache.cookie)
+	for _, cookie := range cache.cookies {
+		req.AddCookie(cookie)
+	}
 	req.Header.Add("Accept", "*/*")
 
 	res, err := client.Do(req)
@@ -152,28 +155,25 @@ func (cache *XueXiTUserCache) FetchChapterCords(nodes []int, index, courseId int
 // Args:
 //
 //	nodes: 任务点集合 , index: 任务点索引
-func (cache *XueXiTUserCache) FetchChapterCords2(clazzid, courseid, knowledgeid, num, cpi string) (string, error) {
-	//https://mooc1.chaoxing.com/mooc-ans/knowledge/cards?clazzid={_clazzid}&courseid={_courseid}&knowledgeid={_knowledgeid}&num={_possible_num}&ut=s&cpi={_cpi}&v=20160407-3&mooc2=1"
+func (cache *XueXiTUserCache) FetchChapterCords2(clazzid, courseid, knowledgeid, cpi string) (string, error) {
+
+	url := "https://mooc1.chaoxing.com/mooc-ans/knowledge/cards?clazzid=" + clazzid + "&courseid=" + courseid + "&knowledgeid=" + knowledgeid + "&num=0&ut=s&cpi=" + cpi + "&v=2025-0424-1038-3&mooc2=1&isMicroCourse=false&editorPreview=0"
 	method := "GET"
-	values := url.Values{}
-	values.Add("clazzid", clazzid)
-	values.Add("courseid", courseid)
-	values.Add("knowledgeid", knowledgeid)
-	values.Add("num", num)
-	values.Add("cpi", cpi)
 
 	client := &http.Client{}
-	req, err := http.NewRequest(method, "https://mooc1.chaoxing.com/mooc-ans/knowledge/cards"+"?"+values.Encode(), nil)
+	req, err := http.NewRequest(method, url, nil)
 
 	if err != nil {
 		fmt.Println(err)
 		return "", err
 	}
-	req.Header.Add("User-Agent", " Dalvik/2.1.0 (Linux; U; Android 12; SM-N9006 Build/70e2a6b.1) (schild:e9b05c3f9fb49fef2f516e86ac3c4ff1) (device:SM-N9006) Language/zh_CN com.chaoxing.mobile/ChaoXingStudy_3_6.3.7_android_phone_10822_249 (@Kalimdor)_4627cad9c4b6415cba5dc6cac39e6c96")
+	req.Header.Add("User-Agent", "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/136.0.0.0 Safari/537.36 Edg/136.0.0.0")
 	req.Header.Add("Accept-Language", " zh_CN")
 	req.Header.Add("Host", " mooc1-api.chaoxing.com")
 	req.Header.Add("Connection", " Keep-Alive")
-	req.Header.Add("Cookie", cache.cookie)
+	for _, cookie := range cache.cookies {
+		req.AddCookie(cookie)
+	}
 	req.Header.Add("Accept", "*/*")
 
 	res, err := client.Do(req)

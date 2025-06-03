@@ -172,12 +172,12 @@ func (p *PointVideoDto) AttachmentsDetection(attachment interface{}) (bool, erro
 			} else {
 				rt = 0.9
 			}
-			playTime, ok := attachment["playTime"].(float64)
-			if !ok {
-				p.PlayTime = 0
-			} else {
-				p.PlayTime = int(playTime) / 1000
-			}
+			//playTime, ok := attachment["playTime"].(float64)
+			//if !ok {
+			//	p.PlayTime = 0
+			//} else {
+			//	p.PlayTime = int(playTime) / 1000
+			//}
 
 			attDurationEnc, ok := attachment["attDurationEnc"].(string)
 			if !ok {
