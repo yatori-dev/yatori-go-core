@@ -25,6 +25,7 @@ func (cache *XueXiTUserCache) CourseListApi() (string, error) {
 	if err != nil {
 		return "", err
 	}
+	cache.cookies = append(cache.cookies, res.Cookies()...)
 	defer res.Body.Close()
 	body, err := ioutil.ReadAll(res.Body)
 	if err != nil {

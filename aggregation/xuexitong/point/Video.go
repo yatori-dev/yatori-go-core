@@ -79,6 +79,13 @@ func ExecuteVideo(cache *api.XueXiTUserCache, p *entity.PointVideoDto, key, cour
 						}
 						p.AttachmentsDetection(card)
 						p.Enc = enc
+						p.VideoFaceCaptureEnc = qrEnc
+						playReport, err := cache.VideoSubmitStudyTime(p, playingTime, 3, 8, nil)
+						if err != nil {
+							log.Println(uuid, qrEnc, ObjectId, err.Error())
+						}
+						log.Println(playReport)
+						log.Println("绕过成功")
 
 						log.Println("绕过成功")
 						continue
@@ -124,6 +131,12 @@ func ExecuteVideo(cache *api.XueXiTUserCache, p *entity.PointVideoDto, key, cour
 						}
 						p.AttachmentsDetection(card)
 						p.Enc = enc
+						p.VideoFaceCaptureEnc = qrEnc
+						playReport, err := cache.VideoSubmitStudyTime(p, playingTime, 3, 8, nil)
+						if err != nil {
+							log.Println(uuid, qrEnc, ObjectId, err.Error())
+						}
+						log.Println(playReport)
 						log.Println("绕过成功")
 						continue
 					}

@@ -131,9 +131,9 @@ func (cache *XueXiTUserCache) VideoSubmitStudyTime(p *entity.PointVideoDto, play
 	req.Header.Add("Sec-Fetch-Dest", " empty")
 	req.Header.Add("Pragam", "no-cache")
 	// 测试用
-	req.Header.Add("Cookie", "k8s=1747821162.919.18678.319465")
-	req.Header.Add("Cookie", "writenote=yes")
-	req.Header.Add("Cookie", "styleId=")
+	//req.Header.Add("Cookie", "k8s=1747821162.919.18678.319465")
+	//req.Header.Add("Cookie", "writenote=yes")
+	//req.Header.Add("Cookie", "styleId=")
 	//req.Header.Add("Cookie", "k8s=1747821162.919.18678.319465; writenote=yes; styleId=; fid=5339; route=0eb899bb9bb390391b050e8cb1d78cb4; _uid=348625454; _d=1748938533165; UID=348625454; vc3=elC7mmPdF2m7Q7%2FL7NrsE6bWdswUmsT%2FFp4UQJRlR771g%2Bbyp%2BEoqZAw9fxzrs86uQ1wLpSfEPyecdB5lFYhONjcsOPyyUn%2FhLBKcWyzi00EehqYjNyCkkzYmjFqHXueJbKmQas7fO%2FPiNZQ0brN1pNyc0G9fHwfKmgK13Ncsxg%3D6e79fc9cc83d1e383a40c0f45f12ae5c; uf=569b376a64ccf0313129ca082ab4eaeede7e7778b17f9ae8265c811413bbd05b27491cb4d64af4903544f256fb890bc2913b662843f1f4ade9295d8c89b08ad0f44425e20f927c6b94405ac272c83515fb98ce0e6210c3884a878d0a9a7b05dad8a8d0ca21d204eb3ad59b143144275b8d971faa04974831917d1864a9d6b19679123a9828d1f8e0; cx_p_token=1eab5c196cf18d650a7f3a52aaf21e34; p_auth_token=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1aWQiOiIzNDg2MjU0NTQiLCJsb2dpblRpbWUiOjE3NDg5Mzg1MzMxNjcsImV4cCI6MTc0OTU0MzMzM30.kfDSivE0vOGFh8egjQAHqtTbgblnF-ijfw96BUIMrE0; xxtenc=256f12e17e3f57e301008b366801437c; DSSTASH_LOG=C_38-UN_4533-US_348625454-T_1748938533167; source=num8; spaceFid=5339; spaceRoleId=3; tl=1; jrose=EEC8A85018324CC7BC9AB73D25C2AEA1.mooc-536300739-29174; videojs_id=7230547")
 	for _, cookie := range cache.cookies {
 		req.AddCookie(cookie)
