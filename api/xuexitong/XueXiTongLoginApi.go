@@ -163,7 +163,7 @@ func (cache *XueXiTUserCache) MonitorApi() (string, error) {
 		fmt.Println(err)
 		return "", nil
 	}
-	req.Header.Add("User-Agent", "Apifox/1.0.0 (https://apifox.com)")
+	req.Header.Add("User-Agent", "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/136.0.0.0 Safari/537.36 Edg/136.0.0.0")
 	req.Header.Add("Accept", "*/*")
 	req.Header.Add("Host", "detect.chaoxing.com")
 	req.Header.Add("Connection", "keep-alive")

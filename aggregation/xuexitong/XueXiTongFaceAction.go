@@ -24,6 +24,7 @@ func PassFaceAction(cache *xuexitong.XueXiTUserCache, courseId, classId, cpi, ch
 	if err != nil {
 		return "", "", "", err
 	}
+
 	//上传人脸
 	ObjectId, err := cache.UploadFaceImageApi(token, face)
 	if err != nil {

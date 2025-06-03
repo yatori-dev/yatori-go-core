@@ -19,7 +19,7 @@ func (cache *XueXiTUserCache) CourseListApi() (string, error) {
 		return "", err
 	}
 	req.Header.Add("Cookie", cache.cookie)
-	req.Header.Add("User-Agent", "Apifox/1.0.0 (https://apifox.com)")
+	req.Header.Add("User-Agent", "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/136.0.0.0 Safari/537.36 Edg/136.0.0.0")
 
 	res, err := client.Do(req)
 	if err != nil {

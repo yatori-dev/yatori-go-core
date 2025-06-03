@@ -519,7 +519,7 @@ func TestXueXiToFlushCourse(t *testing.T) {
 						continue
 					}
 					videoDTO.Enc = enc
-					point.ExecuteVideo(&userCache, &videoDTO) //常规
+					point.ExecuteVideo(&userCache, &videoDTO, key, course.Cpi) //常规
 					//point.ExecuteFastVideo(&userCache, &videoDTO) //秒刷
 					time.Sleep(5 * time.Second)
 				}
@@ -680,7 +680,7 @@ func TestFaceQrScanPlan1(t *testing.T) {
 						log.Fatal(err)
 					}
 					videoDTO.AttachmentsDetection(card)
-					point.ExecuteVideo(&userCache, &videoDTO) //常规
+					point.ExecuteVideo(&userCache, &videoDTO, key, course.Cpi) //常规
 					//point.ExecuteFastVideo(&userCache, &videoDTO) //秒刷
 					time.Sleep(5 * time.Second)
 				}

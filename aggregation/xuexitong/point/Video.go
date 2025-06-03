@@ -7,27 +7,40 @@ import (
 	"github.com/yatori-dev/yatori-go-core/api/entity"
 	api "github.com/yatori-dev/yatori-go-core/api/xuexitong"
 	"github.com/yatori-dev/yatori-go-core/utils"
+	log2 "github.com/yatori-dev/yatori-go-core/utils/log"
 	"log"
+	"os"
+	"strconv"
 	"strings"
 	"time"
 )
 
 // 常规刷视屏逻辑
-func ExecuteVideo(cache *api.XueXiTUserCache, p *entity.PointVideoDto) {
-	log.Println("自主人脸识别")
-	//image, _ := utils.LoadImage("E:\\Yatori-Dev\\yatori-go-core\\face\\test2.jpg")
-	image, err1 := utils.GetFaceBase64()
-	if err1 != nil {
-		log.Println(err1)
-	}
-	disturbImage := utils.ImageRGBDisturb(image)
+func ExecuteVideo(cache *api.XueXiTUserCache, p *entity.PointVideoDto, key, courseCpi int) {
 
+	log.Println("触发人脸识别，正在进行绕过...")
+	pullJson, img, err2 := cache.GetHistoryFaceImg("")
+	if err2 != nil {
+		log2.Print(log2.DEBUG, pullJson, err2)
+		os.Exit(0)
+	}
+	disturbImage := utils.ImageRGBDisturb(img)
 	uuid, qrEnc, ObjectId, err := action.PassFaceAction(cache, p.CourseID, p.ClassID, p.Cpi, fmt.Sprintf("%d", p.KnowledgeID), p.Enc, p.JobID, p.ObjectID, disturbImage)
 	if err != nil {
 		log.Println(uuid, qrEnc, ObjectId, err.Error())
 	}
 	p.VideoFaceCaptureEnc = qrEnc
-	log.Println("识别成功")
+	//从新拉取数据
+	cid, _ := strconv.Atoi(p.CourseID)
+	card, enc, err := action.PageMobileChapterCardAction(
+		cache, key, cid, p.KnowledgeID, p.CardIndex, courseCpi)
+	if err != nil {
+		log.Fatal(err)
+	}
+	p.AttachmentsDetection(card)
+	p.Enc = enc
+	log.Println("绕过成功")
+
 	if state, _ := action.VideoDtoFetchAction(cache, p); state {
 		log.Printf("(%s)开始模拟播放....%d:%d开始\n", p.Title, p.PlayTime, p.Duration)
 		var playingTime = p.PlayTime
@@ -45,18 +58,28 @@ func ExecuteVideo(cache *api.XueXiTUserCache, p *entity.PointVideoDto) {
 					if strings.Contains(err.Error(), "failed to fetch video, status code: 403") || strings.Contains(err.Error(), "failed to fetch video, status code: 404") { //触发403立即使用人脸检测
 
 						log.Println("触发人脸识别，正在进行绕过...")
-						//image, _ := utils.LoadImage("E:\\Yatori-Dev\\yatori-go-core\\face\\test2.jpg")
-						image, err1 := utils.GetFaceBase64()
-						if err1 != nil {
-							log.Println(err)
+						pullJson, img, err2 := cache.GetHistoryFaceImg("")
+						if err2 != nil {
+							log2.Print(log2.DEBUG, pullJson, err2)
+							os.Exit(0)
 						}
-						disturbImage := utils.ImageRGBDisturb(image)
-
+						disturbImage := utils.ImageRGBDisturb(img)
 						uuid, qrEnc, ObjectId, err := action.PassFaceAction(cache, p.CourseID, p.ClassID, p.Cpi, fmt.Sprintf("%d", p.KnowledgeID), p.Enc, p.JobID, p.ObjectID, disturbImage)
 						if err != nil {
 							log.Println(uuid, qrEnc, ObjectId, err.Error())
 						}
 						p.VideoFaceCaptureEnc = qrEnc
+
+						//从新拉取数据
+						cid, _ := strconv.Atoi(p.CourseID)
+						card, enc, err := action.PageMobileChapterCardAction(
+							cache, key, cid, p.KnowledgeID, p.CardIndex, courseCpi)
+						if err != nil {
+							log.Fatal(err)
+						}
+						p.AttachmentsDetection(card)
+						p.Enc = enc
+
 						log.Println("绕过成功")
 						continue
 					}
@@ -80,17 +103,27 @@ func ExecuteVideo(cache *api.XueXiTUserCache, p *entity.PointVideoDto) {
 
 						log.Println("触发人脸识别，正在进行绕过...")
 						//image, _ := utils.LoadImage("E:\\Yatori-Dev\\yatori-go-core\\face\\test2.jpg")
-						image, err1 := utils.GetFaceBase64()
-						if err1 != nil {
-							log.Println(err)
+						pullJson, img, err2 := cache.GetHistoryFaceImg("")
+						if err2 != nil {
+							log2.Print(log2.DEBUG, pullJson, err2)
+							os.Exit(0)
 						}
-						disturbImage := utils.ImageRGBDisturb(image)
+						disturbImage := utils.ImageRGBDisturb(img)
 
 						uuid, qrEnc, ObjectId, err := action.PassFaceAction(cache, p.CourseID, p.ClassID, p.Cpi, fmt.Sprintf("%d", p.KnowledgeID), p.Enc, p.JobID, p.ObjectID, disturbImage)
 						if err != nil {
 							log.Println(uuid, qrEnc, ObjectId, err.Error())
 						}
 						p.VideoFaceCaptureEnc = qrEnc
+						//从新拉取数据
+						cid, _ := strconv.Atoi(p.CourseID)
+						card, enc, err := action.PageMobileChapterCardAction(
+							cache, key, cid, p.KnowledgeID, p.CardIndex, courseCpi)
+						if err != nil {
+							log.Fatal(err)
+						}
+						p.AttachmentsDetection(card)
+						p.Enc = enc
 						log.Println("绕过成功")
 						continue
 					}
