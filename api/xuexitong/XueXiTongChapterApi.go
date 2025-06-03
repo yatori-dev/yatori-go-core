@@ -34,8 +34,9 @@ func (cache *XueXiTUserCache) PullChapter(cpi int, key int) (string, error) {
 	req.Header.Add("Accept-Language", " zh_CN")
 	req.Header.Add("Host", " mooc1-api.chaoxing.com")
 	req.Header.Add("Connection", " Keep-Alive")
-	req.Header.Add("Cookie", cache.cookie)
-
+	for _, cookie := range cache.cookies {
+		req.AddCookie(cookie)
+	}
 	res, err := client.Do(req)
 	if err != nil {
 		fmt.Println(err)
@@ -87,8 +88,9 @@ func (cache *XueXiTUserCache) FetchChapterPointStatus(nodes []int, clazzID, user
 	req.Header.Add("Host", "mooc1-api.chaoxing.com")
 	req.Header.Add("Connection", "keep-alive")
 	req.Header.Add("Content-Type", "application/x-www-form-urlencoded")
-	req.Header.Add("Cookie", cache.cookie)
-
+	for _, cookie := range cache.cookies {
+		req.AddCookie(cookie)
+	}
 	res, err := client.Do(req)
 	if err != nil {
 		fmt.Println(err)
@@ -130,7 +132,6 @@ func (cache *XueXiTUserCache) FetchChapterCords(nodes []int, index, courseId int
 	req.Header.Add("Accept-Language", " zh_CN")
 	req.Header.Add("Host", " mooc1-api.chaoxing.com")
 	req.Header.Add("Connection", " Keep-Alive")
-	//req.Header.Add("Cookie", cache.cookie)
 	for _, cookie := range cache.cookies {
 		req.AddCookie(cookie)
 	}

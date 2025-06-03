@@ -34,7 +34,10 @@ func (cache *XueXiTUserCache) PageMobileChapterCard(
 		fmt.Println(err)
 		return "", err
 	}
-	req.Header.Add("Cookie", cache.cookie)
+	//req.Header.Add("Cookie", cache.cookie)
+	for _, cookie := range cache.cookies {
+		req.AddCookie(cookie)
+	}
 	req.Header.Add("User-Agent", "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/136.0.0.0 Safari/537.36 Edg/136.0.0.0")
 	req.Header.Add("Accept", "*/*")
 	req.Header.Add("Host", "mooc1-api.chaoxing.com")
@@ -86,8 +89,10 @@ func (cache *XueXiTUserCache) VideoDtoFetch(p *entity.PointVideoDto) (string, er
 	resp.Header.Add("Sec-Fetch-Dest", " empty")
 	resp.Header.Add("Referer", " https://mooc1-api.chaoxing.com/ananas/modules/video/index_wap.html?v=372024-1121-1947")
 	resp.Header.Add("Accept-Language", " zh-CN,zh;q=0.9,en-US;q=0.8,en;q=0.7")
-	resp.Header.Add("Cookie", cache.cookie)
-
+	//resp.Header.Add("Cookie", cache.cookie)
+	for _, cookie := range cache.cookies {
+		resp.AddCookie(cookie)
+	}
 	res, err := client.Do(resp)
 	if err != nil {
 		return "", err
@@ -204,7 +209,9 @@ func (cache *XueXiTUserCache) VideoDtoPlayReport(p *entity.PointVideoDto, playin
 	resp.Header.Add("Accept", "*/*")
 	resp.Header.Add("Host", "mooc1.chaoxing.com")
 	resp.Header.Add("Connection", "keep-alive")
-	resp.Header.Add("Cookie", cache.cookie)
+	for _, cookie := range cache.cookies {
+		resp.AddCookie(cookie)
+	}
 	resp.Header.Add("Referer", "https://mooc1.chaoxing.com/ananas/modules/video/index.html?v=2023-1110-1610")
 	resp.Header.Add("Content-Type", " application/json")
 	res, err := client.Do(resp)
@@ -277,7 +284,10 @@ func (cache *XueXiTUserCache) WorkFetchQuestion(p *entity.PointWorkDto) (string,
 	req.Header.Add("Accept", "*/*")
 	req.Header.Add("Host", "mooc1-api.chaoxing.com")
 	req.Header.Add("Connection", "keep-alive")
-	req.Header.Add("Cookie", cache.cookie)
+	//req.Header.Add("Cookie", cache.cookie)
+	for _, cookie := range cache.cookies {
+		req.AddCookie(cookie)
+	}
 
 	res, err := client.Do(req)
 	if err != nil {
@@ -307,7 +317,10 @@ func (cache *XueXiTUserCache) WorkCommit(p *entity.PointWorkDto, fields []entity
 		fmt.Println(err)
 		return "", nil
 	}
-	req.Header.Add("Cookie", cache.cookie)
+	//req.Header.Add("Cookie", cache.cookie)
+	for _, cookie := range cache.cookies {
+		req.AddCookie(cookie)
+	}
 	req.Header.Add("User-Agent", "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/136.0.0.0 Safari/537.36 Edg/136.0.0.0")
 	req.Header.Add("Content-Type", "application/json")
 	req.Header.Add("Accept", "*/*")
@@ -351,7 +364,10 @@ func (cache *XueXiTUserCache) DocumentDtoReadingReport(p *entity.PointDocumentDt
 	resp.Header.Add("Accept", "*/*")
 	resp.Header.Add("Host", "mooc1.chaoxing.com")
 	resp.Header.Add("Connection", "keep-alive")
-	resp.Header.Add("Cookie", cache.cookie)
+	//resp.Header.Add("Cookie", cache.cookie)
+	for _, cookie := range cache.cookies {
+		resp.AddCookie(cookie)
+	}
 	resp.Header.Add("Content-Type", " application/json")
 
 	res, err := client.Do(resp)

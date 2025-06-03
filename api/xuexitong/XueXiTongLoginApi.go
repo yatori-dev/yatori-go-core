@@ -167,7 +167,6 @@ func (cache *XueXiTUserCache) MonitorApi() (string, error) {
 	req.Header.Add("Accept", "*/*")
 	req.Header.Add("Host", "detect.chaoxing.com")
 	req.Header.Add("Connection", "keep-alive")
-	//req.Header.Add("Cookie", "JSESSIONID=965F54A70062952629CC029FA92F2AA1")
 	for _, cookie := range cache.cookies {
 		req.AddCookie(cookie)
 	}

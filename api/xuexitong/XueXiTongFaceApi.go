@@ -33,7 +33,6 @@ func (cache *XueXiTUserCache) GetFaceUpLoadToken() (string, error) {
 		fmt.Println(err)
 		return "", nil
 	}
-	//req.Header.Add("Cookie", cache.cookie)
 	req.Header.Add("User-Agent", "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/136.0.0.0 Safari/537.36 Edg/136.0.0.0")
 	req.Header.Add("Accept", "*/*")
 	req.Header.Add("Host", "mooc1.chaoxing.com")
@@ -119,14 +118,6 @@ func (cache *XueXiTUserCache) GetHistoryFaceImg(puid string) (string, image.Imag
 	for _, cookie := range cache.cookies {
 		req.AddCookie(cookie)
 	}
-	//styleId=; fid=5339
-	//fid := ""
-	//for _, cookie := range cache.cookies {
-	//	if cookie.Name == "fid" {
-	//		fid = cookie.Value
-	//	}
-	//}
-	//reqImg.Header.Add("Cookie", "styleId=;fid=5339")
 	reqImg.Header.Add("User-Agent", "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/136.0.0.0 Safari/537.36 Edg/136.0.0.0")
 	reqImg.Header.Add("Accept", "*/*")
 	reqImg.Header.Add("Host", "passport2-api.chaoxing.com")
@@ -189,7 +180,9 @@ func (cache *XueXiTUserCache) UploadFaceImageApi(token string, image image.Image
 		return "", nil
 	}
 	req.Header.Add("User-Agent", "Mozilla/5.0 (Linux; Android 12; SM-N9006 Build/V417IR; wv) AppleWebKit/537.36 (KHTML, like Gecko) Version/4.0 Chrome/95.0.4638.74 Mobile Safari/537.36 (schild:e9b05c3f9fb49fef2f516e86ac3c4ff1) (device:SM-N9006) Language/zh_CN com.chaoxing.mobile/ChaoXingStudy_3_6.3.7_android_phone_10822_249 (@Kalimdor)_4627cad9c4b6415cba5dc6cac39e6c96")
-	req.Header.Add("Cookie", cache.cookie)
+	for _, cookie := range cache.cookies {
+		req.AddCookie(cookie)
+	}
 	req.Header.Add("Accept", "*/*")
 	req.Header.Add("Host", "mooc1-api.chaoxing.com")
 	req.Header.Add("Connection", "keep-alive")
@@ -249,7 +242,9 @@ func (cache *XueXiTUserCache) GetFaceQrCodeApi1(courseId, clazzid, chapterId, cp
 		fmt.Println(err)
 		return "", "", nil
 	}
-	req.Header.Add("Cookie", cache.cookie)
+	for _, cookie := range cache.cookies {
+		req.AddCookie(cookie)
+	}
 	req.Header.Add("User-Agent", "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/136.0.0.0 Safari/537.36 Edg/136.0.0.0")
 	req.Header.Add("Accept", "*/*")
 	req.Header.Add("Host", "mooc1.chaoxing.com")
@@ -298,7 +293,9 @@ func (cache *XueXiTUserCache) GetFaceQrCodeApi2(courseId, clazzId, cpi string) (
 		return "", "", nil
 	}
 	req.Header.Add("User-Agent", "Mozilla/5.0 (Linux; Android 12; SM-N9006 Build/V417IR; wv) AppleWebKit/537.36 (KHTML, like Gecko) Version/4.0 Chrome/95.0.4638.74 Mobile Safari/537.36 (schild:e9b05c3f9fb49fef2f516e86ac3c4ff1) (device:SM-N9006) Language/zh_CN com.chaoxing.mobile/ChaoXingStudy_3_6.3.7_android_phone_10822_249 (@Kalimdor)_4627cad9c4b6415cba5dc6cac39e6c96")
-	req.Header.Add("Cookie", cache.cookie)
+	for _, cookie := range cache.cookies {
+		req.AddCookie(cookie)
+	}
 	req.Header.Add("Accept", "*/*")
 	req.Header.Add("Host", "mooc1-api.chaoxing.com")
 	req.Header.Add("Connection", "keep-alive")
@@ -352,7 +349,7 @@ func (cache *XueXiTUserCache) GetFaceQrCodeApi3(courseId, clazzid, chapterId, cp
 	for _, cookie := range cache.cookies {
 		req.AddCookie(cookie)
 	}
-	//req.Header.Add("Cookie", " fid=5339; _uid=348625454; _d=1748507296144; UID=348625454; vc3=VksOHe9Jcepoyb%2F1zUUZcj48Q24R2ChAShc98TF6eQx6W1kPavuEosmRIotMFiEpq04q2%2FeLFFGrvL4R2jG7ppnTY1ntggtqDVANrEeUz6f2y4UaIpqItBlucT1W5fMVoK60DC4CIkODHR%2BZPiYIuBMHA3GzB9pP6C8QrtxtsPs%3D6b76dd0fcba78eb963ddb266cc8e47f6; uf=569b376a64ccf0313129ca082ab4eaeede7e7778b17f9ae8265c811413bbd05ba698eb83c701a3b8db92082134c30573913b662843f1f4ade9295d8c89b08ad0f44425e20f927c6b94405ac272c83515fb98ce0e6210c3884a878d0a9a7b05dad8a8d0ca21d204eb3ad59b143144275b3d7e9258df4ffdf630409e216a2b096279123a9828d1f8e0; cx_p_token=fbd8a60b4a0d4ac6c103d937fe2fe90f; p_auth_token=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1aWQiOiIzNDg2MjU0NTQiLCJsb2dpblRpbWUiOjE3NDg1MDcyOTYxNDYsImV4cCI6MTc0OTExMjA5Nn0.akLuZmVAalyIWDy8xDai-PLbM6Dkv4-0bUGfJIziopY; xxtenc=256f12e17e3f57e301008b366801437c; DSSTASH_LOG=C_38-UN_4533-US_348625454-T_1748507296146; source=num2; spaceFid=5339; spaceRoleId=3; tl=1; k8s=1748507308.412.12905.922105; jrose=BCABAAD7A1882C83BEEFD98740BE4683.mooc-1248283859-d0tq3; route=f9c314690d8e5d436efa7770254d0199; jrose=9E53AB2E95196F2A0541494D6D1FEF02.mooc-1248283859-jmxwc; k8s=1748596640.961.8327.803851; route=440ceb57420433374ff0504da9778fc7")
+
 	req.Header.Add("User-Agent", "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/136.0.0.0 Safari/537.36 Edg/136.0.0.0")
 	req.Header.Add("Accept", "*/*")
 	req.Header.Add("Host", "mooc1.chaoxing.com")
@@ -441,7 +438,10 @@ func (cache *XueXiTUserCache) GetCourseFaceQrPlan1Api(courseId, classId, uuid, o
 		return "", nil
 	}
 	req.Header.Add("User-Agent", "Mozilla/5.0 (Linux; Android 12; SM-N9006 Build/V417IR; wv) AppleWebKit/537.36 (KHTML, like Gecko) Version/4.0 Chrome/95.0.4638.74 Mobile Safari/537.36 (schild:e9b05c3f9fb49fef2f516e86ac3c4ff1) (device:SM-N9006) Language/zh_CN com.chaoxing.mobile/ChaoXingStudy_3_6.3.7_android_phone_10822_249 (@Kalimdor)_4627cad9c4b6415cba5dc6cac39e6c96")
-	req.Header.Add("Cookie", cache.cookie)
+
+	for _, cookie := range cache.cookies {
+		req.AddCookie(cookie)
+	}
 	req.Header.Add("Accept", "*/*")
 	req.Header.Add("Host", "mooc1-api.chaoxing.com")
 	req.Header.Add("Connection", "keep-alive")
@@ -475,7 +475,9 @@ func (cache *XueXiTUserCache) GetCourseFaceQrPlan2Api(classId, courseId, knowled
 		return "", nil
 	}
 	req.Header.Add("User-Agent", "Mozilla/5.0 (Linux; Android 12; SM-N9006 Build/V417IR; wv) AppleWebKit/537.36 (KHTML, like Gecko) Version/4.0 Chrome/95.0.4638.74 Mobile Safari/537.36 (schild:e9b05c3f9fb49fef2f516e86ac3c4ff1) (device:SM-N9006) Language/zh_CN com.chaoxing.mobile/ChaoXingStudy_3_6.3.7_android_phone_10822_249 (@Kalimdor)_4627cad9c4b6415cba5dc6cac39e6c96")
-	req.Header.Add("Cookie", cache.cookie)
+	for _, cookie := range cache.cookies {
+		req.AddCookie(cookie)
+	}
 	req.Header.Add("Accept", "*/*")
 	req.Header.Add("Host", "mooc1-api.chaoxing.com")
 	req.Header.Add("Connection", "keep-alive")

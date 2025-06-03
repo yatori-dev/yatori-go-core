@@ -128,7 +128,10 @@ func (cache *XueXiTUserCache) WorkNewSubmitAnswer(courseId string, classId strin
 	req.Header.Add("Connection", "keep-alive")
 
 	req.Header.Set("Content-Type", writer.FormDataContentType())
-	req.Header.Add("Cookie", cache.cookie)
+
+	for _, cookie := range cache.cookies {
+		req.AddCookie(cookie)
+	}
 
 	// 发送请求
 	client := &http.Client{}
