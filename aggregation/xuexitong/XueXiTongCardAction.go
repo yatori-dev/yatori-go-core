@@ -15,7 +15,6 @@ import (
 	"log"
 	"regexp"
 	"strings"
-	"unicode"
 )
 
 // ChapterNotOpened 是未打开章节时的错误类型
@@ -187,10 +186,11 @@ func WorkPageFromAction(cache *xuexitong.XueXiTUserCache, workPoint *entity.Poin
 func cleanText(text string) string {
 	// 去除首尾空白字符
 	text = strings.TrimSpace(text)
-	// 将多个连续的空白字符替换为单个空格
-	return strings.Join(strings.FieldsFunc(text, func(r rune) bool {
-		return unicode.IsSpace(r)
-	}), " ")
+	// 替换多个连续换行符为单个空格Add commentMore actions
+	text = regexp.MustCompile(`\n+`).ReplaceAllString(text, " ")
+
+	// 替换多个连续空格为单个空格
+	return regexp.MustCompile(`\s+`).ReplaceAllString(text, " ")
 }
 
 // WorkInformInputWorkDTO workDTO赋值
@@ -252,6 +252,7 @@ func ParseWorkQuestionAction(cache *xuexitong.XueXiTUserCache, workPoint *entity
 	var workQuestion []entity.ChoiceQue
 	var judgeQuestion []entity.JudgeQue
 	var fillQuestion []entity.FillQue
+	var shortQuestion []entity.ShortQue
 	question, _ := cache.WorkFetchQuestion(workPoint)
 
 	// 使用 goquery 解析 HTML
@@ -292,7 +293,7 @@ func ParseWorkQuestionAction(cache *xuexitong.XueXiTUserCache, workPoint *entity
 		// TODO 这里获取图片怎么都拿不到 不会了ಠ_ಠ
 		var quesTextBuilder strings.Builder
 		quesText := qdoc.Find(".Py-m1-title").Contents().Each(func(i int, n *goquery.Selection) {
-			if n.Get(0).Type == html.TextNode || n.Is("span") {
+			if n.Get(0).Type == html.ElementNode || n.Get(0).Type == html.TextNode && n.Text() != "" {
 				quesTextBuilder.WriteString(n.Text())
 			}
 		}).End().Text()
@@ -386,7 +387,6 @@ func ParseWorkQuestionAction(cache *xuexitong.XueXiTUserCache, workPoint *entity
 			// 提取填空题
 			qdoc.Find("ul.blankList2").Each(func(i int, selection *goquery.Selection) {
 				optionLetter := selection.Find("p").Text()
-				fmt.Println(optionLetter)
 				splitOptions := strings.Split(optionLetter, ":")
 				validParts := splitOptions[:0]
 				for _, part := range splitOptions {
@@ -400,16 +400,23 @@ func ParseWorkQuestionAction(cache *xuexitong.XueXiTUserCache, workPoint *entity
 			})
 			fillQue.OpFromAnswer = options
 			fillQuestion = append(fillQuestion, fillQue)
+		case ctype.ShortAnswer.String():
+			options := make(map[string][]string)
+			shortQue := entity.ShortQue{}
+			shortQue.Type = ctype.ShortAnswer
+			shortQue.Qid = qs.ID
+			shortQue.Text = quesText
+			// 简答暂时未发现有多个textarea标签出现 不做多答案处理
+			options["简答"] = []string{"简答答案"}
+			shortQue.OpFromAnswer = options
+			shortQuestion = append(shortQuestion, shortQue)
 		}
 	}
-	// TODO 这里实例化部分没写
-	//for j, q := range workQuestion {
-	//	fmt.Printf("Question %d:\nType: %s\nText: %s\noptions: %v\n\n", j+1, q.Type, q.Text, q.options)
-	//}
-	// TODO 组装AI问答将英华部分整合减少代码重复耦合
+
 	questionEntity.Choice = workQuestion
 	questionEntity.Judge = judgeQuestion
 	questionEntity.Fill = fillQuestion
+	questionEntity.Short = shortQuestion
 	return questionEntity
 }
 
@@ -422,7 +429,7 @@ var problemStrategies = map[string]problemMessageStrategy{
 	"多选题": handleMultipleChoice,
 	"判断题": handleTrueFalse,
 	"填空题": handleFillInTheBlank,
-	//"简答题": handleShortAnswer,
+	"简答题": handleShortAnswer,
 }
 
 func AIProblemMessage(testPaperTitle, text string, topic entity.ExamTurn) utils.AIChatMessages {
@@ -467,6 +474,14 @@ func buildProblemContext(testPaperTitle, text string, topic entity.ExamTurn) (co
 		}
 	case ctype.TrueOrFalse.String():
 		for c, q := range topic.XueXJudgeQue.Options {
+			context += text + "\n"
+			context += fmt.Sprintf("\n%v. %v", c, q)
+		}
+		for _, v := range topic.Selects {
+			context += v.Num + v.Text + "\n"
+		}
+	case ctype.ShortAnswer.String():
+		for c, q := range topic.XueXShortQue.OpFromAnswer {
 			context += text + "\n"
 			context += fmt.Sprintf("\n%v. %v", c, q)
 		}
@@ -522,10 +537,12 @@ func handleFillInTheBlank(context string, topic entity.ExamTurn) utils.AIChatMes
 }
 
 // 简答题处理策略
-func handleShortAnswer(testPaperTitle, context string) utils.AIChatMessages {
-	problem := buildProblemHeader(testPaperTitle, "简答题", context)
+func handleShortAnswer(context string, topic entity.ExamTurn) utils.AIChatMessages {
+	problem := buildProblemHeader(topic.XueXShortQue.Type.String(), "简答题", context)
 	return utils.AIChatMessages{Messages: []utils.Message{
 		{Role: "user", Content: "这是一个简答题...格式：[\"答案\"]，注意不要拆分答案！！！"},
+		{Role: "user", Content: "就算你不知道选什么也随机选...无需回答任何解释！！！"},
+		{Role: "user", Content: exampleShortAnswer()},
 		{Role: "user", Content: problem},
 	}}
 }
@@ -585,7 +602,17 @@ func exampleFillInTheBlank() string {
 题目内容：新中国成立于（ ）年。
 答案：1949
 
-那么你应该回答："[1949]"`
+那么你应该回答："["1949"]"`
+}
+
+func exampleShortAnswer() string {
+	return `比如：
+试卷名称：考试
+题目类型：简答
+题目内容：请简述中国和外国的国别 differences
+答案：中国和外国的国别 differences
+
+那么你应该回答： "["中国和外国的国别 differences"]"`
 }
 
 //func AIProblemMessage(testPaperTitle string, topic entity.ExamTurn) utils.AIChatMessages {

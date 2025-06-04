@@ -126,6 +126,14 @@ type FillQue struct {
 	OpFromAnswer map[string][]string // 位置与答案
 }
 
+// 简答类型
+type ShortQue struct {
+	Type         ctype.QueType
+	Qid          string
+	Text         string
+	OpFromAnswer map[string][]string
+}
+
 // Question TODO 这里考虑是否在其中直接将答案做出 直接上报提交 或 保存提交
 type Question struct {
 	Cpi              string
@@ -155,11 +163,13 @@ type Question struct {
 	Choice           []ChoiceQue //选择类型
 	Judge            []JudgeQue  //判断类型
 	Fill             []FillQue   //填空类型
+	Short            []ShortQue  //简答类型
 }
 type ExamTurn struct {
 	XueXChoiceQue ChoiceQue
 	XueXJudgeQue  JudgeQue
 	XueXFillQue   FillQue
+	XueXShortQue  ShortQue
 	YingHuaExamTopic
 }
 
@@ -196,6 +206,10 @@ func (q *FillQue) SetAnswers(answers []string) {
 	}
 }
 
+func (q *ShortQue) SetAnswers(answers []string) {
+	q.OpFromAnswer["简答"] = answers
+}
+
 // 从键中提取序号（例如："0第3空" → 2，注意索引从0开始）
 func extractIndexFromKey(key string) int {
 	// 简单实现，实际可能需要更复杂的字符串处理
@@ -213,6 +227,7 @@ func extractIndexFromKey(key string) int {
 
 func GetAIAnswer(as AnswerSetter, userID string, url, model string, aiType ctype.AiType, aiChatMessages utils.AIChatMessages, apiKey string) {
 	aiAnswer, err := utils.AggregationAIApi(url, model, aiType, aiChatMessages, apiKey)
+	fmt.Println("AI回复:", aiAnswer)
 	if err != nil {
 		log.Print(log.INFO, `[`, userID, `] `, log.BoldRed, "Ai异常，返回信息：", err.Error())
 		os.Exit(0)
@@ -240,6 +255,12 @@ func (q *JudgeQue) AnswerAIGet(userID,
 
 // AnswerAIGet FillQue的AI回答获取方法
 func (q *FillQue) AnswerAIGet(userID,
+	url, model string, aiType ctype.AiType, aiChatMessages utils.AIChatMessages, apiKey string) {
+	GetAIAnswer(q, userID, url, model, aiType, aiChatMessages, apiKey)
+}
+
+// AnswerAIGet ShortQue的AI回答获取方法
+func (q *ShortQue) AnswerAIGet(userID,
 	url, model string, aiType ctype.AiType, aiChatMessages utils.AIChatMessages, apiKey string) {
 	GetAIAnswer(q, userID, url, model, aiType, aiChatMessages, apiKey)
 }

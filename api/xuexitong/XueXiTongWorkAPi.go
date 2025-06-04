@@ -106,6 +106,16 @@ func (cache *XueXiTUserCache) WorkNewSubmitAnswer(courseId string, classId strin
 		_ = writer.WriteField("answertype"+ch.Qid, "2")
 	}
 
+	for _, ch := range question.Short {
+		if ch.Qid != "" {
+			answerwqbid += ch.Qid + ","
+		}
+		for _, v := range ch.OpFromAnswer {
+			_ = writer.WriteField("answer"+ch.Qid, v[0])
+		}
+		_ = writer.WriteField("answertype"+ch.Qid, "4")
+	}
+
 	_ = writer.WriteField("answerwqbid", answerwqbid)
 	err := writer.Close()
 	if err != nil {
