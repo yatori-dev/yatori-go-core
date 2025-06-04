@@ -272,7 +272,7 @@ func TestXueXiToChapterCardWork(t *testing.T) {
 	}
 	courseId, _ := strconv.Atoi(course[index].CourseID)
 	fmt.Println(course[index].CourseDataID)
-	_, fetchCards, err := xuexitong.ChapterFetchCardsAction(&userCache, &action, nodes, 12, courseId,
+	_, fetchCards, err := xuexitong.ChapterFetchCardsAction(&userCache, &action, nodes, 36, courseId,
 		key, course[index].Cpi)
 
 	videoDTOs, workDTOs, documentDTOs := entity.ParsePointDto(fetchCards)
@@ -306,7 +306,7 @@ func TestXueXiToChapterCardWork(t *testing.T) {
 		questionAction := xuexitong.ParseWorkQuestionAction(&userCache, &workDTOs[0])
 		for i := range questionAction.Choice {
 			q := &questionAction.Choice[i] // 获取指向切片元素的指针
-			message := xuexitong.AIProblemMessage(q.Type.String(), entity.ExamTurn{
+			message := xuexitong.AIProblemMessage(q.Type.String(), q.Text, entity.ExamTurn{
 				XueXChoiceQue: *q,
 			})
 			aiSetting := global.Config.Setting.AiSetting
@@ -319,7 +319,7 @@ func TestXueXiToChapterCardWork(t *testing.T) {
 
 		for i := range questionAction.Fill {
 			q := &questionAction.Fill[i]
-			message := xuexitong.AIProblemMessage(q.Type.String(), entity.ExamTurn{
+			message := xuexitong.AIProblemMessage(q.Type.String(), q.Text, entity.ExamTurn{
 				XueXFillQue: *q,
 			})
 			aiSetting := global.Config.Setting.AiSetting
@@ -334,7 +334,7 @@ func TestXueXiToChapterCardWork(t *testing.T) {
 		}
 		for i := range questionAction.Judge {
 			q := &questionAction.Judge[i]
-			message := xuexitong.AIProblemMessage(q.Type.String(), entity.ExamTurn{
+			message := xuexitong.AIProblemMessage(q.Type.String(), q.Text, entity.ExamTurn{
 				XueXJudgeQue: *q,
 			})
 			aiSetting := global.Config.Setting.AiSetting
@@ -345,9 +345,27 @@ func TestXueXiToChapterCardWork(t *testing.T) {
 			fmt.Println(fmt.Sprintf("%d. %v", i, que.Answers))
 		}
 
+		for i := range questionAction.Short {
+			q := &questionAction.Short[i]
+			message := xuexitong.AIProblemMessage(q.Type.String(), q.Text, entity.ExamTurn{
+				XueXShortQue: *q,
+			})
+			aiSetting := global.Config.Setting.AiSetting
+			q.AnswerAIGet(userCache.UserID,
+				aiSetting.AiUrl, aiSetting.Model, aiSetting.AiType, message, aiSetting.APIKEY)
+		}
+
+		for i, que := range questionAction.Short {
+			for j := range que.OpFromAnswer {
+				fmt.Println(fmt.Sprintf("%d%v. %v", i, j, que.OpFromAnswer[j]))
+			}
+		}
+		answerAction := xuexitong.WorkNewSubmitAnswerAction(&userCache, questionAction, false)
+		fmt.Println(answerAction)
 	} else {
 		log.Fatal("任务点对象错误")
 	}
+
 }
 
 func TestXueXiToChapterCardDocument(t *testing.T) {
@@ -547,7 +565,7 @@ func TestXueXiToFlushCourse(t *testing.T) {
 					fmt.Println(questionAction)
 					for i := range questionAction.Choice {
 						q := &questionAction.Choice[i] // 获取对应选项
-						message := xuexitong.AIProblemMessage(q.Type.String(), entity.ExamTurn{
+						message := xuexitong.AIProblemMessage(q.Type.String(), q.Text, entity.ExamTurn{
 							XueXChoiceQue: *q,
 						})
 						aiSetting := global.Config.Setting.AiSetting //获取AI设置
