@@ -530,7 +530,6 @@ func TestXueXiToFlushCourse(t *testing.T) {
 						log.Fatal(err)
 					}
 					videoDTO.AttachmentsDetection(card)
-
 					if videoDTO.IsPassed == true { //过滤完成的
 						continue
 					}

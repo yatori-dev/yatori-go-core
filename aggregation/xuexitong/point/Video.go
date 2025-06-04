@@ -10,6 +10,7 @@ import (
 	log2 "github.com/yatori-dev/yatori-go-core/utils/log"
 	"log"
 	"os"
+	"strconv"
 	"strings"
 	"time"
 )
@@ -17,7 +18,7 @@ import (
 // 常规刷视屏逻辑
 func ExecuteVideo(cache *api.XueXiTUserCache, p *entity.PointVideoDto, key, courseCpi int) {
 
-	log.Println("触发人脸识别，正在进行绕过...")
+	//log.Println("触发人脸识别，正在进行绕过...")
 	//pullJson, img, err2 := cache.GetHistoryFaceImg("")
 	//if err2 == nil {
 	//	log2.Print(log2.DEBUG, pullJson, err2)
@@ -35,6 +36,7 @@ func ExecuteVideo(cache *api.XueXiTUserCache, p *entity.PointVideoDto, key, cour
 		log.Printf("(%s)开始模拟播放....%d:%d开始\n", p.Title, p.PlayTime, p.Duration)
 		var playingTime = p.PlayTime
 		var flag = 0
+		stopVal := 0
 		for {
 			//if flag == 30 {
 			//	monitorApi, _ := cache.MonitorApi()
@@ -54,12 +56,27 @@ func ExecuteVideo(cache *api.XueXiTUserCache, p *entity.PointVideoDto, key, cour
 							os.Exit(0)
 						}
 						disturbImage := utils.ImageRGBDisturb(img)
-						uuid, qrEnc, ObjectId, successEnc, err := action.PassFaceAction3(cache, p.CourseID, p.ClassID, p.Cpi, fmt.Sprintf("%d", p.KnowledgeID), p.Enc, p.JobID, p.ObjectID, p.Mid, disturbImage)
+						uuid, qrEnc, ObjectId, successEnc, err := action.PassFaceAction3(cache, p.CourseID, p.ClassID, p.Cpi, fmt.Sprintf("%d", p.KnowledgeID), p.Enc, p.JobID, p.ObjectID, p.Mid, p.RandomCaptureTime, disturbImage)
 						if err != nil {
 							log.Println(uuid, qrEnc, ObjectId, err.Error())
 						}
 						p.VideoFaceCaptureEnc = successEnc
-
+						if stopVal > 5 {
+							log.Println("触发另外方案---------------------------------------")
+							courseId, _ := strconv.Atoi(p.CourseID)
+							card, enc, err := action.PageMobileChapterCardAction(
+								cache, key, courseId, p.KnowledgeID, p.CardIndex, courseCpi)
+							if err != nil {
+								log.Fatal(err)
+							}
+							p.Enc = enc
+							p.AttachmentsDetection(card)
+						}
+						playReport, err := cache.VideoSubmitStudyTime(p, playingTime, 3, 8, nil)
+						if err != nil {
+							log.Println(uuid, qrEnc, ObjectId, playReport, err.Error())
+						}
+						stopVal += 1
 						log.Println("绕过成功")
 						continue
 					}
@@ -90,15 +107,32 @@ func ExecuteVideo(cache *api.XueXiTUserCache, p *entity.PointVideoDto, key, cour
 						}
 						disturbImage := utils.ImageRGBDisturb(img)
 
-						uuid, qrEnc, ObjectId, successEnc, err := action.PassFaceAction3(cache, p.CourseID, p.ClassID, p.Cpi, fmt.Sprintf("%d", p.KnowledgeID), p.Enc, p.JobID, p.ObjectID, p.Mid, disturbImage)
+						uuid, qrEnc, ObjectId, successEnc, err := action.PassFaceAction3(cache, p.CourseID, p.ClassID, p.Cpi, fmt.Sprintf("%d", p.KnowledgeID), p.Enc, p.JobID, p.ObjectID, p.Mid, p.RandomCaptureTime, disturbImage)
 						if err != nil {
 							log.Println(uuid, qrEnc, ObjectId, err.Error())
 						}
 						p.VideoFaceCaptureEnc = successEnc
+						if stopVal > 5 {
+							log.Println("触发另外方案---------------------------------------")
+							courseId, _ := strconv.Atoi(p.CourseID)
+							card, enc, err := action.PageMobileChapterCardAction(
+								cache, key, courseId, p.KnowledgeID, p.CardIndex, courseCpi)
+							if err != nil {
+								log.Fatal(err)
+							}
+							p.Enc = enc
+							p.AttachmentsDetection(card)
+						}
+						playReport, err := cache.VideoSubmitStudyTime(p, playingTime, 3, 8, nil)
+						if err != nil {
+							log.Println(uuid, qrEnc, ObjectId, playReport, err.Error())
+						}
+						stopVal += 1
 						log.Println("绕过成功")
 						continue
 					}
 				}
+				stopVal = 0
 				if gojsonq.New().JSONString(playReport).Find("isPassed").(bool) == true {
 					log.Println("播放结束")
 					playingTime = p.Duration

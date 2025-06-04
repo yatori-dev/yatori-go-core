@@ -38,6 +38,7 @@ type PointVideoDto struct {
 	Title               string
 	RT                  float64
 	VideoFaceCaptureEnc string
+	RandomCaptureTime   string //大概的下次人脸时间
 	AttDurationEnc      string
 	Enc                 string
 	Logger              *log.Logger
@@ -184,6 +185,13 @@ func (p *PointVideoDto) AttachmentsDetection(attachment interface{}) (bool, erro
 				p.Mid = ""
 			} else {
 				p.Mid = mid
+			}
+
+			randomCaptureTime, ok := attachment["randomCaptureTime"].(string)
+			if !ok {
+				p.RandomCaptureTime = "0"
+			} else {
+				p.RandomCaptureTime = randomCaptureTime
 			}
 
 			attDurationEnc, ok := attachment["attDurationEnc"].(string)
