@@ -42,6 +42,7 @@ type PointVideoDto struct {
 	Enc                 string
 	Logger              *log.Logger
 	PUID                string
+	Mid                 string
 	Session             *Session
 
 	Type  ctype.CardType
@@ -178,6 +179,12 @@ func (p *PointVideoDto) AttachmentsDetection(attachment interface{}) (bool, erro
 			//} else {
 			//	p.PlayTime = int(playTime) / 1000
 			//}
+			mid, ok := attachment["mid"].(string)
+			if !ok {
+				p.Mid = ""
+			} else {
+				p.Mid = mid
+			}
 
 			attDurationEnc, ok := attachment["attDurationEnc"].(string)
 			if !ok {

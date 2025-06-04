@@ -5,6 +5,7 @@ import (
 	"crypto/md5"
 	"encoding/hex"
 	"encoding/json"
+	"errors"
 	"fmt"
 	"github.com/PuerkitoBio/goquery"
 	"github.com/thedevsaddam/gojsonq"
@@ -105,7 +106,10 @@ func (cache *XueXiTUserCache) GetHistoryFaceImg(puid string) (string, image.Imag
 	if strconv.Itoa(int(gojsonq.New().JSONString(string(body)).Find("result").(float64))) != "1" {
 		return "", nil, nil
 	}
-
+	//如果为空
+	if gojsonq.New().JSONString(string(body)).Find("data.http").(string) == "" {
+		return "", nil, errors.New("没有历史人脸")
+	}
 	//图片获取段
 	methodImg := "GET"
 	clientImg := &http.Client{}
@@ -561,10 +565,9 @@ func (cache *XueXiTUserCache) GetCourseFaceQrPlan3Api(uuid, clazzId, courseId, q
 //		return string(body), nil
 //	}
 //
-// 获取人脸状态
-func (cache *XueXiTUserCache) GetCourseFaceQrStateApi(uuid, enc, clazzid, courseid, cpi string) (string, error) {
-
-	url := "https://mooc1.chaoxing.com/mooc-ans/qr/getqrstatus?uuid=" + uuid + "&enc=" + enc + "&clazzid=" + clazzid + "&courseid=" + courseid + "&cpi=" + cpi + "&ismooc2=1&v=0&pageHeader=-1&taskrefId=&workOrExam="
+// 获取人脸状态{"code":"0","failCount":"90","videoFaceCaptureSuccessEnc":"2416cd8e0f5949d4b4d66da05aafb15a","compareResult":"0","status":2}
+func (cache *XueXiTUserCache) GetCourseFaceQrStateApi(uuid, enc, clazzid, courseid, cpi, mid, videoObjectId, videoRandomCollectTime, chapterId string) (string, error) {
+	url := "https://mooc1.chaoxing.com/mooc-ans/qr/getqrstatus?uuid=" + uuid + "&enc=" + enc + "&clazzid=" + clazzid + "&courseid=" + courseid + "&cpi=" + cpi + "&collectionTime=0&mid=" + mid + "&videoObjectId=" + videoObjectId + "&videoRandomCollectTime=" + videoRandomCollectTime + "&chapterId=" + chapterId
 	method := "GET"
 
 	client := &http.Client{}
