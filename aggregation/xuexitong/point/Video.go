@@ -38,10 +38,37 @@ func ExecuteVideo(cache *api.XueXiTUserCache, p *entity.PointVideoDto, key, cour
 		var flag = 0
 		stopVal := 0
 		for {
-			//if flag == 30 {
-			//	monitorApi, _ := cache.MonitorApi()
-			//	fmt.Println(monitorApi)
-			//}
+			//如果到了人脸识别时间
+			if fmt.Sprintf("%d", flag) == p.RandomCaptureTime {
+				log.Println("到达人脸识别时间，正在进行绕过...")
+				pullJson, img, err2 := cache.GetHistoryFaceImg("")
+				if err2 != nil {
+					log2.Print(log2.DEBUG, pullJson, err2)
+					os.Exit(0)
+				}
+				disturbImage := utils.ImageRGBDisturb(img)
+				uuid, qrEnc, ObjectId, successEnc, err := action.PassFaceAction3(cache, p.CourseID, p.ClassID, p.Cpi, fmt.Sprintf("%d", p.KnowledgeID), p.Enc, p.JobID, p.ObjectID, p.Mid, p.RandomCaptureTime, disturbImage)
+				if err != nil {
+					log.Println(uuid, qrEnc, ObjectId, err.Error())
+				}
+				p.VideoFaceCaptureEnc = successEnc
+				courseId, _ := strconv.Atoi(p.CourseID)
+				time.Sleep(5 * time.Second)
+				card, enc, err := action.PageMobileChapterCardAction(
+					cache, key, courseId, p.KnowledgeID, p.CardIndex, courseCpi)
+				if err != nil {
+					log.Fatal(err)
+				}
+				p.Enc = enc
+				p.AttachmentsDetection(card)
+				time.Sleep(5 * time.Second)
+				playReport, err := cache.VideoSubmitStudyTime(p, playingTime, 3, 8, nil)
+				if err != nil {
+					log.Println(uuid, qrEnc, ObjectId, playReport, err.Error())
+				}
+				stopVal += 1
+				log.Println("绕过成功")
+			}
 			if flag == 58 {
 				//playReport, err := cache.VideoDtoPlayReport(p, playingTime, 3, 8, nil)
 				playReport, err := cache.VideoSubmitStudyTime(p, playingTime, 0, 8, nil)
@@ -61,23 +88,23 @@ func ExecuteVideo(cache *api.XueXiTUserCache, p *entity.PointVideoDto, key, cour
 							log.Println(uuid, qrEnc, ObjectId, err.Error())
 						}
 						p.VideoFaceCaptureEnc = successEnc
-						if stopVal > 5 {
-							log.Println("触发另外方案---------------------------------------")
-							courseId, _ := strconv.Atoi(p.CourseID)
-							card, enc, err := action.PageMobileChapterCardAction(
-								cache, key, courseId, p.KnowledgeID, p.CardIndex, courseCpi)
-							if err != nil {
-								log.Fatal(err)
-							}
-							p.Enc = enc
-							p.AttachmentsDetection(card)
+						courseId, _ := strconv.Atoi(p.CourseID)
+						time.Sleep(5 * time.Second)
+						card, enc, err := action.PageMobileChapterCardAction(
+							cache, key, courseId, p.KnowledgeID, p.CardIndex, courseCpi)
+						if err != nil {
+							log.Fatal(err)
 						}
+						p.Enc = enc
+						p.AttachmentsDetection(card)
+						time.Sleep(5 * time.Second)
 						playReport, err := cache.VideoSubmitStudyTime(p, playingTime, 3, 8, nil)
 						if err != nil {
 							log.Println(uuid, qrEnc, ObjectId, playReport, err.Error())
 						}
 						stopVal += 1
 						log.Println("绕过成功")
+
 						continue
 					}
 				}
@@ -112,17 +139,16 @@ func ExecuteVideo(cache *api.XueXiTUserCache, p *entity.PointVideoDto, key, cour
 							log.Println(uuid, qrEnc, ObjectId, err.Error())
 						}
 						p.VideoFaceCaptureEnc = successEnc
-						if stopVal > 5 {
-							log.Println("触发另外方案---------------------------------------")
-							courseId, _ := strconv.Atoi(p.CourseID)
-							card, enc, err := action.PageMobileChapterCardAction(
-								cache, key, courseId, p.KnowledgeID, p.CardIndex, courseCpi)
-							if err != nil {
-								log.Fatal(err)
-							}
-							p.Enc = enc
-							p.AttachmentsDetection(card)
+						courseId, _ := strconv.Atoi(p.CourseID)
+						time.Sleep(5 * time.Second)
+						card, enc, err := action.PageMobileChapterCardAction(
+							cache, key, courseId, p.KnowledgeID, p.CardIndex, courseCpi)
+						if err != nil {
+							log.Fatal(err)
 						}
+						p.Enc = enc
+						p.AttachmentsDetection(card)
+						time.Sleep(5 * time.Second)
 						playReport, err := cache.VideoSubmitStudyTime(p, playingTime, 3, 8, nil)
 						if err != nil {
 							log.Println(uuid, qrEnc, ObjectId, playReport, err.Error())
