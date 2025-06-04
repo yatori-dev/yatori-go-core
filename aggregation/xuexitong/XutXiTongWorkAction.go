@@ -48,6 +48,15 @@ func StartAIWorkAction(cache *xuexitong.XueXiTUserCache, userId, aiUrl, model, a
 
 		q.AnswerAIGet(userId, aiUrl, model, aiTYpe, message, apiKey)
 	}
+
+	//简答题
+	for i := range questionAction.Short {
+		q := &questionAction.Short[i]
+		message := AIProblemMessage(q.Type.String(), q.Text, entity.ExamTurn{
+			XueXShortQue: *q,
+		})
+		q.AnswerAIGet(userId, aiUrl, model, aiTYpe, message, apiKey)
+	}
 	var resultStr string
 	if isSubmit == 0 {
 		resultStr = WorkNewSubmitAnswerAction(cache, questionAction, false)
