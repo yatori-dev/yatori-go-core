@@ -350,7 +350,6 @@ func (cache *YingHuaUserCache) CourseDetailApi(courseId string, retry int, lastE
 	req.Header.Set("Content-Type", writer.FormDataContentType())
 	res, err := client.Do(req)
 	if err != nil {
-		res.Body.Close()                   //立即释放
 		time.Sleep(time.Millisecond * 150) //延迟
 		if strings.Contains(err.Error(), "A connection attempt failed because the connected party did not properly respond after a period of time") {
 			return cache.CourseDetailApi(courseId, retry, err)
