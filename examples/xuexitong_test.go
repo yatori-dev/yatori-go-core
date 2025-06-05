@@ -66,7 +66,7 @@ func TestCourseXueXiToChapter(t *testing.T) {
 	utils.YatoriCoreInit()
 	//测试账号
 	setup()
-	user := global.Config.Users[4]
+	user := global.Config.Users[0]
 	userCache := xuexitongApi.XueXiTUserCache{
 		Name:     user.Account,
 		Password: user.Password,
@@ -80,7 +80,7 @@ func TestCourseXueXiToChapter(t *testing.T) {
 	course, err := xuexitong.XueXiTPullCourseAction(&userCache)
 	var index int
 	for i, v := range course {
-		if v.Key == "103839833" {
+		if v.CourseName == "软件工程" {
 			index = i
 			break
 		}
@@ -95,7 +95,8 @@ func TestCourseXueXiToChapter(t *testing.T) {
 	}
 	fmt.Println("chatid:" + chapter.ChatID)
 
-	for _, item := range chapter.Knowledge {
+	for i, item := range chapter.Knowledge {
+		fmt.Println(i)
 		fmt.Println("ID:" + strconv.Itoa(item.ID))
 		fmt.Println("章节名称:" + item.Name)
 		fmt.Println("标签:" + item.Label)
@@ -213,7 +214,7 @@ func TestXueXiToChapterCord(t *testing.T) {
 	//videoDTOs[4].AttachmentsDetection(card4)
 	//fmt.Println(videoDTOs[4])
 	for _, videoDTO := range videoDTOs {
-		card, err := xuexitong.PageMobileChapterCardAction(
+		card, _, err := xuexitong.PageMobileChapterCardAction(
 			&userCache, key, courseId, videoDTO.KnowledgeID, videoDTO.CardIndex, course[index].Cpi)
 		if err != nil {
 			log.Fatal(err)
@@ -244,7 +245,7 @@ func TestXueXiToChapterCardWork(t *testing.T) {
 	utils.YatoriCoreInit()
 	//测试账号
 	setup()
-	user := global.Config.Users[1]
+	user := global.Config.Users[0]
 	userCache := xuexitongApi.XueXiTUserCache{
 		Name:     user.Account,
 		Password: user.Password,
@@ -273,7 +274,7 @@ func TestXueXiToChapterCardWork(t *testing.T) {
 	}
 	courseId, _ := strconv.Atoi(course[index].CourseID)
 	fmt.Println(course[index].CourseDataID)
-	_, fetchCards, err := xuexitong.ChapterFetchCardsAction(&userCache, &action, nodes, 12, courseId,
+	_, fetchCards, err := xuexitong.ChapterFetchCardsAction(&userCache, &action, nodes, 51, courseId,
 		key, course[index].Cpi)
 
 	videoDTOs, workDTOs, documentDTOs := entity.ParsePointDto(fetchCards)
@@ -285,7 +286,7 @@ func TestXueXiToChapterCardWork(t *testing.T) {
 
 	if courseId == videoCourseId && key == videoClassId {
 		// 测试只对单独一个卡片测试
-		card, err := xuexitong.PageMobileChapterCardAction(
+		card, _, err := xuexitong.PageMobileChapterCardAction(
 			&userCache,
 			key,
 			courseId,
@@ -308,7 +309,7 @@ func TestXueXiToChapterCardWork(t *testing.T) {
 		for i := range questionAction.Choice {
 			q := &questionAction.Choice[i] // 获取指向切片元素的指针
 
-			message := xuexitong.AIProblemMessage(q.Type.String(), "", entity.ExamTurn{
+			message := xuexitong.AIProblemMessage(q.Type.String(), q.Text, entity.ExamTurn{
 				XueXChoiceQue: *q,
 			})
 			aiSetting := global.Config.Setting.AiSetting
@@ -321,7 +322,7 @@ func TestXueXiToChapterCardWork(t *testing.T) {
 
 		for i := range questionAction.Fill {
 			q := &questionAction.Fill[i]
-			message := xuexitong.AIProblemMessage(q.Type.String(), "", entity.ExamTurn{
+			message := xuexitong.AIProblemMessage(q.Type.String(), q.Text, entity.ExamTurn{
 				XueXFillQue: *q,
 			})
 			aiSetting := global.Config.Setting.AiSetting
@@ -332,11 +333,10 @@ func TestXueXiToChapterCardWork(t *testing.T) {
 			for j := range que.OpFromAnswer {
 				fmt.Println(fmt.Sprintf("%d%v. %v", i, j, que.OpFromAnswer[j]))
 			}
-
 		}
 		for i := range questionAction.Judge {
 			q := &questionAction.Judge[i]
-			message := xuexitong.AIProblemMessage(q.Type.String(), "", entity.ExamTurn{
+			message := xuexitong.AIProblemMessage(q.Type.String(), q.Text, entity.ExamTurn{
 				XueXJudgeQue: *q,
 			})
 			aiSetting := global.Config.Setting.AiSetting
@@ -347,6 +347,22 @@ func TestXueXiToChapterCardWork(t *testing.T) {
 			fmt.Println(fmt.Sprintf("%d. %v", i, que.Answers))
 		}
 
+		for i := range questionAction.Short {
+			q := &questionAction.Short[i]
+			message := xuexitong.AIProblemMessage(q.Type.String(), q.Text, entity.ExamTurn{
+				XueXShortQue: *q,
+			})
+			aiSetting := global.Config.Setting.AiSetting
+			q.AnswerAIGet(userCache.UserID,
+				aiSetting.AiUrl, aiSetting.Model, aiSetting.AiType, message, aiSetting.APIKEY)
+		}
+		for i, que := range questionAction.Short {
+			for j := range que.OpFromAnswer {
+				fmt.Println(fmt.Sprintf("%d%v. %v", i, j, que.OpFromAnswer[j]))
+			}
+		}
+		answerAction := xuexitong.WorkNewSubmitAnswerAction(&userCache, questionAction, true)
+		println(answerAction)
 	} else {
 		log.Fatal("任务点对象错误")
 	}
@@ -412,7 +428,7 @@ func TestXueXiToChapterCardDocument(t *testing.T) {
 			// 暂时只测试视频
 			if documentDTOs != nil {
 				for _, documentDTO := range documentDTOs {
-					card, err := xuexitong.PageMobileChapterCardAction(
+					card, _, err := xuexitong.PageMobileChapterCardAction(
 						&userCache, key, courseId, documentDTO.KnowledgeID, documentDTO.CardIndex, course.Cpi)
 					if err != nil {
 						log.Fatal(err)
@@ -436,7 +452,7 @@ func TestXueXiToFlushCourse(t *testing.T) {
 	utils.YatoriCoreInit()
 	//测试账号
 	setup()
-	user := global.Config.Users[14]
+	user := global.Config.Users[19]
 
 	userCache := xuexitongApi.XueXiTUserCache{
 		Name:     user.Account,
@@ -451,7 +467,7 @@ func TestXueXiToFlushCourse(t *testing.T) {
 	courseList, err := xuexitong.XueXiTPullCourseAction(&userCache) //拉取所有课程
 	for _, course := range courseList {                             //遍历课程
 
-		if course.CourseName != "国家安全教育" {
+		if course.CourseName != "形势与政策（2025上）" {
 			continue
 		}
 		// 6c444b8d5c6203ee2f2aef4b76f5b2ce qrcEnc
@@ -509,7 +525,7 @@ func TestXueXiToFlushCourse(t *testing.T) {
 			// 视频刷取
 			if videoDTOs != nil && true {
 				for _, videoDTO := range videoDTOs {
-					card, err := xuexitong.PageMobileChapterCardAction(
+					card, enc, err := xuexitong.PageMobileChapterCardAction(
 						&userCache, key, courseId, videoDTO.KnowledgeID, videoDTO.CardIndex, course.Cpi)
 					if err != nil {
 						log.Fatal(err)
@@ -518,7 +534,8 @@ func TestXueXiToFlushCourse(t *testing.T) {
 					if videoDTO.IsPassed == true { //过滤完成的
 						continue
 					}
-					point.ExecuteVideo(&userCache, &videoDTO) //常规
+					videoDTO.Enc = enc
+					point.ExecuteVideo(&userCache, &videoDTO, key, course.Cpi) //常规
 					//point.ExecuteFastVideo(&userCache, &videoDTO) //秒刷
 					time.Sleep(5 * time.Second)
 				}
@@ -526,7 +543,7 @@ func TestXueXiToFlushCourse(t *testing.T) {
 			// 文档刷取
 			if documentDTOs != nil && true {
 				for _, documentDTO := range documentDTOs {
-					card, err := xuexitong.PageMobileChapterCardAction(
+					card, _, err := xuexitong.PageMobileChapterCardAction(
 						&userCache, key, courseId, documentDTO.KnowledgeID, documentDTO.CardIndex, course.Cpi)
 					if err != nil {
 						log.Fatal(err)
@@ -545,7 +562,7 @@ func TestXueXiToFlushCourse(t *testing.T) {
 				for _, workDTO := range workDTOs {
 
 					//以手机端拉取章节卡片数据
-					mobileCard, _ := xuexitong.PageMobileChapterCardAction(&userCache, key, courseId, workDTO.KnowledgeID, workDTO.CardIndex, course.Cpi)
+					mobileCard, _, _ := xuexitong.PageMobileChapterCardAction(&userCache, key, courseId, workDTO.KnowledgeID, workDTO.CardIndex, course.Cpi)
 					workDTO.AttachmentsDetection(mobileCard)
 					fromAction, _ := xuexitong.WorkPageFromAction(&userCache, &workDTO)
 					for _, input := range fromAction {
@@ -591,8 +608,8 @@ func TestFaceQrScan(t *testing.T) {
 	uuid, qrEnc, err := userCache.GetFaceQrCodeApi1("245211886", "103839833", "891797235", "283918535")
 	fmt.Println(uuid, qrEnc, err)
 	//过人脸
-	api, _ := userCache.GetCourseFaceQrPlan1Api("245211886", "103839833", uuid, "16eeb4b1d6d733a08785449c8d9784f7", qrEnc, "0")
-	fmt.Println(api)
+	//api, _ := userCache.GetCourseFaceQrPlan1Api("245211886", "103839833", uuid, "16eeb4b1d6d733a08785449c8d9784f7", qrEnc, "0")
+	//fmt.Println(api)
 	//api, _ := userCache.GetCourseFaceQrApi("2c261aa3-d428-414c-a619-56535f85c8", "105533723")
 	//fmt.Println(api)
 }
@@ -673,13 +690,13 @@ func TestFaceQrScanPlan1(t *testing.T) {
 			// 视频刷取
 			if videoDTOs != nil && true {
 				for _, videoDTO := range videoDTOs {
-					card, err := xuexitong.PageMobileChapterCardAction(
+					card, _, err := xuexitong.PageMobileChapterCardAction(
 						&userCache, key, courseId, videoDTO.KnowledgeID, videoDTO.CardIndex, course.Cpi)
 					if err != nil {
 						log.Fatal(err)
 					}
 					videoDTO.AttachmentsDetection(card)
-					point.ExecuteVideo(&userCache, &videoDTO) //常规
+					point.ExecuteVideo(&userCache, &videoDTO, key, course.Cpi) //常规
 					//point.ExecuteFastVideo(&userCache, &videoDTO) //秒刷
 					time.Sleep(5 * time.Second)
 				}
