@@ -120,7 +120,7 @@ func ChapterFetchCardsAction(
 						Type:        ctype.Video,
 						IsSet:       ok,
 					}
-					cords2, _ := cache.FetchChapterCords2(strconv.Itoa(classId), strconv.Itoa(courseId), strconv.Itoa(card.KnowledgeID), strconv.Itoa(cardIndex), strconv.Itoa(cpi))
+					cords2, _ := cache.FetchChapterCords2(strconv.Itoa(classId), strconv.Itoa(courseId), strconv.Itoa(card.KnowledgeID), strconv.Itoa(cpi))
 					find := gojsonq.New().JSONString(cords2).Find("attachments")
 					if find != nil {
 						list := gojsonq.New().JSONString(cords2).Find("attachments")
@@ -135,6 +135,9 @@ func ChapterFetchCardsAction(
 											}
 
 										}
+									}
+									if obj["playTime"] != nil {
+										pointObj.PointVideoDto.PlayTime = int(obj["playTime"].(float64)) / 1000
 									}
 								}
 

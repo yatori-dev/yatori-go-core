@@ -8,9 +8,9 @@ import (
 
 // WorkNewSubmitAnswerAction 提交答题
 func WorkNewSubmitAnswerAction(userCache *xuexitong.XueXiTUserCache, question entity.Question, isSubmit bool) string {
-	submitState := "1"
+	submitState := ""
 	if isSubmit {
-		submitState = ""
+		submitState = "1"
 	}
 	answer, _ := userCache.WorkNewSubmitAnswer(question.CourseId, question.ClassId, question.Knowledgeid, question.Cpi,
 		question.JobId, question.TotalQuestionNum, question.AnswerId, question.WorkAnswerId, question.Api,
@@ -46,6 +46,15 @@ func StartAIWorkAction(cache *xuexitong.XueXiTUserCache, userId, aiUrl, model, a
 			XueXFillQue: *q,
 		})
 
+		q.AnswerAIGet(userId, aiUrl, model, aiTYpe, message, apiKey)
+	}
+
+	//简答题
+	for i := range questionAction.Short {
+		q := &questionAction.Short[i]
+		message := AIProblemMessage(q.Type.String(), q.Text, entity.ExamTurn{
+			XueXShortQue: *q,
+		})
 		q.AnswerAIGet(userId, aiUrl, model, aiTYpe, message, apiKey)
 	}
 	var resultStr string

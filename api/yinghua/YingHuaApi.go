@@ -106,18 +106,20 @@ func (cache *YingHuaUserCache) LoginApi(retry int, lastError error) (string, err
 		time.Sleep(150 * time.Millisecond)
 		return cache.LoginApi(retry-1, err)
 	}
-	defer res.Body.Close()
 
 	body, err := ioutil.ReadAll(res.Body)
 	if err != nil {
+		res.Body.Close() //立即释放
 		fmt.Println(err)
 		return "", err
 	}
 	//502情况进行重新请求
 	if strings.Contains(string(body), "502 Bad Gateway") {
+		res.Body.Close()                   //立即释放
 		time.Sleep(time.Millisecond * 150) //延迟
 		return cache.LoginApi(retry, err)
 	}
+	defer res.Body.Close()
 	//fmt.Println(string(body))
 	return string(body), nil
 }
@@ -149,7 +151,7 @@ func (cache *YingHuaUserCache) VerificationCodeApi(retry int) (string, string) {
 		fmt.Println(err)
 		return "", ""
 	}
-	req.Header.Add("User-Agent", "Apifox/1.0.0 (https://apifox.com)")
+	req.Header.Add("User-Agent", "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/136.0.0.0 Safari/537.36 Edg/136.0.0.0")
 
 	res, err := client.Do(req)
 	if err != nil {
@@ -159,7 +161,6 @@ func (cache *YingHuaUserCache) VerificationCodeApi(retry int) (string, string) {
 		}
 		return cache.VerificationCodeApi(retry - 1)
 	}
-	defer res.Body.Close()
 
 	codeFileName := "code" + randChar[rand.Intn(len(randChar))] //生成验证码文件名称
 	for i := 0; i < 10; i++ {
@@ -170,20 +171,24 @@ func (cache *YingHuaUserCache) VerificationCodeApi(retry int) (string, string) {
 	filepath := fmt.Sprintf("./assets/code/%s", codeFileName)
 	file, err := os.Create(filepath)
 	if err != nil {
+		res.Body.Close() //立即释放
 		log.Println(err)
 		return "", ""
 	}
 
 	_, err = io.Copy(file, res.Body)
 	if err != nil {
+		res.Body.Close() //立即释放
 		log.Println(err)
 		return "", ""
 	}
 	file.Close()
 	if utils.IsBadImg(filepath) {
+		res.Body.Close()           //立即释放
 		utils.DeleteFile(filepath) //删除坏的文件
 		return cache.VerificationCodeApi(retry - 1)
 	}
+	defer res.Body.Close()
 	return filepath, res.Header.Get("Set-Cookie")
 }
 
@@ -220,7 +225,7 @@ func KeepAliveApi(UserCache YingHuaUserCache) string {
 		fmt.Println(err)
 		return ""
 	}
-	req.Header.Add("User-Agent", "Apifox/1.0.0 (https://apifox.com)")
+	req.Header.Add("User-Agent", "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/136.0.0.0 Safari/537.36 Edg/136.0.0.0")
 
 	req.Header.Set("Content-Type", writer.FormDataContentType())
 	res, err := client.Do(req)
@@ -228,17 +233,19 @@ func KeepAliveApi(UserCache YingHuaUserCache) string {
 		time.Sleep(time.Millisecond * 150) //延迟
 		return KeepAliveApi(UserCache)
 	}
-	defer res.Body.Close()
 
 	body, err := ioutil.ReadAll(res.Body)
 	if err != nil {
+		res.Body.Close() //立即释放
 		fmt.Println(err)
 		return ""
 	}
 	if strings.Contains(string(body), "502 Bad Gateway") {
+		res.Body.Close()                   //立即释放
 		time.Sleep(time.Millisecond * 150) //延迟
 		return KeepAliveApi(UserCache)
 	}
+
 	return string(body)
 }
 
@@ -276,7 +283,7 @@ func (cache *YingHuaUserCache) CourseListApi(retry int, lastError error) (string
 		return "", err
 	}
 	req.Header.Add("Cookie", "tgw_I7_route=3d5c4e13e7d88bb6849295ab943042a2")
-	req.Header.Add("User-Agent", "Apifox/1.0.0 (https://apifox.com)")
+	req.Header.Add("User-Agent", "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/136.0.0.0 Safari/537.36 Edg/136.0.0.0")
 
 	req.Header.Set("Content-Type", writer.FormDataContentType())
 	res, err := client.Do(req)
@@ -287,17 +294,19 @@ func (cache *YingHuaUserCache) CourseListApi(retry int, lastError error) (string
 		}
 		return cache.CourseListApi(retry-1, err)
 	}
-	defer res.Body.Close()
 
 	body, err := ioutil.ReadAll(res.Body)
 	if err != nil {
+		res.Body.Close()                   //立即释放
 		time.Sleep(time.Millisecond * 150) //延迟
 		return cache.CourseListApi(retry-1, err)
 	}
 	if strings.Contains(string(body), "502 Bad Gateway") {
+		res.Body.Close()                   //立即释放
 		time.Sleep(time.Millisecond * 150) //延迟
 		return cache.CourseListApi(retry, err)
 	}
+	defer res.Body.Close()
 	return string(body), nil
 }
 
@@ -336,7 +345,7 @@ func (cache *YingHuaUserCache) CourseDetailApi(courseId string, retry int, lastE
 		return "", err
 	}
 	req.Header.Add("Cookie", "tgw_I7_route=3d5c4e13e7d88bb6849295ab943042a2")
-	req.Header.Add("User-Agent", "Apifox/1.0.0 (https://apifox.com)")
+	req.Header.Add("User-Agent", "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/136.0.0.0 Safari/537.36 Edg/136.0.0.0")
 
 	req.Header.Set("Content-Type", writer.FormDataContentType())
 	res, err := client.Do(req)
@@ -347,17 +356,19 @@ func (cache *YingHuaUserCache) CourseDetailApi(courseId string, retry int, lastE
 		}
 		return cache.CourseDetailApi(courseId, retry-1, err)
 	}
-	defer res.Body.Close()
 
 	body, err := ioutil.ReadAll(res.Body)
 	if err != nil {
+		res.Body.Close()                   //立即释放
 		time.Sleep(time.Millisecond * 150) //延迟
 		return cache.CourseDetailApi(courseId, retry-1, err)
 	}
 	if strings.Contains(string(body), "502 Bad Gateway") {
+		res.Body.Close()                   //立即释放
 		time.Sleep(time.Millisecond * 150) //延迟
 		return cache.CourseDetailApi(courseId, retry, err)
 	}
+	defer res.Body.Close()
 	return string(body), err
 }
 
@@ -396,7 +407,7 @@ func CourseVideListApi(UserCache YingHuaUserCache, courseId string /*课程ID*/,
 		time.Sleep(time.Millisecond * 150) //延迟
 		return CourseVideListApi(UserCache, courseId, retry-1, err)
 	}
-	req.Header.Add("User-Agent", "Apifox/1.0.0 (https://apifox.com)")
+	req.Header.Add("User-Agent", "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/136.0.0.0 Safari/537.36 Edg/136.0.0.0")
 
 	req.Header.Set("Content-Type", writer.FormDataContentType())
 	res, err := client.Do(req)
@@ -407,17 +418,19 @@ func CourseVideListApi(UserCache YingHuaUserCache, courseId string /*课程ID*/,
 		}
 		return CourseVideListApi(UserCache, courseId, retry-1, err)
 	}
-	defer res.Body.Close()
 
 	body, err := ioutil.ReadAll(res.Body)
 	if err != nil {
+		res.Body.Close()                   //立即释放
 		time.Sleep(time.Millisecond * 150) //延迟
 		return CourseVideListApi(UserCache, courseId, retry-1, err)
 	}
 	if strings.Contains(string(body), "502 Bad Gateway") {
+		res.Body.Close()                   //立即释放
 		time.Sleep(time.Millisecond * 150) //延迟
 		return CourseVideListApi(UserCache, courseId, retry, err)
 	}
+	defer res.Body.Close()
 	return string(body), nil
 }
 
@@ -456,7 +469,7 @@ func SubmitStudyTimeApi(UserCache YingHuaUserCache, nodeId string /*对应视屏
 		//fmt.Println(err)
 		return "", err
 	}
-	req.Header.Add("User-Agent", "Mozilla/5.0 (Macintosh; Intel Mac OS X 10.13; rv:88.0) Gecko/20100101 Firefox/88.0")
+	req.Header.Add("User-Agent", "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/136.0.0.0 Safari/537.36 Edg/136.0.0.0")
 
 	req.Header.Set("Content-Type", writer.FormDataContentType())
 	res, err := client.Do(req)
@@ -464,20 +477,21 @@ func SubmitStudyTimeApi(UserCache YingHuaUserCache, nodeId string /*对应视屏
 		time.Sleep(time.Millisecond * 150)
 		return SubmitStudyTimeApi(UserCache, nodeId, studyId, studyTime, retry-1, err)
 	}
-	defer res.Body.Close()
 
 	body, err := ioutil.ReadAll(res.Body)
 	if err != nil {
+		res.Body.Close() //立即释放
 		time.Sleep(time.Millisecond * 150)
 		return SubmitStudyTimeApi(UserCache, nodeId, studyId, studyTime, retry-1, err)
 	}
 
 	//避免502情况
 	if strings.Contains(string(body), "502 Bad Gateway") {
+		res.Body.Close()                   //立即释放
 		time.Sleep(time.Millisecond * 150) //延迟
 		return SubmitStudyTimeApi(UserCache, nodeId, studyId, studyTime, retry-1, err)
 	}
-
+	defer res.Body.Close()
 	return string(body), nil
 }
 
@@ -516,7 +530,7 @@ func VideStudyTimeApi(userEntity entity.UserEntity, nodeId string, retryNum int,
 		time.Sleep(time.Millisecond * 150) //延迟
 		return VideStudyTimeApi(userEntity, nodeId, retryNum-1, lastError)
 	}
-	req.Header.Add("User-Agent", "Mozilla/5.0 (Macintosh; Intel Mac OS X 10.13; rv:88.0) Gecko/20100101 Firefox/88.0")
+	req.Header.Add("User-Agent", "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/136.0.0.0 Safari/537.36 Edg/136.0.0.0")
 
 	req.Header.Set("Content-Type", writer.FormDataContentType())
 	res, err := client.Do(req)
@@ -574,7 +588,7 @@ func VideWatchRecodeApi(UserCache YingHuaUserCache, courseId string, page int, r
 		//fmt.Println(err)
 		return VideWatchRecodeApi(UserCache, courseId, page, retry-1, err)
 	}
-	req.Header.Add("User-Agent", "Mozilla/5.0 (Macintosh; Intel Mac OS X 10.13; rv:88.0) Gecko/20100101 Firefox/88.0")
+	req.Header.Add("User-Agent", "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/136.0.0.0 Safari/537.36 Edg/136.0.0.0")
 
 	req.Header.Set("Content-Type", writer.FormDataContentType())
 	res, err := client.Do(req)
@@ -582,7 +596,6 @@ func VideWatchRecodeApi(UserCache YingHuaUserCache, courseId string, page int, r
 		//fmt.Println(err)
 		return VideWatchRecodeApi(UserCache, courseId, page, retry-1, err)
 	}
-	defer res.Body.Close()
 
 	body, err := ioutil.ReadAll(res.Body)
 	if err != nil {
@@ -590,9 +603,11 @@ func VideWatchRecodeApi(UserCache YingHuaUserCache, courseId string, page int, r
 		return VideWatchRecodeApi(UserCache, courseId, page, retry-1, err)
 	}
 	if strings.Contains(string(body), "502 Bad Gateway") {
+		res.Body.Close()                   //立即释放
 		time.Sleep(time.Millisecond * 150) //延迟
 		return VideWatchRecodeApi(UserCache, courseId, page, retry, lastError)
 	}
+	defer res.Body.Close()
 	return string(body), nil
 }
 
@@ -633,7 +648,7 @@ func ExamDetailApi(UserCache YingHuaUserCache, nodeId string, retryNum int, last
 		fmt.Println(err)
 		return "", nil
 	}
-	req.Header.Add("User-Agent", "Mozilla/5.0 (Macintosh; Intel Mac OS X 10.13; rv:88.0) Gecko/20100101 Firefox/88.0")
+	req.Header.Add("User-Agent", "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/136.0.0.0 Safari/537.36 Edg/136.0.0.0")
 
 	req.Header.Set("Content-Type", writer.FormDataContentType())
 	res, err := client.Do(req)
@@ -641,17 +656,19 @@ func ExamDetailApi(UserCache YingHuaUserCache, nodeId string, retryNum int, last
 		time.Sleep(time.Millisecond * 150) //延迟
 		return ExamDetailApi(UserCache, nodeId, retryNum-1, err)
 	}
-	defer res.Body.Close()
 
 	body, err := ioutil.ReadAll(res.Body)
 	if err != nil {
+		res.Body.Close()                   //立即释放
 		time.Sleep(time.Millisecond * 150) //延迟
 		return ExamDetailApi(UserCache, nodeId, retryNum-1, err)
 	}
 	if strings.Contains(string(body), "502 Bad Gateway") {
+		res.Body.Close()                   //立即释放
 		time.Sleep(time.Millisecond * 150) //延迟
 		return ExamDetailApi(UserCache, nodeId, retryNum, err)
 	}
+	defer res.Body.Close()
 	return string(body), nil
 }
 
@@ -680,7 +697,7 @@ func StartExam(userCache YingHuaUserCache, courseId, nodeId, examId string, retr
 		time.Sleep(100 * time.Millisecond)
 		return StartExam(userCache, courseId, nodeId, examId, retryNum-1, err)
 	}
-	req.Header.Add("User-Agent", "Mozilla/5.0 (Macintosh; Intel Mac OS X 10.13; rv:88.0) Gecko/20100101 Firefox/88.0")
+	req.Header.Add("User-Agent", "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/136.0.0.0 Safari/537.36 Edg/136.0.0.0")
 
 	res, err := client.Do(req)
 	if err != nil {
@@ -688,18 +705,20 @@ func StartExam(userCache YingHuaUserCache, courseId, nodeId, examId string, retr
 		time.Sleep(100 * time.Millisecond)
 		return StartExam(userCache, courseId, nodeId, examId, retryNum-1, err)
 	}
-	defer res.Body.Close()
 
 	body, err := ioutil.ReadAll(res.Body)
 	if err != nil {
+		res.Body.Close() //立即释放
 		fmt.Println(err)
 		time.Sleep(100 * time.Millisecond)
 		return StartExam(userCache, courseId, nodeId, examId, retryNum-1, err)
 	}
 	if strings.Contains(string(body), "502 Bad Gateway") {
+		res.Body.Close()                   //立即释放
 		time.Sleep(time.Millisecond * 150) //延迟
 		return StartExam(userCache, courseId, nodeId, examId, retryNum, lastError)
 	}
+	defer res.Body.Close()
 	return string(body), nil
 }
 
@@ -728,7 +747,7 @@ func GetExamTopicApi(UserCache YingHuaUserCache, nodeId, examId string, retryNum
 	}
 
 	// Set the headers
-	req.Header.Add("User-Agent", "Mozilla/5.0 (Macintosh; Intel Mac OS X 10.13; rv:88.0) Gecko/20100101 Firefox/88.0")
+	req.Header.Add("User-Agent", "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/136.0.0.0 Safari/537.36 Edg/136.0.0.0")
 	req.Header.Add("Accept", "*/*")
 	req.Header.Add("Host", UserCache.PreUrl)
 	req.Header.Add("Connection", "keep-alive")
@@ -740,18 +759,20 @@ func GetExamTopicApi(UserCache YingHuaUserCache, nodeId, examId string, retryNum
 		time.Sleep(100 * time.Millisecond)
 		return GetExamTopicApi(UserCache, nodeId, examId, retryNum-1, err)
 	}
-	defer resp.Body.Close()
 
 	// Read the response body
 	bodyBytes, err := ioutil.ReadAll(resp.Body)
 	if err != nil {
+		resp.Body.Close() //立即释放
 		time.Sleep(100 * time.Millisecond)
 		return GetExamTopicApi(UserCache, nodeId, examId, retryNum-1, err)
 	}
 	if strings.Contains(string(body), "502 Bad Gateway") {
+		resp.Body.Close()                  //立即释放
 		time.Sleep(time.Millisecond * 150) //延迟
 		return GetExamTopicApi(UserCache, nodeId, examId, retryNum, err)
 	}
+	defer resp.Body.Close()
 	return string(bodyBytes), nil
 }
 
@@ -806,7 +827,7 @@ func SubmitExamApi(UserCache YingHuaUserCache, examId, answerId string, answers 
 	}
 
 	// Set the headers
-	req.Header.Add("User-Agent", "Mozilla/5.0 (Macintosh; Intel Mac OS X 10.13; rv:88.0) Gecko/20100101 Firefox/88.0")
+	req.Header.Add("User-Agent", "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/136.0.0.0 Safari/537.36 Edg/136.0.0.0")
 	req.Header.Add("Accept", "*/*")
 	req.Header.Add("Host", UserCache.PreUrl)
 	req.Header.Add("Connection", "keep-alive")
@@ -818,18 +839,20 @@ func SubmitExamApi(UserCache YingHuaUserCache, examId, answerId string, answers 
 		time.Sleep(100 * time.Millisecond)
 		return SubmitExamApi(UserCache, examId, answerId, answers, finish, retryNum-1, err)
 	}
-	defer resp.Body.Close()
 
 	// Read the response body (we're not using the body here, just ensuring the request goes through)
 	bodyStr, err := ioutil.ReadAll(resp.Body)
 	if err != nil {
+		resp.Body.Close() //立即释放
 		return "", err
 	}
 
 	if strings.Contains(string(bodyStr), "502 Bad Gateway") {
+		resp.Body.Close()                  //立即释放
 		time.Sleep(time.Millisecond * 150) //延迟
 		return SubmitExamApi(UserCache, examId, answerId, answers, finish, retryNum, err)
 	}
+	defer resp.Body.Close()
 	return string(bodyStr), nil
 }
 
@@ -868,7 +891,7 @@ func WorkDetailApi(userCache YingHuaUserCache, nodeId string, retryNum int, last
 		fmt.Println(err)
 		return "", err
 	}
-	req.Header.Add("User-Agent", "Mozilla/5.0 (Macintosh; Intel Mac OS X 10.13; rv:88.0) Gecko/20100101 Firefox/88.0")
+	req.Header.Add("User-Agent", "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/136.0.0.0 Safari/537.36 Edg/136.0.0.0")
 
 	req.Header.Set("Content-Type", writer.FormDataContentType())
 	res, err := client.Do(req)
@@ -914,7 +937,7 @@ func StartWork(userCache YingHuaUserCache, courseId, nodeId, workId string, retr
 		fmt.Println(err)
 		return "", nil
 	}
-	req.Header.Add("User-Agent", "Mozilla/5.0 (Macintosh; Intel Mac OS X 10.13; rv:88.0) Gecko/20100101 Firefox/88.0")
+	req.Header.Add("User-Agent", "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/136.0.0.0 Safari/537.36 Edg/136.0.0.0")
 
 	res, err := client.Do(req)
 	if err != nil {
@@ -966,7 +989,7 @@ func GetWorkApi(UserCache YingHuaUserCache, nodeId, workId string, retryNum int,
 		fmt.Println(err)
 		return "", nil
 	}
-	req.Header.Add("User-Agent", "Mozilla/5.0 (Macintosh; Intel Mac OS X 10.13; rv:88.0) Gecko/20100101 Firefox/88.0")
+	req.Header.Add("User-Agent", "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/136.0.0.0 Safari/537.36 Edg/136.0.0.0")
 
 	req.Header.Set("Content-Type", writer.FormDataContentType())
 	res, err := client.Do(req)
@@ -1042,7 +1065,7 @@ func SubmitWorkApi(UserCache YingHuaUserCache, workId, answerId string, answers 
 	}
 
 	// Set the headers
-	req.Header.Add("User-Agent", "Mozilla/5.0 (Macintosh; Intel Mac OS X 10.13; rv:88.0) Gecko/20100101 Firefox/88.0")
+	req.Header.Add("User-Agent", "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/136.0.0.0 Safari/537.36 Edg/136.0.0.0")
 	req.Header.Add("Accept", "*/*")
 	req.Header.Add("Host", UserCache.PreUrl)
 	req.Header.Add("Connection", "keep-alive")
@@ -1090,7 +1113,7 @@ func WorkedFinallyDetailApi(userCache YingHuaUserCache, courseId, nodeId, workId
 		return "", err
 	}
 	req.Header.Add("Cookie", userCache.cookie)
-	req.Header.Add("User-Agent", "Mozilla/5.0 (Macintosh; Intel Mac OS X 10.13; rv:88.0) Gecko/20100101 Firefox/88.0")
+	req.Header.Add("User-Agent", "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/136.0.0.0 Safari/537.36 Edg/136.0.0.0")
 
 	res, err := client.Do(req)
 	if err != nil {
@@ -1136,7 +1159,7 @@ func ExamFinallyDetailApi(userCache YingHuaUserCache, courseId, nodeId, workId s
 		return "", err
 	}
 	req.Header.Add("Cookie", userCache.cookie)
-	req.Header.Add("User-Agent", "Mozilla/5.0 (Macintosh; Intel Mac OS X 10.13; rv:88.0) Gecko/20100101 Firefox/88.0")
+	req.Header.Add("User-Agent", "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/136.0.0.0 Safari/537.36 Edg/136.0.0.0")
 
 	res, err := client.Do(req)
 	if err != nil {

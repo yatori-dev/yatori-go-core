@@ -34,8 +34,11 @@ func (cache *XueXiTUserCache) PageMobileChapterCard(
 		fmt.Println(err)
 		return "", err
 	}
-	req.Header.Add("Cookie", cache.cookie)
-	req.Header.Add("User-Agent", "Apifox/1.0.0 (https://apifox.com)")
+	//req.Header.Add("Cookie", cache.cookie)
+	for _, cookie := range cache.cookies {
+		req.AddCookie(cookie)
+	}
+	req.Header.Add("User-Agent", "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/136.0.0.0 Safari/537.36 Edg/136.0.0.0")
 	req.Header.Add("Accept", "*/*")
 	req.Header.Add("Host", "mooc1-api.chaoxing.com")
 	req.Header.Add("Connection", "keep-alive")
@@ -86,8 +89,10 @@ func (cache *XueXiTUserCache) VideoDtoFetch(p *entity.PointVideoDto) (string, er
 	resp.Header.Add("Sec-Fetch-Dest", " empty")
 	resp.Header.Add("Referer", " https://mooc1-api.chaoxing.com/ananas/modules/video/index_wap.html?v=372024-1121-1947")
 	resp.Header.Add("Accept-Language", " zh-CN,zh;q=0.9,en-US;q=0.8,en;q=0.7")
-	resp.Header.Add("Cookie", cache.cookie)
-
+	//resp.Header.Add("Cookie", cache.cookie)
+	for _, cookie := range cache.cookies {
+		resp.AddCookie(cookie)
+	}
 	res, err := client.Do(resp)
 	if err != nil {
 		return "", err
@@ -108,7 +113,7 @@ func (cache *XueXiTUserCache) VideoSubmitStudyTime(p *entity.PointVideoDto, play
 		p.ClassID, cache.UserID, p.JobID, p.ObjectID, playingTime*1000, "d_yHJ!$pdA~5", p.Duration*1000, clipTime)))
 	enc := hex.EncodeToString(hash[:])
 	//
-	url := "https://mooc1.chaoxing.com/mooc-ans/multimedia/log/a/" + p.Cpi + "/" + p.DToken + "?clazzId=" + p.ClassID + "&playingTime=" + strconv.Itoa(playingTime) + "&duration=" + strconv.Itoa(p.Duration) + "&clipTime=" + clipTime + "&objectId=" + p.ObjectID + "&otherInfo=" + p.OtherInfo + "&jobid=" + p.JobID + "&userid=" + cache.UserID + "&isdrag=" + strconv.Itoa(isdrag) + "&view=pc&enc=" + enc + "&rt=0.9&dtype=Video&_t=" + strconv.FormatInt(time.Now().UnixMilli(), 10)
+	url := "https://mooc1.chaoxing.com/mooc-ans/multimedia/log/a/" + p.Cpi + "/" + p.DToken + "?clazzId=" + p.ClassID + "&playingTime=" + strconv.Itoa(playingTime) + "&duration=" + strconv.Itoa(p.Duration) + "&clipTime=" + clipTime + "&objectId=" + p.ObjectID + "&otherInfo=" + p.OtherInfo + "&courseId=" + p.CourseID + "&jobid=" + p.JobID + "&userid=" + cache.UserID + "&isdrag=" + strconv.Itoa(isdrag) + "&view=pc&enc=" + enc + "&rt=0.9" + "&videoFaceCaptureEnc=" + p.VideoFaceCaptureEnc + "&dtype=Video&_t=" + strconv.FormatInt(time.Now().UnixMilli(), 10) + "&attDuration=" + strconv.Itoa(p.Duration) + "&attDurationEnc=" + p.AttDurationEnc
 
 	method := "GET"
 
@@ -119,13 +124,25 @@ func (cache *XueXiTUserCache) VideoSubmitStudyTime(p *entity.PointVideoDto, play
 		fmt.Println(err)
 		return "", nil
 	}
-	req.Header.Add("User-Agent", "Apifox/1.0.0 (https://apifox.com)")
+
+	req.Header.Add("User-Agent", "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/136.0.0.0 Safari/537.36 Edg/136.0.0.0")
 	req.Header.Add("Accept", "*/*")
 	req.Header.Add("Host", "mooc1.chaoxing.com")
 	req.Header.Add("Connection", "keep-alive")
-	//req.Header.Add("Cookie", "k8s=1740601804.712.17514.777640; jrose=702DC91E24ECD4078821D470F213E5C6.mooc-1385974980-0c6l3; route=0a65fa708818ad1416475328b69707fd")
-	req.Header.Add("Cookie", cache.cookie)
-
+	req.Header.Add("Content-Type", "application/json")
+	req.Header.Add("Sec-Ch-Ua-Platform", "Windows")
+	req.Header.Add("Sec-Fetch-Site", "same-origin")
+	req.Header.Add("Sec-Fetch-Mode", " cors")
+	req.Header.Add("Sec-Fetch-Dest", " empty")
+	req.Header.Add("Pragam", "no-cache")
+	// 测试用
+	//req.Header.Add("Cookie", "k8s=1747821162.919.18678.319465")
+	//req.Header.Add("Cookie", "writenote=yes")
+	//req.Header.Add("Cookie", "styleId=")
+	//req.Header.Add("Cookie", "k8s=1747821162.919.18678.319465; writenote=yes; styleId=; fid=5339; route=0eb899bb9bb390391b050e8cb1d78cb4; _uid=348625454; _d=1748938533165; UID=348625454; vc3=elC7mmPdF2m7Q7%2FL7NrsE6bWdswUmsT%2FFp4UQJRlR771g%2Bbyp%2BEoqZAw9fxzrs86uQ1wLpSfEPyecdB5lFYhONjcsOPyyUn%2FhLBKcWyzi00EehqYjNyCkkzYmjFqHXueJbKmQas7fO%2FPiNZQ0brN1pNyc0G9fHwfKmgK13Ncsxg%3D6e79fc9cc83d1e383a40c0f45f12ae5c; uf=569b376a64ccf0313129ca082ab4eaeede7e7778b17f9ae8265c811413bbd05b27491cb4d64af4903544f256fb890bc2913b662843f1f4ade9295d8c89b08ad0f44425e20f927c6b94405ac272c83515fb98ce0e6210c3884a878d0a9a7b05dad8a8d0ca21d204eb3ad59b143144275b8d971faa04974831917d1864a9d6b19679123a9828d1f8e0; cx_p_token=1eab5c196cf18d650a7f3a52aaf21e34; p_auth_token=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1aWQiOiIzNDg2MjU0NTQiLCJsb2dpblRpbWUiOjE3NDg5Mzg1MzMxNjcsImV4cCI6MTc0OTU0MzMzM30.kfDSivE0vOGFh8egjQAHqtTbgblnF-ijfw96BUIMrE0; xxtenc=256f12e17e3f57e301008b366801437c; DSSTASH_LOG=C_38-UN_4533-US_348625454-T_1748938533167; source=num8; spaceFid=5339; spaceRoleId=3; tl=1; jrose=EEC8A85018324CC7BC9AB73D25C2AEA1.mooc-536300739-29174; videojs_id=7230547")
+	for _, cookie := range cache.cookies {
+		req.AddCookie(cookie)
+	}
 	res, err := client.Do(req)
 	if err != nil {
 		fmt.Println(err)
@@ -138,9 +155,15 @@ func (cache *XueXiTUserCache) VideoSubmitStudyTime(p *entity.PointVideoDto, play
 		fmt.Println(err)
 		return "", nil
 	}
+
+	if res.StatusCode != http.StatusOK {
+		return "", fmt.Errorf("failed to fetch video, status code: %d", res.StatusCode)
+	}
 	//fmt.Println(string(body))
 	return string(body), nil
 }
+
+// Deprecated: 此方法有BUG不推荐使用，将会在未来版本删除
 func (cache *XueXiTUserCache) VideoDtoPlayReport(p *entity.PointVideoDto, playingTime int, isdrag int /*提交模式，0代表正常视屏播放提交，2代表暂停播放状态，3代表着点击开始播放状态，4代表播放结束*/, retry int, lastErr error) (string, error) {
 	if retry < 0 {
 		return "", lastErr
@@ -152,26 +175,26 @@ func (cache *XueXiTUserCache) VideoDtoPlayReport(p *entity.PointVideoDto, playin
 	//fmt.Println(enc)
 	client := &http.Client{}
 	params := url.Values{}
-	params.Set("clazzId", p.ClassID)
+	params.Set("otherInfo", p.OtherInfo)
 	params.Set("playingTime", strconv.Itoa(playingTime))
 	params.Set("duration", strconv.Itoa(p.Duration))
-	params.Set("clipTime", clipTime)
-	params.Set("objectId", p.ObjectID)
-	params.Set("otherInfo", p.OtherInfo)
-	//params.Set("courseId", p.CourseID)
 	params.Set("jobid", p.JobID)
+	params.Set("clipTime", clipTime)
+	params.Set("clazzId", p.ClassID)
+	params.Set("objectId", p.ObjectID)
 	params.Set("userid", cache.UserID)
 	params.Set("isdrag", strconv.Itoa(isdrag)) //0为正常播放，2为点击暂停播放状态，3为点击开始播放
-	params.Set("view", "pc")
 	params.Set("enc", enc)
-	//params.Set("rt", fmt.Sprintf("%f", p.RT))
-	params.Set("videoFaceFaptureEnc", p.VideoFaceCaptureEnc)
+	params.Set("rt", fmt.Sprintf("%f", p.RT))
+	//params.Set("retry", "0.9")
 	params.Set("dtype", "Video")
-	params.Set("_t", strconv.FormatInt(time.Now().UnixMilli(), 10))
+	params.Set("view", "pc")
+	params.Set("rt", "0.9")
+	params.Set("courseId", p.CourseID)
+	params.Set("videoFaceCaptureEnc", p.VideoFaceCaptureEnc)
 	params.Set("attDuration", strconv.Itoa(p.Duration))
 	params.Set("attDurationEnc", p.AttDurationEnc)
-
-	params.Set("rt", "0.9")
+	params.Set("_t", strconv.FormatInt(time.Now().UnixMilli(), 10))
 
 	// 自定义编码函数以保留 & 和 =
 	encodedParams := encodeWithSafeChars(params)
@@ -186,7 +209,9 @@ func (cache *XueXiTUserCache) VideoDtoPlayReport(p *entity.PointVideoDto, playin
 	resp.Header.Add("Accept", "*/*")
 	resp.Header.Add("Host", "mooc1.chaoxing.com")
 	resp.Header.Add("Connection", "keep-alive")
-	resp.Header.Add("Cookie", cache.cookie)
+	for _, cookie := range cache.cookies {
+		resp.AddCookie(cookie)
+	}
 	resp.Header.Add("Referer", "https://mooc1.chaoxing.com/ananas/modules/video/index.html?v=2023-1110-1610")
 	resp.Header.Add("Content-Type", " application/json")
 	res, err := client.Do(resp)
@@ -255,11 +280,14 @@ func (cache *XueXiTUserCache) WorkFetchQuestion(p *entity.PointWorkDto) (string,
 		fmt.Println(err)
 		return "", err
 	}
-	req.Header.Add("User-Agent", "Apifox/1.0.0 (https://apifox.com)")
+	req.Header.Add("User-Agent", "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/136.0.0.0 Safari/537.36 Edg/136.0.0.0")
 	req.Header.Add("Accept", "*/*")
 	req.Header.Add("Host", "mooc1-api.chaoxing.com")
 	req.Header.Add("Connection", "keep-alive")
-	req.Header.Add("Cookie", cache.cookie)
+	//req.Header.Add("Cookie", cache.cookie)
+	for _, cookie := range cache.cookies {
+		req.AddCookie(cookie)
+	}
 
 	res, err := client.Do(req)
 	if err != nil {
@@ -289,8 +317,11 @@ func (cache *XueXiTUserCache) WorkCommit(p *entity.PointWorkDto, fields []entity
 		fmt.Println(err)
 		return "", nil
 	}
-	req.Header.Add("Cookie", cache.cookie)
-	req.Header.Add("User-Agent", "Apifox/1.0.0 (https://apifox.com)")
+	//req.Header.Add("Cookie", cache.cookie)
+	for _, cookie := range cache.cookies {
+		req.AddCookie(cookie)
+	}
+	req.Header.Add("User-Agent", "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/136.0.0.0 Safari/537.36 Edg/136.0.0.0")
 	req.Header.Add("Content-Type", "application/json")
 	req.Header.Add("Accept", "*/*")
 	req.Header.Add("Host", "mooc1-api.chaoxing.com")
@@ -329,11 +360,14 @@ func (cache *XueXiTUserCache) DocumentDtoReadingReport(p *entity.PointDocumentDt
 		return "", err
 	}
 
-	resp.Header.Add("User-Agent", "Apifox/1.0.0 (https://apifox.com)")
+	resp.Header.Add("User-Agent", "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/136.0.0.0 Safari/537.36 Edg/136.0.0.0")
 	resp.Header.Add("Accept", "*/*")
 	resp.Header.Add("Host", "mooc1.chaoxing.com")
 	resp.Header.Add("Connection", "keep-alive")
-	resp.Header.Add("Cookie", cache.cookie)
+	//resp.Header.Add("Cookie", cache.cookie)
+	for _, cookie := range cache.cookies {
+		resp.AddCookie(cookie)
+	}
 	resp.Header.Add("Content-Type", " application/json")
 
 	res, err := client.Do(resp)

@@ -1,7 +1,6 @@
 package examples
 
 import (
-	"crypto/md5"
 	"fmt"
 	"log"
 	"strconv"
@@ -21,7 +20,7 @@ func TestLoginXueXiTo(t *testing.T) {
 	utils.YatoriCoreInit()
 	//测试账号
 	setup()
-	user := global.Config.Users[1]
+	user := global.Config.Users[0]
 	userCache := xuexitongApi.XueXiTUserCache{
 		Name:     user.Account,
 		Password: user.Password,
@@ -452,7 +451,7 @@ func TestXueXiToFlushCourse(t *testing.T) {
 	utils.YatoriCoreInit()
 	//测试账号
 	setup()
-	user := global.Config.Users[19]
+	user := global.Config.Users[14]
 
 	userCache := xuexitongApi.XueXiTUserCache{
 		Name:     user.Account,
@@ -467,7 +466,7 @@ func TestXueXiToFlushCourse(t *testing.T) {
 	courseList, err := xuexitong.XueXiTPullCourseAction(&userCache) //拉取所有课程
 	for _, course := range courseList {                             //遍历课程
 
-		if course.CourseName != "形势与政策（2025上）" {
+		if course.CourseName != "国家安全教育" {
 			continue
 		}
 		// 6c444b8d5c6203ee2f2aef4b76f5b2ce qrcEnc
@@ -608,8 +607,8 @@ func TestFaceQrScan(t *testing.T) {
 	uuid, qrEnc, err := userCache.GetFaceQrCodeApi1("245211886", "103839833", "891797235", "283918535")
 	fmt.Println(uuid, qrEnc, err)
 	//过人脸
-	//api, _ := userCache.GetCourseFaceQrPlan1Api("245211886", "103839833", uuid, "16eeb4b1d6d733a08785449c8d9784f7", qrEnc, "0")
-	//fmt.Println(api)
+	api, _ := userCache.GetCourseFaceQrPlan1Api("245211886", "103839833", uuid, "16eeb4b1d6d733a08785449c8d9784f7", qrEnc, "0")
+	fmt.Println(api)
 	//api, _ := userCache.GetCourseFaceQrApi("2c261aa3-d428-414c-a619-56535f85c8", "105533723")
 	//fmt.Println(api)
 }
@@ -703,12 +702,4 @@ func TestFaceQrScanPlan1(t *testing.T) {
 			}
 		}
 	}
-}
-
-// 测试时间MD5值
-func TestDurationMD5(t *testing.T) {
-	data := []byte("506") //切片
-	has := md5.Sum(data)
-	md5str := fmt.Sprintf("%x", has) //将[]byte转成16进制
-	fmt.Println(md5str)
 }

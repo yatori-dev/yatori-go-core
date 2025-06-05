@@ -37,10 +37,13 @@ type PointVideoDto struct {
 	OtherInfo           string
 	Title               string
 	RT                  float64
+	VideoFaceCaptureEnc string
+	RandomCaptureTime   string //大概的下次人脸时间
+	AttDurationEnc      string
+	Enc                 string
 	Logger              *log.Logger
 	PUID                string
-	VideoFaceCaptureEnc string
-	AttDurationEnc      string
+	Mid                 string
 	Session             *Session
 
 	Type  ctype.CardType
@@ -171,18 +174,24 @@ func (p *PointVideoDto) AttachmentsDetection(attachment interface{}) (bool, erro
 			} else {
 				rt = 0.9
 			}
-			playTime, ok := attachment["playTime"].(float64)
+			//playTime, ok := attachment["playTime"].(float64)
+			//if !ok {
+			//	p.PlayTime = 0
+			//} else {
+			//	p.PlayTime = int(playTime) / 1000
+			//}
+			mid, ok := attachment["mid"].(string)
 			if !ok {
-				p.PlayTime = 0
+				p.Mid = ""
 			} else {
-				p.PlayTime = int(playTime) / 1000
+				p.Mid = mid
 			}
 
-			videoFaceCaptureEnc, ok := attachment["videoFaceCaptureEnc"].(string)
+			randomCaptureTime, ok := attachment["randomCaptureTime"].(string)
 			if !ok {
-				p.VideoFaceCaptureEnc = ""
+				p.RandomCaptureTime = "0"
 			} else {
-				p.VideoFaceCaptureEnc = videoFaceCaptureEnc
+				p.RandomCaptureTime = randomCaptureTime
 			}
 
 			attDurationEnc, ok := attachment["attDurationEnc"].(string)
@@ -191,7 +200,12 @@ func (p *PointVideoDto) AttachmentsDetection(attachment interface{}) (bool, erro
 			} else {
 				p.AttDurationEnc = attDurationEnc
 			}
-
+			videoFaceCaptureEnc, ok := attachment["videoFaceCaptureEnc"].(string)
+			if !ok {
+				p.VideoFaceCaptureEnc = ""
+			} else {
+				p.VideoFaceCaptureEnc = videoFaceCaptureEnc
+			}
 			p.RT = rt
 			p.Attachment = attachment
 			break
