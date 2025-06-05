@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"github.com/PuerkitoBio/goquery"
+	"github.com/thedevsaddam/gojsonq"
 	log2 "github.com/yatori-dev/yatori-go-core/utils/log"
 	"image"
 	"image/jpeg"
@@ -235,6 +236,47 @@ func (cache *XueXiTUserCache) GetFaceQrCodeApi2(courseId, clazzId, cpi string) (
 	qrcEncFirst := doc.Find("input#qrcEnc").First()
 	qrcEncVal, _ := qrcEncFirst.Attr("value")
 	return uuidVal, qrcEncVal, nil
+}
+
+// 拉取人脸数据3
+func (cache *XueXiTUserCache) GetFaceQrCodeApi3(chapterId, courseId, clazzId, cpi, enc, uuid, videojobid, chaptervideoobjectid string) (string, string, error) {
+
+	url := "https://mooc1.chaoxing.com/mooc-ans/qr/produce?chapterId=" + chapterId + "&courseId=" + courseId + "&clazzid=" + clazzId + "&cpi=" + cpi + "&enc=" + enc + "&mooc2=1&uuid=" + uuid + "&videojobid=" + videojobid + "&chaptervideoobjectid=" + chaptervideoobjectid + "&videoCollectTime=0"
+	method := "GET"
+
+	client := &http.Client{}
+	req, err := http.NewRequest(method, url, nil)
+
+	if err != nil {
+		fmt.Println(err)
+		return "", "", err
+	}
+
+	for _, cookie := range cache.cookies {
+		req.AddCookie(cookie)
+	}
+	req.Header.Add("User-Agent", "Apifox/1.0.0 (https://apifox.com)")
+	req.Header.Add("Accept", "*/*")
+	req.Header.Add("Host", "mooc1.chaoxing.com")
+	req.Header.Add("Connection", "keep-alive")
+
+	res, err := client.Do(req)
+	if err != nil {
+		fmt.Println(err)
+		return "", "", err
+	}
+	defer res.Body.Close()
+
+	body, err := ioutil.ReadAll(res.Body)
+	if err != nil {
+		fmt.Println(err)
+		return "", "", err
+	}
+	fmt.Println(string(body))
+
+	newEnc := gojsonq.New().JSONString(string(body)).Find("newEnc").(string)
+	newUuid := gojsonq.New().JSONString(string(body)).Find("newUuid").(string)
+	return newUuid, newEnc, nil
 }
 
 // 过人脸（第一版）

@@ -8,9 +8,9 @@ import (
 
 // WorkNewSubmitAnswerAction 提交答题
 func WorkNewSubmitAnswerAction(userCache *xuexitong.XueXiTUserCache, question entity.Question, isSubmit bool) string {
-	submitState := ""
+	submitState := "1"
 	if isSubmit {
-		submitState = "1"
+		submitState = ""
 	}
 	answer, _ := userCache.WorkNewSubmitAnswer(question.CourseId, question.ClassId, question.Knowledgeid, question.Cpi,
 		question.JobId, question.TotalQuestionNum, question.AnswerId, question.WorkAnswerId, question.Api,

@@ -1,6 +1,7 @@
 package point
 
 import (
+	"fmt"
 	"github.com/thedevsaddam/gojsonq"
 	action "github.com/yatori-dev/yatori-go-core/aggregation/xuexitong"
 	"github.com/yatori-dev/yatori-go-core/api/entity"
@@ -29,56 +30,31 @@ func ExecuteVideo(cache *api.XueXiTUserCache, p *entity.PointVideoDto) {
 						//	fmt.Println(err)
 						//}
 
-						//uuid, qrEnc, err := cache.GetFaceQrCodeApi2(p.CourseID, p.ClassID, p.Cpi)
-						//if err != nil {
-						//	fmt.Println(err)
-						//}
-						////获取token
-						//tokenJson, err := cache.GetFaceUpLoadToken()
-						//token := gojsonq.New().JSONString(tokenJson).Find("_token").(string)
-						//if err != nil {
-						//	fmt.Println(err)
-						//}
-						////上传人脸
-						//image, _ := utils.LoadImage("E:\\Yatori-Dev\\yatori-go-core\\face\\test2.jpg")
-						//disturbImage := utils.ImageRGBDisturb(image)
-						//ObjectId, err := cache.UploadFaceImage(token, disturbImage)
-						//if err != nil {
-						//	fmt.Println(err)
-						//}
-						//uuid, qrEnc, err := cache.GetFaceQrCodeApi2(p.CourseID, p.ClassID, p.Cpi)
-						//if err != nil {
-						//	fmt.Println(err)
-						//}
-						//plan1Api, err := cache.GetCourseFaceQrPlan1Api(p.CourseID, p.ClassID, uuid, ObjectId, qrEnc, "0")
-						//if err != nil {
-						//	fmt.Println(err)
-						//}
-						//fmt.Println(plan1Api)
-						//plan2Api, err := cache.GetCourseFaceQrPlan2Api(p.ClassID, p.CourseID, fmt.Sprintf("%d", p.KnowledgeID), p.Cpi, ObjectId)
-						//if err != nil {
-						//	fmt.Println(err)
-						//}
-						//fmt.Println(plan2Api)
-						//plan3Api, err := cache.GetCourseFaceQrPlan3Api(uuid, p.ClassID, p.CourseID, qrEnc, ObjectId)
-						//if err != nil {
-						//	fmt.Println(err)
-						//}
-						//fmt.Println(plan3Api)
-						////获取人脸状态
-						//stateApi, err := cache.GetCourseFaceQrStateApi(uuid, qrEnc, p.ClassID, p.CourseID, p.Cpi)
-						//if err != nil {
-						//	fmt.Println(err)
-						//}
-						//fmt.Println(stateApi)
+						uuid, qrEnc, err := cache.GetFaceQrCodeApi2(p.CourseID, p.ClassID, p.Cpi)
+						if err != nil {
+							fmt.Println(err)
+						}
+						tokenJson, err := cache.GetFaceUpLoadToken()
+
+						token := gojsonq.New().JSONString(tokenJson).Find("_token").(string)
+
+						uuid, qrEnc, err = cache.GetFaceQrCodeApi3(fmt.Sprintf("%d", p.KnowledgeID), p.CourseID, p.ClassID, p.Cpi, qrEnc, uuid, p.JobID, p.ObjectID)
+						if err != nil {
+							log.Println(uuid, qrEnc, err)
+						}
 						log.Println("触发人脸识别，正在进行绕过...")
 						image, _ := utils.LoadImage("E:\\Yatori-Dev\\yatori-go-core\\face\\test2.jpg")
 						disturbImage := utils.ImageRGBDisturb(image)
-						err := action.PassFaceAction(cache, p.CourseID, p.ClassID, p.Cpi, disturbImage)
-						if err != nil {
-							log.Println(err.Error())
-						}
-						log.Println("绕过成功")
+						//上传人脸
+						ObjectId, err := cache.UploadFaceImageApi(token, disturbImage)
+
+						plan3Api, err := cache.GetCourseFaceQrPlan3Api(uuid, p.ClassID, p.CourseID, qrEnc, ObjectId)
+						passMsg := gojsonq.New().JSONString(plan3Api).Find("msg")
+						fmt.Println(passMsg)
+						//获取人脸状态
+						stateApi, err := cache.GetCourseFaceQrStateApi(uuid, qrEnc, p.ClassID, p.CourseID, p.Cpi)
+						p.VideoFaceCaptureEnc = qrEnc
+						fmt.Println(stateApi)
 						continue
 					}
 				}
@@ -93,12 +69,18 @@ func ExecuteVideo(cache *api.XueXiTUserCache, p *entity.PointVideoDto) {
 				log.Printf("播放中....%d:%d\n", playingTime, p.Duration)
 			} else if playingTime >= p.Duration {
 				playReport, _ := cache.VideoDtoPlayReport(p, playingTime, 0, 8, nil)
-				playingTime += 1
-				if gojsonq.New().JSONString(playReport).Find("isPassed").(bool) == true {
+
+				isPassed := gojsonq.New().JSONString(playReport).Find("isPassed")
+				if isPassed == nil {
+					log.Println(playReport)
+					continue
+				}
+				if isPassed.(bool) == true {
 					log.Println("播放结束")
 					playingTime = p.Duration
 					break
 				}
+				playingTime += 1
 				log.Printf("播放中....%d:%d\n", playingTime, p.Duration)
 			}
 			flag += 1

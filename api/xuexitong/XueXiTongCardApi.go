@@ -152,22 +152,26 @@ func (cache *XueXiTUserCache) VideoDtoPlayReport(p *entity.PointVideoDto, playin
 	//fmt.Println(enc)
 	client := &http.Client{}
 	params := url.Values{}
-	params.Set("otherInfo", p.OtherInfo)
+	params.Set("clazzId", p.ClassID)
 	params.Set("playingTime", strconv.Itoa(playingTime))
 	params.Set("duration", strconv.Itoa(p.Duration))
-	params.Set("jobid", p.JobID)
 	params.Set("clipTime", clipTime)
-	params.Set("clazzId", p.ClassID)
 	params.Set("objectId", p.ObjectID)
+	params.Set("otherInfo", p.OtherInfo)
+	//params.Set("courseId", p.CourseID)
+	params.Set("jobid", p.JobID)
 	params.Set("userid", cache.UserID)
 	params.Set("isdrag", strconv.Itoa(isdrag)) //0为正常播放，2为点击暂停播放状态，3为点击开始播放
-	params.Set("enc", enc)
-	params.Set("rt", fmt.Sprintf("%f", p.RT))
-	//params.Set("retry", "0.9")
-	params.Set("dtype", "Video")
 	params.Set("view", "pc")
-	params.Set("rt", "0.9")
+	params.Set("enc", enc)
+	//params.Set("rt", fmt.Sprintf("%f", p.RT))
+	params.Set("videoFaceFaptureEnc", p.VideoFaceCaptureEnc)
+	params.Set("dtype", "Video")
 	params.Set("_t", strconv.FormatInt(time.Now().UnixMilli(), 10))
+	params.Set("attDuration", strconv.Itoa(p.Duration))
+	params.Set("attDurationEnc", p.AttDurationEnc)
+
+	params.Set("rt", "0.9")
 
 	// 自定义编码函数以保留 & 和 =
 	encodedParams := encodeWithSafeChars(params)

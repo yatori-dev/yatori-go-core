@@ -1,6 +1,7 @@
 package examples
 
 import (
+	"crypto/md5"
 	"fmt"
 	"log"
 	"strconv"
@@ -435,7 +436,7 @@ func TestXueXiToFlushCourse(t *testing.T) {
 	utils.YatoriCoreInit()
 	//测试账号
 	setup()
-	user := global.Config.Users[13]
+	user := global.Config.Users[14]
 
 	userCache := xuexitongApi.XueXiTUserCache{
 		Name:     user.Account,
@@ -450,7 +451,7 @@ func TestXueXiToFlushCourse(t *testing.T) {
 	courseList, err := xuexitong.XueXiTPullCourseAction(&userCache) //拉取所有课程
 	for _, course := range courseList {                             //遍历课程
 
-		if course.CourseName != "军事理论" {
+		if course.CourseName != "国家安全教育" {
 			continue
 		}
 		// 6c444b8d5c6203ee2f2aef4b76f5b2ce qrcEnc
@@ -685,4 +686,12 @@ func TestFaceQrScanPlan1(t *testing.T) {
 			}
 		}
 	}
+}
+
+// 测试时间MD5值
+func TestDurationMD5(t *testing.T) {
+	data := []byte("506") //切片
+	has := md5.Sum(data)
+	md5str := fmt.Sprintf("%x", has) //将[]byte转成16进制
+	fmt.Println(md5str)
 }
