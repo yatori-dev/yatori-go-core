@@ -160,7 +160,7 @@ func PullCourseChapterAction(cache *xuexitong.XueXiTUserCache, cpi, key int) (ch
 	//拉取对应课程的章节信息
 	chapter, err := cache.PullChapter(cpi, key)
 	if err != nil {
-		return ChaptersList{}, false, errors.New("[" + cache.Name + "] " + " 拉取章节失败")
+		return ChaptersList{}, false, errors.New("[" + cache.Name + "] " + " 拉取章节失败" + err.Error())
 	}
 
 	var chapterMap map[string]interface{}
@@ -170,15 +170,20 @@ func PullCourseChapterAction(cache *xuexitong.XueXiTUserCache, cpi, key int) (ch
 	}
 	chapterMapJson, err := json.Marshal(chapterMap["data"])
 	if len(chapterMapJson) == 2 {
-		return ChaptersList{}, false, errors.New("[" + cache.Name + "] " + "[" + chaptersList.ChatID + "] " + " 课程获取失败")
+		return ChaptersList{}, false, errors.New("[" + cache.Name + "] " + "[" + chaptersList.ChatID + "] " + " 课程获取失败" + chapter)
 	}
 	// 解析 JSON 数据为 map 切片
 	var chapterData []map[string]interface{}
 	if err := json.Unmarshal(chapterMapJson, &chapterData); err != nil {
 		log.Fatalf("Error parsing JSON: %v", err)
 	}
+	var chatid string
+	if v, ok := chapterData[0]["chatid"].(string); ok {
+		chatid = v
+	} else {
+		return ChaptersList{}, false, errors.New("[" + cache.Name + "] " + "[" + chaptersList.ChatID + "] " + " 课程获取失败" + chapter)
+	}
 
-	chatid := chapterData[0]["chatid"].(string)
 	// 提取 knowledge
 	var knowledgeData []map[string]interface{}
 	course, ok := chapterData[0]["course"].(map[string]interface{})
