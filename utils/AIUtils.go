@@ -334,8 +334,9 @@ func DouBaoChatReplyApi(model,
 	if retryNum < 0 { //重连次数用完直接返回
 		return "", lastErr
 	}
+
 	client := &http.Client{
-		Timeout: 40 * time.Second, // Set connection and read timeout
+		Timeout: 120 * time.Second, // Set connection and read timeout
 	}
 
 	url := "https://ark.cn-beijing.volces.com/api/v3/chat/completions"
