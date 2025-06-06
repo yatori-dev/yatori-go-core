@@ -68,8 +68,7 @@ func ChapterFetchCardsAction(
 		return []Card{}, nil, err
 	}
 	if len(apiResp.Data) == 0 {
-		log2.Print(log2.DEBUG, "获取章节任务节点卡片失败 [%s:%s(Id.%d)]",
-			chapters.Knowledge[index].Label, chapters.Knowledge[index].Name, chapters.Knowledge[index].ID)
+		log2.Print(log2.DEBUG, "获取章节任务节点卡片失败 [", chapters.Knowledge[index].Label, ":", chapters.Knowledge[index].Name, "(Id.", fmt.Sprintf("%d", chapters.Knowledge[index].ID), ")]")
 		return []Card{}, nil, err
 	}
 
@@ -82,7 +81,7 @@ func ChapterFetchCardsAction(
 	pointObjs := make([]entity.PointDto, 0)
 	for cardIndex, card := range cards {
 		if card.Description == "" {
-			log2.Print(log2.DEBUG, "(%d) 卡片 iframe 不存在 %+v", cardIndex, card)
+			log2.Print(log2.DEBUG, "(", fmt.Sprintf("%d", cardIndex), ") 卡片 iframe 不存在 ", fmt.Sprintf("%+v", card))
 			continue
 		}
 		points, err := parseIframeData(card.Description)
@@ -90,13 +89,13 @@ func ChapterFetchCardsAction(
 			log2.Print(log2.DEBUG, "解析卡片失败 %v", err)
 			continue
 		}
-		log2.Print(log2.DEBUG, "(%d) 解析卡片成功 共 %d 个任务点", cardIndex, len(points))
+		log2.Print(log2.DEBUG, fmt.Sprintf("%d", cardIndex), "解析卡片成功 共 ", fmt.Sprintf("%d", len(points)), "个任务点")
 
 		for pointIndex, point := range points {
 			var pointObj entity.PointDto //不要乱移动这玩意位置，OK？
 			pointType, ok := point.Other["module"]
 			if !ok {
-				log2.Print(log2.DEBUG, "(%d, %d) 任务点 type 不存在 %+v", cardIndex, pointIndex, point)
+				log2.Print(log2.DEBUG, "(", fmt.Sprintf("%d", cardIndex), ", ", fmt.Sprintf("%d", pointIndex), ") 任务点 type 不存在 %+v", fmt.Sprintf("%+v", point))
 				continue
 			}
 

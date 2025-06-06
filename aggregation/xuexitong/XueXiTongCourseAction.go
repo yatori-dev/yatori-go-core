@@ -45,6 +45,7 @@ func XueXiTPullCourseAction(cache *xuexitong.XueXiTUserCache) ([]XueXiTCourse, e
 	err = json.Unmarshal([]byte(courses), &xueXiTCourse)
 	if err != nil {
 		log2.Print(log2.INFO, "["+cache.Name+"] "+" 解析失败", courses)
+		log2.Print(log2.DEBUG, "["+cache.Name+"] "+" 解析失败", courses)
 		panic(err)
 	}
 	log2.Print(log2.INFO, "["+cache.Name+"] "+" 课程数量："+strconv.Itoa(len(xueXiTCourse.ChannelList)))

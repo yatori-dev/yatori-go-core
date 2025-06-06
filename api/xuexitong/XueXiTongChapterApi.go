@@ -1,6 +1,7 @@
 package xuexitong
 
 import (
+	"errors"
 	"fmt"
 	"io/ioutil"
 	"net/http"
@@ -108,7 +109,7 @@ func (cache *XueXiTUserCache) FetchChapterPointStatus(nodes []int, clazzID, user
 	return string(body), nil
 }
 
-// FetchChapterCords 以课程序号拉取对应“章节”的任务节点卡片资源
+// FetchChapterCords 拉取对应“章节”的任务节点卡片资源
 // Args:
 //
 //	nodes: 任务点集合 , index: 任务点索引
@@ -120,6 +121,7 @@ func (cache *XueXiTUserCache) FetchChapterCords(nodes []int, index, courseId int
 	values.Add("fields", "id,parentnodeid,indexorder,label,layer,name,begintime,createtime,lastmodifytime,status,jobUnfinishedCount,clickcount,openlock,card.fields(id,knowledgeid,title,knowledgeTitile,description,cardorder).contentcard(all)")
 	values.Add("view", "json")
 	values.Add("token", "4faa8662c59590c6f43ae9fe5b002b42")
+	values.Add("_time", strconv.FormatInt(time.Now().UnixNano()/1000000, 10))
 
 	client := &http.Client{}
 	req, err := http.NewRequest(method, ApiChapterCards+"?"+values.Encode(), nil)
@@ -142,13 +144,16 @@ func (cache *XueXiTUserCache) FetchChapterCords(nodes []int, index, courseId int
 		fmt.Println(err)
 		return "", nil
 	}
-	defer res.Body.Close()
 
 	body, err := ioutil.ReadAll(res.Body)
 	if err != nil {
 		fmt.Println(err)
 		return "", nil
 	}
+	if strings.Contains(string(body), "请输入验证码") {
+		return "", errors.New("触发验证码")
+	}
+	defer res.Body.Close()
 	return string(body), nil
 }
 
