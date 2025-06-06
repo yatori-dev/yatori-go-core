@@ -451,7 +451,7 @@ func TestXueXiToFlushCourse(t *testing.T) {
 	utils.YatoriCoreInit()
 	//测试账号
 	setup()
-	user := global.Config.Users[14]
+	user := global.Config.Users[20]
 
 	userCache := xuexitongApi.XueXiTUserCache{
 		Name:     user.Account,
@@ -466,7 +466,7 @@ func TestXueXiToFlushCourse(t *testing.T) {
 	courseList, err := xuexitong.XueXiTPullCourseAction(&userCache) //拉取所有课程
 	for _, course := range courseList {                             //遍历课程
 
-		if course.CourseName != "国家安全教育" {
+		if course.CourseName != "军事理论" {
 			continue
 		}
 		// 6c444b8d5c6203ee2f2aef4b76f5b2ce qrcEnc

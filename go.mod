@@ -21,6 +21,7 @@ require (
 
 require (
 	github.com/andybalholm/cascadia v1.3.2 // indirect
+	github.com/corona10/goimagehash v1.1.0 // indirect
 	github.com/fsnotify/fsnotify v1.8.0 // indirect
 	github.com/go-sql-driver/mysql v1.7.0 // indirect
 	github.com/hashicorp/hcl v1.0.0 // indirect

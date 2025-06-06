@@ -34,6 +34,7 @@ func PassFaceAction3(cache *xuexitong.XueXiTUserCache, courseId, classId, cpi, c
 		return "", "", "", "", errors.New("ObjectId is empty")
 	}
 	plan3Api, err := cache.GetCourseFaceQrPlan3Api(uuid, classId, courseId, qrEnc, ObjectId)
+	//plan3Api, err := cache.GetCourseFaceQrPlan1Api(courseId, classId, uuid, ObjectId, qrEnc, "0")
 	passMsg := gojsonq.New().JSONString(plan3Api).Find("msg")
 	if err != nil {
 		return "", "", "", "", err

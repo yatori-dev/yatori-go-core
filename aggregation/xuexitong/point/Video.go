@@ -41,12 +41,21 @@ func ExecuteVideo(cache *api.XueXiTUserCache, p *entity.PointVideoDto, key, cour
 			//如果到了人脸识别时间
 			if fmt.Sprintf("%d", flag) == p.RandomCaptureTime {
 				log.Println("到达人脸识别时间，正在进行绕过...")
-				pullJson, img, err2 := cache.GetHistoryFaceImg("")
+				//img, err2 := utils.GetFaceBase64()
+				pullJson, image, err2 := cache.GetHistoryFaceImg("")
+				//image, err2 := utils.LoadImage("C:\\Users\\Administrator\\Desktop\\IMG_20250529_020045.jpg")
 				if err2 != nil {
 					log2.Print(log2.DEBUG, pullJson, err2)
 					os.Exit(0)
 				}
-				disturbImage := utils.ImageRGBDisturb(img)
+				originHash, _ := utils.CalculateJPEGMD5(image, 90)
+				fmt.Println("原图像hash-> ", originHash)
+				//disturbImage := image
+				disturbImage := utils.ImageRGBDisturb(image)
+				//disturbImage := utils.DisturbByShufflingBlocks(image, 1)
+				utils.SaveImageAsJPEG(disturbImage, "E:\\yatori-dev\\yatori-go-core\\face\\test.jpg")
+				nowHash, _ := utils.CalculateJPEGMD5(disturbImage, 90)
+				fmt.Println("扰乱后Hash-> ", nowHash)
 				uuid, qrEnc, ObjectId, successEnc, err := action.PassFaceAction3(cache, p.CourseID, p.ClassID, p.Cpi, fmt.Sprintf("%d", p.KnowledgeID), p.Enc, p.JobID, p.ObjectID, p.Mid, p.RandomCaptureTime, disturbImage)
 				if err != nil {
 					log.Println(uuid, qrEnc, ObjectId, err.Error())

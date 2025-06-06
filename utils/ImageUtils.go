@@ -2,7 +2,9 @@ package utils
 
 import (
 	"bytes"
+	"crypto/md5"
 	"encoding/base64"
+	"encoding/hex"
 	"fmt"
 	"github.com/nfnt/resize"
 	"image"
@@ -11,6 +13,7 @@ import (
 	"image/gif"
 	"image/jpeg"
 	"image/png"
+	"io"
 	"math/rand"
 	"os"
 	"strings"
@@ -147,19 +150,53 @@ func ImageRGBDisturb(img image.Image) image.Image {
 			newImg.Set(x, y, newColor)
 		}
 	}
-
-	//// 保存扰动后的图像
-	//outputFile, err := os.Create("output.png")
-	//if err != nil {
-	//	panic(err)
-	//}
-	//defer outputFile.Close()
-	//
-	//err = png.Encode(outputFile, newImg)
-	//if err != nil {
-	//	panic(err)
-	//}
 	return newImg
+}
+
+// saveImageAsJPEG 将图像保存为 JPEG 到指定路径
+func SaveImageAsJPEG(img image.Image, path string) error {
+	// 创建输出文件夹（如果不存在）
+	if err := os.MkdirAll(getDir(path), os.ModePerm); err != nil {
+		return err
+	}
+
+	outFile, err := os.Create(path)
+	if err != nil {
+		return err
+	}
+	defer outFile.Close()
+
+	return jpeg.Encode(outFile, img, &jpeg.Options{Quality: 95})
+}
+
+// getDir 提取路径的文件夹部分
+func getDir(path string) string {
+	lastSlash := -1
+	for i := len(path) - 1; i >= 0; i-- {
+		if path[i] == '/' || path[i] == '\\' {
+			lastSlash = i
+			break
+		}
+	}
+	if lastSlash == -1 {
+		return "."
+	}
+	return path[:lastSlash]
+}
+
+// 使用 JPEG 编码图像后计算其 MD5
+func CalculateJPEGMD5(img image.Image, quality int) (string, error) {
+	var buf bytes.Buffer
+	err := jpeg.Encode(&buf, img, &jpeg.Options{Quality: quality})
+	if err != nil {
+		return "", err
+	}
+
+	hash := md5.New()
+	if _, err := io.Copy(hash, &buf); err != nil {
+		return "", err
+	}
+	return hex.EncodeToString(hash.Sum(nil)), nil
 }
 
 // 过人脸数据
