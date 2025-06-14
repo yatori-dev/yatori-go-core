@@ -1,6 +1,6 @@
 package interfaces
 
-/*
+/*IUser
 userName: 用户名称
 phone:电话号码
 address: 地址
@@ -13,13 +13,14 @@ type IUser interface {
 	CourseList() ([]ICourse, error)     //课程列表
 }
 
-// 课程接口
+// ICourse 课程接口
 type ICourse interface {
-	CourseName() string //课程名称
-	TaskList() []ITask  //任务拉取
+	GetCourseID() string
+	GetCourseName() string //课程名称
+	TaskList() []ITask     //任务拉取
 }
 
-// 最小任务单位
+// ITask 最小任务单位
 type ITask interface {
 	Type() (string, error)                                      //任务类型
 	DataMap() (map[string]interface{}, error)                   //存储的相关数据
