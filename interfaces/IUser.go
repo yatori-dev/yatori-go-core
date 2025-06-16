@@ -12,6 +12,11 @@ type IUser interface {
 	CacheData() (map[string]any, error) //账号缓存信息
 }
 
+/*
+ICourseList
+如果需要其他列表之类但是上级为同一级可以添加到此接口中实现
+并且改变接口名称防止混淆
+*/
 type ICourseList interface {
 	CourseList() ([]ICourse, error) //课程列表
 }
