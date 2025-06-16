@@ -35,7 +35,7 @@ func pad(src []byte, blockSize int) []byte {
 	return append(src, padText...)
 }
 
-func (user *XueXiTongUser) Login() (map[string]any, error) {
+func (user *XueXiTongUser) Login() (interfaces.ICourseList, error) {
 	key := []byte("u2oh6Vu^HWe4_AES")
 	block, err := aes.NewCipher(key)
 	if err != nil {
@@ -91,7 +91,7 @@ func (user *XueXiTongUser) Login() (map[string]any, error) {
 	if gojsonq.New().JSONString(string(body)).Find("msg2") != nil {
 		return nil, errors.New(gojsonq.New().JSONString(string(body)).Find("msg2").(string))
 	} else {
-		return jsonContent, nil
+		return user, nil
 	}
 
 }

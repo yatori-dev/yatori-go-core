@@ -1,7 +1,6 @@
 package examples
 
 import (
-	"fmt"
 	"github.com/yatori-dev/yatori-go-core/global"
 	"github.com/yatori-dev/yatori-go-core/utils"
 	"github.com/yatori-dev/yatori-go-core/yatori"
@@ -18,7 +17,8 @@ func TestInterfacesTest(t *testing.T) {
 	if err != nil {
 		panic(err)
 	}
-	fmt.Println(login)
-	userInfo, err := user.On(user1.AccountType).CourseList()
-	fmt.Println(userInfo)
+	list, err := login.CourseList()
+	for _, course := range list {
+		println(course.GetCourseName())
+	}
 }

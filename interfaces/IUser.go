@@ -7,10 +7,13 @@ address: 地址
 */
 // 用户账号接口
 type IUser interface {
-	Login() (map[string]any, error)     //登录
+	Login() (ICourseList, error)        //登录
 	UserInfo() (map[string]any, error)  //用户个人信息
 	CacheData() (map[string]any, error) //账号缓存信息
-	CourseList() ([]ICourse, error)     //课程列表
+}
+
+type ICourseList interface {
+	CourseList() ([]ICourse, error) //课程列表
 }
 
 // ICourse 课程接口

@@ -20,7 +20,7 @@ type YingHuaUser struct {
 	CacheMap map[string]any
 }
 
-func (user *YingHuaUser) Login() (map[string]any, error) {
+func (user *YingHuaUser) Login() (interfaces.ICourseList, error) {
 	for {
 		user.CacheMap = make(map[string]any)
 		path, cookies := yinghua.VerificationCodeApi(user.PreUrl, nil, 5) //获取验证码
@@ -51,7 +51,7 @@ func (user *YingHuaUser) Login() (map[string]any, error) {
 		log.Print(log.DEBUG, "["+user.Account+"] "+" 登录成功")
 		var resultMap map[string]any
 		json.Unmarshal([]byte(jsonStr), &resultMap)
-		return resultMap, nil
+		return user, nil
 	}
 }
 
