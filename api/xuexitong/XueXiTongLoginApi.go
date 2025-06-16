@@ -65,6 +65,8 @@ type XueXiTUserCache struct {
 func (cache *XueXiTUserCache) GetCookie() string {
 	return cache.cookie
 }
+func (cache *XueXiTUserCache) GetCookies() []*http.Cookie        { return cache.cookies }
+func (cache *XueXiTUserCache) SetCookies(cookies []*http.Cookie) { cache.cookies = cookies }
 
 // pad 确保数据长度是块大小的整数倍，以便符合块加密算法的要求
 func pad(src []byte, blockSize int) []byte {
