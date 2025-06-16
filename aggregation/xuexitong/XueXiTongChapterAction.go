@@ -76,6 +76,7 @@ func ChapterFetchCardsAction(
 		cache.LoginApi() //重新登录设置cookie
 		cache.SetCookies(append(cookies, &http.Cookie{Name: "k8s", Value: k8sV}))
 		log2.Print(log2.DEBUG, "重新登录后cookie值>>", fmt.Sprintf("%+v", cookies))
+		cords, err = cache.FetchChapterCords(nodes, index, courseId)
 	}
 
 	if err != nil {
