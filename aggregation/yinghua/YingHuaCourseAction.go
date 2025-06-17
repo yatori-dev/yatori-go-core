@@ -192,7 +192,8 @@ func VideosListAction(UserCache *yinghuaApi.YingHuaUserCache, course YingHuaCour
 
 	//接口二而爬取视屏信息
 	signalSet := make(map[string]bool)
-	for i := 1; i < 999; i++ {
+	lastIndex := 999 //最后页码
+	for i := 1; i <= lastIndex; i++ {
 		listJson1, err := yinghuaApi.VideWatchRecodeApi(*UserCache, course.Id, i, 10, nil)
 		if err != nil {
 			log.Print(log.INFO, `[`, UserCache.Account, `] `, log.BoldRed, err)
@@ -201,6 +202,10 @@ func VideosListAction(UserCache *yinghuaApi.YingHuaUserCache, course YingHuaCour
 		//如果获取失败
 		if gojsonq.New().JSONString(listJson).Find("msg") != "获取数据成功" {
 			return []YingHuaNode{}, errors.New("获取数据失败：" + err.Error())
+		}
+		jsonPageCount := gojsonq.New().JSONString(listJson1).Find("result.pageInfo.pageCount")
+		if jsonPageCount != nil {
+			lastIndex = int(jsonPageCount.(float64))
 		}
 		jsonList1 := gojsonq.New().JSONString(listJson1).Find("result.list")
 		// 断言为切片并遍历
@@ -216,7 +221,8 @@ func VideosListAction(UserCache *yinghuaApi.YingHuaUserCache, course YingHuaCour
 					//如果是最后一个了那么就退出
 					_, isSignal := signalSet[nodeId]
 					if isSignal {
-						return videoList, nil
+						//return videoList, nil
+						break
 					}
 					signalSet[nodeId] = true
 					index, isOk := videoSet[nodeId]
@@ -233,10 +239,11 @@ func VideosListAction(UserCache *yinghuaApi.YingHuaUserCache, course YingHuaCour
 		}
 	}
 
-	//接口二而爬取视屏信息
+	//接口三爬取视屏信息
 	signalSet2 := make(map[string]bool)
+	lastIndex2 := 999 //最后页码
 	//PC接口信息爬取
-	for i := 1; i < 999; i++ {
+	for i := 1; i <= lastIndex2; i++ {
 		listJson2, err := yinghuaApi.VideoWatchRecodePCListApi(*UserCache, course.Id, i, 10, nil)
 		if err != nil {
 			log.Print(log.INFO, `[`, UserCache.Account, `] `, log.BoldRed, err)
@@ -245,6 +252,10 @@ func VideosListAction(UserCache *yinghuaApi.YingHuaUserCache, course YingHuaCour
 		//如果获取失败
 		if gojsonq.New().JSONString(listJson).Find("msg") != "获取数据成功" {
 			return []YingHuaNode{}, errors.New("获取数据失败：" + err.Error())
+		}
+		jsonPageCount := gojsonq.New().JSONString(listJson2).Find("pageInfo.pageCount") //赋值最后页码
+		if jsonPageCount != nil {
+			lastIndex2 = int(jsonPageCount.(float64))
 		}
 		jsonList1 := gojsonq.New().JSONString(listJson2).Find("list")
 		// 断言为切片并遍历
@@ -256,7 +267,7 @@ func VideosListAction(UserCache *yinghuaApi.YingHuaUserCache, course YingHuaCour
 			for _, item := range items {
 				// 每个 item 是 map[string]interface{} 类型
 				if obj, ok := item.(map[string]interface{}); ok {
-					nodeId := strconv.Itoa(int(obj["id"].(float64)))
+					nodeId := obj["id"].(string)
 					//如果是最后一个了那么就退出
 					_, isSignal := signalSet2[nodeId]
 					if isSignal {

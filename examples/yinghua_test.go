@@ -61,15 +61,15 @@ func TestPullCourseVideoList(t *testing.T) {
 	log2.NOWLOGLEVEL = log2.INFO //设置日志登记为DEBUG
 	//测试账号
 	setup()
-	user := global.Config.Users[0]
+	user := global.Config.Users[15]
 	cache := yinghuaApi.YingHuaUserCache{
 		PreUrl:   user.URL,
 		Account:  user.Account,
 		Password: user.Password,
 	}
 
-	error := yinghua.YingHuaLoginAction(&cache)
-	if error != nil {
+	err := yinghua.YingHuaLoginAction(&cache)
+	if err != nil {
 
 	}
 	list, _ := yinghua.CourseListAction(&cache)
@@ -149,9 +149,9 @@ func TestBrushOneLesson(t *testing.T) {
 		Password: user.Password,
 	}
 
-	error := yinghua.YingHuaLoginAction(&cache) // 登录
-	if error != nil {
-		log.Fatal(error) //登录失败则直接退出
+	err := yinghua.YingHuaLoginAction(&cache) // 登录
+	if err != nil {
+		log.Fatal(err) //登录失败则直接退出
 	}
 	go keepAliveLogin(cache)                    //携程保活
 	list, _ := yinghua.CourseListAction(&cache) //拉取课程列表
@@ -237,15 +237,15 @@ func TestWorkDetail(t *testing.T) {
 		Password: user.Password,
 	}
 
-	error := yinghua.YingHuaLoginAction(&cache) // 登录
-	if error != nil {
-		log.Fatal(error) //登录失败则直接退出
+	err := yinghua.YingHuaLoginAction(&cache) // 登录
+	if err != nil {
+		log.Fatal(err) //登录失败则直接退出
 	}
 	list, _ := yinghua.CourseListAction(&cache) //拉取课程列表
 	//list[0]
-	action, error := yinghua.VideosListAction(&cache, list[1])
-	if error != nil {
-		log.Fatal(error)
+	action, err := yinghua.VideosListAction(&cache, list[1])
+	if err != nil {
+		log.Fatal(err)
 	}
 	for _, node := range action {
 		if node.Name != "第五次作业" {
