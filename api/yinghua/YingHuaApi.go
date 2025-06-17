@@ -611,6 +611,52 @@ func VideWatchRecodeApi(UserCache YingHuaUserCache, courseId string, page int, r
 	return string(body), nil
 }
 
+// VideoWatchRecodePCListApi 获取指定课程视屏观看记录接口2，PC端
+func VideoWatchRecodePCListApi(UserCache YingHuaUserCache, courseId string, page int, retry int, lastError error) (string, error) {
+	if retry < 0 {
+		return "", lastError
+	}
+
+	url := "https://cqcst.miaoyangkj.com/user/study_record/video.json?courseId=" + courseId + "&_=" + fmt.Sprintf("%d", time.Now().Unix()) + "&page=" + fmt.Sprintf("%d", page)
+	method := "GET"
+
+	tr := &http.Transport{
+		TLSClientConfig: &tls.Config{
+			InsecureSkipVerify: true, // 跳过证书验证，仅用于开发环境
+		},
+	}
+	client := &http.Client{
+		Timeout:   30 * time.Second,
+		Transport: tr,
+	}
+	req, err := http.NewRequest(method, url, nil)
+	req.Header.Set("Cookie", UserCache.cookie)
+	if err != nil {
+		//fmt.Println(err)
+		return VideWatchRecodeApi(UserCache, courseId, page, retry-1, err)
+	}
+	req.Header.Add("User-Agent", "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/136.0.0.0 Safari/537.36 Edg/136.0.0.0")
+
+	res, err := client.Do(req)
+	if err != nil {
+		//fmt.Println(err)
+		return VideWatchRecodeApi(UserCache, courseId, page, retry-1, err)
+	}
+
+	body, err := ioutil.ReadAll(res.Body)
+	if err != nil {
+		//fmt.Println(err)
+		return VideWatchRecodeApi(UserCache, courseId, page, retry-1, err)
+	}
+	if strings.Contains(string(body), "502 Bad Gateway") {
+		res.Body.Close()                   //立即释放
+		time.Sleep(time.Millisecond * 150) //延迟
+		return VideWatchRecodeApi(UserCache, courseId, page, retry, lastError)
+	}
+	defer res.Body.Close()
+	return string(body), nil
+}
+
 // ExamDetailApi 获取考试信息
 func ExamDetailApi(UserCache YingHuaUserCache, nodeId string, retryNum int, lastError error) (string, error) {
 	if retryNum < 0 {

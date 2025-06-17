@@ -41,13 +41,15 @@ type YingHuaNode struct {
 	UnlockTime    time.Time //视屏解锁时间
 	Progress      float32   //观看进度
 	//Duration       int       //视屏时长
-	ViewedDuration int  //观看时长
-	State          int  //视屏状态
-	TabVideo       bool //是否有视屏
-	TabFile        bool //是否有文件
-	TabVote        bool //是否有投票
-	TabWork        bool //是否有作业
-	TabExam        bool //是否有考试
+	ViewedDuration int    //观看时长
+	State          int    //视屏状态
+	ErrorCode      int    //error信息状态
+	ErrorMessage   string //errorMessage信息
+	TabVideo       bool   //是否有视屏
+	TabFile        bool   //是否有文件
+	TabVote        bool   //是否有投票
+	TabWork        bool   //是否有作业
+	TabExam        bool   //是否有考试
 }
 
 // 考试节点信息
@@ -231,6 +233,49 @@ func VideosListAction(UserCache *yinghuaApi.YingHuaUserCache, course YingHuaCour
 		}
 	}
 
+	//接口二而爬取视屏信息
+	signalSet2 := make(map[string]bool)
+	//PC接口信息爬取
+	for i := 1; i < 999; i++ {
+		listJson2, err := yinghuaApi.VideoWatchRecodePCListApi(*UserCache, course.Id, i, 10, nil)
+		if err != nil {
+			log.Print(log.INFO, `[`, UserCache.Account, `] `, log.BoldRed, err)
+		}
+		log.Print(log.DEBUG, `[`, UserCache.Account, `] `, `CourseListAction---`, listJson2)
+		//如果获取失败
+		if gojsonq.New().JSONString(listJson).Find("msg") != "获取数据成功" {
+			return []YingHuaNode{}, errors.New("获取数据失败：" + err.Error())
+		}
+		jsonList1 := gojsonq.New().JSONString(listJson2).Find("list")
+		// 断言为切片并遍历
+		if items, ok := jsonList1.([]interface{}); ok {
+			//如果为空表则直接跳出循环
+			if len(items) == 0 {
+				break
+			}
+			for _, item := range items {
+				// 每个 item 是 map[string]interface{} 类型
+				if obj, ok := item.(map[string]interface{}); ok {
+					nodeId := strconv.Itoa(int(obj["id"].(float64)))
+					//如果是最后一个了那么就退出
+					_, isSignal := signalSet2[nodeId]
+					if isSignal {
+						return videoList, nil
+					}
+					signalSet2[nodeId] = true
+					index, isOk := videoSet[nodeId]
+					if isOk {
+						videoList[index].ErrorCode = int(obj["error"].(float64)) //设置error值
+						if obj["errorMessage"] != nil {
+							videoList[index].ErrorMessage = obj["errorMessage"].(string) //设置error信息
+						}
+					}
+				}
+			}
+		} else {
+			log.Print(log.INFO, "无法将数据转换为预期的类型")
+		}
+	}
 	return videoList, nil
 }
 
