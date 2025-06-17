@@ -7,8 +7,8 @@ import (
 	"time"
 )
 
-// VideoSubmitStudyTime 视屏学时提交
-func VideoSubmitStudyTime(cache *xuexitong.XueXiTUserCache, p *entity.PointVideoDto, playingTIme int, isdrag int) (string, error) {
+// VideoSubmitStudyTimeAction 视屏学时提交
+func VideoSubmitStudyTimeAction(cache *xuexitong.XueXiTUserCache, p *entity.PointVideoDto, playingTIme int, isdrag int) (string, error) {
 	playReport, err := cache.VideoSubmitStudyTime(p, playingTIme, isdrag, 8, nil)
 	if err != nil {
 		//预防202
