@@ -2,9 +2,12 @@ package xuexitong
 
 import (
 	"errors"
+	"fmt"
 	"github.com/thedevsaddam/gojsonq"
 	"github.com/yatori-dev/yatori-go-core/api/xuexitong"
+	log2 "github.com/yatori-dev/yatori-go-core/utils/log"
 	"image"
+	"net/http"
 )
 
 // PassFaceAction 过人脸
@@ -58,4 +61,14 @@ func PassFaceAction3(cache *xuexitong.XueXiTUserCache, courseId, classId, cpi, c
 	}
 	successEnc := gojsonq.New().JSONString(stateApi).Find("videoFaceCaptureSuccessEnc").(string)
 	return uuid, qrEnc, ObjectId, successEnc, nil
+}
+
+// PassVerAnd202 绕过验证码和状态202情况
+func PassVerAnd202(cache *xuexitong.XueXiTUserCache) {
+	//重新登录逻辑
+	log2.Print(log2.DEBUG, "触发验证码或者202，正在绕过...")
+	cache.SetCookies([]*http.Cookie{})
+	cache.LoginApi()      //重新登录设置cookie
+	cache.CourseListApi() //重新设置k8s值
+	log2.Print(log2.DEBUG, "重新登录后cookie值>>", fmt.Sprintf("%+v", cache.GetCookies()))
 }
