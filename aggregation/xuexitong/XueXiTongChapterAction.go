@@ -62,21 +62,24 @@ func ChapterFetchCardsAction(
 
 	cords, err := cache.FetchChapterCords(nodes, index, courseId)
 
-	if err.Error() == "触发验证码" {
-		//重新登录逻辑
-		log2.Print(log2.DEBUG, "触发验证码，自动重新登录")
-		cookies := cache.GetCookies()
-		k8sV := ""
-		for _, cookie := range cookies {
-			if cookie.Name == "k8s" {
-				k8sV = cookie.Value
+	if err != nil {
+		if err.Error() == "触发验证码" {
+			//重新登录逻辑
+			log2.Print(log2.DEBUG, "触发验证码，自动重新登录")
+			cookies := cache.GetCookies()
+			k8sV := ""
+			for _, cookie := range cookies {
+				if cookie.Name == "k8s" {
+					k8sV = cookie.Value
+				}
 			}
+			cache.SetCookies([]*http.Cookie{})
+			cache.LoginApi() //重新登录设置cookie
+			cache.SetCookies(append(cookies, &http.Cookie{Name: "k8s", Value: k8sV}))
+			log2.Print(log2.DEBUG, "重新登录后cookie值>>", fmt.Sprintf("%+v", cookies))
+			cords, err = cache.FetchChapterCords(nodes, index, courseId)
+			log2.Print(log2.DEBUG, "重新登录后cords以及err值>>", fmt.Sprintf("%+v %s", cords, err.Error()))
 		}
-		cache.SetCookies([]*http.Cookie{})
-		cache.LoginApi() //重新登录设置cookie
-		cache.SetCookies(append(cookies, &http.Cookie{Name: "k8s", Value: k8sV}))
-		log2.Print(log2.DEBUG, "重新登录后cookie值>>", fmt.Sprintf("%+v", cookies))
-		cords, err = cache.FetchChapterCords(nodes, index, courseId)
 	}
 
 	if err != nil {
