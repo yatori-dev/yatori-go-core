@@ -3,6 +3,7 @@ package xuexitong
 import (
 	"bytes"
 	"crypto/md5"
+	"crypto/tls"
 	"encoding/hex"
 	"encoding/json"
 	"errors"
@@ -15,6 +16,7 @@ import (
 	"io/ioutil"
 	"mime/multipart"
 	"net/http"
+	"net/url"
 	"regexp"
 	"strconv"
 	"strings"
@@ -24,11 +26,25 @@ import (
 // 用于获取云盘token（用于人脸）
 func (cache *XueXiTUserCache) GetFaceUpLoadToken() (string, error) {
 
-	url := "https://pan-yz.chaoxing.com/api/token/uservalid"
+	urlStr := "https://pan-yz.chaoxing.com/api/token/uservalid"
 	method := "GET"
 
-	client := &http.Client{}
-	req, err := http.NewRequest(method, url, nil)
+	tr := &http.Transport{
+		TLSClientConfig: &tls.Config{
+			InsecureSkipVerify: true, // 跳过证书验证，仅用于开发环境
+		},
+	}
+
+	//如果开启了IP代理，那么就直接添加代理
+	if cache.IpProxySW {
+		tr.Proxy = func(req *http.Request) (*url.URL, error) {
+			return url.Parse(cache.ProxyIP) // 设置代理
+		}
+	}
+	client := &http.Client{
+		Transport: tr,
+	}
+	req, err := http.NewRequest(method, urlStr, nil)
 
 	if err != nil {
 		fmt.Println(err)
@@ -73,11 +89,25 @@ func (cache *XueXiTUserCache) GetHistoryFaceImg(puid string) (string, image.Imag
 	}
 	hash := md5.Sum([]byte(puid + "uWwjeEKsri"))
 	enc := hex.EncodeToString(hash[:])
-	url := "https://passport2-api.chaoxing.com/api/getUserFaceid?enc=" + enc + "&token=4faa8662c59590c6f43ae9fe5b002b42&_time=" + fmt.Sprintf("%d", time.Now().Unix())
+	urlStr := "https://passport2-api.chaoxing.com/api/getUserFaceid?enc=" + enc + "&token=4faa8662c59590c6f43ae9fe5b002b42&_time=" + fmt.Sprintf("%d", time.Now().Unix())
 	method := "GET"
 
-	client := &http.Client{}
-	req, err := http.NewRequest(method, url, nil)
+	tr := &http.Transport{
+		TLSClientConfig: &tls.Config{
+			InsecureSkipVerify: true, // 跳过证书验证，仅用于开发环境
+		},
+	}
+
+	//如果开启了IP代理，那么就直接添加代理
+	if cache.IpProxySW {
+		tr.Proxy = func(req *http.Request) (*url.URL, error) {
+			return url.Parse(cache.ProxyIP) // 设置代理
+		}
+	}
+	client := &http.Client{
+		Transport: tr,
+	}
+	req, err := http.NewRequest(method, urlStr, nil)
 
 	if err != nil {
 		fmt.Println(err)
@@ -145,7 +175,7 @@ func (cache *XueXiTUserCache) GetHistoryFaceImg(puid string) (string, image.Imag
 // 上传人脸图片
 func (cache *XueXiTUserCache) UploadFaceImageApi(token string, image image.Image) (string, error) {
 
-	url := "https://pan-yz.chaoxing.com/upload"
+	urlStr := "https://pan-yz.chaoxing.com/upload"
 	method := "POST"
 
 	body := &bytes.Buffer{}
@@ -176,8 +206,22 @@ func (cache *XueXiTUserCache) UploadFaceImageApi(token string, image image.Image
 
 	writer.Close()
 
-	client := &http.Client{}
-	req, err := http.NewRequest(method, url, body)
+	tr := &http.Transport{
+		TLSClientConfig: &tls.Config{
+			InsecureSkipVerify: true, // 跳过证书验证，仅用于开发环境
+		},
+	}
+
+	//如果开启了IP代理，那么就直接添加代理
+	if cache.IpProxySW {
+		tr.Proxy = func(req *http.Request) (*url.URL, error) {
+			return url.Parse(cache.ProxyIP) // 设置代理
+		}
+	}
+	client := &http.Client{
+		Transport: tr,
+	}
+	req, err := http.NewRequest(method, urlStr, body)
 	req.Header.Set("Content-Type", writer.FormDataContentType())
 	if err != nil {
 		fmt.Println(err)
@@ -236,11 +280,25 @@ func (cache *XueXiTUserCache) UploadFaceImageForPUIDApi(puid string) (string, er
 // 获取人脸的必要数据（老的）
 func (cache *XueXiTUserCache) GetFaceQrCodeApi1(courseId, clazzid, chapterId, cpi string) (string, string, error) {
 
-	url := "https://mooc1.chaoxing.com/mooc-ans/mycourse/studentstudyAjax?courseId=" + courseId + "&clazzid=" + clazzid + "&chapterId=" + chapterId + "&cpi=" + cpi + "&verificationcode=&mooc2=1&toComputer=false&microTopicId=0"
+	urlStr := "https://mooc1.chaoxing.com/mooc-ans/mycourse/studentstudyAjax?courseId=" + courseId + "&clazzid=" + clazzid + "&chapterId=" + chapterId + "&cpi=" + cpi + "&verificationcode=&mooc2=1&toComputer=false&microTopicId=0"
 	method := "GET"
 
-	client := &http.Client{}
-	req, err := http.NewRequest(method, url, nil)
+	tr := &http.Transport{
+		TLSClientConfig: &tls.Config{
+			InsecureSkipVerify: true, // 跳过证书验证，仅用于开发环境
+		},
+	}
+
+	//如果开启了IP代理，那么就直接添加代理
+	if cache.IpProxySW {
+		tr.Proxy = func(req *http.Request) (*url.URL, error) {
+			return url.Parse(cache.ProxyIP) // 设置代理
+		}
+	}
+	client := &http.Client{
+		Transport: tr,
+	}
+	req, err := http.NewRequest(method, urlStr, nil)
 
 	if err != nil {
 		fmt.Println(err)
@@ -286,11 +344,25 @@ func (cache *XueXiTUserCache) GetFaceQrCodeApi1(courseId, clazzid, chapterId, cp
 // 获取人脸的必要数据
 func (cache *XueXiTUserCache) GetFaceQrCodeApi2(courseId, clazzId, cpi string) (string, string, error) {
 
-	url := "https://mooc1.chaoxing.com/visit/stucoursemiddle?" + "courseid=" + courseId + "&clazzid=" + clazzId + "&cpi=" + cpi + "&ismooc2=1"
+	urlStr := "https://mooc1.chaoxing.com/visit/stucoursemiddle?" + "courseid=" + courseId + "&clazzid=" + clazzId + "&cpi=" + cpi + "&ismooc2=1"
 	method := "GET"
 
-	client := &http.Client{}
-	req, err := http.NewRequest(method, url, nil)
+	tr := &http.Transport{
+		TLSClientConfig: &tls.Config{
+			InsecureSkipVerify: true, // 跳过证书验证，仅用于开发环境
+		},
+	}
+
+	//如果开启了IP代理，那么就直接添加代理
+	if cache.IpProxySW {
+		tr.Proxy = func(req *http.Request) (*url.URL, error) {
+			return url.Parse(cache.ProxyIP) // 设置代理
+		}
+	}
+	client := &http.Client{
+		Transport: tr,
+	}
+	req, err := http.NewRequest(method, urlStr, nil)
 
 	if err != nil {
 		fmt.Println(err)
@@ -340,11 +412,25 @@ func (cache *XueXiTUserCache) GetFaceQrCodeApi2(courseId, clazzId, cpi string) (
 // 拉人脸数据3（课程中）
 func (cache *XueXiTUserCache) GetFaceQrCodeApi3(courseId, clazzid, chapterId, cpi, enc, videojobid, chaptervideoobjectid string) (string, string, error) {
 
-	url := "https://mooc1.chaoxing.com/mycourse/studentstudy?chapterId=" + chapterId + "&courseId=" + courseId + "&clazzid=" + clazzid + "&cpi=" + cpi + "&enc=" + enc + "&mooc2=1"
+	urlStr := "https://mooc1.chaoxing.com/mycourse/studentstudy?chapterId=" + chapterId + "&courseId=" + courseId + "&clazzid=" + clazzid + "&cpi=" + cpi + "&enc=" + enc + "&mooc2=1"
 	method := "GET"
 
-	client := &http.Client{}
-	req, err := http.NewRequest(method, url, nil)
+	tr := &http.Transport{
+		TLSClientConfig: &tls.Config{
+			InsecureSkipVerify: true, // 跳过证书验证，仅用于开发环境
+		},
+	}
+
+	//如果开启了IP代理，那么就直接添加代理
+	if cache.IpProxySW {
+		tr.Proxy = func(req *http.Request) (*url.URL, error) {
+			return url.Parse(cache.ProxyIP) // 设置代理
+		}
+	}
+	client := &http.Client{
+		Transport: tr,
+	}
+	req, err := http.NewRequest(method, urlStr, nil)
 
 	if err != nil {
 		fmt.Println(err)
@@ -386,7 +472,21 @@ func (cache *XueXiTUserCache) GetFaceQrCodeApi3(courseId, clazzid, chapterId, cp
 	url1 := "https://mooc1.chaoxing.com/mooc-ans/qr/produce?uuid=" + uuidVal + "&enc=" + qrcEncVal + "&clazzid=" + clazzid + "&videojobid=" + videojobid + "&chaptervideoobjectid=" + chaptervideoobjectid + "&videoCollectTime=0"
 	method1 := "GET"
 
-	client1 := &http.Client{}
+	tr1 := &http.Transport{
+		TLSClientConfig: &tls.Config{
+			InsecureSkipVerify: true, // 跳过证书验证，仅用于开发环境
+		},
+	}
+
+	//如果开启了IP代理，那么就直接添加代理
+	if cache.IpProxySW {
+		tr.Proxy = func(req *http.Request) (*url.URL, error) {
+			return url.Parse(cache.ProxyIP) // 设置代理
+		}
+	}
+	client1 := &http.Client{
+		Transport: tr1,
+	}
 	req1, err1 := http.NewRequest(method1, url1, nil)
 
 	if err1 != nil {
@@ -429,13 +529,27 @@ func (cache *XueXiTUserCache) GetFaceQrCodeApi3(courseId, clazzid, chapterId, cp
 // 过人脸（第一版）
 func (cache *XueXiTUserCache) GetCourseFaceQrPlan1Api(courseId, classId, uuid, objectId, qrcEnc, failCount string) (string, error) {
 
-	url := "https://mooc1-api.chaoxing.com/qr/updateqrstatus"
+	urlStr := "https://mooc1-api.chaoxing.com/qr/updateqrstatus"
 	method := "POST"
 
 	payload := strings.NewReader("clazzId=" + classId + "&courseId=" + courseId + "&uuid=" + uuid + "&qrcEnc=" + qrcEnc + "&objectId=" + objectId + "&failCount=" + failCount + "&compareResult=0")
 
-	client := &http.Client{}
-	req, err := http.NewRequest(method, url, payload)
+	tr := &http.Transport{
+		TLSClientConfig: &tls.Config{
+			InsecureSkipVerify: true, // 跳过证书验证，仅用于开发环境
+		},
+	}
+
+	//如果开启了IP代理，那么就直接添加代理
+	if cache.IpProxySW {
+		tr.Proxy = func(req *http.Request) (*url.URL, error) {
+			return url.Parse(cache.ProxyIP) // 设置代理
+		}
+	}
+	client := &http.Client{
+		Transport: tr,
+	}
+	req, err := http.NewRequest(method, urlStr, payload)
 
 	if err != nil {
 		fmt.Println(err)
@@ -469,10 +583,24 @@ func (cache *XueXiTUserCache) GetCourseFaceQrPlan1Api(courseId, classId, uuid, o
 // 过人脸（第二版）
 func (cache *XueXiTUserCache) GetCourseFaceQrPlan2Api(classId, courseId, knowledgeId, cpi, objectId /*人脸上传id*/ string) (string, error) {
 
-	url := "https://mooc1-api.chaoxing.com/mooc-ans/facephoto/clientfacecheckstatus?" + "courseId=" + courseId + "&clazzId=" + classId + "&cpi=" + cpi + "&chapterId=" + knowledgeId + "&objectId=" + objectId + "&type=1"
+	urlStr := "https://mooc1-api.chaoxing.com/mooc-ans/facephoto/clientfacecheckstatus?" + "courseId=" + courseId + "&clazzId=" + classId + "&cpi=" + cpi + "&chapterId=" + knowledgeId + "&objectId=" + objectId + "&type=1"
 	method := "GET"
-	client := &http.Client{}
-	req, err := http.NewRequest(method, url, nil)
+	tr := &http.Transport{
+		TLSClientConfig: &tls.Config{
+			InsecureSkipVerify: true, // 跳过证书验证，仅用于开发环境
+		},
+	}
+
+	//如果开启了IP代理，那么就直接添加代理
+	if cache.IpProxySW {
+		tr.Proxy = func(req *http.Request) (*url.URL, error) {
+			return url.Parse(cache.ProxyIP) // 设置代理
+		}
+	}
+	client := &http.Client{
+		Transport: tr,
+	}
+	req, err := http.NewRequest(method, urlStr, nil)
 
 	if err != nil {
 		fmt.Println(err)
@@ -505,13 +633,27 @@ func (cache *XueXiTUserCache) GetCourseFaceQrPlan2Api(classId, courseId, knowled
 
 // 过人脸（第三版）
 func (cache *XueXiTUserCache) GetCourseFaceQrPlan3Api(uuid, clazzId, courseId, qrcEnc, objectId /*人脸的objectId*/ string) (string, error) {
-	url := "https://mooc1-api.chaoxing.com/qr/updateqrstatus?uuid2=" + uuid + "&clazzId2=" + clazzId
+	urlStr := "https://mooc1-api.chaoxing.com/qr/updateqrstatus?uuid2=" + uuid + "&clazzId2=" + clazzId
 	method := "POST"
 
 	payload := strings.NewReader("clazzId=" + clazzId + "&courseId=" + courseId + "&uuid=" + uuid + "&qrcEnc=" + qrcEnc + "&objectId=" + objectId)
 
-	client := &http.Client{}
-	req, err := http.NewRequest(method, url, payload)
+	tr := &http.Transport{
+		TLSClientConfig: &tls.Config{
+			InsecureSkipVerify: true, // 跳过证书验证，仅用于开发环境
+		},
+	}
+
+	//如果开启了IP代理，那么就直接添加代理
+	if cache.IpProxySW {
+		tr.Proxy = func(req *http.Request) (*url.URL, error) {
+			return url.Parse(cache.ProxyIP) // 设置代理
+		}
+	}
+	client := &http.Client{
+		Transport: tr,
+	}
+	req, err := http.NewRequest(method, urlStr, payload)
 
 	if err != nil {
 		return "", nil
@@ -567,11 +709,25 @@ func (cache *XueXiTUserCache) GetCourseFaceQrPlan3Api(uuid, clazzId, courseId, q
 //
 // 获取人脸状态{"code":"0","failCount":"90","videoFaceCaptureSuccessEnc":"2416cd8e0f5949d4b4d66da05aafb15a","compareResult":"0","status":2}
 func (cache *XueXiTUserCache) GetCourseFaceQrStateApi(uuid, enc, clazzid, courseid, cpi, mid, videoObjectId, videoRandomCollectTime, chapterId string) (string, error) {
-	url := "https://mooc1.chaoxing.com/mooc-ans/qr/getqrstatus?uuid=" + uuid + "&enc=" + enc + "&clazzid=" + clazzid + "&courseid=" + courseid + "&cpi=" + cpi + "&collectionTime=0&mid=" + mid + "&videoObjectId=" + videoObjectId + "&videoRandomCollectTime=" + videoRandomCollectTime + "&chapterId=" + chapterId
+	urlStr := "https://mooc1.chaoxing.com/mooc-ans/qr/getqrstatus?uuid=" + uuid + "&enc=" + enc + "&clazzid=" + clazzid + "&courseid=" + courseid + "&cpi=" + cpi + "&collectionTime=0&mid=" + mid + "&videoObjectId=" + videoObjectId + "&videoRandomCollectTime=" + videoRandomCollectTime + "&chapterId=" + chapterId
 	method := "GET"
 
-	client := &http.Client{}
-	req, err := http.NewRequest(method, url, nil)
+	tr := &http.Transport{
+		TLSClientConfig: &tls.Config{
+			InsecureSkipVerify: true, // 跳过证书验证，仅用于开发环境
+		},
+	}
+
+	//如果开启了IP代理，那么就直接添加代理
+	if cache.IpProxySW {
+		tr.Proxy = func(req *http.Request) (*url.URL, error) {
+			return url.Parse(cache.ProxyIP) // 设置代理
+		}
+	}
+	client := &http.Client{
+		Transport: tr,
+	}
+	req, err := http.NewRequest(method, urlStr, nil)
 
 	if err != nil {
 		fmt.Println(err)

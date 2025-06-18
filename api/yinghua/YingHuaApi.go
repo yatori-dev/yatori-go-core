@@ -10,23 +10,25 @@ import (
 	"math/rand"
 	"mime/multipart"
 	"net/http"
+	"net/url"
 	"os"
 	"strconv"
 	"strings"
 	"time"
 
-	"github.com/yatori-dev/yatori-go-core/api/entity"
 	"github.com/yatori-dev/yatori-go-core/utils"
 )
 
 type YingHuaUserCache struct {
-	PreUrl   string //前置url
-	Account  string //账号
-	Password string //用户密码
-	verCode  string //验证码
-	cookie   string //验证码用的session
-	token    string //保持会话的Token
-	sign     string //签名
+	PreUrl    string //前置url
+	Account   string //账号
+	Password  string //用户密码
+	IpProxySW bool   //是否开启IP代理
+	ProxyIP   string //代理IP
+	verCode   string //验证码
+	cookie    string //验证码用的session
+	token     string //保持会话的Token
+	sign      string //签名
 }
 
 func (cache *YingHuaUserCache) GetVerCode() string {
@@ -67,7 +69,7 @@ func (cache *YingHuaUserCache) LoginApi(retry int, lastError error) (string, err
 	if retry < 0 {
 		return "", lastError
 	}
-	url := cache.PreUrl + "/user/login.json"
+	urlStr := cache.PreUrl + "/user/login.json"
 	method := "POST"
 
 	payload := &bytes.Buffer{}
@@ -87,11 +89,18 @@ func (cache *YingHuaUserCache) LoginApi(retry int, lastError error) (string, err
 			InsecureSkipVerify: true, // 跳过证书验证，仅用于开发环境
 		},
 	}
+
+	//如果开启了IP代理，那么就直接添加代理
+	if cache.IpProxySW {
+		tr.Proxy = func(req *http.Request) (*url.URL, error) {
+			return url.Parse(cache.ProxyIP) // 设置代理
+		}
+	}
 	client := &http.Client{
 		Timeout:   30 * time.Second,
 		Transport: tr,
 	}
-	req, err := http.NewRequest(method, url, payload)
+	req, err := http.NewRequest(method, urlStr, payload)
 
 	if err != nil {
 		fmt.Println(err)
@@ -131,28 +140,38 @@ func (cache *YingHuaUserCache) VerificationCodeApi(retry int) (string, string) {
 	if retry < 0 {
 		return "", ""
 	}
-	url := cache.PreUrl + fmt.Sprintf("/service/code?r=%d", time.Now().Unix())
-	method := "GET"
+	rand.Seed(time.Now().UnixNano())
+	r := fmt.Sprintf("%.16f", rand.Float64())
+	urlStr := fmt.Sprintf("%s/service/code?r=%s", cache.PreUrl, r)
 
 	tr := &http.Transport{
 		TLSClientConfig: &tls.Config{
 			InsecureSkipVerify: true, // 跳过证书验证，仅用于开发环境
 		},
 	}
+
+	//如果开启了IP代理，那么就直接添加代理
+	if cache.IpProxySW {
+		tr.Proxy = func(req *http.Request) (*url.URL, error) {
+			return url.Parse(cache.ProxyIP) // 设置代理
+		}
+	}
+
 	client := &http.Client{
 		Timeout:   30 * time.Second,
 		Transport: tr,
 	}
-
-	req, err := http.NewRequest(method, url, nil)
-	req.Header.Add("Cookie", cache.cookie)
+	// 构建请求
+	req, err := http.NewRequest("GET", urlStr, nil)
 
 	if err != nil {
 		fmt.Println(err)
 		return "", ""
 	}
 	req.Header.Add("User-Agent", "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/136.0.0.0 Safari/537.36 Edg/136.0.0.0")
-
+	//req.Header.Set("Accept", "image/avif,image/webp,image/apng,image/*,*/*;q=0.8")
+	//req.Header.Set("Referer", "https://bwgl.qiankj.com/")
+	req.Header.Set("Connection", "keep-alive")
 	res, err := client.Do(req)
 	if err != nil {
 		time.Sleep(150 * time.Millisecond)
@@ -161,7 +180,6 @@ func (cache *YingHuaUserCache) VerificationCodeApi(retry int) (string, string) {
 		}
 		return cache.VerificationCodeApi(retry - 1)
 	}
-
 	codeFileName := "code" + randChar[rand.Intn(len(randChar))] //生成验证码文件名称
 	for i := 0; i < 10; i++ {
 		codeFileName += randChar[rand.Intn(len(randChar))]
@@ -182,6 +200,7 @@ func (cache *YingHuaUserCache) VerificationCodeApi(retry int) (string, string) {
 		log.Println(err)
 		return "", ""
 	}
+
 	file.Close()
 	if utils.IsBadImg(filepath) {
 		res.Body.Close()           //立即释放
@@ -193,16 +212,16 @@ func (cache *YingHuaUserCache) VerificationCodeApi(retry int) (string, string) {
 }
 
 // KeepAliveApi 登录心跳保活
-func KeepAliveApi(UserCache YingHuaUserCache) string {
+func KeepAliveApi(cache YingHuaUserCache) string {
 
-	url := UserCache.PreUrl + "/api/online.json"
+	urlStr := cache.PreUrl + "/api/online.json"
 	method := "POST"
 
 	payload := &bytes.Buffer{}
 	writer := multipart.NewWriter(payload)
 	_ = writer.WriteField("platform", "Android")
 	_ = writer.WriteField("version", "1.4.8")
-	_ = writer.WriteField("token", UserCache.token)
+	_ = writer.WriteField("token", cache.token)
 	//_ = writer.WriteField("schoolId", "7")
 	err := writer.Close()
 	if err != nil {
@@ -215,11 +234,18 @@ func KeepAliveApi(UserCache YingHuaUserCache) string {
 			InsecureSkipVerify: true, // 跳过证书验证，仅用于开发环境
 		},
 	}
+
+	//如果开启了IP代理，那么就直接添加代理
+	if cache.IpProxySW {
+		tr.Proxy = func(req *http.Request) (*url.URL, error) {
+			return url.Parse(cache.ProxyIP) // 设置代理
+		}
+	}
 	client := &http.Client{
 		Timeout:   30 * time.Second,
 		Transport: tr,
 	}
-	req, err := http.NewRequest(method, url, payload)
+	req, err := http.NewRequest(method, urlStr, payload)
 
 	if err != nil {
 		fmt.Println(err)
@@ -231,7 +257,7 @@ func KeepAliveApi(UserCache YingHuaUserCache) string {
 	res, err := client.Do(req)
 	if err != nil {
 		time.Sleep(time.Millisecond * 150) //延迟
-		return KeepAliveApi(UserCache)
+		return KeepAliveApi(cache)
 	}
 
 	body, err := ioutil.ReadAll(res.Body)
@@ -243,7 +269,7 @@ func KeepAliveApi(UserCache YingHuaUserCache) string {
 	if strings.Contains(string(body), "502 Bad Gateway") {
 		res.Body.Close()                   //立即释放
 		time.Sleep(time.Millisecond * 150) //延迟
-		return KeepAliveApi(UserCache)
+		return KeepAliveApi(cache)
 	}
 
 	return string(body)
@@ -254,7 +280,7 @@ func (cache *YingHuaUserCache) CourseListApi(retry int, lastError error) (string
 	if retry < 0 {
 		return "", lastError
 	}
-	url := cache.PreUrl + "/api/course/list.json"
+	urlStr := cache.PreUrl + "/api/course/list.json"
 	method := "POST"
 
 	payload := &bytes.Buffer{}
@@ -273,11 +299,18 @@ func (cache *YingHuaUserCache) CourseListApi(retry int, lastError error) (string
 			InsecureSkipVerify: true, // 跳过证书验证，仅用于开发环境
 		},
 	}
+
+	//如果开启了IP代理，那么就直接添加代理
+	if cache.IpProxySW {
+		tr.Proxy = func(req *http.Request) (*url.URL, error) {
+			return url.Parse(cache.ProxyIP) // 设置代理
+		}
+	}
 	client := &http.Client{
 		Timeout:   30 * time.Second,
 		Transport: tr,
 	}
-	req, err := http.NewRequest(method, url, payload)
+	req, err := http.NewRequest(method, urlStr, payload)
 	req.Header.Set("Cookie", cache.cookie)
 	if err != nil {
 		return "", err
@@ -315,7 +348,7 @@ func (cache *YingHuaUserCache) CourseDetailApi(courseId string, retry int, lastE
 	if retry < 0 {
 		return "", lastError
 	}
-	url := cache.PreUrl + "/api/course/detail.json"
+	urlStr := cache.PreUrl + "/api/course/detail.json"
 	method := "POST"
 
 	payload := &bytes.Buffer{}
@@ -334,11 +367,25 @@ func (cache *YingHuaUserCache) CourseDetailApi(courseId string, retry int, lastE
 			InsecureSkipVerify: true, // 跳过证书验证，仅用于开发环境
 		},
 	}
+
+	//如果开启了IP代理，那么就直接添加代理
+	if cache.IpProxySW {
+		tr.Proxy = func(req *http.Request) (*url.URL, error) {
+			return url.Parse(cache.ProxyIP) // 设置代理
+		}
+	}
+
+	//如果开启了IP代理，那么就直接添加代理
+	if cache.IpProxySW {
+		tr.Proxy = func(req *http.Request) (*url.URL, error) {
+			return url.Parse(cache.ProxyIP) // 设置代理
+		}
+	}
 	client := &http.Client{
 		Timeout:   30 * time.Second,
 		Transport: tr,
 	}
-	req, err := http.NewRequest(method, url, payload)
+	req, err := http.NewRequest(method, urlStr, payload)
 	req.Header.Add("Cookie", cache.cookie)
 
 	if err != nil {
@@ -373,18 +420,18 @@ func (cache *YingHuaUserCache) CourseDetailApi(courseId string, retry int, lastE
 }
 
 // CourseVideListApi 对应课程的视屏列表
-func CourseVideListApi(UserCache YingHuaUserCache, courseId string /*课程ID*/, retry int, lastError error) (string, error) {
+func CourseVideListApi(cache YingHuaUserCache, courseId string /*课程ID*/, retry int, lastError error) (string, error) {
 	if retry < 0 {
 		return "", lastError
 	}
-	url := UserCache.PreUrl + "/api/course/chapter.json"
+	urlStr := cache.PreUrl + "/api/course/chapter.json"
 	method := "POST"
 
 	payload := &bytes.Buffer{}
 	writer := multipart.NewWriter(payload)
 	_ = writer.WriteField("platform", "Android")
 	_ = writer.WriteField("version", "1.4.8")
-	_ = writer.WriteField("token", UserCache.token)
+	_ = writer.WriteField("token", cache.token)
 	_ = writer.WriteField("courseId", courseId)
 	err := writer.Close()
 	if err != nil {
@@ -397,15 +444,22 @@ func CourseVideListApi(UserCache YingHuaUserCache, courseId string /*课程ID*/,
 			InsecureSkipVerify: true, // 跳过证书验证，仅用于开发环境
 		},
 	}
+
+	//如果开启了IP代理，那么就直接添加代理
+	if cache.IpProxySW {
+		tr.Proxy = func(req *http.Request) (*url.URL, error) {
+			return url.Parse(cache.ProxyIP) // 设置代理
+		}
+	}
 	client := &http.Client{
 		Timeout:   30 * time.Second,
 		Transport: tr,
 	}
-	req, err := http.NewRequest(method, url, payload)
-	req.Header.Set("Cookie", UserCache.cookie)
+	req, err := http.NewRequest(method, urlStr, payload)
+	req.Header.Set("Cookie", cache.cookie)
 	if err != nil {
 		time.Sleep(time.Millisecond * 150) //延迟
-		return CourseVideListApi(UserCache, courseId, retry-1, err)
+		return CourseVideListApi(cache, courseId, retry-1, err)
 	}
 	req.Header.Add("User-Agent", "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/136.0.0.0 Safari/537.36 Edg/136.0.0.0")
 
@@ -414,56 +468,65 @@ func CourseVideListApi(UserCache YingHuaUserCache, courseId string /*课程ID*/,
 	if err != nil {
 		time.Sleep(time.Millisecond * 150) //延迟
 		if strings.Contains(err.Error(), "A connection attempt failed because the connected party did not properly respond after a period of time") {
-			return CourseVideListApi(UserCache, courseId, retry, err)
+			return CourseVideListApi(cache, courseId, retry, err)
 		}
-		return CourseVideListApi(UserCache, courseId, retry-1, err)
+		return CourseVideListApi(cache, courseId, retry-1, err)
 	}
 
 	body, err := ioutil.ReadAll(res.Body)
 	if err != nil {
 		res.Body.Close()                   //立即释放
 		time.Sleep(time.Millisecond * 150) //延迟
-		return CourseVideListApi(UserCache, courseId, retry-1, err)
+		return CourseVideListApi(cache, courseId, retry-1, err)
 	}
 	if strings.Contains(string(body), "502 Bad Gateway") {
 		res.Body.Close()                   //立即释放
 		time.Sleep(time.Millisecond * 150) //延迟
-		return CourseVideListApi(UserCache, courseId, retry, err)
+		return CourseVideListApi(cache, courseId, retry, err)
 	}
 	defer res.Body.Close()
 	return string(body), nil
 }
 
 // SubmitStudyTimeApi 提交学时
-func SubmitStudyTimeApi(UserCache YingHuaUserCache, nodeId string /*对应视屏节点ID*/, studyId string /*学习分配ID*/, studyTime int /*提交的学时*/, retry int, lastError error) (string, error) {
+func SubmitStudyTimeApi(cache YingHuaUserCache, nodeId string /*对应视屏节点ID*/, studyId string /*学习分配ID*/, studyTime int /*提交的学时*/, retry int, lastError error) (string, error) {
 	if retry < 0 {
 		return "", lastError
 	}
-	url := UserCache.PreUrl + "/api/node/study.json"
+	urlStr := cache.PreUrl + "/api/node/study.json"
 	method := "POST"
 	payload := &bytes.Buffer{}
 	writer := multipart.NewWriter(payload)
 	_ = writer.WriteField("platform", "Android")
 	_ = writer.WriteField("version", "1.4.8")
 	_ = writer.WriteField("nodeId", nodeId)
-	_ = writer.WriteField("token", UserCache.token)
+	_ = writer.WriteField("token", cache.token)
 	_ = writer.WriteField("terminal", "Android")
 	_ = writer.WriteField("studyTime", strconv.Itoa(studyTime))
 	_ = writer.WriteField("studyId", studyId)
 	err := writer.Close()
 	if err != nil {
 		time.Sleep(time.Millisecond * 150)
-		return SubmitStudyTimeApi(UserCache, nodeId, studyId, studyTime, retry-1, err)
+		return SubmitStudyTimeApi(cache, nodeId, studyId, studyTime, retry-1, err)
 	}
 
 	tr := &http.Transport{
-		TLSClientConfig: &tls.Config{InsecureSkipVerify: true}, // 跳过证书验证
+		TLSClientConfig: &tls.Config{
+			InsecureSkipVerify: true, // 跳过证书验证，仅用于开发环境
+		},
+	}
+
+	//如果开启了IP代理，那么就直接添加代理
+	if cache.IpProxySW {
+		tr.Proxy = func(req *http.Request) (*url.URL, error) {
+			return url.Parse(cache.ProxyIP) // 设置代理
+		}
 	}
 	client := &http.Client{
 		Timeout:   30 * time.Second,
 		Transport: tr,
 	}
-	req, err := http.NewRequest(method, url, payload)
+	req, err := http.NewRequest(method, urlStr, payload)
 
 	if err != nil {
 		//fmt.Println(err)
@@ -475,32 +538,32 @@ func SubmitStudyTimeApi(UserCache YingHuaUserCache, nodeId string /*对应视屏
 	res, err := client.Do(req)
 	if err != nil {
 		time.Sleep(time.Millisecond * 150)
-		return SubmitStudyTimeApi(UserCache, nodeId, studyId, studyTime, retry-1, err)
+		return SubmitStudyTimeApi(cache, nodeId, studyId, studyTime, retry-1, err)
 	}
 
 	body, err := ioutil.ReadAll(res.Body)
 	if err != nil {
 		res.Body.Close() //立即释放
 		time.Sleep(time.Millisecond * 150)
-		return SubmitStudyTimeApi(UserCache, nodeId, studyId, studyTime, retry-1, err)
+		return SubmitStudyTimeApi(cache, nodeId, studyId, studyTime, retry-1, err)
 	}
 
 	//避免502情况
 	if strings.Contains(string(body), "502 Bad Gateway") {
 		res.Body.Close()                   //立即释放
 		time.Sleep(time.Millisecond * 150) //延迟
-		return SubmitStudyTimeApi(UserCache, nodeId, studyId, studyTime, retry-1, err)
+		return SubmitStudyTimeApi(cache, nodeId, studyId, studyTime, retry-1, err)
 	}
 	defer res.Body.Close()
 	return string(body), nil
 }
 
 // VideStudyTimeApi 获取单个视屏的学习进度
-func VideStudyTimeApi(userEntity entity.UserEntity, nodeId string, retryNum int, lastError error) string {
+func (cache *YingHuaUserCache) VideStudyTimeApi(nodeId string, retryNum int, lastError error) string {
 	if retryNum < 0 {
 		return ""
 	}
-	url := userEntity.PreUrl + "/api/node/video.json"
+	urlStr := cache.PreUrl + "/api/node/video.json"
 	method := "POST"
 
 	payload := &bytes.Buffer{}
@@ -508,7 +571,7 @@ func VideStudyTimeApi(userEntity entity.UserEntity, nodeId string, retryNum int,
 	_ = writer.WriteField("platform", "Android")
 	_ = writer.WriteField("version", "1.4.8")
 	_ = writer.WriteField("nodeId", nodeId)
-	_ = writer.WriteField("token", userEntity.Token)
+	_ = writer.WriteField("token", cache.token)
 	err := writer.Close()
 	if err != nil {
 		fmt.Println(err)
@@ -520,15 +583,22 @@ func VideStudyTimeApi(userEntity entity.UserEntity, nodeId string, retryNum int,
 			InsecureSkipVerify: true, // 跳过证书验证，仅用于开发环境
 		},
 	}
+
+	//如果开启了IP代理，那么就直接添加代理
+	if cache.IpProxySW {
+		tr.Proxy = func(req *http.Request) (*url.URL, error) {
+			return url.Parse(cache.ProxyIP) // 设置代理
+		}
+	}
 	client := &http.Client{
 		Timeout:   30 * time.Second,
 		Transport: tr,
 	}
-	req, err := http.NewRequest(method, url, payload)
+	req, err := http.NewRequest(method, urlStr, payload)
 
 	if err != nil {
 		time.Sleep(time.Millisecond * 150) //延迟
-		return VideStudyTimeApi(userEntity, nodeId, retryNum-1, lastError)
+		return cache.VideStudyTimeApi(nodeId, retryNum-1, lastError)
 	}
 	req.Header.Add("User-Agent", "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/136.0.0.0 Safari/537.36 Edg/136.0.0.0")
 
@@ -536,41 +606,41 @@ func VideStudyTimeApi(userEntity entity.UserEntity, nodeId string, retryNum int,
 	res, err := client.Do(req)
 	if err != nil {
 		time.Sleep(time.Millisecond * 150) //延迟
-		return VideStudyTimeApi(userEntity, nodeId, retryNum-1, lastError)
+		return cache.VideStudyTimeApi(nodeId, retryNum-1, lastError)
 	}
 	defer res.Body.Close()
 
 	body, err := ioutil.ReadAll(res.Body)
 	if err != nil {
 		time.Sleep(time.Millisecond * 150) //延迟
-		return VideStudyTimeApi(userEntity, nodeId, retryNum-1, lastError)
+		return cache.VideStudyTimeApi(nodeId, retryNum-1, lastError)
 	}
 	if strings.Contains(string(body), "502 Bad Gateway") {
 		time.Sleep(time.Millisecond * 150) //延迟
-		return VideStudyTimeApi(userEntity, nodeId, retryNum, lastError)
+		return cache.VideStudyTimeApi(nodeId, retryNum, lastError)
 	}
 	return string(body)
 }
 
 // VideWatchRecodeApi 获取指定课程视屏观看记录
-func VideWatchRecodeApi(UserCache YingHuaUserCache, courseId string, page int, retry int, lastError error) (string, error) {
+func VideWatchRecodeApi(cache YingHuaUserCache, courseId string, page int, retry int, lastError error) (string, error) {
 	if retry < 0 {
 		return "", lastError
 	}
-	url := UserCache.PreUrl + "/api/record/video.json"
+	urlStr := cache.PreUrl + "/api/record/video.json"
 	method := "POST"
 
 	payload := &bytes.Buffer{}
 	writer := multipart.NewWriter(payload)
 	_ = writer.WriteField("platform", "Android")
 	_ = writer.WriteField("version", "1.4.8")
-	_ = writer.WriteField("token", UserCache.token)
+	_ = writer.WriteField("token", cache.token)
 	_ = writer.WriteField("courseId", courseId)
 	_ = writer.WriteField("page", strconv.Itoa(page))
 	err := writer.Close()
 	if err != nil {
 		//fmt.Println(err)
-		return VideWatchRecodeApi(UserCache, courseId, page, retry-1, err)
+		return VideWatchRecodeApi(cache, courseId, page, retry-1, err)
 	}
 
 	tr := &http.Transport{
@@ -578,15 +648,22 @@ func VideWatchRecodeApi(UserCache YingHuaUserCache, courseId string, page int, r
 			InsecureSkipVerify: true, // 跳过证书验证，仅用于开发环境
 		},
 	}
+
+	//如果开启了IP代理，那么就直接添加代理
+	if cache.IpProxySW {
+		tr.Proxy = func(req *http.Request) (*url.URL, error) {
+			return url.Parse(cache.ProxyIP) // 设置代理
+		}
+	}
 	client := &http.Client{
 		Timeout:   30 * time.Second,
 		Transport: tr,
 	}
-	req, err := http.NewRequest(method, url, payload)
-	req.Header.Set("Cookie", UserCache.cookie)
+	req, err := http.NewRequest(method, urlStr, payload)
+	req.Header.Set("Cookie", cache.cookie)
 	if err != nil {
 		//fmt.Println(err)
-		return VideWatchRecodeApi(UserCache, courseId, page, retry-1, err)
+		return VideWatchRecodeApi(cache, courseId, page, retry-1, err)
 	}
 	req.Header.Add("User-Agent", "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/136.0.0.0 Safari/537.36 Edg/136.0.0.0")
 
@@ -594,30 +671,30 @@ func VideWatchRecodeApi(UserCache YingHuaUserCache, courseId string, page int, r
 	res, err := client.Do(req)
 	if err != nil {
 		//fmt.Println(err)
-		return VideWatchRecodeApi(UserCache, courseId, page, retry-1, err)
+		return VideWatchRecodeApi(cache, courseId, page, retry-1, err)
 	}
 
 	body, err := ioutil.ReadAll(res.Body)
 	if err != nil {
 		//fmt.Println(err)
-		return VideWatchRecodeApi(UserCache, courseId, page, retry-1, err)
+		return VideWatchRecodeApi(cache, courseId, page, retry-1, err)
 	}
 	if strings.Contains(string(body), "502 Bad Gateway") {
 		res.Body.Close()                   //立即释放
 		time.Sleep(time.Millisecond * 150) //延迟
-		return VideWatchRecodeApi(UserCache, courseId, page, retry, lastError)
+		return VideWatchRecodeApi(cache, courseId, page, retry, lastError)
 	}
 	defer res.Body.Close()
 	return string(body), nil
 }
 
 // VideoWatchRecodePCListApi 获取指定课程视屏观看记录接口2，PC端
-func VideoWatchRecodePCListApi(UserCache YingHuaUserCache, courseId string, page int, retry int, lastError error) (string, error) {
+func VideoWatchRecodePCListApi(cache YingHuaUserCache, courseId string, page int, retry int, lastError error) (string, error) {
 	if retry < 0 {
 		return "", lastError
 	}
 
-	url := "https://cqcst.miaoyangkj.com/user/study_record/video.json?courseId=" + courseId + "&_=" + fmt.Sprintf("%d", time.Now().Unix()) + "&page=" + fmt.Sprintf("%d", page)
+	urlStr := cache.PreUrl + "/user/study_record/video.json?courseId=" + courseId + "&_=" + fmt.Sprintf("%d", time.Now().Unix()) + "&page=" + fmt.Sprintf("%d", page)
 	method := "GET"
 
 	tr := &http.Transport{
@@ -625,44 +702,51 @@ func VideoWatchRecodePCListApi(UserCache YingHuaUserCache, courseId string, page
 			InsecureSkipVerify: true, // 跳过证书验证，仅用于开发环境
 		},
 	}
+
+	//如果开启了IP代理，那么就直接添加代理
+	if cache.IpProxySW {
+		tr.Proxy = func(req *http.Request) (*url.URL, error) {
+			return url.Parse(cache.ProxyIP) // 设置代理
+		}
+	}
 	client := &http.Client{
 		Timeout:   30 * time.Second,
 		Transport: tr,
 	}
-	req, err := http.NewRequest(method, url, nil)
-	req.Header.Set("Cookie", UserCache.cookie)
+	req, err := http.NewRequest(method, urlStr, nil)
+	req.Header.Set("Cookie", cache.cookie)
 	if err != nil {
 		//fmt.Println(err)
-		return VideWatchRecodeApi(UserCache, courseId, page, retry-1, err)
+		return VideoWatchRecodePCListApi(cache, courseId, page, retry-1, err)
 	}
 	req.Header.Add("User-Agent", "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/136.0.0.0 Safari/537.36 Edg/136.0.0.0")
 
 	res, err := client.Do(req)
 	if err != nil {
 		//fmt.Println(err)
-		return VideWatchRecodeApi(UserCache, courseId, page, retry-1, err)
+		return VideoWatchRecodePCListApi(cache, courseId, page, retry-1, err)
 	}
 
 	body, err := ioutil.ReadAll(res.Body)
 	if err != nil {
 		//fmt.Println(err)
-		return VideWatchRecodeApi(UserCache, courseId, page, retry-1, err)
+		return VideoWatchRecodePCListApi(cache, courseId, page, retry-1, err)
 	}
 	if strings.Contains(string(body), "502 Bad Gateway") {
 		res.Body.Close()                   //立即释放
 		time.Sleep(time.Millisecond * 150) //延迟
-		return VideWatchRecodeApi(UserCache, courseId, page, retry, lastError)
+		return VideoWatchRecodePCListApi(cache, courseId, page, retry, lastError)
 	}
 	defer res.Body.Close()
 	return string(body), nil
 }
 
 // ExamDetailApi 获取考试信息
-func ExamDetailApi(UserCache YingHuaUserCache, nodeId string, retryNum int, lastError error) (string, error) {
+func ExamDetailApi(cache YingHuaUserCache, nodeId string, retryNum int, lastError error) (string, error) {
 	if retryNum < 0 {
 		return "", lastError
 	}
-	url := UserCache.PreUrl + "/api/node/exam.json?nodeId=" + nodeId
+	urlStr := cache.PreUrl + "/api/node/exam.json?nodeId=" + nodeId
 	method := "POST"
 
 	payload := &bytes.Buffer{}
@@ -670,7 +754,7 @@ func ExamDetailApi(UserCache YingHuaUserCache, nodeId string, retryNum int, last
 	_ = writer.WriteField("platform", "Android")
 	_ = writer.WriteField("version", "1.4.8")
 	_ = writer.WriteField("nodeId", nodeId)
-	_ = writer.WriteField("token", UserCache.token)
+	_ = writer.WriteField("token", cache.token)
 	_ = writer.WriteField("terminal", "Android")
 	err := writer.Close()
 	if err != nil {
@@ -683,12 +767,19 @@ func ExamDetailApi(UserCache YingHuaUserCache, nodeId string, retryNum int, last
 			InsecureSkipVerify: true, // 跳过证书验证，仅用于开发环境
 		},
 	}
+
+	//如果开启了IP代理，那么就直接添加代理
+	if cache.IpProxySW {
+		tr.Proxy = func(req *http.Request) (*url.URL, error) {
+			return url.Parse(cache.ProxyIP) // 设置代理
+		}
+	}
 	client := &http.Client{
 		Timeout:   30 * time.Second,
 		Transport: tr,
 	}
-	req, err := http.NewRequest(method, url, payload)
-	req.Header.Add("Cookie", UserCache.cookie)
+	req, err := http.NewRequest(method, urlStr, payload)
+	req.Header.Add("Cookie", cache.cookie)
 
 	if err != nil {
 		fmt.Println(err)
@@ -700,19 +791,19 @@ func ExamDetailApi(UserCache YingHuaUserCache, nodeId string, retryNum int, last
 	res, err := client.Do(req)
 	if err != nil {
 		time.Sleep(time.Millisecond * 150) //延迟
-		return ExamDetailApi(UserCache, nodeId, retryNum-1, err)
+		return ExamDetailApi(cache, nodeId, retryNum-1, err)
 	}
 
 	body, err := ioutil.ReadAll(res.Body)
 	if err != nil {
 		res.Body.Close()                   //立即释放
 		time.Sleep(time.Millisecond * 150) //延迟
-		return ExamDetailApi(UserCache, nodeId, retryNum-1, err)
+		return ExamDetailApi(cache, nodeId, retryNum-1, err)
 	}
 	if strings.Contains(string(body), "502 Bad Gateway") {
 		res.Body.Close()                   //立即释放
 		time.Sleep(time.Millisecond * 150) //延迟
-		return ExamDetailApi(UserCache, nodeId, retryNum, err)
+		return ExamDetailApi(cache, nodeId, retryNum, err)
 	}
 	defer res.Body.Close()
 	return string(body), nil
@@ -720,11 +811,11 @@ func ExamDetailApi(UserCache YingHuaUserCache, nodeId string, retryNum int, last
 
 // StartExam 开始考试接口
 // {"_code":9,"status":false,"msg":"考试测试时间还未开始","result":{}}
-func StartExam(userCache YingHuaUserCache, courseId, nodeId, examId string, retryNum int, lastError error) (string, error) {
+func StartExam(cache YingHuaUserCache, courseId, nodeId, examId string, retryNum int, lastError error) (string, error) {
 	if retryNum < 0 {
 		return "", lastError
 	}
-	url := userCache.PreUrl + "/api/exam/start.json?nodeId=" + nodeId + "&courseId=" + courseId + "&token=" + userCache.token + "&examId=" + examId
+	urlStr := cache.PreUrl + "/api/exam/start.json?nodeId=" + nodeId + "&courseId=" + courseId + "&token=" + cache.token + "&examId=" + examId
 	method := "GET"
 
 	tr := &http.Transport{
@@ -732,16 +823,23 @@ func StartExam(userCache YingHuaUserCache, courseId, nodeId, examId string, retr
 			InsecureSkipVerify: true, // 跳过证书验证，仅用于开发环境
 		},
 	}
+
+	//如果开启了IP代理，那么就直接添加代理
+	if cache.IpProxySW {
+		tr.Proxy = func(req *http.Request) (*url.URL, error) {
+			return url.Parse(cache.ProxyIP) // 设置代理
+		}
+	}
 	client := &http.Client{
 		Timeout:   30 * time.Second,
 		Transport: tr,
 	}
-	req, err := http.NewRequest(method, url, nil)
+	req, err := http.NewRequest(method, urlStr, nil)
 
 	if err != nil {
 		fmt.Println(err)
 		time.Sleep(100 * time.Millisecond)
-		return StartExam(userCache, courseId, nodeId, examId, retryNum-1, err)
+		return StartExam(cache, courseId, nodeId, examId, retryNum-1, err)
 	}
 	req.Header.Add("User-Agent", "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/136.0.0.0 Safari/537.36 Edg/136.0.0.0")
 
@@ -749,7 +847,7 @@ func StartExam(userCache YingHuaUserCache, courseId, nodeId, examId string, retr
 	if err != nil {
 		fmt.Println(err)
 		time.Sleep(100 * time.Millisecond)
-		return StartExam(userCache, courseId, nodeId, examId, retryNum-1, err)
+		return StartExam(cache, courseId, nodeId, examId, retryNum-1, err)
 	}
 
 	body, err := ioutil.ReadAll(res.Body)
@@ -757,25 +855,34 @@ func StartExam(userCache YingHuaUserCache, courseId, nodeId, examId string, retr
 		res.Body.Close() //立即释放
 		fmt.Println(err)
 		time.Sleep(100 * time.Millisecond)
-		return StartExam(userCache, courseId, nodeId, examId, retryNum-1, err)
+		return StartExam(cache, courseId, nodeId, examId, retryNum-1, err)
 	}
 	if strings.Contains(string(body), "502 Bad Gateway") {
 		res.Body.Close()                   //立即释放
 		time.Sleep(time.Millisecond * 150) //延迟
-		return StartExam(userCache, courseId, nodeId, examId, retryNum, lastError)
+		return StartExam(cache, courseId, nodeId, examId, retryNum, lastError)
 	}
 	defer res.Body.Close()
 	return string(body), nil
 }
 
 // GetExamTopicApi 获取所有考试题目，但是HTML，建议配合TurnExamTopic函数使用将题目html转成结构体
-func GetExamTopicApi(UserCache YingHuaUserCache, nodeId, examId string, retryNum int, lastError error) (string, error) {
+func GetExamTopicApi(cache YingHuaUserCache, nodeId, examId string, retryNum int, lastError error) (string, error) {
 	if retryNum < 0 {
 		return "", lastError
 	}
 	// Creating a custom HTTP client with timeout and SSL context (skip SSL setup for simplicity)
 	tr := &http.Transport{
-		TLSClientConfig: &tls.Config{InsecureSkipVerify: true}, // 跳过证书验证
+		TLSClientConfig: &tls.Config{
+			InsecureSkipVerify: true, // 跳过证书验证，仅用于开发环境
+		},
+	}
+
+	//如果开启了IP代理，那么就直接添加代理
+	if cache.IpProxySW {
+		tr.Proxy = func(req *http.Request) (*url.URL, error) {
+			return url.Parse(cache.ProxyIP) // 设置代理
+		}
 	}
 	client := &http.Client{
 		Transport: tr,
@@ -786,7 +893,7 @@ func GetExamTopicApi(UserCache YingHuaUserCache, nodeId, examId string, retryNum
 	body := []byte("{}")
 
 	// Create the request
-	url := fmt.Sprintf("%s/api/exam.json?nodeId=%s&examId=%s&token=%s", UserCache.PreUrl, nodeId, examId, UserCache.token)
+	url := fmt.Sprintf("%s/api/exam.json?nodeId=%s&examId=%s&token=%s", cache.PreUrl, nodeId, examId, cache.token)
 	req, err := http.NewRequest("POST", url, bytes.NewReader(body))
 	if err != nil {
 		return "", err
@@ -795,7 +902,7 @@ func GetExamTopicApi(UserCache YingHuaUserCache, nodeId, examId string, retryNum
 	// Set the headers
 	req.Header.Add("User-Agent", "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/136.0.0.0 Safari/537.36 Edg/136.0.0.0")
 	req.Header.Add("Accept", "*/*")
-	req.Header.Add("Host", UserCache.PreUrl)
+	req.Header.Add("Host", cache.PreUrl)
 	req.Header.Add("Connection", "keep-alive")
 	req.Header.Add("Content-Type", "application/json; charset=utf-8")
 
@@ -803,7 +910,7 @@ func GetExamTopicApi(UserCache YingHuaUserCache, nodeId, examId string, retryNum
 	resp, err := client.Do(req)
 	if err != nil {
 		time.Sleep(100 * time.Millisecond)
-		return GetExamTopicApi(UserCache, nodeId, examId, retryNum-1, err)
+		return GetExamTopicApi(cache, nodeId, examId, retryNum-1, err)
 	}
 
 	// Read the response body
@@ -811,25 +918,34 @@ func GetExamTopicApi(UserCache YingHuaUserCache, nodeId, examId string, retryNum
 	if err != nil {
 		resp.Body.Close() //立即释放
 		time.Sleep(100 * time.Millisecond)
-		return GetExamTopicApi(UserCache, nodeId, examId, retryNum-1, err)
+		return GetExamTopicApi(cache, nodeId, examId, retryNum-1, err)
 	}
 	if strings.Contains(string(body), "502 Bad Gateway") {
 		resp.Body.Close()                  //立即释放
 		time.Sleep(time.Millisecond * 150) //延迟
-		return GetExamTopicApi(UserCache, nodeId, examId, retryNum, err)
+		return GetExamTopicApi(cache, nodeId, examId, retryNum, err)
 	}
 	defer resp.Body.Close()
 	return string(bodyBytes), nil
 }
 
 // SubmitExamApi 提交考试答案接口
-func SubmitExamApi(UserCache YingHuaUserCache, examId, answerId string, answers utils.Answer, finish string, retryNum int, lastError error) (string, error) {
+func SubmitExamApi(cache YingHuaUserCache, examId, answerId string, answers utils.Answer, finish string, retryNum int, lastError error) (string, error) {
 	if retryNum < 0 {
 		return "", lastError
 	}
 	// Creating the HTTP client with a timeout (30 seconds)
 	tr := &http.Transport{
-		TLSClientConfig: &tls.Config{InsecureSkipVerify: true}, // 跳过证书验证
+		TLSClientConfig: &tls.Config{
+			InsecureSkipVerify: true, // 跳过证书验证，仅用于开发环境
+		},
+	}
+
+	//如果开启了IP代理，那么就直接添加代理
+	if cache.IpProxySW {
+		tr.Proxy = func(req *http.Request) (*url.URL, error) {
+			return url.Parse(cache.ProxyIP) // 设置代理
+		}
 	}
 	client := &http.Client{
 		Timeout:   30 * time.Second,
@@ -847,7 +963,7 @@ func SubmitExamApi(UserCache YingHuaUserCache, examId, answerId string, answers 
 	writer.WriteField("terminal", "Android")
 	writer.WriteField("answerId", answerId)
 	writer.WriteField("finish", finish)
-	writer.WriteField("token", UserCache.token)
+	writer.WriteField("token", cache.token)
 
 	// Add the answer fields
 	if answers.Type == "单选" || answers.Type == "判断" || answers.Type == "简答" {
@@ -866,16 +982,16 @@ func SubmitExamApi(UserCache YingHuaUserCache, examId, answerId string, answers 
 	writer.Close()
 
 	// Create the request with the necessary headers
-	req, err := http.NewRequest("POST", fmt.Sprintf("%s/api/exam/submit.json", UserCache.PreUrl), body)
+	req, err := http.NewRequest("POST", fmt.Sprintf("%s/api/exam/submit.json", cache.PreUrl), body)
 	if err != nil {
 		time.Sleep(100 * time.Millisecond)
-		return SubmitExamApi(UserCache, examId, answerId, answers, finish, retryNum-1, err)
+		return SubmitExamApi(cache, examId, answerId, answers, finish, retryNum-1, err)
 	}
 
 	// Set the headers
 	req.Header.Add("User-Agent", "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/136.0.0.0 Safari/537.36 Edg/136.0.0.0")
 	req.Header.Add("Accept", "*/*")
-	req.Header.Add("Host", UserCache.PreUrl)
+	req.Header.Add("Host", cache.PreUrl)
 	req.Header.Add("Connection", "keep-alive")
 	req.Header.Add("Content-Type", writer.FormDataContentType())
 
@@ -883,7 +999,7 @@ func SubmitExamApi(UserCache YingHuaUserCache, examId, answerId string, answers 
 	resp, err := client.Do(req)
 	if err != nil {
 		time.Sleep(100 * time.Millisecond)
-		return SubmitExamApi(UserCache, examId, answerId, answers, finish, retryNum-1, err)
+		return SubmitExamApi(cache, examId, answerId, answers, finish, retryNum-1, err)
 	}
 
 	// Read the response body (we're not using the body here, just ensuring the request goes through)
@@ -896,18 +1012,18 @@ func SubmitExamApi(UserCache YingHuaUserCache, examId, answerId string, answers 
 	if strings.Contains(string(bodyStr), "502 Bad Gateway") {
 		resp.Body.Close()                  //立即释放
 		time.Sleep(time.Millisecond * 150) //延迟
-		return SubmitExamApi(UserCache, examId, answerId, answers, finish, retryNum, err)
+		return SubmitExamApi(cache, examId, answerId, answers, finish, retryNum, err)
 	}
 	defer resp.Body.Close()
 	return string(bodyStr), nil
 }
 
 // WorkDetailApi 获取作业信息
-func WorkDetailApi(userCache YingHuaUserCache, nodeId string, retryNum int, lastError error) (string, error) {
+func WorkDetailApi(cache YingHuaUserCache, nodeId string, retryNum int, lastError error) (string, error) {
 	if retryNum < 0 {
 		return "", lastError
 	}
-	url := userCache.PreUrl + "/api/node/work.json?nodeId=" + nodeId
+	urlStr := cache.PreUrl + "/api/node/work.json?nodeId=" + nodeId
 	method := "POST"
 
 	payload := &bytes.Buffer{}
@@ -915,7 +1031,7 @@ func WorkDetailApi(userCache YingHuaUserCache, nodeId string, retryNum int, last
 	_ = writer.WriteField("platform", "Android")
 	_ = writer.WriteField("version", "1.4.8")
 	_ = writer.WriteField("nodeId", nodeId)
-	_ = writer.WriteField("token", userCache.token)
+	_ = writer.WriteField("token", cache.token)
 	_ = writer.WriteField("terminal", "Android")
 	err := writer.Close()
 	if err != nil {
@@ -924,14 +1040,23 @@ func WorkDetailApi(userCache YingHuaUserCache, nodeId string, retryNum int, last
 	}
 
 	tr := &http.Transport{
-		TLSClientConfig: &tls.Config{InsecureSkipVerify: true}, // 跳过证书验证
+		TLSClientConfig: &tls.Config{
+			InsecureSkipVerify: true, // 跳过证书验证，仅用于开发环境
+		},
+	}
+
+	//如果开启了IP代理，那么就直接添加代理
+	if cache.IpProxySW {
+		tr.Proxy = func(req *http.Request) (*url.URL, error) {
+			return url.Parse(cache.ProxyIP) // 设置代理
+		}
 	}
 	client := &http.Client{
 		Timeout:   30 * time.Second,
 		Transport: tr,
 	}
-	req, err := http.NewRequest(method, url, payload)
-	req.Header.Add("Cookie", userCache.cookie)
+	req, err := http.NewRequest(method, urlStr, payload)
+	req.Header.Add("Cookie", cache.cookie)
 
 	if err != nil {
 		fmt.Println(err)
@@ -943,18 +1068,18 @@ func WorkDetailApi(userCache YingHuaUserCache, nodeId string, retryNum int, last
 	res, err := client.Do(req)
 	if err != nil {
 		time.Sleep(100 * time.Millisecond)
-		return WorkDetailApi(userCache, nodeId, retryNum-1, err)
+		return WorkDetailApi(cache, nodeId, retryNum-1, err)
 	}
 	defer res.Body.Close()
 
 	body, err := ioutil.ReadAll(res.Body)
 	if err != nil {
 		time.Sleep(100 * time.Millisecond)
-		return WorkDetailApi(userCache, nodeId, retryNum-1, err)
+		return WorkDetailApi(cache, nodeId, retryNum-1, err)
 	}
 	if strings.Contains(string(body), "502 Bad Gateway") {
 		time.Sleep(time.Millisecond * 150) //延迟
-		return WorkDetailApi(userCache, nodeId, retryNum, err)
+		return WorkDetailApi(cache, nodeId, retryNum, err)
 	}
 	return string(body), nil
 }
@@ -965,7 +1090,7 @@ func StartWork(userCache YingHuaUserCache, courseId, nodeId, workId string, retr
 	if retryNum < 0 {
 		return "", lastError
 	}
-	url := userCache.PreUrl + "/api/work/start.json?nodeId=" + nodeId + "&courseId=" + courseId + "&token=" + userCache.token + "&workId=" + workId
+	urlStr := userCache.PreUrl + "/api/work/start.json?nodeId=" + nodeId + "&courseId=" + courseId + "&token=" + userCache.token + "&workId=" + workId
 	method := "GET"
 
 	tr := &http.Transport{
@@ -973,11 +1098,18 @@ func StartWork(userCache YingHuaUserCache, courseId, nodeId, workId string, retr
 			InsecureSkipVerify: true, // 跳过证书验证，仅用于开发环境
 		},
 	}
+
+	//如果开启了IP代理，那么就直接添加代理
+	if userCache.IpProxySW {
+		tr.Proxy = func(req *http.Request) (*url.URL, error) {
+			return url.Parse(userCache.ProxyIP) // 设置代理
+		}
+	}
 	client := &http.Client{
 		Timeout:   30 * time.Second,
 		Transport: tr,
 	}
-	req, err := http.NewRequest(method, url, nil)
+	req, err := http.NewRequest(method, urlStr, nil)
 
 	if err != nil {
 		fmt.Println(err)
@@ -1009,7 +1141,7 @@ func GetWorkApi(UserCache YingHuaUserCache, nodeId, workId string, retryNum int,
 	if retryNum < 0 {
 		return "", lastError
 	}
-	url := UserCache.PreUrl + "/api/work.json?nodeId=" + nodeId + "&workId=" + workId + "&token=" + UserCache.token
+	urlStr := UserCache.PreUrl + "/api/work.json?nodeId=" + nodeId + "&workId=" + workId + "&token=" + UserCache.token
 	method := "POST"
 
 	payload := &bytes.Buffer{}
@@ -1025,11 +1157,18 @@ func GetWorkApi(UserCache YingHuaUserCache, nodeId, workId string, retryNum int,
 			InsecureSkipVerify: true, // 跳过证书验证，仅用于开发环境
 		},
 	}
+
+	//如果开启了IP代理，那么就直接添加代理
+	if UserCache.IpProxySW {
+		tr.Proxy = func(req *http.Request) (*url.URL, error) {
+			return url.Parse(UserCache.ProxyIP) // 设置代理
+		}
+	}
 	client := &http.Client{
 		Timeout:   30 * time.Second,
 		Transport: tr,
 	}
-	req, err := http.NewRequest(method, url, payload)
+	req, err := http.NewRequest(method, urlStr, payload)
 
 	if err != nil {
 		fmt.Println(err)
@@ -1064,12 +1203,21 @@ type YingHuaAnswer struct {
 }
 
 // SubmitWorkApi 提交作业答案接口
-func SubmitWorkApi(UserCache YingHuaUserCache, workId, answerId string, answers utils.Answer, finish string /*finish代表是否是最后提交并且结束考试，0代表不是，1代表是*/, retryNum int, lastError error) (string, error) {
+func SubmitWorkApi(cache YingHuaUserCache, workId, answerId string, answers utils.Answer, finish string /*finish代表是否是最后提交并且结束考试，0代表不是，1代表是*/, retryNum int, lastError error) (string, error) {
 	if retryNum < 0 {
 		return "", lastError
 	}
 	tr := &http.Transport{
-		TLSClientConfig: &tls.Config{InsecureSkipVerify: true}, // 跳过证书验证
+		TLSClientConfig: &tls.Config{
+			InsecureSkipVerify: true, // 跳过证书验证，仅用于开发环境
+		},
+	}
+
+	//如果开启了IP代理，那么就直接添加代理
+	if cache.IpProxySW {
+		tr.Proxy = func(req *http.Request) (*url.URL, error) {
+			return url.Parse(cache.ProxyIP) // 设置代理
+		}
 	}
 	// Creating the HTTP client with a timeout (30 seconds)
 	client := &http.Client{
@@ -1088,7 +1236,7 @@ func SubmitWorkApi(UserCache YingHuaUserCache, workId, answerId string, answers 
 	writer.WriteField("terminal", "Android")
 	writer.WriteField("answerId", answerId)
 	writer.WriteField("finish", finish)
-	writer.WriteField("token", UserCache.token)
+	writer.WriteField("token", cache.token)
 	if answers.Type == "单选" || answers.Type == "判断" || answers.Type == "简答" {
 		writer.WriteField("answer", answers.Answers[0])
 	} else if answers.Type == "多选" {
@@ -1105,7 +1253,7 @@ func SubmitWorkApi(UserCache YingHuaUserCache, workId, answerId string, answers 
 	writer.Close()
 
 	// Create the request with the necessary headers
-	req, err := http.NewRequest("POST", fmt.Sprintf("%s/api/work/submit.json", UserCache.PreUrl), body)
+	req, err := http.NewRequest("POST", fmt.Sprintf("%s/api/work/submit.json", cache.PreUrl), body)
 	if err != nil {
 		return "", err
 	}
@@ -1113,23 +1261,23 @@ func SubmitWorkApi(UserCache YingHuaUserCache, workId, answerId string, answers 
 	// Set the headers
 	req.Header.Add("User-Agent", "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/136.0.0.0 Safari/537.36 Edg/136.0.0.0")
 	req.Header.Add("Accept", "*/*")
-	req.Header.Add("Host", UserCache.PreUrl)
+	req.Header.Add("Host", cache.PreUrl)
 	req.Header.Add("Connection", "keep-alive")
 	req.Header.Add("Content-Type", writer.FormDataContentType())
-	req.Header.Add("Cookie", UserCache.cookie)
+	req.Header.Add("Cookie", cache.cookie)
 
 	// Perform the request
 	resp, err := client.Do(req)
 	if err != nil {
 		time.Sleep(100 * time.Millisecond)
-		return SubmitWorkApi(UserCache, workId, answerId, answers, finish, retryNum-1, err)
+		return SubmitWorkApi(cache, workId, answerId, answers, finish, retryNum-1, err)
 	}
 	defer resp.Body.Close()
 	// Optionally, read the response body
 	bodyBytes, _ := ioutil.ReadAll(resp.Body)
 	if strings.Contains(string(bodyBytes), "502 Bad Gateway") {
 		time.Sleep(time.Millisecond * 150) //延迟
-		return SubmitWorkApi(UserCache, workId, answerId, answers, finish, retryNum, err)
+		return SubmitWorkApi(cache, workId, answerId, answers, finish, retryNum, err)
 	}
 	return string(bodyBytes), nil
 }
@@ -1140,7 +1288,7 @@ func WorkedFinallyDetailApi(userCache YingHuaUserCache, courseId, nodeId, workId
 	if retryNum < 0 {
 		return "", lastError
 	}
-	url := userCache.PreUrl + "/api/work.json?nodeId=" + nodeId + "&workId=" + workId + "&token=" + userCache.token
+	urlStr := userCache.PreUrl + "/api/work.json?nodeId=" + nodeId + "&workId=" + workId + "&token=" + userCache.token
 	method := "GET"
 
 	tr := &http.Transport{
@@ -1148,11 +1296,18 @@ func WorkedFinallyDetailApi(userCache YingHuaUserCache, courseId, nodeId, workId
 			InsecureSkipVerify: true, // 跳过证书验证，仅用于开发环境
 		},
 	}
+
+	//如果开启了IP代理，那么就直接添加代理
+	if userCache.IpProxySW {
+		tr.Proxy = func(req *http.Request) (*url.URL, error) {
+			return url.Parse(userCache.ProxyIP) // 设置代理
+		}
+	}
 	client := &http.Client{
 		Timeout:   30 * time.Second,
 		Transport: tr,
 	}
-	req, err := http.NewRequest(method, url, nil)
+	req, err := http.NewRequest(method, urlStr, nil)
 
 	if err != nil {
 		fmt.Println(err)
@@ -1186,7 +1341,7 @@ func ExamFinallyDetailApi(userCache YingHuaUserCache, courseId, nodeId, workId s
 	if retryNum < 0 {
 		return "", lastError
 	}
-	url := userCache.PreUrl + "/api/exam.json?nodeId=" + nodeId + "&examId=" + workId + "&token=" + userCache.token
+	urlStr := userCache.PreUrl + "/api/exam.json?nodeId=" + nodeId + "&examId=" + workId + "&token=" + userCache.token
 	method := "GET"
 
 	tr := &http.Transport{
@@ -1194,11 +1349,18 @@ func ExamFinallyDetailApi(userCache YingHuaUserCache, courseId, nodeId, workId s
 			InsecureSkipVerify: true, // 跳过证书验证，仅用于开发环境
 		},
 	}
+
+	//如果开启了IP代理，那么就直接添加代理
+	if userCache.IpProxySW {
+		tr.Proxy = func(req *http.Request) (*url.URL, error) {
+			return url.Parse(userCache.ProxyIP) // 设置代理
+		}
+	}
 	client := &http.Client{
 		Timeout:   30 * time.Second,
 		Transport: tr,
 	}
-	req, err := http.NewRequest(method, url, nil)
+	req, err := http.NewRequest(method, urlStr, nil)
 
 	if err != nil {
 		fmt.Println(err)

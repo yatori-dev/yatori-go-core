@@ -1,6 +1,7 @@
 package xuexitong
 
 import (
+	"crypto/tls"
 	"errors"
 	"fmt"
 	"io/ioutil"
@@ -24,7 +25,21 @@ func (cache *XueXiTUserCache) PullChapter(cpi int, key int) (string, error) {
 	params.Add("fields", "id,bbsid,classscore,isstart,allowdownload,chatid,name,state,isfiled,visiblescore,hideclazz,begindate,forbidintoclazz,coursesetting.fields(id,courseid,hiddencoursecover,coursefacecheck),course.fields(id,belongschoolid,name,infocontent,objectid,app,bulletformat,mappingcourseid,imageurl,teacherfactor,jobcount,knowledge.fields(id,name,indexOrder,parentnodeid,status,isReview,layer,label,jobcount,begintime,endtime,attachment.fields(id,type,objectid,extension).type(video)))")
 	params.Add("view", "json")
 
-	client := &http.Client{}
+	tr := &http.Transport{
+		TLSClientConfig: &tls.Config{
+			InsecureSkipVerify: true, // 跳过证书验证，仅用于开发环境
+		},
+	}
+
+	//如果开启了IP代理，那么就直接添加代理
+	if cache.IpProxySW {
+		tr.Proxy = func(req *http.Request) (*url.URL, error) {
+			return url.Parse(cache.ProxyIP) // 设置代理
+		}
+	}
+	client := &http.Client{
+		Transport: tr,
+	}
 	req, err := http.NewRequest(method, ApiPullChapter+"?"+params.Encode(), nil)
 
 	if err != nil {
@@ -77,7 +92,21 @@ func (cache *XueXiTUserCache) FetchChapterPointStatus(nodes []int, clazzID, user
 	// 编码请求体
 	payload := strings.NewReader(values.Encode())
 
-	client := &http.Client{}
+	tr := &http.Transport{
+		TLSClientConfig: &tls.Config{
+			InsecureSkipVerify: true, // 跳过证书验证，仅用于开发环境
+		},
+	}
+
+	//如果开启了IP代理，那么就直接添加代理
+	if cache.IpProxySW {
+		tr.Proxy = func(req *http.Request) (*url.URL, error) {
+			return url.Parse(cache.ProxyIP) // 设置代理
+		}
+	}
+	client := &http.Client{
+		Transport: tr,
+	}
 	req, err := http.NewRequest(method, ApiChapterPoint, payload)
 
 	if err != nil {
@@ -123,7 +152,21 @@ func (cache *XueXiTUserCache) FetchChapterCords(nodes []int, index, courseId int
 	values.Add("token", "4faa8662c59590c6f43ae9fe5b002b42")
 	values.Add("_time", strconv.FormatInt(time.Now().UnixNano()/1000000, 10))
 
-	client := &http.Client{}
+	tr := &http.Transport{
+		TLSClientConfig: &tls.Config{
+			InsecureSkipVerify: true, // 跳过证书验证，仅用于开发环境
+		},
+	}
+
+	//如果开启了IP代理，那么就直接添加代理
+	if cache.IpProxySW {
+		tr.Proxy = func(req *http.Request) (*url.URL, error) {
+			return url.Parse(cache.ProxyIP) // 设置代理
+		}
+	}
+	client := &http.Client{
+		Transport: tr,
+	}
 	req, err := http.NewRequest(method, ApiChapterCards+"?"+values.Encode(), nil)
 
 	if err != nil {
@@ -163,11 +206,25 @@ func (cache *XueXiTUserCache) FetchChapterCords(nodes []int, index, courseId int
 //	nodes: 任务点集合 , index: 任务点索引
 func (cache *XueXiTUserCache) FetchChapterCords2(clazzid, courseid, knowledgeid, cpi string) (string, error) {
 
-	url := "https://mooc1.chaoxing.com/mooc-ans/knowledge/cards?clazzid=" + clazzid + "&courseid=" + courseid + "&knowledgeid=" + knowledgeid + "&num=0&ut=s&cpi=" + cpi + "&v=2025-0424-1038-3&mooc2=1&isMicroCourse=false&editorPreview=0"
+	urlStr := "https://mooc1.chaoxing.com/mooc-ans/knowledge/cards?clazzid=" + clazzid + "&courseid=" + courseid + "&knowledgeid=" + knowledgeid + "&num=0&ut=s&cpi=" + cpi + "&v=2025-0424-1038-3&mooc2=1&isMicroCourse=false&editorPreview=0"
 	method := "GET"
 
-	client := &http.Client{}
-	req, err := http.NewRequest(method, url, nil)
+	tr := &http.Transport{
+		TLSClientConfig: &tls.Config{
+			InsecureSkipVerify: true, // 跳过证书验证，仅用于开发环境
+		},
+	}
+
+	//如果开启了IP代理，那么就直接添加代理
+	if cache.IpProxySW {
+		tr.Proxy = func(req *http.Request) (*url.URL, error) {
+			return url.Parse(cache.ProxyIP) // 设置代理
+		}
+	}
+	client := &http.Client{
+		Transport: tr,
+	}
+	req, err := http.NewRequest(method, urlStr, nil)
 
 	if err != nil {
 		fmt.Println(err)

@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"crypto/aes"
 	"crypto/cipher"
+	"crypto/tls"
 	"encoding/base64"
 	"encoding/json"
 	"errors"
@@ -60,6 +61,8 @@ type XueXiTUserCache struct {
 	JsonContent map[string]interface{}
 	cookies     []*http.Cookie
 	cookie      string //验证码用的session
+	IpProxySW   bool   // 是否开启代理
+	ProxyIP     string //代理IP
 }
 
 func (cache *XueXiTUserCache) GetCookie() string {
@@ -155,11 +158,25 @@ func (cache *XueXiTUserCache) MonitorApi() (string, error) {
 			fid = cookie.Value
 		}
 	}
-	url := fmt.Sprintf("https://detect.chaoxing.com/api/monitor?version=%s&refer=%s&from=&fid=%s&jsoncallback=jsonp%s&t=%d", "1748956725820", "http%%253A%252F%252Fi.mooc.chaoxing.com", fid, generate17DigitNumber(), time.Now().UnixMilli())
+	urlStr := fmt.Sprintf("https://detect.chaoxing.com/api/monitor?version=%s&refer=%s&from=&fid=%s&jsoncallback=jsonp%s&t=%d", "1748956725820", "http%%253A%252F%252Fi.mooc.chaoxing.com", fid, generate17DigitNumber(), time.Now().UnixMilli())
 	method := "GET"
 
-	client := &http.Client{}
-	req, err := http.NewRequest(method, url, nil)
+	tr := &http.Transport{
+		TLSClientConfig: &tls.Config{
+			InsecureSkipVerify: true, // 跳过证书验证，仅用于开发环境
+		},
+	}
+
+	//如果开启了IP代理，那么就直接添加代理
+	if cache.IpProxySW {
+		tr.Proxy = func(req *http.Request) (*url.URL, error) {
+			return url.Parse(cache.ProxyIP) // 设置代理
+		}
+	}
+	client := &http.Client{
+		Transport: tr,
+	}
+	req, err := http.NewRequest(method, urlStr, nil)
 
 	if err != nil {
 		fmt.Println(err)

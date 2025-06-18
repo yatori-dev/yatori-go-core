@@ -10,13 +10,15 @@ import (
 )
 
 type TtcdwUserCache struct {
-	PreUrl   string         //前置url
-	Account  string         //账号
-	Password string         //用户密码
-	verCode  string         //验证码
-	cookies  []*http.Cookie //验证码用的session
-	token    string         //保持会话的Token
-	sign     string         //签名
+	PreUrl    string         //前置url
+	Account   string         //账号
+	Password  string         //用户密码
+	verCode   string         //验证码
+	cookies   []*http.Cookie //验证码用的session
+	token     string         //保持会话的Token
+	sign      string         //签名
+	IpProxySW bool           // 是否开启代理
+	ProxyIP   string         //代理IP
 }
 
 func (cache *TtcdwUserCache) TtcdwLoginApi() error {

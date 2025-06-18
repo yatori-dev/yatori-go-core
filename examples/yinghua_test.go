@@ -1,8 +1,15 @@
 package examples
 
 import (
+	"crypto/tls"
 	"fmt"
+	"io"
+	"io/ioutil"
 	"log"
+	"math/rand"
+	"net/http"
+	"net/url"
+	"os"
 	"strconv"
 	"sync"
 	"testing"
@@ -58,14 +65,17 @@ func TestPullCourseList(t *testing.T) {
 
 // 测试拉取对应课程的视屏列表
 func TestPullCourseVideoList(t *testing.T) {
+	utils.YatoriCoreInit()
 	log2.NOWLOGLEVEL = log2.INFO //设置日志登记为DEBUG
 	//测试账号
 	setup()
-	user := global.Config.Users[15]
+	user := global.Config.Users[16]
 	cache := yinghuaApi.YingHuaUserCache{
-		PreUrl:   user.URL,
-		Account:  user.Account,
-		Password: user.Password,
+		PreUrl:    user.URL,
+		Account:   user.Account,
+		Password:  user.Password,
+		IpProxySW: true,
+		ProxyIP:   "http://localhost:7899",
 	}
 
 	err := yinghua.YingHuaLoginAction(&cache)
@@ -142,11 +152,13 @@ func TestBrushOneLesson(t *testing.T) {
 	log2.NOWLOGLEVEL = log2.INFO //设置日志登记为DEBUG
 	//测试账号
 	setup()
-	user := global.Config.Users[15]
+	user := global.Config.Users[16]
 	cache := yinghuaApi.YingHuaUserCache{
 		PreUrl:   user.URL,
 		Account:  user.Account,
 		Password: user.Password,
+		//IpProxySW: true,
+		//ProxyIP:   "http://localhost:7899",
 	}
 
 	err := yinghua.YingHuaLoginAction(&cache) // 登录
@@ -308,4 +320,115 @@ func TestApiQueBack(t *testing.T) {
 		}
 		fmt.Println("最高分：", s)
 	}
+}
+
+// 测试账号是否可以正常链接
+func TestApi(t *testing.T) {
+	utils.YatoriCoreInit()
+	//测试账号
+	setup()
+	user := global.Config.Users[16]
+	cache := yinghuaApi.YingHuaUserCache{
+		PreUrl:   user.URL,
+		Account:  user.Account,
+		Password: user.Password,
+	}
+	urlStr := cache.PreUrl + fmt.Sprintf("/service/code?r=%d", time2.Now().Unix())
+	method := "GET"
+
+	tr := &http.Transport{
+		Proxy: func(req *http.Request) (*url.URL, error) {
+			return url.Parse("http://localhost:7899") // 设置代理
+		},
+		TLSClientConfig: &tls.Config{
+			InsecureSkipVerify: true, // 跳过证书验证，仅用于开发环境
+		},
+	}
+	client := &http.Client{
+		Timeout:   30 * time2.Second,
+		Transport: tr,
+	}
+
+	req, err := http.NewRequest(method, urlStr, nil)
+	//req.Header.Add("Cookie", cache.cookie)
+
+	if err != nil {
+		fmt.Println(err)
+	}
+	req.Header.Add("User-Agent", "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/136.0.0.0 Safari/537.36 Edg/136.0.0.0")
+
+	res, err := client.Do(req)
+	if err != nil {
+		fmt.Println(err)
+	}
+	defer res.Body.Close()
+	body, _ := ioutil.ReadAll(res.Body)
+	fmt.Println(string(body))
+}
+
+// 测试验证码图片拉取
+func TestCapterImg(t *testing.T) {
+	// 设置随机种子并生成 [0,1) 随机小数
+	rand.Seed(time2.Now().UnixNano())
+	r := fmt.Sprintf("%.16f", rand.Float64())
+	urlStr := fmt.Sprintf("https://bwgl.qiankj.com/service/code?r=%s", r)
+
+	// 构建请求
+	req, err := http.NewRequest("GET", urlStr, nil)
+	if err != nil {
+		log.Fatalf("请求创建失败: %v", err)
+	}
+
+	// 设置真实浏览器常见的 User-Agent
+	req.Header.Set("User-Agent", "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/114.0.0.0 Safari/537.36")
+	req.Header.Set("Accept", "image/avif,image/webp,image/apng,image/*,*/*;q=0.8")
+	req.Header.Set("Referer", "https://bwgl.qiankj.com/")
+	req.Header.Set("Connection", "keep-alive")
+
+	// 发起请求
+	tr := &http.Transport{
+		TLSClientConfig: &tls.Config{
+			InsecureSkipVerify: true, // 跳过证书验证，仅用于开发环境
+		},
+	}
+
+	//如果开启了IP代理，那么就直接添加代理
+
+	tr.Proxy = func(req *http.Request) (*url.URL, error) {
+		return url.Parse("http://localhost:7899") // 设置代理
+	}
+
+	client := &http.Client{
+		Timeout:   30 * time2.Second,
+		Transport: tr,
+	}
+	resp, err := client.Do(req)
+	if err != nil {
+		log.Fatalf("请求发送失败: %v", err)
+	}
+	defer resp.Body.Close()
+
+	// 检查响应是否为200 OK
+	if resp.StatusCode != http.StatusOK {
+		log.Fatalf("请求失败，状态码: %d", resp.StatusCode)
+	}
+
+	// 打印 Content-Type 用于确认图片类型
+	contentType := resp.Header.Get("Content-Type")
+	fmt.Println("响应 Content-Type:", contentType)
+
+	// 保存图片
+	outFile, err := os.Create("./assets/code/captcha.png")
+	if err != nil {
+		log.Fatalf("创建文件失败: %v", err)
+	}
+	defer outFile.Close()
+
+	// 正确复制响应体到文件
+	_, err = io.Copy(outFile, resp.Body)
+	if err != nil {
+		log.Fatalf("写入文件失败: %v", err)
+	}
+
+	fmt.Println("✅ 验证码图片保存成功: captcha.png")
 }

@@ -2,12 +2,14 @@ package xuexitong
 
 import (
 	"bytes"
+	"crypto/tls"
 	"fmt"
 	"github.com/yatori-dev/yatori-go-core/api/entity"
 	"github.com/yatori-dev/yatori-go-core/models/ctype"
 	"io/ioutil"
 	"mime/multipart"
 	"net/http"
+	"net/url"
 	"regexp"
 	"strconv"
 	"strings"
@@ -144,7 +146,21 @@ func (cache *XueXiTUserCache) WorkNewSubmitAnswer(courseId string, classId strin
 	}
 
 	// 发送请求
-	client := &http.Client{}
+	tr := &http.Transport{
+		TLSClientConfig: &tls.Config{
+			InsecureSkipVerify: true, // 跳过证书验证，仅用于开发环境
+		},
+	}
+
+	//如果开启了IP代理，那么就直接添加代理
+	if cache.IpProxySW {
+		tr.Proxy = func(req *http.Request) (*url.URL, error) {
+			return url.Parse(cache.ProxyIP) // 设置代理
+		}
+	}
+	client := &http.Client{
+		Transport: tr,
+	}
 	resp, err := client.Do(req)
 	if err != nil {
 		fmt.Println("Error sending request:", err)

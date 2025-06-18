@@ -2,6 +2,7 @@ package xuexitong
 
 import (
 	"crypto/md5"
+	"crypto/tls"
 	"encoding/hex"
 	"fmt"
 	"io/ioutil"
@@ -27,7 +28,21 @@ func (cache *XueXiTUserCache) PageMobileChapterCard(
 	params.Add("isPhone", "1")
 	params.Add("control", "true")
 	params.Add("cpi", strconv.Itoa(cpi))
-	client := &http.Client{}
+	tr := &http.Transport{
+		TLSClientConfig: &tls.Config{
+			InsecureSkipVerify: true, // 跳过证书验证，仅用于开发环境
+		},
+	}
+
+	//如果开启了IP代理，那么就直接添加代理
+	if cache.IpProxySW {
+		tr.Proxy = func(req *http.Request) (*url.URL, error) {
+			return url.Parse(cache.ProxyIP) // 设置代理
+		}
+	}
+	client := &http.Client{
+		Transport: tr,
+	}
 	req, err := http.NewRequest(method, PageMobileChapterCard+"?"+params.Encode(), nil)
 
 	if err != nil {
@@ -73,7 +88,21 @@ func (cache *XueXiTUserCache) VideoDtoFetch(p *entity.PointVideoDto) (string, er
 	params.Set("flag", "normal")
 	params.Set("_dc", strconv.FormatInt(time.Now().UnixNano()/1e6, 10))
 	method := "GET"
-	client := &http.Client{}
+	tr := &http.Transport{
+		TLSClientConfig: &tls.Config{
+			InsecureSkipVerify: true, // 跳过证书验证，仅用于开发环境
+		},
+	}
+
+	//如果开启了IP代理，那么就直接添加代理
+	if cache.IpProxySW {
+		tr.Proxy = func(req *http.Request) (*url.URL, error) {
+			return url.Parse(cache.ProxyIP) // 设置代理
+		}
+	}
+	client := &http.Client{
+		Transport: tr,
+	}
 	resp, err := http.NewRequest(method, fmt.Sprintf("%s/%s?%s", APIChapterCardResource, p.ObjectID, params.Encode()), nil)
 	// resp, err := p.Session.Client.Get(fmt.Sprintf("%s/%s?%s", APIChapterCardResource, p.ObjectID, params.Encode()))
 	if err != nil {
@@ -113,12 +142,26 @@ func (cache *XueXiTUserCache) VideoSubmitStudyTime(p *entity.PointVideoDto, play
 		p.ClassID, cache.UserID, p.JobID, p.ObjectID, playingTime*1000, "d_yHJ!$pdA~5", p.Duration*1000, clipTime)))
 	enc := hex.EncodeToString(hash[:])
 	//
-	url := "https://mooc1.chaoxing.com/mooc-ans/multimedia/log/a/" + p.Cpi + "/" + p.DToken + "?clazzId=" + p.ClassID + "&playingTime=" + strconv.Itoa(playingTime) + "&duration=" + strconv.Itoa(p.Duration) + "&clipTime=" + clipTime + "&objectId=" + p.ObjectID + "&otherInfo=" + p.OtherInfo + "&courseId=" + p.CourseID + "&jobid=" + p.JobID + "&userid=" + cache.UserID + "&isdrag=" + strconv.Itoa(isdrag) + "&view=pc&enc=" + enc + "&rt=0.9" + "&videoFaceCaptureEnc=" + p.VideoFaceCaptureEnc + "&dtype=Video&_t=" + strconv.FormatInt(time.Now().UnixMilli(), 10) + "&attDuration=" + strconv.Itoa(p.Duration) + "&attDurationEnc=" + p.AttDurationEnc
+	urlStr := "https://mooc1.chaoxing.com/mooc-ans/multimedia/log/a/" + p.Cpi + "/" + p.DToken + "?clazzId=" + p.ClassID + "&playingTime=" + strconv.Itoa(playingTime) + "&duration=" + strconv.Itoa(p.Duration) + "&clipTime=" + clipTime + "&objectId=" + p.ObjectID + "&otherInfo=" + p.OtherInfo + "&courseId=" + p.CourseID + "&jobid=" + p.JobID + "&userid=" + cache.UserID + "&isdrag=" + strconv.Itoa(isdrag) + "&view=pc&enc=" + enc + "&rt=0.9" + "&videoFaceCaptureEnc=" + p.VideoFaceCaptureEnc + "&dtype=Video&_t=" + strconv.FormatInt(time.Now().UnixMilli(), 10) + "&attDuration=" + strconv.Itoa(p.Duration) + "&attDurationEnc=" + p.AttDurationEnc
 
 	method := "GET"
 
-	client := &http.Client{}
-	req, err := http.NewRequest(method, url, nil)
+	tr := &http.Transport{
+		TLSClientConfig: &tls.Config{
+			InsecureSkipVerify: true, // 跳过证书验证，仅用于开发环境
+		},
+	}
+
+	//如果开启了IP代理，那么就直接添加代理
+	if cache.IpProxySW {
+		tr.Proxy = func(req *http.Request) (*url.URL, error) {
+			return url.Parse(cache.ProxyIP) // 设置代理
+		}
+	}
+	client := &http.Client{
+		Transport: tr,
+	}
+	req, err := http.NewRequest(method, urlStr, nil)
 
 	if err != nil {
 		fmt.Println(err)
@@ -173,7 +216,21 @@ func (cache *XueXiTUserCache) VideoDtoPlayReport(p *entity.PointVideoDto, playin
 		p.ClassID, cache.UserID, p.JobID, p.ObjectID, playingTime*1000, "d_yHJ!$pdA~5", p.Duration*1000, clipTime)))
 	enc := hex.EncodeToString(hash[:])
 	//fmt.Println(enc)
-	client := &http.Client{}
+	tr := &http.Transport{
+		TLSClientConfig: &tls.Config{
+			InsecureSkipVerify: true, // 跳过证书验证，仅用于开发环境
+		},
+	}
+
+	//如果开启了IP代理，那么就直接添加代理
+	if cache.IpProxySW {
+		tr.Proxy = func(req *http.Request) (*url.URL, error) {
+			return url.Parse(cache.ProxyIP) // 设置代理
+		}
+	}
+	client := &http.Client{
+		Transport: tr,
+	}
 	params := url.Values{}
 	params.Set("otherInfo", p.OtherInfo)
 	params.Set("playingTime", strconv.Itoa(playingTime))
@@ -273,7 +330,21 @@ func (cache *XueXiTUserCache) WorkFetchQuestion(p *entity.PointWorkDto) (string,
 	params.Add("cpi", p.Cpi)
 	params.Add("ktoken", p.KToken)
 	params.Add("enc", p.Enc)
-	client := &http.Client{}
+	tr := &http.Transport{
+		TLSClientConfig: &tls.Config{
+			InsecureSkipVerify: true, // 跳过证书验证，仅用于开发环境
+		},
+	}
+
+	//如果开启了IP代理，那么就直接添加代理
+	if cache.IpProxySW {
+		tr.Proxy = func(req *http.Request) (*url.URL, error) {
+			return url.Parse(cache.ProxyIP) // 设置代理
+		}
+	}
+	client := &http.Client{
+		Transport: tr,
+	}
 	req, err := http.NewRequest(method, PageMobileWork+"?"+params.Encode(), nil)
 
 	if err != nil {
@@ -310,7 +381,21 @@ func (cache *XueXiTUserCache) WorkCommit(p *entity.PointWorkDto, fields []entity
 	//TODO 此处需要对答案进行分析后提交 具体body模板 在 examples 中
 	payload := strings.NewReader("")
 
-	client := &http.Client{}
+	tr := &http.Transport{
+		TLSClientConfig: &tls.Config{
+			InsecureSkipVerify: true, // 跳过证书验证，仅用于开发环境
+		},
+	}
+
+	//如果开启了IP代理，那么就直接添加代理
+	if cache.IpProxySW {
+		tr.Proxy = func(req *http.Request) (*url.URL, error) {
+			return url.Parse(cache.ProxyIP) // 设置代理
+		}
+	}
+	client := &http.Client{
+		Transport: tr,
+	}
 	req, err := http.NewRequest(method, ApiWorkCommit, payload)
 
 	if err != nil {
@@ -345,7 +430,21 @@ func (cache *XueXiTUserCache) WorkCommit(p *entity.PointWorkDto, fields []entity
 func (cache *XueXiTUserCache) DocumentDtoReadingReport(p *entity.PointDocumentDto) (string, error) {
 	method := "GET"
 
-	client := &http.Client{}
+	tr := &http.Transport{
+		TLSClientConfig: &tls.Config{
+			InsecureSkipVerify: true, // 跳过证书验证，仅用于开发环境
+		},
+	}
+
+	//如果开启了IP代理，那么就直接添加代理
+	if cache.IpProxySW {
+		tr.Proxy = func(req *http.Request) (*url.URL, error) {
+			return url.Parse(cache.ProxyIP) // 设置代理
+		}
+	}
+	client := &http.Client{
+		Transport: tr,
+	}
 	params := url.Values{}
 
 	params.Add("jobid", p.JobID)
