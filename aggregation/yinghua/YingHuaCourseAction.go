@@ -670,8 +670,13 @@ func StartWorkAction(userCache *yinghuaApi.YingHuaUserCache,
 	if isAutoSubExam == 1 {
 		subWorkApi, err := yinghuaApi.SubmitWorkApi(*userCache, work.WorkId, lastProblem, lastAnswer, "1", 10, nil)
 		//如果结束做题服务器端返回信息异常
-		if gojsonq.New().JSONString(subWorkApi).Find("msg") != "提交作业成功" || err != nil {
-			log.Print(log.INFO, log.BoldRed, `[`, userCache.Account, `] `, log.BoldRed, "提交试卷异常，返回信息：", subWorkApi, err.Error())
+		if err != nil {
+			log.Print(log.INFO, log.BoldRed, `[`, userCache.Account, `] `, log.BoldRed, "提交试卷异常，返回信息：", subWorkApi, fmt.Sprintf("%+v", err.Error()))
+		}
+		if gojsonq.New().JSONString(subWorkApi).Find("msg") != nil {
+			if gojsonq.New().JSONString(subWorkApi).Find("msg") != "提交作业成功" {
+				log.Print(log.INFO, log.BoldRed, `[`, userCache.Account, `] `, log.BoldRed, "提交试卷异常，返回信息：", subWorkApi)
+			}
 		}
 	}
 
@@ -729,11 +734,15 @@ func StartWorkForExternalAction(userCache *yinghuaApi.YingHuaUserCache,
 	if isAutoSubExam == 1 {
 		subWorkApi, err := yinghuaApi.SubmitWorkApi(*userCache, work.WorkId, lastProblem, lastAnswer, "1", 10, nil)
 		//如果结束做题服务器端返回信息异常
-		if gojsonq.New().JSONString(subWorkApi).Find("msg") != "提交作业成功" || err != nil {
-			log.Print(log.INFO, log.BoldRed, `[`, userCache.Account, `] `, log.BoldRed, "提交试卷异常，返回信息：", subWorkApi, err.Error())
+		if err != nil {
+			log.Print(log.INFO, log.BoldRed, `[`, userCache.Account, `] `, log.BoldRed, "提交试卷异常，返回信息：", subWorkApi, fmt.Sprintf("%+v", err.Error()))
+		}
+		if gojsonq.New().JSONString(subWorkApi).Find("msg") != nil {
+			if gojsonq.New().JSONString(subWorkApi).Find("msg") != "提交作业成功" {
+				log.Print(log.INFO, log.BoldRed, `[`, userCache.Account, `] `, log.BoldRed, "提交试卷异常，返回信息：", subWorkApi)
+			}
 		}
 	}
-
 	return nil
 }
 
