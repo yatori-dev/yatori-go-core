@@ -99,7 +99,7 @@ func keepAliveLogin(UserCache yinghuaApi.YingHuaUserCache) {
 	for {
 		select {
 		case <-ticker.C:
-			api := yinghuaApi.KeepAliveApi(UserCache)
+			api := yinghuaApi.KeepAliveApi(UserCache, 8)
 			log2.Print(log2.INFO, " ", "登录保活状态：", api)
 		}
 	}
