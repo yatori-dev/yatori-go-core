@@ -415,7 +415,10 @@ func StartExamAction(
 		subWorkApi, err := yinghuaApi.SubmitExamApi(*userCache, exam.ExamId, lastProblem, lastAnswer, "1", 8, nil)
 		//如果结束做题服务器端返回信息异常
 		if gojsonq.New().JSONString(subWorkApi).Find("msg") != "提交试卷成功" || err != nil {
-			log.Print(log.INFO, log.BoldRed, `[`, userCache.Account, `] `, log.BoldRed, "提交试卷异常，返回信息：", subWorkApi, err.Error())
+			log.Print(log.INFO, log.BoldRed, `[`, userCache.Account, `] `, log.BoldRed, "提交试卷异常，返回信息：", subWorkApi)
+			if err != nil {
+				log.Print(log.INFO, err.Error())
+			}
 		}
 	}
 	return nil
@@ -469,7 +472,10 @@ func StartExamForExternalAction(
 		subWorkApi, err := yinghuaApi.SubmitExamApi(*userCache, exam.ExamId, lastProblem, lastAnswer, "1", 8, nil)
 		//如果结束做题服务器端返回信息异常
 		if gojsonq.New().JSONString(subWorkApi).Find("msg") != "提交试卷成功" || err != nil {
-			log.Print(log.INFO, log.BoldRed, `[`, userCache.Account, `] `, log.BoldRed, "提交试卷异常，返回信息：", subWorkApi, err.Error())
+			log.Print(log.INFO, log.BoldRed, `[`, userCache.Account, `] `, log.BoldRed, "提交试卷异常，返回信息：", subWorkApi)
+			if err != nil {
+				log.Print(log.INFO, err.Error())
+			}
 		}
 	}
 	return nil
