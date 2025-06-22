@@ -267,7 +267,6 @@ func KeepAliveApi(cache YingHuaUserCache, retry int) string {
 	}
 	res, err := client.Do(req)
 	if err != nil {
-		res.Body.Close()
 		time.Sleep(time.Millisecond * 150) //延迟
 		return KeepAliveApi(cache, retry)
 	}
