@@ -69,13 +69,13 @@ func TestPullCourseVideoList(t *testing.T) {
 	log2.NOWLOGLEVEL = log2.INFO //设置日志登记为DEBUG
 	//测试账号
 	setup()
-	user := global.Config.Users[16]
+	user := global.Config.Users[17]
 	cache := yinghuaApi.YingHuaUserCache{
-		PreUrl:    user.URL,
-		Account:   user.Account,
-		Password:  user.Password,
-		IpProxySW: true,
-		ProxyIP:   "http://localhost:7899",
+		PreUrl:   user.URL,
+		Account:  user.Account,
+		Password: user.Password,
+		//IpProxySW: true,
+		//ProxyIP:   "http://localhost:7899",
 	}
 
 	err := yinghua.YingHuaLoginAction(&cache)
@@ -152,7 +152,7 @@ func TestBrushOneLesson(t *testing.T) {
 	log2.NOWLOGLEVEL = log2.INFO //设置日志登记为DEBUG
 	//测试账号
 	setup()
-	user := global.Config.Users[16]
+	user := global.Config.Users[17]
 	cache := yinghuaApi.YingHuaUserCache{
 		PreUrl:   user.URL,
 		Account:  user.Account,

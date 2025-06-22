@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+	"github.com/yatori-dev/yatori-go-core/utils"
 	"log"
 	"sort"
 	"strconv"
@@ -40,6 +41,17 @@ func XueXiTPullCourseAction(cache *xuexitong.XueXiTUserCache) ([]XueXiTCourse, e
 	courses, err := cache.CourseListApi()
 	if err != nil {
 		log2.Print(log2.INFO, "["+cache.Name+"] "+" 拉取失败")
+	}
+
+	//判断是否触发验证码
+	if strings.Contains(courses, "输入验证码") {
+		log2.Print(log2.DEBUG, utils.RunFuncName(), "触发验证码，自动重新登录")
+		PassVerAnd202(cache) //越过验证码或者202
+		courses, err = cache.CourseListApi()
+		if err != nil {
+			log2.Print(log2.INFO, "["+cache.Name+"] "+" 拉取失败")
+		}
+		log2.Print(log2.DEBUG, utils.RunFuncName(), "重新登录后cords以及err值>>", fmt.Sprintf("%+v %+v", courses, err.Error()))
 	}
 	var xueXiTCourse entity.XueXiTCourseJson
 	err = json.Unmarshal([]byte(courses), &xueXiTCourse)

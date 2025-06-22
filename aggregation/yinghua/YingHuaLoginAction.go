@@ -17,11 +17,10 @@ import (
 // {"_code": 1, "status": false,"msg": "账号登录超时，请重新登录", "result": {}}
 func YingHuaLoginAction(cache *yinghuaApi.YingHuaUserCache) error {
 	for {
-		path, cookie := cache.VerificationCodeApi(10) //获取验证码
-		if path == "" {                               //如果path为空，那么可能是账号问题
+		path, _ := cache.VerificationCodeApi(10) //获取验证码
+		if path == "" {                          //如果path为空，那么可能是账号问题
 			return errors.New("无法正常获取对应网站验证码，请检查对应url是否正常")
 		}
-		cache.SetCookie(cookie)
 		img, _ := utils.ReadImg(path)                                  //读取验证码图片
 		codeResult := utils.AutoVerification(img, ort.NewShape(1, 18)) //自动识别
 		utils.DeleteFile(path)                                         //删除验证码文件

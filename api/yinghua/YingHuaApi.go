@@ -27,6 +27,7 @@ type YingHuaUserCache struct {
 	ProxyIP   string //代理IP
 	verCode   string //验证码
 	cookie    string //验证码用的session
+	cookies   []*http.Cookie
 	token     string //保持会话的Token
 	sign      string //签名
 }
@@ -106,7 +107,10 @@ func (cache *YingHuaUserCache) LoginApi(retry int, lastError error) (string, err
 		fmt.Println(err)
 		return "", err
 	}
-	req.Header.Add("Cookie", cache.cookie)
+	//req.Header.Add("Cookie", cache.cookie)
+	for _, cookie := range cache.cookies {
+		req.AddCookie(cookie)
+	}
 	req.Header.Add("User-Agent", "Apifox/1.0.0 (https://apifox.com)")
 
 	req.Header.Set("Content-Type", writer.FormDataContentType())
@@ -209,6 +213,8 @@ func (cache *YingHuaUserCache) VerificationCodeApi(retry int) (string, string) {
 		return cache.VerificationCodeApi(retry - 1)
 	}
 	defer res.Body.Close()
+	cache.cookies = res.Cookies()               //设置Cookie
+	cache.cookie = res.Header.Get("Set-Cookie") //设置Cookie
 	return filepath, res.Header.Get("Set-Cookie")
 }
 
@@ -255,8 +261,10 @@ func KeepAliveApi(cache YingHuaUserCache, retry int) string {
 		return ""
 	}
 	req.Header.Add("User-Agent", "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/136.0.0.0 Safari/537.36 Edg/136.0.0.0")
-
 	req.Header.Set("Content-Type", writer.FormDataContentType())
+	for _, cookie := range cache.cookies {
+		req.AddCookie(cookie)
+	}
 	res, err := client.Do(req)
 	if err != nil {
 		res.Body.Close()
@@ -316,7 +324,10 @@ func (cache *YingHuaUserCache) CourseListApi(retry int, lastError error) (string
 		Transport: tr,
 	}
 	req, err := http.NewRequest(method, urlStr, payload)
-	req.Header.Set("Cookie", cache.cookie)
+	//req.Header.Set("Cookie", cache.cookie)
+	for _, cookie := range cache.cookies {
+		req.AddCookie(cookie)
+	}
 	if err != nil {
 		return "", err
 	}
@@ -396,7 +407,10 @@ func (cache *YingHuaUserCache) CourseDetailApi(courseId string, retry int, lastE
 	if err != nil {
 		return "", err
 	}
-	req.Header.Add("Cookie", "tgw_I7_route=3d5c4e13e7d88bb6849295ab943042a2")
+	//req.Header.Add("Cookie", "tgw_I7_route=3d5c4e13e7d88bb6849295ab943042a2")
+	for _, cookie := range cache.cookies {
+		req.AddCookie(cookie)
+	}
 	req.Header.Add("User-Agent", "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/136.0.0.0 Safari/537.36 Edg/136.0.0.0")
 
 	req.Header.Set("Content-Type", writer.FormDataContentType())
@@ -468,8 +482,10 @@ func CourseVideListApi(cache YingHuaUserCache, courseId string /*课程ID*/, ret
 		return CourseVideListApi(cache, courseId, retry-1, err)
 	}
 	req.Header.Add("User-Agent", "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/136.0.0.0 Safari/537.36 Edg/136.0.0.0")
-
 	req.Header.Set("Content-Type", writer.FormDataContentType())
+	for _, cookie := range cache.cookies {
+		req.AddCookie(cookie)
+	}
 	res, err := client.Do(req)
 	if err != nil {
 		time.Sleep(time.Millisecond * 150) //延迟
@@ -540,8 +556,10 @@ func SubmitStudyTimeApi(cache YingHuaUserCache, nodeId string /*对应视屏节�
 		return "", err
 	}
 	req.Header.Add("User-Agent", "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/136.0.0.0 Safari/537.36 Edg/136.0.0.0")
-
 	req.Header.Set("Content-Type", writer.FormDataContentType())
+	for _, cookie := range cache.cookies {
+		req.AddCookie(cookie)
+	}
 	res, err := client.Do(req)
 	if err != nil {
 		time.Sleep(time.Millisecond * 150)
@@ -608,8 +626,10 @@ func (cache *YingHuaUserCache) VideStudyTimeApi(nodeId string, retryNum int, las
 		return cache.VideStudyTimeApi(nodeId, retryNum-1, lastError)
 	}
 	req.Header.Add("User-Agent", "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/136.0.0.0 Safari/537.36 Edg/136.0.0.0")
-
 	req.Header.Set("Content-Type", writer.FormDataContentType())
+	for _, cookie := range cache.cookies {
+		req.AddCookie(cookie)
+	}
 	res, err := client.Do(req)
 	if err != nil {
 		time.Sleep(time.Millisecond * 150) //延迟
@@ -673,8 +693,10 @@ func VideWatchRecodeApi(cache YingHuaUserCache, courseId string, page int, retry
 		return VideWatchRecodeApi(cache, courseId, page, retry-1, err)
 	}
 	req.Header.Add("User-Agent", "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/136.0.0.0 Safari/537.36 Edg/136.0.0.0")
-
 	req.Header.Set("Content-Type", writer.FormDataContentType())
+	for _, cookie := range cache.cookies {
+		req.AddCookie(cookie)
+	}
 	res, err := client.Do(req)
 	if err != nil {
 		//fmt.Println(err)
@@ -721,7 +743,10 @@ func VideoWatchRecodePCListApi(cache YingHuaUserCache, courseId string, page int
 		Transport: tr,
 	}
 	req, err := http.NewRequest(method, urlStr, nil)
-	req.Header.Set("Cookie", cache.cookie)
+	//req.Header.Set("Cookie", cache.cookie)
+	for _, cookie := range cache.cookies {
+		req.AddCookie(cookie)
+	}
 	if err != nil {
 		//fmt.Println(err)
 		return VideoWatchRecodePCListApi(cache, courseId, page, retry-1, err)
@@ -786,8 +811,10 @@ func ExamDetailApi(cache YingHuaUserCache, nodeId string, retryNum int, lastErro
 		Transport: tr,
 	}
 	req, err := http.NewRequest(method, urlStr, payload)
-	req.Header.Add("Cookie", cache.cookie)
-
+	//req.Header.Add("Cookie", cache.cookie)
+	for _, cookie := range cache.cookies {
+		req.AddCookie(cookie)
+	}
 	if err != nil {
 		fmt.Println(err)
 		return "", nil
@@ -849,7 +876,9 @@ func StartExam(cache YingHuaUserCache, courseId, nodeId, examId string, retryNum
 		return StartExam(cache, courseId, nodeId, examId, retryNum-1, err)
 	}
 	req.Header.Add("User-Agent", "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/136.0.0.0 Safari/537.36 Edg/136.0.0.0")
-
+	for _, cookie := range cache.cookies {
+		req.AddCookie(cookie)
+	}
 	res, err := client.Do(req)
 	if err != nil {
 		fmt.Println(err)
@@ -912,7 +941,9 @@ func GetExamTopicApi(cache YingHuaUserCache, nodeId, examId string, retryNum int
 	req.Header.Add("Host", cache.PreUrl)
 	req.Header.Add("Connection", "keep-alive")
 	req.Header.Add("Content-Type", "application/json; charset=utf-8")
-
+	for _, cookie := range cache.cookies {
+		req.AddCookie(cookie)
+	}
 	// Perform the request
 	resp, err := client.Do(req)
 	if err != nil {
@@ -1001,7 +1032,9 @@ func SubmitExamApi(cache YingHuaUserCache, examId, answerId string, answers util
 	req.Header.Add("Host", cache.PreUrl)
 	req.Header.Add("Connection", "keep-alive")
 	req.Header.Add("Content-Type", writer.FormDataContentType())
-
+	for _, cookie := range cache.cookies {
+		req.AddCookie(cookie)
+	}
 	// Perform the request
 	resp, err := client.Do(req)
 	if err != nil {
@@ -1063,8 +1096,10 @@ func WorkDetailApi(cache YingHuaUserCache, nodeId string, retryNum int, lastErro
 		Transport: tr,
 	}
 	req, err := http.NewRequest(method, urlStr, payload)
-	req.Header.Add("Cookie", cache.cookie)
-
+	//req.Header.Add("Cookie", cache.cookie)
+	for _, cookie := range cache.cookies {
+		req.AddCookie(cookie)
+	}
 	if err != nil {
 		fmt.Println(err)
 		return "", err
@@ -1123,7 +1158,9 @@ func StartWork(userCache YingHuaUserCache, courseId, nodeId, workId string, retr
 		return "", nil
 	}
 	req.Header.Add("User-Agent", "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/136.0.0.0 Safari/537.36 Edg/136.0.0.0")
-
+	for _, cookie := range userCache.cookies {
+		req.AddCookie(cookie)
+	}
 	res, err := client.Do(req)
 	if err != nil {
 		time.Sleep(100 * time.Millisecond)
@@ -1182,8 +1219,10 @@ func GetWorkApi(UserCache YingHuaUserCache, nodeId, workId string, retryNum int,
 		return "", nil
 	}
 	req.Header.Add("User-Agent", "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/136.0.0.0 Safari/537.36 Edg/136.0.0.0")
-
 	req.Header.Set("Content-Type", writer.FormDataContentType())
+	for _, cookie := range UserCache.cookies {
+		req.AddCookie(cookie)
+	}
 	res, err := client.Do(req)
 	if err != nil {
 		time.Sleep(100 * time.Millisecond)
@@ -1271,7 +1310,10 @@ func SubmitWorkApi(cache YingHuaUserCache, workId, answerId string, answers util
 	req.Header.Add("Host", cache.PreUrl)
 	req.Header.Add("Connection", "keep-alive")
 	req.Header.Add("Content-Type", writer.FormDataContentType())
-	req.Header.Add("Cookie", cache.cookie)
+	//req.Header.Add("Cookie", cache.cookie)
+	for _, cookie := range cache.cookies {
+		req.AddCookie(cookie)
+	}
 
 	// Perform the request
 	resp, err := client.Do(req)
@@ -1320,7 +1362,10 @@ func WorkedFinallyDetailApi(userCache YingHuaUserCache, courseId, nodeId, workId
 		fmt.Println(err)
 		return "", err
 	}
-	req.Header.Add("Cookie", userCache.cookie)
+	//req.Header.Add("Cookie", userCache.cookie)
+	for _, cookie := range userCache.cookies {
+		req.AddCookie(cookie)
+	}
 	req.Header.Add("User-Agent", "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/136.0.0.0 Safari/537.36 Edg/136.0.0.0")
 
 	res, err := client.Do(req)
@@ -1373,7 +1418,10 @@ func ExamFinallyDetailApi(userCache YingHuaUserCache, courseId, nodeId, workId s
 		fmt.Println(err)
 		return "", err
 	}
-	req.Header.Add("Cookie", userCache.cookie)
+	//req.Header.Add("Cookie", userCache.cookie)
+	for _, cookie := range userCache.cookies {
+		req.AddCookie(cookie)
+	}
 	req.Header.Add("User-Agent", "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/136.0.0.0 Safari/537.36 Edg/136.0.0.0")
 
 	res, err := client.Do(req)
