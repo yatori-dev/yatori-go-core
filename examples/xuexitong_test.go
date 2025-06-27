@@ -30,7 +30,7 @@ func TestLoginXueXiTo(t *testing.T) {
 		log.Fatal(err)
 	}
 	//拉取课程列表并打印
-	action, err := xuexitong.XueXiTPullCourseAction(&userCache)
+	action, err := xuexitong.CourseAction(&userCache)
 	if err != nil {
 		return
 	}

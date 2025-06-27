@@ -51,7 +51,7 @@ func XueXiTPullCourseAction(cache *xuexitong.XueXiTUserCache) ([]XueXiTCourse, e
 		if err != nil {
 			log2.Print(log2.INFO, "["+cache.Name+"] "+" 拉取失败")
 		}
-		log2.Print(log2.DEBUG, utils.RunFuncName(), "重新登录后courses以及err值>>", fmt.Sprintf("%+v %+v", courses, err.Error()))
+		log2.Print(log2.DEBUG, utils.RunFuncName(), "重新登录后courses以及err值>>", fmt.Sprintf("%+v", courses))
 	}
 	var xueXiTCourse entity.XueXiTCourseJson
 	err = json.Unmarshal([]byte(courses), &xueXiTCourse)
