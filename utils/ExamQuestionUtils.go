@@ -63,7 +63,7 @@ func CheckApiQueRequest(url string, retry int, err error) error {
 			"D.concise",
 		},
 		Answer: []string{
-			"A", "B", "C", "D",
+			//"A", "B", "C", "D",
 		},
 		Json: "null",
 	}
