@@ -33,7 +33,10 @@ func (problem *Problem) ApiQueRequest(url string, retry int, err error) (Answer,
 		Timeout: 30 * time.Second,
 	}
 	data, _ := json.Marshal(problem)
-	resp, _ := client.Post(url, "application/json", strings.NewReader(string(data)))
+	resp, err := client.Post(url, "application/json", strings.NewReader(string(data)))
+	if err != nil {
+		return problem.ApiQueRequest(url, retry-1, err)
+	}
 	defer resp.Body.Close()
 	body, _ := io.ReadAll(resp.Body)
 	var answers Answer
@@ -68,12 +71,15 @@ func CheckApiQueRequest(url string, retry int, err error) error {
 		Json: "null",
 	}
 	data, _ := json.Marshal(problem)
-	resp, _ := client.Post(url, "application/json", strings.NewReader(string(data)))
+	resp, err := client.Post(url, "application/json", strings.NewReader(string(data)))
+	if err != nil {
+		return CheckApiQueRequest(url, retry-1, err)
+	}
 	defer resp.Body.Close()
 	body, _ := io.ReadAll(resp.Body)
 	var answers Answer
 	err1 := json.Unmarshal(body, &answers)
-	if err != nil {
+	if err1 != nil {
 		return CheckApiQueRequest(url, retry-1, err1)
 	}
 	return nil
