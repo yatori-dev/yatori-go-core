@@ -43,3 +43,38 @@ func (problem *Problem) ApiQueRequest(url string, retry int, err error) (Answer,
 	}
 	return answers, nil
 }
+
+// 用于检测是否能够正常访问题库接口
+func CheckApiQueRequest(url string, retry int, err error) error {
+	if retry <= 0 {
+		return err
+	}
+	client := &http.Client{
+		Timeout: 30 * time.Second,
+	}
+	problem := Problem{
+		Hash:    "",
+		Type:    "单选",
+		Content: "1、According to the successful salesperson Summer, what are the principles\n\nwe should follow in business writing?",
+		Options: []string{
+			"A.politeness",
+			"B.correct",
+			"C.clear",
+			"D.concise",
+		},
+		Answer: []string{
+			"A", "B", "C", "D",
+		},
+		Json: "null",
+	}
+	data, _ := json.Marshal(problem)
+	resp, _ := client.Post(url, "application/json", strings.NewReader(string(data)))
+	defer resp.Body.Close()
+	body, _ := io.ReadAll(resp.Body)
+	var answers Answer
+	err1 := json.Unmarshal(body, &answers)
+	if err != nil {
+		return CheckApiQueRequest(url, retry-1, err1)
+	}
+	return nil
+}
