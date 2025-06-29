@@ -54,7 +54,7 @@ func CheckApiQueRequest(url string, retry int, err error) error {
 	}
 	problem := Problem{
 		Hash:    "",
-		Type:    "单选",
+		Type:    "多选",
 		Content: "1、According to the successful salesperson Summer, what are the principles\n\nwe should follow in business writing?",
 		Options: []string{
 			"A.politeness",
