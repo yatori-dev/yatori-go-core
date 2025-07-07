@@ -2,9 +2,8 @@ package examples
 
 import (
 	"fmt"
+	"github.com/yatori-dev/yatori-go-core/que-core/questionback"
 	"testing"
-
-	"github.com/yatori-dev/yatori-go-core/utils/questionback"
 )
 
 // 测试题库缓存插入

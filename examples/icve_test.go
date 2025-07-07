@@ -11,7 +11,7 @@ import (
 func TestIcveLogin(t *testing.T) {
 	utils.YatoriCoreInit()
 	setup()
-	user := global.Config.Users[16]
+	user := global.Config.Users[18]
 	userCache := icve.IcveUserCache{
 		Account:  user.Account,
 		Password: user.Password,

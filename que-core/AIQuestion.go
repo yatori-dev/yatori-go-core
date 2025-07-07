@@ -1,4 +1,6 @@
-package utils
+package que_core
+
+// AI答题
 
 import (
 	"bytes"

@@ -5,6 +5,7 @@ import (
 	"errors"
 	"fmt"
 	"github.com/yatori-dev/yatori-go-core/api/entity"
+	que_core "github.com/yatori-dev/yatori-go-core/que-core"
 	"math/rand"
 	"os"
 	"regexp"
@@ -389,7 +390,7 @@ func StartExamAction(
 		aiMessage := yinghuaApi.AIProblemMessage(exam.Title, entity.ExamTurn{
 			YingHuaExamTopic: v,
 		})
-		aiAnswer, err := utils.AggregationAIApi(url, model, aiType, aiMessage, apiKey)
+		aiAnswer, err := que_core.AggregationAIApi(url, model, aiType, aiMessage, apiKey)
 		answer := aiTurnYingHuaAnswer(userCache, aiAnswer, v)
 
 		if err != nil {
@@ -653,7 +654,8 @@ func StartWorkAction(userCache *yinghuaApi.YingHuaUserCache,
 		aiMessage := yinghuaApi.AIProblemMessage(work.Title, entity.ExamTurn{
 			YingHuaExamTopic: v,
 		})
-		aiAnswer, err := utils.AggregationAIApi(url, model, aiType, aiMessage, apiKey)
+
+		aiAnswer, err := que_core.AggregationAIApi(url, model, aiType, aiMessage, apiKey)
 		answer := aiTurnYingHuaAnswer(userCache, aiAnswer, v)
 
 		if err != nil {

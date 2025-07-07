@@ -10,6 +10,7 @@ import (
 	"github.com/yatori-dev/yatori-go-core/api/entity"
 	"github.com/yatori-dev/yatori-go-core/api/xuexitong"
 	"github.com/yatori-dev/yatori-go-core/models/ctype"
+	que_core "github.com/yatori-dev/yatori-go-core/que-core"
 	"github.com/yatori-dev/yatori-go-core/utils"
 	"golang.org/x/net/html"
 	"log"
@@ -421,7 +422,7 @@ func ParseWorkQuestionAction(cache *xuexitong.XueXiTUserCache, workPoint *entity
 }
 
 // 定义题型处理策略函数类型
-type problemMessageStrategy func(context string, topic entity.ExamTurn) utils.AIChatMessages
+type problemMessageStrategy func(context string, topic entity.ExamTurn) que_core.AIChatMessages
 
 // 策略映射表：题型 -> 处理函数
 var problemStrategies = map[string]problemMessageStrategy{
@@ -432,7 +433,7 @@ var problemStrategies = map[string]problemMessageStrategy{
 	"简答题": handleShortAnswer,
 }
 
-func AIProblemMessage(testPaperTitle, text string, topic entity.ExamTurn) utils.AIChatMessages {
+func AIProblemMessage(testPaperTitle, text string, topic entity.ExamTurn) que_core.AIChatMessages {
 
 	context := buildProblemContext(testPaperTitle, text, topic)
 
@@ -442,7 +443,7 @@ func AIProblemMessage(testPaperTitle, text string, topic entity.ExamTurn) utils.
 	}
 
 	// 默认返回空消息
-	return utils.AIChatMessages{Messages: []utils.Message{}}
+	return que_core.AIChatMessages{Messages: []que_core.Message{}}
 }
 
 // buildProblemContext 构建通用的题目上下文
@@ -493,9 +494,9 @@ func buildProblemContext(testPaperTitle, text string, topic entity.ExamTurn) (co
 }
 
 // 单选题处理策略
-func handleSingleChoice(context string, topic entity.ExamTurn) utils.AIChatMessages {
+func handleSingleChoice(context string, topic entity.ExamTurn) que_core.AIChatMessages {
 	problem := buildProblemHeader(topic.XueXChoiceQue.Type.String(), "单选题", context)
-	return utils.AIChatMessages{Messages: []utils.Message{
+	return que_core.AIChatMessages{Messages: []que_core.Message{
 		{Role: "user", Content: "接下来你只需要回答选项对应内容即可...格式：[\"选项1\"]"},
 		{Role: "user", Content: "就算你不知道选什么也随机选...无需回答任何解释！！！"},
 		{Role: "user", Content: exampleSingleChoice()},
@@ -504,9 +505,9 @@ func handleSingleChoice(context string, topic entity.ExamTurn) utils.AIChatMessa
 }
 
 // 多选题处理策略
-func handleMultipleChoice(context string, topic entity.ExamTurn) utils.AIChatMessages {
+func handleMultipleChoice(context string, topic entity.ExamTurn) que_core.AIChatMessages {
 	problem := buildProblemHeader(topic.XueXChoiceQue.Type.String(), "多选题", context)
-	return utils.AIChatMessages{Messages: []utils.Message{
+	return que_core.AIChatMessages{Messages: []que_core.Message{
 		{Role: "user", Content: "接下来你只需要回答选项对应内容即可...格式：[\"选项1\",\"选项2\"]"},
 		{Role: "user", Content: "就算你不知道选什么也随机选...无需回答任何解释！！！"},
 		{Role: "user", Content: exampleMultipleChoice()},
@@ -515,9 +516,9 @@ func handleMultipleChoice(context string, topic entity.ExamTurn) utils.AIChatMes
 }
 
 // 判断题处理策略
-func handleTrueFalse(context string, topic entity.ExamTurn) utils.AIChatMessages {
+func handleTrueFalse(context string, topic entity.ExamTurn) que_core.AIChatMessages {
 	problem := buildProblemHeader(topic.XueXJudgeQue.Type.String(), "判断题", context)
-	return utils.AIChatMessages{Messages: []utils.Message{
+	return que_core.AIChatMessages{Messages: []que_core.Message{
 		{Role: "user", Content: "接下来你只需要回答“正确”或者“错误”即可...格式：[\"正确\"]"},
 		{Role: "user", Content: "就算你不知道选什么也随机选...无需回答任何解释！！！"},
 		{Role: "user", Content: exampleTrueFalse()},
@@ -526,9 +527,9 @@ func handleTrueFalse(context string, topic entity.ExamTurn) utils.AIChatMessages
 }
 
 // 填空题处理策略
-func handleFillInTheBlank(context string, topic entity.ExamTurn) utils.AIChatMessages {
+func handleFillInTheBlank(context string, topic entity.ExamTurn) que_core.AIChatMessages {
 	problem := buildProblemHeader(topic.XueXFillQue.Type.String(), "填空题", context)
-	return utils.AIChatMessages{Messages: []utils.Message{
+	return que_core.AIChatMessages{Messages: []que_core.Message{
 		{Role: "user", Content: "其中，“（answer_数字）”相关字样的地方是你需要填写答案的地方...格式：[\"答案1\",\"答案2\"]"},
 		{Role: "user", Content: "就算你不知道选什么也随机选...无需回答任何解释！！！"},
 		{Role: "user", Content: exampleFillInTheBlank()},
@@ -537,9 +538,9 @@ func handleFillInTheBlank(context string, topic entity.ExamTurn) utils.AIChatMes
 }
 
 // 简答题处理策略
-func handleShortAnswer(context string, topic entity.ExamTurn) utils.AIChatMessages {
+func handleShortAnswer(context string, topic entity.ExamTurn) que_core.AIChatMessages {
 	problem := buildProblemHeader(topic.XueXShortQue.Type.String(), "简答题", context)
-	return utils.AIChatMessages{Messages: []utils.Message{
+	return que_core.AIChatMessages{Messages: []que_core.Message{
 		{Role: "user", Content: "这是一个简答题...格式：[\"答案\"]，注意不要拆分答案！！！"},
 		{Role: "user", Content: "就算你不知道选什么也随机选...无需回答任何解释！！！"},
 		{Role: "user", Content: exampleShortAnswer()},
