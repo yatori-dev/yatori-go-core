@@ -5,7 +5,7 @@ import (
 	"crypto/tls"
 	"fmt"
 	"github.com/yatori-dev/yatori-go-core/api/entity"
-	"github.com/yatori-dev/yatori-go-core/models/ctype"
+	"github.com/yatori-dev/yatori-go-core/que-core/qtype"
 	"io/ioutil"
 	"mime/multipart"
 	"net/http"
@@ -48,7 +48,7 @@ func (cache *XueXiTUserCache) WorkNewSubmitAnswer(courseId string, classId strin
 		if ch.Qid != "" {
 			answerwqbid += ch.Qid + ","
 		}
-		if ch.Type == ctype.SingleChoice {
+		if ch.Type == qtype.SingleChoice {
 			answers := ""
 			for _, item := range ch.Answers {
 				for k, v := range ch.Options {
@@ -61,7 +61,7 @@ func (cache *XueXiTUserCache) WorkNewSubmitAnswer(courseId string, classId strin
 			_ = writer.WriteField("answer"+ch.Qid, answers)
 			_ = writer.WriteField("answertype"+ch.Qid, "0")
 		}
-		if ch.Type == ctype.MultipleChoice {
+		if ch.Type == qtype.MultipleChoice {
 			answers := ""
 			for _, item := range ch.Answers {
 				for k, v := range ch.Options {

@@ -4,6 +4,8 @@ import (
 	"encoding/json"
 	"fmt"
 	"github.com/yatori-dev/yatori-go-core/models/ctype"
+	"github.com/yatori-dev/yatori-go-core/que-core/aiq"
+	"github.com/yatori-dev/yatori-go-core/que-core/qtype"
 	"github.com/yatori-dev/yatori-go-core/utils"
 	"github.com/yatori-dev/yatori-go-core/utils/log"
 	"os"
@@ -102,7 +104,7 @@ type TopicSelect struct {
 
 // ChoiceQue 选择类型
 type ChoiceQue struct {
-	Type    ctype.QueType
+	Type    qtype.QueType
 	Qid     string //题目ID
 	Text    string
 	Options map[string]string
@@ -111,7 +113,7 @@ type ChoiceQue struct {
 
 // JudgeQue 判断类型
 type JudgeQue struct {
-	Type    ctype.QueType
+	Type    qtype.QueType
 	Qid     string //题目ID
 	Text    string
 	Options map[string]string
@@ -120,7 +122,7 @@ type JudgeQue struct {
 
 // FillQue 填空类型
 type FillQue struct {
-	Type         ctype.QueType
+	Type         qtype.QueType
 	Qid          string
 	Text         string
 	OpFromAnswer map[string][]string // 位置与答案
@@ -128,7 +130,7 @@ type FillQue struct {
 
 // 简答类型
 type ShortQue struct {
-	Type         ctype.QueType
+	Type         qtype.QueType
 	Qid          string
 	Text         string
 	OpFromAnswer map[string][]string
@@ -225,8 +227,8 @@ func extractIndexFromKey(key string) int {
 	return -1 // 无效索引
 }
 
-func GetAIAnswer(as AnswerSetter, userID string, url, model string, aiType ctype.AiType, aiChatMessages utils.AIChatMessages, apiKey string) {
-	aiAnswer, err := utils.AggregationAIApi(url, model, aiType, aiChatMessages, apiKey)
+func GetAIAnswer(as AnswerSetter, userID string, url, model string, aiType ctype.AiType, aiChatMessages aiq.AIChatMessages, apiKey string) {
+	aiAnswer, err := aiq.AggregationAIApi(url, model, aiType, aiChatMessages, apiKey)
 	if err != nil {
 		log.Print(log.INFO, `[`, userID, `] `, log.BoldRed, "Ai异常，返回信息：", err.Error())
 		os.Exit(0)
@@ -242,25 +244,25 @@ func GetAIAnswer(as AnswerSetter, userID string, url, model string, aiType ctype
 
 // AnswerAIGet ChoiceQue的AI回答获取方法
 func (q *ChoiceQue) AnswerAIGet(userID,
-	url, model string, aiType ctype.AiType, aiChatMessages utils.AIChatMessages, apiKey string) {
+	url, model string, aiType ctype.AiType, aiChatMessages aiq.AIChatMessages, apiKey string) {
 	GetAIAnswer(q, userID, url, model, aiType, aiChatMessages, apiKey)
 }
 
 // AnswerAIGet JudgeQue的AI回答获取方法
 func (q *JudgeQue) AnswerAIGet(userID,
-	url, model string, aiType ctype.AiType, aiChatMessages utils.AIChatMessages, apiKey string) {
+	url, model string, aiType ctype.AiType, aiChatMessages aiq.AIChatMessages, apiKey string) {
 	GetAIAnswer(q, userID, url, model, aiType, aiChatMessages, apiKey)
 }
 
 // AnswerAIGet FillQue的AI回答获取方法
 func (q *FillQue) AnswerAIGet(userID,
-	url, model string, aiType ctype.AiType, aiChatMessages utils.AIChatMessages, apiKey string) {
+	url, model string, aiType ctype.AiType, aiChatMessages aiq.AIChatMessages, apiKey string) {
 	GetAIAnswer(q, userID, url, model, aiType, aiChatMessages, apiKey)
 }
 
 // AnswerAIGet ShortQue的AI回答获取方法
 func (q *ShortQue) AnswerAIGet(userID,
-	url, model string, aiType ctype.AiType, aiChatMessages utils.AIChatMessages, apiKey string) {
+	url, model string, aiType ctype.AiType, aiChatMessages aiq.AIChatMessages, apiKey string) {
 	GetAIAnswer(q, userID, url, model, aiType, aiChatMessages, apiKey)
 }
 

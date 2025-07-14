@@ -1,4 +1,4 @@
-package ctype
+package qtype
 
 type QueType int
 

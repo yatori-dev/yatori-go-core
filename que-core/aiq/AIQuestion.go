@@ -1,4 +1,4 @@
-package que_core
+package aiq
 
 // AI答题
 

@@ -9,8 +9,8 @@ import (
 	"github.com/thedevsaddam/gojsonq"
 	"github.com/yatori-dev/yatori-go-core/api/entity"
 	"github.com/yatori-dev/yatori-go-core/api/xuexitong"
-	"github.com/yatori-dev/yatori-go-core/models/ctype"
-	que_core "github.com/yatori-dev/yatori-go-core/que-core"
+	que_core "github.com/yatori-dev/yatori-go-core/que-core/aiq"
+	"github.com/yatori-dev/yatori-go-core/que-core/qtype"
 	"github.com/yatori-dev/yatori-go-core/utils"
 	"golang.org/x/net/html"
 	"log"
@@ -304,10 +304,10 @@ func ParseWorkQuestionAction(cache *xuexitong.XueXiTUserCache, workPoint *entity
 
 		switch quesType {
 		// 单选
-		case ctype.SingleChoice.String():
+		case qtype.SingleChoice.String():
 			options := make(map[string]string)
 			choiceQue := entity.ChoiceQue{}
-			choiceQue.Type = ctype.SingleChoice
+			choiceQue.Type = qtype.SingleChoice
 			choiceQue.Qid = qs.ID
 			choiceQue.Text = quesText
 			// 提取选项
@@ -333,10 +333,10 @@ func ParseWorkQuestionAction(cache *xuexitong.XueXiTUserCache, workPoint *entity
 			workQuestion = append(workQuestion, choiceQue)
 			break
 			// 多选
-		case ctype.MultipleChoice.String():
+		case qtype.MultipleChoice.String():
 			options := make(map[string]string)
 			choiceQue := entity.ChoiceQue{}
-			choiceQue.Type = ctype.MultipleChoice
+			choiceQue.Type = qtype.MultipleChoice
 			choiceQue.Qid = qs.ID
 			choiceQue.Text = quesText
 			// 提取选项
@@ -361,10 +361,10 @@ func ParseWorkQuestionAction(cache *xuexitong.XueXiTUserCache, workPoint *entity
 			choiceQue.Options = options
 			workQuestion = append(workQuestion, choiceQue)
 			break
-		case ctype.TrueOrFalse.String():
+		case qtype.TrueOrFalse.String():
 			options := make(map[string]string)
 			judgeQue := entity.JudgeQue{}
-			judgeQue.Type = ctype.TrueOrFalse
+			judgeQue.Type = qtype.TrueOrFalse
 			judgeQue.Qid = qs.ID
 			judgeQue.Text = quesText
 			// 提取选项
@@ -379,10 +379,10 @@ func ParseWorkQuestionAction(cache *xuexitong.XueXiTUserCache, workPoint *entity
 			})
 			judgeQue.Options = options
 			judgeQuestion = append(judgeQuestion, judgeQue)
-		case ctype.FillInTheBlank.String():
+		case qtype.FillInTheBlank.String():
 			options := make(map[string][]string)
 			fillQue := entity.FillQue{}
-			fillQue.Type = ctype.FillInTheBlank
+			fillQue.Type = qtype.FillInTheBlank
 			fillQue.Qid = qs.ID
 			fillQue.Text = quesText
 			// 提取填空题
@@ -401,10 +401,10 @@ func ParseWorkQuestionAction(cache *xuexitong.XueXiTUserCache, workPoint *entity
 			})
 			fillQue.OpFromAnswer = options
 			fillQuestion = append(fillQuestion, fillQue)
-		case ctype.ShortAnswer.String():
+		case qtype.ShortAnswer.String():
 			options := make(map[string][]string)
 			shortQue := entity.ShortQue{}
-			shortQue.Type = ctype.ShortAnswer
+			shortQue.Type = qtype.ShortAnswer
 			shortQue.Qid = qs.ID
 			shortQue.Text = quesText
 			// 简答暂时未发现有多个textarea标签出现 不做多答案处理
@@ -449,7 +449,7 @@ func AIProblemMessage(testPaperTitle, text string, topic entity.ExamTurn) que_co
 // buildProblemContext 构建通用的题目上下文
 func buildProblemContext(testPaperTitle, text string, topic entity.ExamTurn) (context string) {
 	switch testPaperTitle {
-	case ctype.SingleChoice.String():
+	case qtype.SingleChoice.String():
 		for c, q := range topic.XueXChoiceQue.Options {
 			context += text + "\n"
 			context += fmt.Sprintf("\n%v. %v", c, q)
@@ -457,7 +457,7 @@ func buildProblemContext(testPaperTitle, text string, topic entity.ExamTurn) (co
 		for _, v := range topic.Selects {
 			context += v.Num + v.Text + "\n"
 		}
-	case ctype.MultipleChoice.String():
+	case qtype.MultipleChoice.String():
 		for c, q := range topic.XueXChoiceQue.Options {
 			context += text + "\n"
 			context += fmt.Sprintf("\n%v. %v", c, q)
@@ -465,7 +465,7 @@ func buildProblemContext(testPaperTitle, text string, topic entity.ExamTurn) (co
 		for _, v := range topic.Selects {
 			context += v.Num + v.Text + "\n"
 		}
-	case ctype.FillInTheBlank.String():
+	case qtype.FillInTheBlank.String():
 		for c, q := range topic.XueXFillQue.OpFromAnswer {
 			context += text + "\n"
 			context += fmt.Sprintf("\n%v. %v", c, q)
@@ -473,7 +473,7 @@ func buildProblemContext(testPaperTitle, text string, topic entity.ExamTurn) (co
 		for _, v := range topic.Selects {
 			context += v.Num + v.Text + "\n"
 		}
-	case ctype.TrueOrFalse.String():
+	case qtype.TrueOrFalse.String():
 		for c, q := range topic.XueXJudgeQue.Options {
 			context += text + "\n"
 			context += fmt.Sprintf("\n%v. %v", c, q)
@@ -481,7 +481,7 @@ func buildProblemContext(testPaperTitle, text string, topic entity.ExamTurn) (co
 		for _, v := range topic.Selects {
 			context += v.Num + v.Text + "\n"
 		}
-	case ctype.ShortAnswer.String():
+	case qtype.ShortAnswer.String():
 		for c, q := range topic.XueXShortQue.OpFromAnswer {
 			context += text + "\n"
 			context += fmt.Sprintf("\n%v. %v", c, q)

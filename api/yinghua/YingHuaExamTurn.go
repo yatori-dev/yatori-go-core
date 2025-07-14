@@ -3,10 +3,9 @@ package yinghua
 import (
 	"fmt"
 	"github.com/yatori-dev/yatori-go-core/api/entity"
+	"github.com/yatori-dev/yatori-go-core/que-core/aiq"
 	"regexp"
 	"strings"
-
-	"github.com/yatori-dev/yatori-go-core/utils"
 )
 
 // 题目转换
@@ -155,7 +154,7 @@ func TurnExamTopic(examHtml string) entity.YingHuaExamTopics {
 }
 
 // 组装AI问题消息
-func AIProblemMessage(testPaperTitle string, topic entity.ExamTurn) utils.AIChatMessages {
+func AIProblemMessage(testPaperTitle string, topic entity.ExamTurn) aiq.AIChatMessages {
 	topicType := topic.YingHuaExamTopic.Type
 	problem := `试卷名称：` + testPaperTitle + `
 题目类型：` + topicType + `
@@ -166,7 +165,7 @@ func AIProblemMessage(testPaperTitle string, topic entity.ExamTurn) utils.AIChat
 		for _, v := range topic.Selects {
 			problem += v.Num + v.Text + "\n"
 		}
-		return utils.AIChatMessages{Messages: []utils.Message{
+		return aiq.AIChatMessages{Messages: []aiq.Message{
 			{
 				Role:    "user",
 				Content: `接下来你只需要回答选项对应内容即可，不能回答任何选项无关的任何内容，包括解释以及标点符也不需要。`,
@@ -198,7 +197,7 @@ func AIProblemMessage(testPaperTitle string, topic entity.ExamTurn) utils.AIChat
 		for _, v := range topic.Selects {
 			problem += v.Num + v.Text + "\n"
 		}
-		return utils.AIChatMessages{Messages: []utils.Message{
+		return aiq.AIChatMessages{Messages: []aiq.Message{
 			{
 				Role:    "user",
 				Content: `接下来你只需要回答选项对应内容即可，不能回答任何选项无关的任何内容，包括解释以及标点符也不需要。`,
@@ -230,7 +229,7 @@ func AIProblemMessage(testPaperTitle string, topic entity.ExamTurn) utils.AIChat
 		for _, v := range topic.Selects {
 			problem += v.Num + v.Text + "\n"
 		}
-		return utils.AIChatMessages{Messages: []utils.Message{
+		return aiq.AIChatMessages{Messages: []aiq.Message{
 			{
 				Role:    "user",
 				Content: `接下来你只需要回答“正确”或者“错误”即可，不能回答任何无关的内容，包括解释以及标点符也不需要。`,
@@ -257,7 +256,7 @@ func AIProblemMessage(testPaperTitle string, topic entity.ExamTurn) utils.AIChat
 			},
 		}}
 	} else if topicType == "填空" { //填空题
-		return utils.AIChatMessages{Messages: []utils.Message{
+		return aiq.AIChatMessages{Messages: []aiq.Message{
 			{
 				Role:    "user",
 				Content: `其中，“（answer_数字）”相关字样的地方是你需要填写答案的地方，现在你只需要按顺序回复我对应每个填空项的答案即可，回答的格式一定要严格为单个数组格式，比如["答案1","答案2"]其他不符合格式的内容无需回复。你只需回复答案对应格式内容即可，无需回答任何解释！！！`,
@@ -268,7 +267,7 @@ func AIProblemMessage(testPaperTitle string, topic entity.ExamTurn) utils.AIChat
 			},
 		}}
 	} else if topicType == "简答" { //简答
-		return utils.AIChatMessages{Messages: []utils.Message{
+		return aiq.AIChatMessages{Messages: []aiq.Message{
 			{
 				Role:    "user",
 				Content: `这是一个简答题，现在你只需要回复我对应简答题答案即可，回答的格式一定要严格为单个数组格式，比如["答案"]，但是注意你只需要把所有答案填写在一个元素项里面就行，别分开，比如你不能["xxx","zzz"]这样写，你只能["xxxzzz"]这样写，其他不符合格式的内容无需回复。你只需回复答案对应格式内容即可，无需回答任何解释！！！`,
@@ -279,5 +278,5 @@ func AIProblemMessage(testPaperTitle string, topic entity.ExamTurn) utils.AIChat
 			},
 		}}
 	}
-	return utils.AIChatMessages{Messages: []utils.Message{}}
+	return aiq.AIChatMessages{Messages: []aiq.Message{}}
 }

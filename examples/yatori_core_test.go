@@ -2,6 +2,7 @@ package examples
 
 import (
 	"fmt"
+	"github.com/yatori-dev/yatori-go-core/que-core/aiq"
 	"net/http"
 	"net/url"
 	"testing"
@@ -9,7 +10,6 @@ import (
 
 	"github.com/yatori-dev/yatori-go-core/common"
 	"github.com/yatori-dev/yatori-go-core/global"
-	"github.com/yatori-dev/yatori-go-core/utils"
 )
 
 func setup() {
@@ -28,14 +28,14 @@ func TestAiAnswer(t *testing.T) {
 	//测试账号
 	setup()
 	setting := global.Config.Setting
-	messages := utils.AIChatMessages{Messages: []utils.Message{
+	messages := aiq.AIChatMessages{Messages: []aiq.Message{
 		{
 			Role:    "user",
 			Content: "你好,你叫什么名字",
 		},
 	}}
 	//api, _ := utils.TongYiChatReplyApi(setting.AiSetting.APIKEY, messages)
-	api, _ := utils.AggregationAIApi("", setting.AiSetting.Model, setting.AiSetting.AiType, messages, setting.AiSetting.APIKEY)
+	api, _ := aiq.AggregationAIApi("", setting.AiSetting.Model, setting.AiSetting.AiType, messages, setting.AiSetting.APIKEY)
 
 	fmt.Println(api)
 }
