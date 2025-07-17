@@ -420,10 +420,14 @@ func TestXueXiToChapterCardDocument(t *testing.T) {
 			if err != nil {
 				log.Fatal(err)
 			}
-			videoDTOs, workDTOs, documentDTOs := entity.ParsePointDto(fetchCards)
-			if videoDTOs == nil && workDTOs == nil && documentDTOs == nil {
-				log.Println("没有可学习的内容")
-			}
+			//videoDTOs, workDTOs, documentDTOs := entity.ParsePointDto(fetchCards)
+			//if videoDTOs == nil && workDTOs == nil && documentDTOs == nil {
+			//	log.Println("没有可学习的内容")
+			//}
+
+			documentDTOs := entity.GroupPointDtos[entity.PointDocumentDto](fetchCards, func(dto entity.PointDocumentDto) bool {
+				return dto.IsSetted()
+			})
 			// 暂时只测试视频
 			if documentDTOs != nil {
 				for _, documentDTO := range documentDTOs {
