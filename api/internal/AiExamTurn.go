@@ -2,9 +2,9 @@ package internal
 
 import (
 	"github.com/yatori-dev/yatori-go-core/api/entity"
-	"github.com/yatori-dev/yatori-go-core/utils"
+	que_core "github.com/yatori-dev/yatori-go-core/que-core/aiq"
 )
 
 type AiExamTurnInterface interface {
-	AIProblemMessage(testPaperTitle string, topic entity.ExamTurn) utils.AIChatMessages
+	AIProblemMessage(testPaperTitle string, topic entity.ExamTurn) que_core.AIChatMessages
 }
