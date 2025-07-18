@@ -1,4 +1,4 @@
-package questionbank
+package localq
 
 import (
 	"crypto/md5"
@@ -42,7 +42,7 @@ type Question struct {
 
 // 题库缓存初始化
 func QuestionBackInit() (*gorm.DB, error) {
-	db, err := gorm.Open(sqlite.Open("questionbank.db"), &gorm.Config{})
+	db, err := gorm.Open(sqlite.Open("localq.db"), &gorm.Config{})
 	if err != nil {
 		return nil, err
 	}

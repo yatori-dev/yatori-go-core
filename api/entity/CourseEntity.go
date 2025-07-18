@@ -5,8 +5,8 @@ import (
 	"fmt"
 	"github.com/yatori-dev/yatori-go-core/models/ctype"
 	"github.com/yatori-dev/yatori-go-core/que-core/aiq"
+	"github.com/yatori-dev/yatori-go-core/que-core/qentity"
 	"github.com/yatori-dev/yatori-go-core/que-core/qtype"
-	"github.com/yatori-dev/yatori-go-core/utils"
 	"github.com/yatori-dev/yatori-go-core/utils/log"
 	"os"
 	"regexp"
@@ -86,13 +86,14 @@ type YingHuaExamTopics struct {
 
 // ExamTopic represents a single exam question
 type YingHuaExamTopic struct {
-	AnswerId string        `json:"answerId"`
-	Index    string        `json:"index"`
-	Source   string        `json:"source"`
-	Content  string        `json:"content"`
-	Type     string        `json:"type"`
-	Selects  []TopicSelect `json:"selects"`
-	Answers  string        `json:"answers"`
+	AnswerId string `json:"answerId"`
+	Index    string `json:"index"`
+	Source   string `json:"source"`
+	qentity.Question
+	//Content  string        `json:"content"`
+	//Type     string        `json:"type"`
+	//Selects  []TopicSelect `json:"selects"`
+	//Answers  string        `json:"answers"`
 }
 
 // TopicSelect represents a possible answer choice

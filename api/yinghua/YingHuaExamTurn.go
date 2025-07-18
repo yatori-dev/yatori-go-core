@@ -4,15 +4,18 @@ import (
 	"fmt"
 	"github.com/yatori-dev/yatori-go-core/api/entity"
 	"github.com/yatori-dev/yatori-go-core/que-core/aiq"
+	"github.com/yatori-dev/yatori-go-core/que-core/qentity"
 	"regexp"
 	"strings"
 )
 
 // 题目转换
-func TurnExamTopic(examHtml string) entity.YingHuaExamTopics {
-	exchangeTopics := entity.YingHuaExamTopics{
-		YingHuaExamTopics: make(map[string]entity.YingHuaExamTopic),
-	}
+func TurnExamTopic(examHtml string) []entity.YingHuaExamTopic {
+	var topics = make([]entity.YingHuaExamTopic, 0)
+
+	//exchangeTopics := entity.YingHuaExamTopics{
+	//	YingHuaExamTopics: make(map[string]entity.YingHuaExamTopic),
+	//}
 
 	// Regular expression to extract the topic index and answerId
 	topicPattern := `<li>[ \f\n\r\t\v]*<a data-id="([^\"]*)"[ \f\n\r\t\v]*href="[^\"]*"[ \f\n\r\t\v]*class="[^\"]*"[ \f\n\r\t\v]*id="[^\"]*"[ \f\n\r\t\v]*data-index="[^\"]*"[ \f\n\r\t\v]*onclick="[^\"]*">([^<]*)</a>[ \f\n\r\t\v]*</li>`
@@ -141,16 +144,22 @@ func TurnExamTopic(examHtml string) entity.YingHuaExamTopics {
 			AnswerId: topicMap[num],
 			Index:    num,
 			Source:   source,
-			Content:  content,
-			Type:     tag,
-			Selects:  selects,
+			Question: qentity.Question{
+				Type:    tag,
+				Content: content,
+				//Options: selects,
+			},
+			//Content:  content,
+			//Type:    tag,
+			//Selects: selects,
 		}
 
 		// Add the topic to the ExamTopics map
-		exchangeTopics.YingHuaExamTopics[topicMap[num]] = examTopic
+		//exchangeTopics.YingHuaExamTopics[topicMap[num]] = examTopic
+		topics = append(topics, examTopic)
 	}
 
-	return exchangeTopics
+	return topics
 }
 
 // 组装AI问题消息

@@ -375,12 +375,12 @@ func StartExamAction(
 		return errors.New(gojsonq.New().JSONString(startExam).Find("msg").(string))
 	}
 	//开始答题
-	api, err := yinghuaApi.GetExamTopicApi(*userCache, exam.NodeId, exam.ExamId, 8, nil)
+	topicHtml, err := yinghuaApi.GetExamTopicApi(*userCache, exam.NodeId, exam.ExamId, 8, nil)
 	if int(gojsonq.New().JSONString(startExam).Find("_code").(float64)) == 9 {
 		return errors.New(gojsonq.New().JSONString(startExam).Find("msg").(string))
 	}
 	//html转结构体
-	topic := yinghuaApi.TurnExamTopic(api)
+	topic := yinghuaApi.TurnExamTopic(topicHtml)
 	//fmt.Println(topic)
 	//遍历题目map,并回答问题
 	var lastAnswer utils.Answer
@@ -650,6 +650,7 @@ func StartWorkAction(userCache *yinghuaApi.YingHuaUserCache,
 	var lastAnswer utils.Answer
 	var lastProblem string
 	for k, v := range topic.YingHuaExamTopics {
+
 		//构建统一AI消息
 		aiMessage := yinghuaApi.AIProblemMessage(work.Title, entity.ExamTurn{
 			YingHuaExamTopic: v,
