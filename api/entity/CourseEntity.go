@@ -97,11 +97,11 @@ type YingHuaExamTopic struct {
 }
 
 // TopicSelect represents a possible answer choice
-type TopicSelect struct {
-	Value string `json:"value"`
-	Num   string `json:"num"`
-	Text  string `json:"text"`
-}
+//type TopicSelect struct {
+//	Value string `json:"value"`
+//	Num   string `json:"num"`
+//	Text  string `json:"text"`
+//}
 
 // ChoiceQue 选择类型
 type ChoiceQue struct {
@@ -268,17 +268,17 @@ func (q *ShortQue) AnswerAIGet(userID,
 }
 
 // TurnProblem 转标准题目格式
-func (q *YingHuaExamTopic) TurnProblem() utils.Problem {
-	problem := utils.Problem{
-		Hash:    "",
-		Type:    q.Type,
-		Content: q.Content,
-		Options: []string{},
-		Answer:  []string{},
-		Json:    "",
-	}
-	for _, topicSelect := range q.Selects {
-		problem.Options = append(problem.Options, topicSelect.Num+topicSelect.Text)
-	}
-	return problem
-}
+//func (q *YingHuaExamTopic) TurnProblem() utils.Problem {
+//	problem := utils.Problem{
+//		Hash:    "",
+//		Type:    q.Type,
+//		Content: q.Content,
+//		Options: []string{},
+//		Answer:  []string{},
+//		Json:    "",
+//	}
+//	for _, topicSelect := range q.Selects {
+//		problem.Options = append(problem.Options, topicSelect.Num+topicSelect.Text)
+//	}
+//	return problem
+//}

@@ -109,3 +109,53 @@ func TestENAEAPullProjectForVideo(t *testing.T) {
 
 	}
 }
+
+// 测试学习公社暴力模式视频学习
+func TestENAEAPullProjectForFastVideo(t *testing.T) {
+	utils.YatoriCoreInit()
+	//测试账号
+	setup()
+	users := global.Config.Users[9]
+	cache := enaeaApi.EnaeaUserCache{Account: users.Account, Password: users.Password}
+	_, err := enaea.EnaeaLoginAction(&cache)
+	if err != nil {
+		t.Error(err)
+	}
+	action, err := enaea.ProjectListAction(&cache)
+	if err != nil {
+		t.Error(err)
+	}
+	courseList, err := enaea.CourseListAction(&cache, action[0].CircleId)
+	for _, v := range courseList {
+		videoList, err := enaea.VideoListAction(&cache, &v)
+		if err != nil {
+			t.Error(err)
+		}
+		for _, video := range videoList {
+			err := enaea.StatisticTicForCCVideAction(&cache, &video)
+			if err != nil {
+				t.Error(err)
+			}
+			//如果学过了，那么跳过
+			if video.StudyProgress >= 100 {
+				continue
+			}
+			for {
+				err := enaea.SubmitStudyTimeAction(&cache, &video, time2.Now().UnixMilli(), 1)
+				if err != nil {
+					t.Error(err)
+				}
+				err2 := enaea.StatisticTicForCCVideAction(&cache, &video)
+				if err2 != nil {
+					t.Error(err)
+				}
+				if video.StudyProgress >= 100 { //如果学习完毕那么跳过
+					break
+				}
+				time2.Sleep(time2.Second * 60)
+
+			}
+		}
+
+	}
+}

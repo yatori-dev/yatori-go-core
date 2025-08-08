@@ -6,6 +6,8 @@ import (
 	"fmt"
 	"github.com/yatori-dev/yatori-go-core/api/entity"
 	"github.com/yatori-dev/yatori-go-core/que-core/aiq"
+	"github.com/yatori-dev/yatori-go-core/que-core/external"
+	"github.com/yatori-dev/yatori-go-core/que-core/qentity"
 	"math/rand"
 	"os"
 	"regexp"
@@ -338,14 +340,14 @@ func ExamDetailAction(UserCache *yinghuaApi.YingHuaUserCache, nodeId string) ([]
 	return examList, nil
 }
 
-// randomAnswer 如果AI出问题那么直接随机返回答案
+// randomAnswer 如果AI出问题那么直接随机返回答案x
 func randomAnswer(topic entity.YingHuaExamTopic) string {
 	if topic.Type == "单选" {
-		sct := rand.Intn(len(topic.Selects))
+		sct := rand.Intn(len(topic.Options))
 		return "[" + topic.Selects[sct].Value + "]"
 	} else if topic.Type == "多选" {
 		sct := "["
-		for i := 0; i < len(topic.Selects); i++ {
+		for i := 0; i < len(topic.Options); i++ {
 			sct = sct + topic.Selects[i].Value
 			if i != len(topic.Selects)-1 {
 				sct += " "
@@ -380,12 +382,12 @@ func StartExamAction(
 		return errors.New(gojsonq.New().JSONString(startExam).Find("msg").(string))
 	}
 	//html转结构体
-	topic := yinghuaApi.TurnExamTopic(topicHtml)
+	topics := yinghuaApi.TurnExamTopic(topicHtml)
 	//fmt.Println(topic)
 	//遍历题目map,并回答问题
-	var lastAnswer utils.Answer
+	var lastAnswer utils.Answers
 	var lastProblem string
-	for k, v := range topic.YingHuaExamTopics {
+	for k, v := range topics {
 		//构建统一AI消息
 		aiMessage := yinghuaApi.AIProblemMessage(exam.Title, entity.ExamTurn{
 			YingHuaExamTopic: v,
@@ -425,6 +427,10 @@ func StartExamAction(
 	return nil
 }
 
+func TurnAnswer(question entity.Question) {
+
+}
+
 // StartExamForExternalAction 开始考试
 func StartExamForExternalAction(
 	userCache *yinghuaApi.YingHuaUserCache,
@@ -452,12 +458,13 @@ func StartExamForExternalAction(
 	//遍历题目map,并回答问题
 	var lastAnswer utils.Answer
 	var lastProblem string
-	for k, v := range topic.YingHuaExamTopics {
-		standardProblem := v.TurnProblem() //转为标准问题结构体
-		answer, err := standardProblem.ApiQueRequest(queBankUrl, 5, nil)
-		answer = AnswerTurnResult(answer, v) //转换答案
-		//fmt.Println(aiAnswer)
-		subWorkApi, err := yinghuaApi.SubmitExamApi(*userCache, exam.ExamId, k, answer, "0", 8, nil)
+	for _, v := range topic {
+		answer, err := external.ApiQueRequest(v.Question, queBankUrl, 5, nil)
+		if err != nil {
+			log.Print(log.INFO, err.Error())
+		}
+		AnswerTurnResult(answer, v)
+		subWorkApi, err := yinghuaApi.SubmitExamApi(*userCache, exam.ExamId, v.Index, answer, "0", 8, nil)
 		if err != nil {
 			log.Print(log.INFO, `[`, userCache.Account, `] `, log.BoldRed, "Ai异常，返回信息：", err.Error())
 		}
@@ -466,8 +473,24 @@ func StartExamForExternalAction(
 			log.Print(log.INFO, log.BoldRed, `[`, userCache.Account, `] `, log.BoldRed, "提交答案异常，返回信息：", subWorkApi, "题目内容：", v, "外部接口回答信息：", answer)
 		}
 		lastAnswer = answer
-		lastProblem = k
+		lastProblem = v.Index
 	}
+	//for k, v := range topic.YingHuaExamTopics {
+	//	standardProblem := v.TurnProblem() //转为标准问题结构体
+	//	answer, err := standardProblem.ApiQueRequest(queBankUrl, 5, nil)
+	//	answer = AnswerTurnResult(answer, v) //转换答案
+	//	//fmt.Println(aiAnswer)
+	//	subWorkApi, err := yinghuaApi.SubmitExamApi(*userCache, exam.ExamId, k, answer, "0", 8, nil)
+	//	if err != nil {
+	//		log.Print(log.INFO, `[`, userCache.Account, `] `, log.BoldRed, "Ai异常，返回信息：", err.Error())
+	//	}
+	//	//如果提交答案服务器端返回信息异常
+	//	if gojsonq.New().JSONString(subWorkApi).Find("msg") != "答题保存成功" {
+	//		log.Print(log.INFO, log.BoldRed, `[`, userCache.Account, `] `, log.BoldRed, "提交答案异常，返回信息：", subWorkApi, "题目内容：", v, "外部接口回答信息：", answer)
+	//	}
+	//	lastAnswer = answer
+	//	lastProblem = k
+	//}
 	if isAutoSubExam == 1 {
 		//结束考试
 		subWorkApi, err := yinghuaApi.SubmitExamApi(*userCache, exam.ExamId, lastProblem, lastAnswer, "1", 8, nil)
@@ -647,14 +670,16 @@ func StartWorkAction(userCache *yinghuaApi.YingHuaUserCache,
 	topic := yinghuaApi.TurnExamTopic(api)
 	//fmt.Println(topic)
 	//遍历题目map,并回答问题
-	var lastAnswer utils.Answer
+	//var lastAnswer utils.Answer
+	var lastAnswer qentity.ResultQuestion
 	var lastProblem string
-	for k, v := range topic.YingHuaExamTopics {
+	for k, v := range topic {
 
 		//构建统一AI消息
-		aiMessage := yinghuaApi.AIProblemMessage(work.Title, entity.ExamTurn{
-			YingHuaExamTopic: v,
-		})
+		//aiMessage := yinghuaApi.AIProblemMessage(work.Title, entity.ExamTurn{
+		//	YingHuaExamTopic: v,
+		//})
+		aiMessage := yinghuaApi.AIProblemMessage(work.Title, v.Question)
 
 		aiAnswer, err := aiq.AggregationAIApi(url, model, aiType, aiMessage, apiKey)
 		answer := aiTurnYingHuaAnswer(userCache, aiAnswer, v)
@@ -664,7 +689,7 @@ func StartWorkAction(userCache *yinghuaApi.YingHuaUserCache,
 			os.Exit(0)
 		}
 		//fmt.Println(aiAnswer)
-		subWorkApi, err := yinghuaApi.SubmitWorkApi(*userCache, work.WorkId, k, answer, "0", 10, nil)
+		subWorkApi, err := yinghuaApi.SubmitWorkApi(*userCache, work.WorkId, v.AnswerId, answer, "0", 10, nil)
 		if err != nil {
 			log.Print(log.INFO, `[`, userCache.Account, `] `, log.BoldRed, "Ai异常，返回信息：", err.Error())
 		}
@@ -673,7 +698,7 @@ func StartWorkAction(userCache *yinghuaApi.YingHuaUserCache,
 			log.Print(log.INFO, log.BoldRed, `[`, userCache.Account, `] `, log.BoldRed, "提交答案异常，返回信息：", subWorkApi)
 		}
 		lastAnswer = aiTurnYingHuaAnswer(userCache, aiAnswer, v)
-		lastProblem = k
+		lastProblem = strconv.Itoa(k + 1)
 	}
 	//结束考试
 	if isAutoSubExam == 1 {
@@ -712,12 +737,12 @@ func StartWorkForExternalAction(userCache *yinghuaApi.YingHuaUserCache,
 		return errors.New(gojsonq.New().JSONString(startWork).Find("msg").(string))
 	}
 	//html转结构体
-	topic := yinghuaApi.TurnExamTopic(api)
+	topics := yinghuaApi.TurnExamTopic(api)
 	//fmt.Println(topic)
 	//遍历题目map,并回答问题
 	var lastAnswer utils.Answer
 	var lastProblem string
-	for k, v := range topic.YingHuaExamTopics {
+	for k, v := range topics {
 
 		standardProblem := v.TurnProblem() //转为标准问题结构体
 		answer, err := standardProblem.ApiQueRequest(queBankUrl, 5, nil)
@@ -737,7 +762,7 @@ func StartWorkForExternalAction(userCache *yinghuaApi.YingHuaUserCache,
 			log.Print(log.INFO, log.BoldRed, `[`, userCache.Account, `] `, log.BoldRed, "提交答案异常，返回信息：", subWorkApi)
 		}
 		lastAnswer = answer
-		lastProblem = k
+		lastProblem = strconv.Itoa(k + 1)
 	}
 	//结束考试
 	if isAutoSubExam == 1 {

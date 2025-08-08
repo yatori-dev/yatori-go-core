@@ -4,6 +4,9 @@ import (
 	"bytes"
 	"crypto/tls"
 	"fmt"
+	"github.com/yatori-dev/yatori-go-core/que-core/qentity"
+	"github.com/yatori-dev/yatori-go-core/que-core/qtype"
+	"github.com/yatori-dev/yatori-go-core/utils/qutils"
 	"io"
 	"io/ioutil"
 	"log"
@@ -967,7 +970,7 @@ func GetExamTopicApi(cache YingHuaUserCache, nodeId, examId string, retryNum int
 }
 
 // SubmitExamApi 提交考试答案接口
-func SubmitExamApi(cache YingHuaUserCache, examId, answerId string, answers utils.Answer, finish string, retryNum int, lastError error) (string, error) {
+func SubmitExamApi(cache YingHuaUserCache, examId, answerId string, answers qentity.Question, finish string, retryNum int, lastError error) (string, error) {
 	if retryNum < 0 {
 		return "", lastError
 	}
@@ -1004,7 +1007,8 @@ func SubmitExamApi(cache YingHuaUserCache, examId, answerId string, answers util
 
 	// Add the answer fields
 	if answers.Type == "单选" || answers.Type == "判断" || answers.Type == "简答" {
-		writer.WriteField("answer", answers.Answers[0])
+		//writer.WriteField("answer", answers.Answers[0])
+		writer.WriteField("answer", qutils.SimilarityArraySelect(answers.Answers[0], answers.Answers))
 	} else if answers.Type == "多选" {
 		for _, v := range answers.Answers {
 			writer.WriteField("answer[]", v)
@@ -1248,7 +1252,7 @@ type YingHuaAnswer struct {
 }
 
 // SubmitWorkApi 提交作业答案接口
-func SubmitWorkApi(cache YingHuaUserCache, workId, answerId string, answers utils.Answer, finish string /*finish代表是否是最后提交并且结束考试，0代表不是，1代表是*/, retryNum int, lastError error) (string, error) {
+func SubmitWorkApi(cache YingHuaUserCache, workId, answerId string, answers qentity.Question, finish string /*finish代表是否是最后提交并且结束考试，0代表不是，1代表是*/, retryNum int, lastError error) (string, error) {
 	if retryNum < 0 {
 		return "", lastError
 	}
@@ -1282,17 +1286,32 @@ func SubmitWorkApi(cache YingHuaUserCache, workId, answerId string, answers util
 	writer.WriteField("answerId", answerId)
 	writer.WriteField("finish", finish)
 	writer.WriteField("token", cache.token)
-	if answers.Type == "单选" || answers.Type == "判断" || answers.Type == "简答" {
-		writer.WriteField("answer", answers.Answers[0])
-	} else if answers.Type == "多选" {
-		for _, v := range answers.Answers {
-			writer.WriteField("answer[]", v)
-		}
-	} else if answers.Type == "填空" {
+
+	//单选，判断
+	if answers.Type == qtype.SingleChoice.String() || answers.Type == qtype.TrueOrFalse.String() {
+
+	}
+	//多选题
+	if answers.Type == qtype.MultipleChoice.String() {
+
+	}
+	//填空题
+	if answers.Type == qtype.SingleChoice.String() {
 		for i, v := range answers.Answers {
 			writer.WriteField("answer_"+strconv.Itoa(i+1), v)
 		}
 	}
+	//if answers.Type == "单选" || answers.Type == "判断" || answers.Type == "简答" {
+	//	writer.WriteField("answer", answers.Answers[0])
+	//} else if answers.Type == "多选" {
+	//	for _, v := range answers.Answers {
+	//		writer.WriteField("answer[]", v)
+	//	}
+	//} else if answers.Type == "填空" {
+	//	for i, v := range answers.Answers {
+	//		writer.WriteField("answer_"+strconv.Itoa(i+1), v)
+	//	}
+	//}
 
 	// Close the writer to finalize the multipart form data
 	writer.Close()

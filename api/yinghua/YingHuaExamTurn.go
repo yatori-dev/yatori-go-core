@@ -45,7 +45,8 @@ func TurnExamTopic(examHtml string) []entity.YingHuaExamTopic {
 		topicNumMatcher := topicNumRegexp.FindStringSubmatch(topicHtml)
 
 		var num, tag, source, content string
-		var selects []entity.TopicSelect
+		//var selects []entity.TopicSelect
+		var selects []string
 
 		if len(topicNumMatcher) > 0 {
 			num = topicNumMatcher[1]
@@ -80,13 +81,14 @@ func TurnExamTopic(examHtml string) []entity.YingHuaExamTopic {
 			selectMatches := selectRegexp.FindAllStringSubmatch(topicHtml, -1)
 			for _, selectMatch := range selectMatches {
 				selectValue := selectMatch[2]
-				selectNum := selectMatch[3]
+				//selectNum := selectMatch[3]
 				selectText := selectMatch[4]
-				selects = append(selects, entity.TopicSelect{
-					Value: selectValue,
-					Num:   selectNum,
-					Text:  selectText,
-				})
+				//selects = append(selects, entity.TopicSelect{
+				//	Value: selectValue,
+				//	Num:   selectNum,
+				//	Text:  selectText,
+				//})
+				selects = append(selects, selectValue+selectText)
 			}
 			// Clean up content (strip illegal strings)
 			content = strings.ReplaceAll(content, "<p>", "")
@@ -108,11 +110,12 @@ func TurnExamTopic(examHtml string) []entity.YingHuaExamTopic {
 			fillMatches := fillRegexp.FindAllStringSubmatch(topicHtml, -1)
 			for _, fillMatch := range fillMatches {
 				answerId := fillMatch[1]
-				selects = append(selects, entity.TopicSelect{
-					Value: answerId,
-					Num:   answerId,
-					Text:  "",
-				})
+				//selects = append(selects, entity.TopicSelect{
+				//	Value: answerId,
+				//	Num:   answerId,
+				//	Text:  "",
+				//})
+				selects = append(selects, answerId)
 			}
 
 			// Replace fill-in-the-blank code
@@ -163,16 +166,17 @@ func TurnExamTopic(examHtml string) []entity.YingHuaExamTopic {
 }
 
 // 组装AI问题消息
-func AIProblemMessage(testPaperTitle string, topic entity.ExamTurn) aiq.AIChatMessages {
-	topicType := topic.YingHuaExamTopic.Type
+func AIProblemMessage(testPaperTitle string, question qentity.Question) aiq.AIChatMessages {
+	topicType := question.Type
 	problem := `试卷名称：` + testPaperTitle + `
 题目类型：` + topicType + `
-题目内容：` + topic.Content + "\n"
+题目内容：` + question.Content + "\n"
 
 	//选择题
 	if topicType == "单选" {
-		for _, v := range topic.Selects {
-			problem += v.Num + v.Text + "\n"
+		for _, v := range question.Options {
+			//problem += v.Num + v.Text + "\n"
+			problem += v + "\n"
 		}
 		return aiq.AIChatMessages{Messages: []aiq.Message{
 			{
@@ -203,8 +207,9 @@ func AIProblemMessage(testPaperTitle string, topic entity.ExamTurn) aiq.AIChatMe
 			},
 		}}
 	} else if topicType == "多选" {
-		for _, v := range topic.Selects {
-			problem += v.Num + v.Text + "\n"
+		for _, v := range question.Options {
+			//problem += v.Num + v.Text + "\n"
+			problem += v + "\n"
 		}
 		return aiq.AIChatMessages{Messages: []aiq.Message{
 			{
@@ -235,8 +240,9 @@ func AIProblemMessage(testPaperTitle string, topic entity.ExamTurn) aiq.AIChatMe
 			},
 		}}
 	} else if topicType == "判断" {
-		for _, v := range topic.Selects {
-			problem += v.Num + v.Text + "\n"
+		for _, v := range question.Options {
+			//problem += v.Num + v.Text + "\n"
+			problem += v + "\n"
 		}
 		return aiq.AIChatMessages{Messages: []aiq.Message{
 			{
