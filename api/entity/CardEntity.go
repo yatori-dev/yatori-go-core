@@ -3,6 +3,7 @@ package entity
 import (
 	"errors"
 	"github.com/yatori-dev/yatori-go-core/models/ctype"
+	"iter"
 	"log"
 	"net/http"
 	"strconv"
@@ -11,6 +12,11 @@ import (
 
 type IAttachment interface {
 	AttachmentsDetection(attachment interface{}) (bool, error)
+}
+
+type IPointDto interface {
+	GetType() ctype.CardType
+	IsSetted() bool
 }
 
 type PointDto struct {
@@ -103,22 +109,65 @@ type Account struct {
 	PUID string
 }
 
-func ParsePointDto(pointDTOs []PointDto) (videoDTOs []PointVideoDto, workDTOs []PointWorkDto, documentDTOs []PointDocumentDto) {
-	//处理返回的任务点对象,这里不要使用else，因为可能会有多个不同类型的任务对象
-	for _, card := range pointDTOs {
-		if card.PointWorkDto.IsSet == true {
-			workDTOs = append(workDTOs, card.PointWorkDto)
-		} else if card.PointVideoDto.IsSet == true {
-			if card.OtherInfo == "" {
-			}
-			videoDTOs = append(videoDTOs, card.PointVideoDto)
+// All 返回一个迭代器，依次迭代 PointDto 中的各个 DTO
+func (p *PointDto) All() iter.Seq[IPointDto] {
+	return func(yield func(IPointDto) bool) {
+		if !yield(p.PointVideoDto) {
+			return
+		}
+		if !yield(p.PointWorkDto) {
+			return
+		}
+		if !yield(p.PointDocumentDto) {
+			return
+		}
+	}
+}
 
-		} else if card.PointDocumentDto.IsSet == true {
-			documentDTOs = append(documentDTOs, card.PointDocumentDto)
+func GroupPointDtos[T IPointDto](pointDTOs []PointDto, predicate func(T) bool) []T {
+	var result []T
+
+	for _, card := range pointDTOs {
+		for dto := range card.All() {
+			if t, ok := dto.(T); ok && (predicate == nil || predicate(t)) {
+				result = append(result, t)
+			}
+		}
+	}
+
+	return result
+}
+
+func ParsePointDto(pointDTOs []PointDto) (videoDTOs []PointVideoDto, workDTOs []PointWorkDto, documentDTOs []PointDocumentDto) {
+	for _, card := range pointDTOs {
+		for dto := range card.All() {
+			switch v := dto.(type) {
+			case PointVideoDto:
+				if v.IsSet {
+					videoDTOs = append(videoDTOs, v)
+				}
+			case PointWorkDto:
+				if v.IsSet {
+					workDTOs = append(workDTOs, v)
+				}
+			case PointDocumentDto:
+				if v.IsSet {
+					documentDTOs = append(documentDTOs, v)
+				}
+			}
 		}
 	}
 	return
 }
+
+func (v PointVideoDto) GetType() ctype.CardType { return v.Type }
+func (v PointVideoDto) IsSetted() bool          { return v.IsSet }
+
+func (w PointWorkDto) GetType() ctype.CardType { return w.Type }
+func (w PointWorkDto) IsSetted() bool          { return w.IsSet }
+
+func (d PointDocumentDto) GetType() ctype.CardType { return d.Type }
+func (d PointDocumentDto) IsSetted() bool          { return d.IsSet }
 
 // AttachmentsDetection 使用接口对每种DTO进行检测再次赋值, 以对应后续的刷取请求
 func (p *PointVideoDto) AttachmentsDetection(attachment interface{}) (bool, error) {
