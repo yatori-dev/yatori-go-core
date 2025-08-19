@@ -65,7 +65,7 @@ func TestENAEAPullProjectForVideo(t *testing.T) {
 	utils.YatoriCoreInit()
 	//测试账号
 	setup()
-	users := global.Config.Users[9]
+	users := global.Config.Users[19]
 	cache := enaeaApi.EnaeaUserCache{Account: users.Account, Password: users.Password}
 	_, err := enaea.EnaeaLoginAction(&cache)
 	if err != nil {
@@ -91,7 +91,8 @@ func TestENAEAPullProjectForVideo(t *testing.T) {
 				continue
 			}
 			for {
-				err := enaea.SubmitStudyTimeAction(&cache, &video, time2.Now().UnixMilli(), 0)
+				//err := enaea.SubmitStudyTimeAction(&cache, &video, time2.Now().UnixMilli(), 0)
+				err := enaea.SubmitStudyTimeAction(&cache, &video, 60, 1)
 				if err != nil {
 					t.Error(err)
 				}

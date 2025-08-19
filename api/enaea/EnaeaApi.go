@@ -303,15 +303,15 @@ func SubmitStudyTimeApi(cache *EnaeaUserCache, circleId, SCFUCKPKey, SCFUCKPValu
 	return string(body), nil
 }
 
-// SubmitStudyTimeFastApi 提交学时
-func SubmitStudyTimeFastApi(cache *EnaeaUserCache, circleId, SCFUCKPKey, SCFUCKPValue, id string, studyTime int64) (string, error) {
+// SubmitStudyTimeFastApi 提交学时，快速版
+func SubmitStudyTimeFastApi(cache *EnaeaUserCache, circleId, SCFUCKPKey, SCFUCKPValue, id string, studyMins int64 /*一般填20就差不多了*/) (string, error) {
 	// Create form data
 	data := url.Values{}
 	data.Set("id", id)
 	data.Set("circleId", circleId)
 	data.Set("ct", fmt.Sprintf("%d", time.Now().UnixMilli()))
 	data.Set("finish", "false")
-	data.Set("studyMins", fmt.Sprintf("%d", studyTime))
+	data.Set("studyMins", fmt.Sprintf("%d", studyMins))
 
 	// Create the HTTP request
 	client := &http.Client{}
