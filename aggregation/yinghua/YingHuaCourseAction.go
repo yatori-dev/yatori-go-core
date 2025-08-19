@@ -4,10 +4,6 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
-	"github.com/yatori-dev/yatori-go-core/api/entity"
-	"github.com/yatori-dev/yatori-go-core/que-core/aiq"
-	"github.com/yatori-dev/yatori-go-core/que-core/external"
-	"github.com/yatori-dev/yatori-go-core/que-core/qentity"
 	"math/rand"
 	"os"
 	"regexp"
@@ -15,10 +11,13 @@ import (
 	"strings"
 	"time"
 
+	"github.com/yatori-dev/yatori-go-core/api/entity"
+	"github.com/yatori-dev/yatori-go-core/que-core/aiq"
+	"github.com/yatori-dev/yatori-go-core/que-core/external"
+
 	"github.com/thedevsaddam/gojsonq"
 	yinghuaApi "github.com/yatori-dev/yatori-go-core/api/yinghua"
 	"github.com/yatori-dev/yatori-go-core/models/ctype"
-	"github.com/yatori-dev/yatori-go-core/utils"
 	"github.com/yatori-dev/yatori-go-core/utils/log"
 )
 
@@ -344,12 +343,12 @@ func ExamDetailAction(UserCache *yinghuaApi.YingHuaUserCache, nodeId string) ([]
 func randomAnswer(topic entity.YingHuaExamTopic) string {
 	if topic.Type == "单选" {
 		sct := rand.Intn(len(topic.Options))
-		return "[" + topic.Selects[sct].Value + "]"
+		return "[" + topic.Question.Answers[sct] + "]"
 	} else if topic.Type == "多选" {
 		sct := "["
 		for i := 0; i < len(topic.Options); i++ {
-			sct = sct + topic.Selects[i].Value
-			if i != len(topic.Selects)-1 {
+			sct = sct + topic.Question.Answers[i]
+			if i != len(topic.Question.Answers)-1 {
 				sct += " "
 			}
 		}
@@ -385,15 +384,15 @@ func StartExamAction(
 	topics := yinghuaApi.TurnExamTopic(topicHtml)
 	//fmt.Println(topic)
 	//遍历题目map,并回答问题
-	var lastAnswer utils.Answers
-	var lastProblem string
-	for k, v := range topics {
+	//var lastAnswer utils.Answers
+	//var lastProblem string
+	var lastProblem entity.YingHuaExamTopic
+	for _, v := range topics {
 		//构建统一AI消息
-		aiMessage := yinghuaApi.AIProblemMessage(exam.Title, entity.ExamTurn{
-			YingHuaExamTopic: v,
-		})
+		aiMessage := yinghuaApi.AIProblemMessage(exam.Title, v.Question)
 		aiAnswer, err := aiq.AggregationAIApi(url, model, aiType, aiMessage, apiKey)
 		answer := aiTurnYingHuaAnswer(userCache, aiAnswer, v)
+		v.Question.Answers = answer //赋值答案
 
 		if err != nil {
 			log.Print(log.INFO, `[`, userCache.Account, `] `, log.BoldRed, "Ai异常，返回信息：", err.Error())
@@ -402,7 +401,7 @@ func StartExamAction(
 			aiAnswer = randomAnswer(v)
 		}
 		//fmt.Println(aiAnswer)
-		subWorkApi, err := yinghuaApi.SubmitExamApi(*userCache, exam.ExamId, k, answer, "0", 8, nil)
+		subWorkApi, err := yinghuaApi.SubmitExamApi(*userCache, exam.ExamId, v.AnswerId, v.Question, "0", 8, nil)
 		if err != nil {
 			log.Print(log.INFO, `[`, userCache.Account, `] `, log.BoldRed, "Ai异常，返回信息：", err.Error())
 		}
@@ -410,12 +409,13 @@ func StartExamAction(
 		if gojsonq.New().JSONString(subWorkApi).Find("msg") != "答题保存成功" {
 			log.Print(log.INFO, log.BoldRed, `[`, userCache.Account, `] `, log.BoldRed, "提交答案异常，返回信息：", subWorkApi, "题目内容：", v, "AI回答信息：", aiAnswer)
 		}
-		lastAnswer = answer
-		lastProblem = k
+		//lastAnswer = answer
+		//lastProblem = k
+		lastProblem = v
 	}
 	if isAutoSubExam == 1 {
 		//结束考试
-		subWorkApi, err := yinghuaApi.SubmitExamApi(*userCache, exam.ExamId, lastProblem, lastAnswer, "1", 8, nil)
+		subWorkApi, err := yinghuaApi.SubmitExamApi(*userCache, exam.ExamId, lastProblem.AnswerId, lastProblem.Question, "1", 8, nil)
 		//如果结束做题服务器端返回信息异常
 		if gojsonq.New().JSONString(subWorkApi).Find("msg") != "提交试卷成功" || err != nil {
 			log.Print(log.INFO, log.BoldRed, `[`, userCache.Account, `] `, log.BoldRed, "提交试卷异常，返回信息：", subWorkApi)
@@ -425,10 +425,6 @@ func StartExamAction(
 		}
 	}
 	return nil
-}
-
-func TurnAnswer(question entity.Question) {
-
 }
 
 // StartExamForExternalAction 开始考试
@@ -456,15 +452,18 @@ func StartExamForExternalAction(
 	topic := yinghuaApi.TurnExamTopic(api)
 	//fmt.Println(topic)
 	//遍历题目map,并回答问题
-	var lastAnswer utils.Answer
-	var lastProblem string
+	//var lastAnswer utils.Answer
+	//var lastProblem string
+	var lastProblem entity.YingHuaExamTopic
 	for _, v := range topic {
 		answer, err := external.ApiQueRequest(v.Question, queBankUrl, 5, nil)
 		if err != nil {
 			log.Print(log.INFO, err.Error())
 		}
-		AnswerTurnResult(answer, v)
-		subWorkApi, err := yinghuaApi.SubmitExamApi(*userCache, exam.ExamId, v.Index, answer, "0", 8, nil)
+		//AnswerTurnResult(answer, v)
+		v.Question.Answers = answer.Answers
+
+		subWorkApi, err := yinghuaApi.SubmitExamApi(*userCache, exam.ExamId, v.Index, v.Question, "0", 8, nil)
 		if err != nil {
 			log.Print(log.INFO, `[`, userCache.Account, `] `, log.BoldRed, "Ai异常，返回信息：", err.Error())
 		}
@@ -472,28 +471,14 @@ func StartExamForExternalAction(
 		if gojsonq.New().JSONString(subWorkApi).Find("msg") != "答题保存成功" {
 			log.Print(log.INFO, log.BoldRed, `[`, userCache.Account, `] `, log.BoldRed, "提交答案异常，返回信息：", subWorkApi, "题目内容：", v, "外部接口回答信息：", answer)
 		}
-		lastAnswer = answer
-		lastProblem = v.Index
+		//lastAnswer = answer
+		//lastProblem = v.Index
+		lastProblem = v
 	}
-	//for k, v := range topic.YingHuaExamTopics {
-	//	standardProblem := v.TurnProblem() //转为标准问题结构体
-	//	answer, err := standardProblem.ApiQueRequest(queBankUrl, 5, nil)
-	//	answer = AnswerTurnResult(answer, v) //转换答案
-	//	//fmt.Println(aiAnswer)
-	//	subWorkApi, err := yinghuaApi.SubmitExamApi(*userCache, exam.ExamId, k, answer, "0", 8, nil)
-	//	if err != nil {
-	//		log.Print(log.INFO, `[`, userCache.Account, `] `, log.BoldRed, "Ai异常，返回信息：", err.Error())
-	//	}
-	//	//如果提交答案服务器端返回信息异常
-	//	if gojsonq.New().JSONString(subWorkApi).Find("msg") != "答题保存成功" {
-	//		log.Print(log.INFO, log.BoldRed, `[`, userCache.Account, `] `, log.BoldRed, "提交答案异常，返回信息：", subWorkApi, "题目内容：", v, "外部接口回答信息：", answer)
-	//	}
-	//	lastAnswer = answer
-	//	lastProblem = k
-	//}
+
 	if isAutoSubExam == 1 {
 		//结束考试
-		subWorkApi, err := yinghuaApi.SubmitExamApi(*userCache, exam.ExamId, lastProblem, lastAnswer, "1", 8, nil)
+		subWorkApi, err := yinghuaApi.SubmitExamApi(*userCache, exam.ExamId, lastProblem.AnswerId, lastProblem.Question, "1", 8, nil)
 		//如果结束做题服务器端返回信息异常
 		if gojsonq.New().JSONString(subWorkApi).Find("msg") != "提交试卷成功" || err != nil {
 			log.Print(log.INFO, log.BoldRed, `[`, userCache.Account, `] `, log.BoldRed, "提交试卷异常，返回信息：", subWorkApi)
@@ -575,47 +560,49 @@ func selectMarkingSystem(text1, text2 string) float32 {
 // 竞争对手之间有激烈的价格竞争
 // 竞争对手之间有激烈的价格竞争
 // AI回复转答案
-func aiTurnYingHuaAnswer(cache *yinghuaApi.YingHuaUserCache, aiAnswer string, v entity.YingHuaExamTopic) utils.Answer {
-	answer := utils.Answer{Type: v.Type}
+func aiTurnYingHuaAnswer(cache *yinghuaApi.YingHuaUserCache, aiAnswer string, v entity.YingHuaExamTopic) []string {
+	//answer := utils.Answer{Type: v.Type}
+	var answer = make([]string, 0)
 	if v.Type == "单选" || v.Type == "判断" || v.Type == "多选" {
 		var jsonStr []string
 		var res []string
 		json.Unmarshal([]byte(aiAnswer), &jsonStr)
+		//直接相同匹配方式
 		for _, item := range jsonStr {
-			for _, v := range v.Selects {
-				if strings.Contains(v.Text, item) ||
-					strings.Contains(v.Num, item) ||
-					strings.Contains(strings.ReplaceAll(strings.ReplaceAll(v.Num+v.Text, " ", ""), " ", ""), strings.ReplaceAll(item, " ", "")) ||
-					strings.Contains(strings.ReplaceAll(v.Num+v.Text, " ", ""), strings.ReplaceAll(item, " ", "")) {
-					res = append(res, v.Value)
+			for _, v := range v.Question.Options {
+				if strings.Contains(v, item) ||
+					strings.Contains(v, item) ||
+					strings.Contains(strings.ReplaceAll(strings.ReplaceAll(v, " ", ""), " ", ""), strings.ReplaceAll(item, " ", "")) ||
+					strings.Contains(strings.ReplaceAll(v, " ", ""), strings.ReplaceAll(item, " ", "")) {
+					res = append(res, v)
 				}
 			}
 
 		}
 		if len(res) == 0 {
 			for _, item := range jsonStr { //如果没有答案，采用第二方案，字符串评判法
-				for _, v := range v.Selects {
-					if selectMarkingSystem(item, v.Text) > 0.60 {
-						res = append(res, v.Value)
+				for _, v := range v.Question.Options {
+					if selectMarkingSystem(item, v) > 0.60 {
+						res = append(res, v)
 					}
 				}
 
 			}
 		}
 
-		answer.Answers = res
+		answer = res
 	} else if v.Type == "填空" || v.Type == "简答" {
 		var res []string
 		json.Unmarshal([]byte(aiAnswer), &res)
 		for _, item := range res {
-			answer.Answers = append(answer.Answers, item)
+			answer = append(answer, item)
 		}
 	}
-	if len(answer.Answers) == 0 || answer.Answers == nil {
+	if len(answer) == 0 || answer == nil {
 		if v.Type == "单选" || v.Type == "判断" {
-			answer.Answers = []string{"A"}
+			answer = []string{"A"}
 		} else if v.Type == "多选" {
-			answer.Answers = []string{"B", "C"}
+			answer = []string{"B", "C"}
 		} else if v.Type == "简答" || v.Type == "填空" {
 			log.Print(log.INFO, `[`, cache.Account, `] `, log.BoldRed, "\n题目类型：", v.Type, "\n题目：", v.Content, "\n\nAi回答内容无法解析，因该题为填空或简答题，所以自动留空")
 			return answer
@@ -626,25 +613,25 @@ func aiTurnYingHuaAnswer(cache *yinghuaApi.YingHuaUserCache, aiAnswer string, v 
 }
 
 // 将答案转换为选项
-func AnswerTurnResult(answer utils.Answer, v entity.YingHuaExamTopic) utils.Answer {
-	var res []string
-	if v.Type == "单选" || v.Type == "判断" || v.Type == "多选" {
-
-		for _, item := range answer.Answers {
-			for _, v := range v.Selects {
-				if strings.Contains(v.Text, item) ||
-					strings.Contains(v.Num, item) ||
-					strings.Contains(strings.ReplaceAll(strings.ReplaceAll(v.Num+v.Text, " ", ""), " ", ""), strings.ReplaceAll(item, " ", "")) ||
-					strings.Contains(strings.ReplaceAll(v.Num+v.Text, " ", ""), strings.ReplaceAll(item, " ", "")) {
-					res = append(res, v.Value)
-				}
-			}
-		}
-		answer.Answers = res
-		return answer
-	}
-	return answer
-}
+//func AnswerTurnResult(answer utils.Answer, v entity.YingHuaExamTopic) utils.Answer {
+//	var res []string
+//	if v.Type == "单选" || v.Type == "判断" || v.Type == "多选" {
+//
+//		for _, item := range answer.Answers {
+//			for _, v := range v.Selects {
+//				if strings.Contains(v.Text, item) ||
+//					strings.Contains(v.Num, item) ||
+//					strings.Contains(strings.ReplaceAll(strings.ReplaceAll(v.Num+v.Text, " ", ""), " ", ""), strings.ReplaceAll(item, " ", "")) ||
+//					strings.Contains(strings.ReplaceAll(v.Num+v.Text, " ", ""), strings.ReplaceAll(item, " ", "")) {
+//					res = append(res, v.Value)
+//				}
+//			}
+//		}
+//		answer.Answers = res
+//		return answer
+//	}
+//	return answer
+//}
 
 // StartWorkAction 开始写作业
 func StartWorkAction(userCache *yinghuaApi.YingHuaUserCache,
@@ -671,9 +658,8 @@ func StartWorkAction(userCache *yinghuaApi.YingHuaUserCache,
 	//fmt.Println(topic)
 	//遍历题目map,并回答问题
 	//var lastAnswer utils.Answer
-	var lastAnswer qentity.ResultQuestion
-	var lastProblem string
-	for k, v := range topic {
+	var lastProblem entity.YingHuaExamTopic
+	for _, v := range topic {
 
 		//构建统一AI消息
 		//aiMessage := yinghuaApi.AIProblemMessage(work.Title, entity.ExamTurn{
@@ -682,14 +668,14 @@ func StartWorkAction(userCache *yinghuaApi.YingHuaUserCache,
 		aiMessage := yinghuaApi.AIProblemMessage(work.Title, v.Question)
 
 		aiAnswer, err := aiq.AggregationAIApi(url, model, aiType, aiMessage, apiKey)
-		answer := aiTurnYingHuaAnswer(userCache, aiAnswer, v)
+		v.Question.Answers = aiTurnYingHuaAnswer(userCache, aiAnswer, v)
 
 		if err != nil {
 			log.Print(log.INFO, `[`, userCache.Account, `] `, log.BoldRed, "Ai异常，返回信息：", err.Error())
 			os.Exit(0)
 		}
 		//fmt.Println(aiAnswer)
-		subWorkApi, err := yinghuaApi.SubmitWorkApi(*userCache, work.WorkId, v.AnswerId, answer, "0", 10, nil)
+		subWorkApi, err := yinghuaApi.SubmitWorkApi(*userCache, work.WorkId, v.AnswerId, v.Question, "0", 10, nil)
 		if err != nil {
 			log.Print(log.INFO, `[`, userCache.Account, `] `, log.BoldRed, "Ai异常，返回信息：", err.Error())
 		}
@@ -697,12 +683,13 @@ func StartWorkAction(userCache *yinghuaApi.YingHuaUserCache,
 		if gojsonq.New().JSONString(subWorkApi).Find("msg") != "答题保存成功" {
 			log.Print(log.INFO, log.BoldRed, `[`, userCache.Account, `] `, log.BoldRed, "提交答案异常，返回信息：", subWorkApi)
 		}
-		lastAnswer = aiTurnYingHuaAnswer(userCache, aiAnswer, v)
-		lastProblem = strconv.Itoa(k + 1)
+		lastProblem.Question.Answers = aiTurnYingHuaAnswer(userCache, aiAnswer, v)
+		//lastProblem = strconv.Itoa(k + 1)
+		lastProblem = v
 	}
 	//结束考试
 	if isAutoSubExam == 1 {
-		subWorkApi, err := yinghuaApi.SubmitWorkApi(*userCache, work.WorkId, lastProblem, lastAnswer, "1", 10, nil)
+		subWorkApi, err := yinghuaApi.SubmitWorkApi(*userCache, work.WorkId, lastProblem.AnswerId, lastProblem.Question, "1", 10, nil)
 		//如果结束做题服务器端返回信息异常
 		if err != nil {
 			log.Print(log.INFO, log.BoldRed, `[`, userCache.Account, `] `, log.BoldRed, "提交试卷异常，返回信息：", subWorkApi, fmt.Sprintf("%+v", err.Error()))
@@ -740,20 +727,22 @@ func StartWorkForExternalAction(userCache *yinghuaApi.YingHuaUserCache,
 	topics := yinghuaApi.TurnExamTopic(api)
 	//fmt.Println(topic)
 	//遍历题目map,并回答问题
-	var lastAnswer utils.Answer
-	var lastProblem string
-	for k, v := range topics {
+	//var lastAnswer utils.Answer
+	//var lastProblem string
+	var lastProblem entity.YingHuaExamTopic
+	for _, v := range topics {
 
-		standardProblem := v.TurnProblem() //转为标准问题结构体
-		answer, err := standardProblem.ApiQueRequest(queBankUrl, 5, nil)
-		answer = AnswerTurnResult(answer, v) //转换答案
+		//standardProblem := v.TurnProblem() //转为标准问题结构体
+		resultQuestion, err := external.ApiQueRequest(v.Question, queBankUrl, 5, nil)
+		v.Question = resultQuestion.Question //赋值给题目结构体变量
+		//answer = AnswerTurnResult(answer, v) //转换答案
 
 		if err != nil {
 			log.Print(log.INFO, `[`, userCache.Account, `] `, log.BoldRed, "Ai异常，返回信息：", err.Error())
 			os.Exit(0)
 		}
 		//fmt.Println(aiAnswer)
-		subWorkApi, err := yinghuaApi.SubmitWorkApi(*userCache, work.WorkId, k, answer, "0", 10, nil)
+		subWorkApi, err := yinghuaApi.SubmitWorkApi(*userCache, work.WorkId, v.AnswerId, v.Question, "0", 10, nil)
 		if err != nil {
 			log.Print(log.INFO, `[`, userCache.Account, `] `, log.BoldRed, "Ai异常，返回信息：", err.Error())
 		}
@@ -761,12 +750,13 @@ func StartWorkForExternalAction(userCache *yinghuaApi.YingHuaUserCache,
 		if gojsonq.New().JSONString(subWorkApi).Find("msg") != "答题保存成功" {
 			log.Print(log.INFO, log.BoldRed, `[`, userCache.Account, `] `, log.BoldRed, "提交答案异常，返回信息：", subWorkApi)
 		}
-		lastAnswer = answer
-		lastProblem = strconv.Itoa(k + 1)
+		//lastAnswer = answer
+		//lastProblem = strconv.Itoa(k + 1)
+		lastProblem = v
 	}
 	//结束考试
 	if isAutoSubExam == 1 {
-		subWorkApi, err := yinghuaApi.SubmitWorkApi(*userCache, work.WorkId, lastProblem, lastAnswer, "1", 10, nil)
+		subWorkApi, err := yinghuaApi.SubmitWorkApi(*userCache, work.WorkId, lastProblem.AnswerId, lastProblem.Question, "1", 10, nil)
 		//如果结束做题服务器端返回信息异常
 		if err != nil {
 			log.Print(log.INFO, log.BoldRed, `[`, userCache.Account, `] `, log.BoldRed, "提交试卷异常，返回信息：", subWorkApi, fmt.Sprintf("%+v", err.Error()))

@@ -177,8 +177,15 @@ func StatisticTicForCCVideAction(cache *enaea.EnaeaUserCache, video *EnaeaVideo)
 
 // 提交学时
 // {"success": false,"message":"nologin"}
-func SubmitStudyTimeAction(cache *enaea.EnaeaUserCache, video *EnaeaVideo, time int64 /*普通模式下60s提交一次*/, model int64 /*0为普通模式，1为暴力可自定义*/) error {
-	api, err := enaea.SubmitStudyTimeApi(cache, video.CircleId, video.SCFUCKPKey, video.SCFUCKPValue, video.Id, time)
+func SubmitStudyTimeAction(cache *enaea.EnaeaUserCache, video *EnaeaVideo, time int64 /*普通模式下填time2.Now().UnixMilli()，暴力模式下填学习的分钟数*/, model int64 /*0为普通模式，1为暴力可自定义*/) error {
+	var api string
+	var err error
+	if model == 0 { //普通模式
+		api, err = enaea.SubmitStudyTimeApi(cache, video.CircleId, video.SCFUCKPKey, video.SCFUCKPValue, video.Id, time)
+	} else if model == 1 {
+		api, err = enaea.SubmitStudyTimeFastApi(cache, video.CircleId, video.SCFUCKPKey, video.SCFUCKPValue, video.Id, time)
+	}
+
 	if err != nil {
 		return err
 	}

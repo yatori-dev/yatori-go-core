@@ -1,12 +1,14 @@
 package ttcdw
 
 import (
+	"crypto/md5"
 	"errors"
 	"fmt"
-	"github.com/thedevsaddam/gojsonq"
 	"io/ioutil"
 	"net/http"
 	"strings"
+
+	"github.com/thedevsaddam/gojsonq"
 )
 
 type TtcdwUserCache struct {
@@ -21,12 +23,13 @@ type TtcdwUserCache struct {
 	ProxyIP   string         //代理IP
 }
 
+// TtcdwLoginApi TTCDW学习公社登录
 func (cache *TtcdwUserCache) TtcdwLoginApi() error {
 
 	url := "https://www.ttcdw.cn/p/uc/userLogin?type=0&pageType=login&service=https%253A%252F%252Fwww.ttcdw.cn"
 	method := "POST"
 
-	payload := strings.NewReader("username=" + cache.Account + "&password=" + cache.Password + "&platformId=13145854983311&key=1f0280d0-a000-43b4-8968-aca3a7180b65&service=https%3A%2F%2Fwww.ttcdw.cn")
+	payload := strings.NewReader("username=" + cache.Account + "&password=" + fmt.Sprintf("%x", md5.Sum([]byte(cache.Password))) + "&platformId=13145854983311&key=1f0280d0-a000-43b4-8968-aca3a7180b65&service=https%3A%2F%2Fwww.ttcdw.cn")
 
 	client := &http.Client{}
 	req, err := http.NewRequest(method, url, payload)

@@ -302,3 +302,51 @@ func SubmitStudyTimeApi(cache *EnaeaUserCache, circleId, SCFUCKPKey, SCFUCKPValu
 	//}
 	return string(body), nil
 }
+
+// SubmitStudyTimeFastApi 提交学时
+func SubmitStudyTimeFastApi(cache *EnaeaUserCache, circleId, SCFUCKPKey, SCFUCKPValue, id string, studyTime int64) (string, error) {
+	// Create form data
+	data := url.Values{}
+	data.Set("id", id)
+	data.Set("circleId", circleId)
+	data.Set("ct", fmt.Sprintf("%d", time.Now().UnixMilli()))
+	data.Set("finish", "false")
+	data.Set("studyMins", fmt.Sprintf("%d", studyTime))
+
+	// Create the HTTP request
+	client := &http.Client{}
+	req, err := http.NewRequest("POST", "https://study.enaea.edu.cn/studyLog.do", bytes.NewBufferString(data.Encode()))
+	//req, err := http.NewRequest("POST", "https://study.enaea.edu.cn/thirdPlatform/record", bytes.NewBufferString(data.Encode()))
+	if err != nil {
+		return "", err
+	}
+
+	// Add headers
+	cookie := fmt.Sprintf("ASUSS=%s;%s=%s", cache.asuss, SCFUCKPKey, SCFUCKPValue)
+	req.Header.Add("Cookie", cookie)
+	req.Header.Add("User-Agent", "Apifox/1.0.0 (https://apifox.com)")
+	req.Header.Add("Accept", "*/*")
+	req.Header.Add("Host", "study.enaea.edu.cn")
+	req.Header.Add("Connection", "keep-alive")
+	req.Header.Add("Content-Type", "application/x-www-form-urlencoded")
+
+	// Execute the HTTP request
+	resp, err := client.Do(req)
+	if err != nil {
+		return "", err
+	}
+	defer resp.Body.Close()
+
+	// Read the response body
+	body, err := ioutil.ReadAll(resp.Body)
+	if err != nil {
+		return "", err
+	}
+
+	// Convert JSON string to SubmitLearnTimeRequest struct
+	//submitLearnTimeRequest, err := FromJsonString(string(body))
+	//if err != nil {
+	//	return nil, err
+	//}
+	return string(body), nil
+}

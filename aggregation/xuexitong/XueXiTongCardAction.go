@@ -5,6 +5,10 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+	"log"
+	"regexp"
+	"strings"
+
 	"github.com/PuerkitoBio/goquery"
 	"github.com/thedevsaddam/gojsonq"
 	"github.com/yatori-dev/yatori-go-core/api/entity"
@@ -13,9 +17,6 @@ import (
 	"github.com/yatori-dev/yatori-go-core/que-core/qtype"
 	"github.com/yatori-dev/yatori-go-core/utils"
 	"golang.org/x/net/html"
-	"log"
-	"regexp"
-	"strings"
 )
 
 // ChapterNotOpened 是未打开章节时的错误类型
@@ -454,41 +455,41 @@ func buildProblemContext(testPaperTitle, text string, topic entity.ExamTurn) (co
 			context += text + "\n"
 			context += fmt.Sprintf("\n%v. %v", c, q)
 		}
-		for _, v := range topic.Selects {
-			context += v.Num + v.Text + "\n"
-		}
+		//for _, v := range topic.Selects {
+		//	context += v.Num + v.Text + "\n"
+		//}
 	case qtype.MultipleChoice.String():
 		for c, q := range topic.XueXChoiceQue.Options {
 			context += text + "\n"
 			context += fmt.Sprintf("\n%v. %v", c, q)
 		}
-		for _, v := range topic.Selects {
-			context += v.Num + v.Text + "\n"
-		}
+		//for _, v := range topic.Selects {
+		//	context += v.Num + v.Text + "\n"
+		//}
 	case qtype.FillInTheBlank.String():
 		for c, q := range topic.XueXFillQue.OpFromAnswer {
 			context += text + "\n"
 			context += fmt.Sprintf("\n%v. %v", c, q)
 		}
-		for _, v := range topic.Selects {
-			context += v.Num + v.Text + "\n"
-		}
+		//for _, v := range topic.Selects {
+		//	context += v.Num + v.Text + "\n"
+		//}
 	case qtype.TrueOrFalse.String():
 		for c, q := range topic.XueXJudgeQue.Options {
 			context += text + "\n"
 			context += fmt.Sprintf("\n%v. %v", c, q)
 		}
-		for _, v := range topic.Selects {
-			context += v.Num + v.Text + "\n"
-		}
+		//for _, v := range topic.Selects {
+		//	context += v.Num + v.Text + "\n"
+		//}
 	case qtype.ShortAnswer.String():
 		for c, q := range topic.XueXShortQue.OpFromAnswer {
 			context += text + "\n"
 			context += fmt.Sprintf("\n%v. %v", c, q)
 		}
-		for _, v := range topic.Selects {
-			context += v.Num + v.Text + "\n"
-		}
+		//for _, v := range topic.Selects {
+		//	context += v.Num + v.Text + "\n"
+		//}
 	}
 	return context
 }
