@@ -44,6 +44,7 @@ type EnaeaVideo struct {
 	Id               string  //Id
 	CourseId         string
 	CircleId         string
+	VideoLength      int    //视屏总时长，单位秒
 	SCFUCKPKey       string //key
 	SCFUCKPValue     string //value
 }
@@ -144,6 +145,26 @@ func VideoListAction(cache *enaea.EnaeaUserCache, course *EnaeaCourse) ([]EnaeaV
 					fmt.Println("空")
 				}
 				courseContentStr, _ := url.QueryUnescape(obj["courseContentStr"].(string))
+				//统计视屏时长
+				videoTime := 0
+				if obj["length"] != nil {
+					length := strings.Split(obj["length"].(string), ":")
+					hours, hoursErr := strconv.Atoi(length[0])
+					if hoursErr == nil {
+						videoTime += hours * 60 * 60
+					}
+
+					minus, minusErr := strconv.Atoi(length[1])
+					if minusErr == nil {
+						videoTime += minus * 60
+					}
+
+					seconds, secondsErr := strconv.Atoi(length[2])
+					if secondsErr == nil {
+						videoTime += seconds
+					}
+				}
+
 				videos = append(videos, EnaeaVideo{
 					TitleTag:         course.TitleTag,
 					CourseName:       course.Remark,
@@ -151,6 +172,7 @@ func VideoListAction(cache *enaea.EnaeaUserCache, course *EnaeaCourse) ([]EnaeaV
 					FileName:         obj["filename"].(string),
 					CourseContentStr: courseContentStr,
 					StudyProgress:    float32(studyProgress),
+					VideoLength:      videoTime,
 					Id:               strconv.Itoa(int(obj["id"].(float64))),
 					CourseId:         course.CourseId,
 					CircleId:         course.CircleId,
