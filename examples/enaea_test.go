@@ -100,10 +100,9 @@ func TestENAEAPullProjectForVideo(t *testing.T) {
 				if err2 != nil {
 					t.Error(err)
 				}
-				if video.StudyProgress >= 100 { //如果学习完毕那么跳过
-					break
+				if video.StudyProgress >= 100 { //如果学习完毕那么跳过 break
 				}
-				time2.Sleep(time2.Second * 60)
+				time2.Sleep(time2.Second * 16)
 
 			}
 		}
