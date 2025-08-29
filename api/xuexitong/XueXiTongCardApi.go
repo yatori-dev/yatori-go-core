@@ -13,6 +13,7 @@ import (
 	"time"
 
 	"github.com/yatori-dev/yatori-go-core/api/entity"
+	"github.com/yatori-dev/yatori-go-core/utils"
 )
 
 // PageMobileChapterCard 客户端章节任务卡片 原始html数据返回
@@ -70,6 +71,8 @@ func (cache *XueXiTUserCache) PageMobileChapterCard(
 		fmt.Println(err)
 		return "", nil
 	}
+	//替换Cookie
+	utils.CookiesAddNoRepetition(cache.cookies, res.Cookies())
 	return string(body), nil
 }
 
@@ -132,7 +135,8 @@ func (cache *XueXiTUserCache) VideoDtoFetch(p *entity.PointVideoDto) (string, er
 		return "", fmt.Errorf("failed to fetch video, status code: %d", res.StatusCode)
 	}
 	body, err := ioutil.ReadAll(res.Body)
-
+	//替换Cookie
+	utils.CookiesAddNoRepetition(cache.cookies, res.Cookies())
 	return string(body), nil
 }
 
@@ -203,6 +207,8 @@ func (cache *XueXiTUserCache) VideoSubmitStudyTime(p *entity.PointVideoDto, play
 		return "", fmt.Errorf("failed to fetch video, status code: %d", res.StatusCode)
 	}
 	//fmt.Println(string(body))
+	//替换Cookie
+	utils.CookiesAddNoRepetition(cache.cookies, res.Cookies())
 	return string(body), nil
 }
 
@@ -282,6 +288,8 @@ func (cache *XueXiTUserCache) VideoDtoPlayReport(p *entity.PointVideoDto, playin
 		return "", fmt.Errorf("failed to fetch video, status code: %d", res.StatusCode)
 	}
 	body, err := ioutil.ReadAll(res.Body)
+	//替换Cookie
+	utils.CookiesAddNoRepetition(cache.cookies, res.Cookies())
 	return string(body), nil
 }
 
@@ -372,6 +380,8 @@ func (cache *XueXiTUserCache) WorkFetchQuestion(p *entity.PointWorkDto) (string,
 		fmt.Println(err)
 		return "", nil
 	}
+	//替换Cookie
+	utils.CookiesAddNoRepetition(cache.cookies, res.Cookies())
 	return string(body), nil
 }
 
@@ -402,10 +412,11 @@ func (cache *XueXiTUserCache) WorkCommit(p *entity.PointWorkDto, fields []entity
 		fmt.Println(err)
 		return "", nil
 	}
-	//req.Header.Add("Cookie", cache.cookie)
+
 	for _, cookie := range cache.cookies {
 		req.AddCookie(cookie)
 	}
+
 	req.Header.Add("User-Agent", "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/136.0.0.0 Safari/537.36 Edg/136.0.0.0")
 	req.Header.Add("Content-Type", "application/json")
 	req.Header.Add("Accept", "*/*")
@@ -424,6 +435,8 @@ func (cache *XueXiTUserCache) WorkCommit(p *entity.PointWorkDto, fields []entity
 		fmt.Println(err)
 		return "", nil
 	}
+	//替换Cookie
+	utils.CookiesAddNoRepetition(cache.cookies, res.Cookies())
 	return string(body), nil
 }
 
@@ -480,5 +493,7 @@ func (cache *XueXiTUserCache) DocumentDtoReadingReport(p *entity.PointDocumentDt
 	}
 
 	body, err := ioutil.ReadAll(res.Body)
+	//替换Cookie
+	utils.CookiesAddNoRepetition(cache.cookies, res.Cookies())
 	return string(body), nil
 }

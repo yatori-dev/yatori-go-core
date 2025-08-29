@@ -8,9 +8,6 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
-	"github.com/PuerkitoBio/goquery"
-	"github.com/thedevsaddam/gojsonq"
-	log2 "github.com/yatori-dev/yatori-go-core/utils/log"
 	"image"
 	"image/jpeg"
 	"io/ioutil"
@@ -21,6 +18,11 @@ import (
 	"strconv"
 	"strings"
 	"time"
+
+	"github.com/PuerkitoBio/goquery"
+	"github.com/thedevsaddam/gojsonq"
+	"github.com/yatori-dev/yatori-go-core/utils"
+	log2 "github.com/yatori-dev/yatori-go-core/utils/log"
 )
 
 // 用于获取云盘token（用于人脸）
@@ -341,7 +343,7 @@ func (cache *XueXiTUserCache) GetFaceQrCodeApi1(courseId, clazzid, chapterId, cp
 	return uuid, qrcEnc, nil
 }
 
-// 获取人脸的必要数据
+// 获取人脸的必要数据（这个一般是在主页打开课程时触发）
 func (cache *XueXiTUserCache) GetFaceQrCodeApi2(courseId, clazzId, cpi string) (string, string, error) {
 
 	urlStr := "https://mooc1.chaoxing.com/visit/stucoursemiddle?" + "courseid=" + courseId + "&clazzid=" + clazzId + "&cpi=" + cpi + "&ismooc2=1"
@@ -412,7 +414,8 @@ func (cache *XueXiTUserCache) GetFaceQrCodeApi2(courseId, clazzId, cpi string) (
 // 拉人脸数据3（课程中）
 func (cache *XueXiTUserCache) GetFaceQrCodeApi3(courseId, clazzid, chapterId, cpi, enc, videojobid, chaptervideoobjectid string) (string, string, error) {
 
-	urlStr := "https://mooc1.chaoxing.com/mycourse/studentstudy?chapterId=" + chapterId + "&courseId=" + courseId + "&clazzid=" + clazzid + "&cpi=" + cpi + "&enc=" + enc + "&mooc2=1"
+	//urlStr := "https://mooc1.chaoxing.com/mycourse/studentstudy?chapterId=" + chapterId + "&courseId=" + courseId + "&clazzid=" + clazzid + "&cpi=" + cpi + "&enc=" + enc + "&mooc2=1"
+	urlStr := "https://mooc1.chaoxing.com/mooc-ans/mycourse/studentstudy?chapterId=" + chapterId + "&courseId=" + courseId + "&clazzid=" + clazzid + "&enc=" + enc
 	method := "GET"
 
 	tr := &http.Transport{
@@ -451,6 +454,8 @@ func (cache *XueXiTUserCache) GetFaceQrCodeApi3(courseId, clazzid, chapterId, cp
 		return "", "", err
 	}
 	defer res.Body.Close()
+	//替换cookie
+	utils.CookiesAddNoRepetition(cache.cookies, res.Cookies())
 
 	body, err := ioutil.ReadAll(res.Body)
 	if err != nil {
@@ -506,7 +511,10 @@ func (cache *XueXiTUserCache) GetFaceQrCodeApi3(courseId, clazzid, chapterId, cp
 		fmt.Println(err1)
 		return "", "", nil
 	}
-	defer res.Body.Close()
+	defer res1.Body.Close()
+
+	//替换cookie
+	utils.CookiesAddNoRepetition(cache.cookies, res1.Cookies())
 
 	body1, err := ioutil.ReadAll(res1.Body)
 	if err != nil {
@@ -577,6 +585,8 @@ func (cache *XueXiTUserCache) GetCourseFaceQrPlan1Api(courseId, classId, uuid, o
 		fmt.Println(err)
 		return "", nil
 	}
+	//替换Cookie
+	utils.CookiesAddNoRepetition(cache.cookies, res.Cookies())
 	return string(body), nil
 }
 
@@ -627,7 +637,8 @@ func (cache *XueXiTUserCache) GetCourseFaceQrPlan2Api(classId, courseId, knowled
 		fmt.Println(err)
 		return "", nil
 	}
-
+	//替换Cookie
+	utils.CookiesAddNoRepetition(cache.cookies, res.Cookies())
 	return string(body), nil
 }
 
@@ -677,6 +688,8 @@ func (cache *XueXiTUserCache) GetCourseFaceQrPlan3Api(uuid, clazzId, courseId, q
 	if err != nil {
 		return "", err
 	}
+	//替换Cookie
+	utils.CookiesAddNoRepetition(cache.cookies, res.Cookies())
 	return string(body), nil
 }
 
