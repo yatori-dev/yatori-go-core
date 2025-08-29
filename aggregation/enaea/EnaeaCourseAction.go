@@ -35,7 +35,7 @@ type EnaeaCourse struct {
 	SyllabusId        string
 }
 type EnaeaVideo struct {
-	TitleTag         string  //标签，选修还是必修
+	TitleTag         string  //侧边栏标签，选修还是必修
 	CourseName       string  //课程名称
 	CourseContentStr string  //视屏标签名称
 	FileName         string  //视频文件名称
@@ -47,6 +47,25 @@ type EnaeaVideo struct {
 	VideoLength      int    //视屏总时长，单位秒
 	SCFUCKPKey       string //key
 	SCFUCKPValue     string //value
+}
+
+// 学习公社Enaea考试结构体
+type EnaeaExam struct {
+	TitleTag              string    //侧边栏标签
+	ExamTitle             string    //考试标题
+	ExamId                string    //试卷ID
+	StartTime             time.Time //开始时间
+	EndTime               time.Time //结束时间
+	Introduce             string    //考试介绍
+	Score                 float32   //考试结果分数
+	PassScore             float32   //通过分数，或者说及格分数
+	TotalScore            float32   //试卷总分
+	CommentCount          int       //评论次数
+	SubmitTime            time.Time //提交试卷时间
+	SyllabusResourceId    string    //不知道啥玩意的ID
+	ResourceRandomPaperId string    //不知道啥玩意的ID
+	Remark                string    //不知道啥玩意
+	ResourceId            string    //不知道这玩意有啥用
 }
 
 // ProjectListAction 获取所需要学习的工程列表
@@ -219,4 +238,56 @@ func SubmitStudyTimeAction(cache *enaea.EnaeaUserCache, video *EnaeaVideo, time 
 	}
 	video.StudyProgress = float32(gojsonq.New().JSONString(api).Find("progress").(float64))
 	return nil
+}
+
+// 拉取项目对应考试列表
+func ExamListAction(cache *enaea.EnaeaUserCache, circleId string) ([]EnaeaExam, error) {
+	var exams []EnaeaExam
+	courseHTML, err := enaea.PullStudyCourseHTMLApi(cache, circleId)
+	if err != nil {
+		return nil, err
+	}
+	//<li class="left20">
+	//<a title="在线考试" href="circleIndexRedirect.do?action=toNewMyClass&amp;type=exam&amp;circleId=339403&amp;syllabusId=1949144&amp;isRequired=false&amp;studentProgress=100">在线考试</a>
+	//</li>
+	// Use regex to find the syllabusId in the response body
+	regexPattern := fmt.Sprintf(`<a title="([^"]*)" href="circleIndexRedirect.do\?action=toNewMyClass&type=exam([^&]{0,50})&circleId=%s&syllabusId=([^&]*?)&isRequired=[^&]*&studentProgress=([\d]+)+">[^<]*</a>`, circleId)
+	re := regexp.MustCompile(regexPattern)
+	matches := re.FindAllStringSubmatch(courseHTML, -1)
+	for _, v := range matches {
+		api, err := enaea.PullExamListApi(cache, circleId, v[3], v[2])
+		if err != nil {
+			return nil, err
+		}
+		jsonList := gojsonq.New().JSONString(api).Find("result.list")
+		// 断言为切片并遍历
+		if items, ok := jsonList.([]interface{}); ok {
+			for _, item := range items {
+				// 每个 item 是 map[string]interface{} 类型
+				if obj, ok := item.(map[string]interface{}); ok {
+					remark := obj["remark"].(string)
+					//centerDTO := obj["studyCenterDTO"].(map[string]interface{})
+					//studyProgress, _ := strconv.ParseFloat(centerDTO["studyProgress"].(string), 64)
+					exams = append(exams, EnaeaExam{
+						TitleTag:              v[1],
+						ExamTitle:             obj["title"].(string),
+						ExamId:                strconv.Itoa(obj["id"].(int)),
+						Remark:                remark,
+						Introduce:             obj["introduce"].(string),
+						ResourceId:            strconv.Itoa(obj["resourceId"].(int)),
+						ResourceRandomPaperId: strconv.Itoa(obj["resourceRandomPaperId"].(int)),
+						SyllabusResourceId:    obj["syllabusResourceId"].(string),
+						PassScore:             (float32)(obj["passScore"].(float64)),
+						TotalScore:            (float32)(obj["totalScore"].(float64)),
+						CommentCount:          obj["commentCount"].(int),
+						//StartTime:             obj[""],
+						//EndTime:               obj,
+					},
+					)
+				}
+			}
+		}
+
+	}
+	return exams, nil
 }

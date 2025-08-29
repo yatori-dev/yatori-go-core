@@ -350,3 +350,42 @@ func SubmitStudyTimeFastApi(cache *EnaeaUserCache, circleId, SCFUCKPKey, SCFUCKP
 	//}
 	return string(body), nil
 }
+
+// 获取对项目课程考试列表
+func PullExamListApi(cache *EnaeaUserCache, circleId, syllabusId, moudle string) (string, error) {
+	client := &http.Client{}
+	buildAction := ""
+	if moudle == "" {
+		buildAction = "getMyClass"
+	} else {
+		buildAction = "getMyClassFor" + moudle
+	}
+	url := fmt.Sprintf("https://study.enaea.edu.cn/circleIndex.do?action=%s&start=0&limit=200&isCompleted=&circleId=%s&syllabusId=%s&categoryRemark=all&_=%d", buildAction, circleId, syllabusId, time.Now().UnixMilli())
+
+	// Create the HTTP request
+	req, err := http.NewRequest("GET", url, nil)
+	if err != nil {
+		return "", err
+	}
+
+	// Set headers
+	req.Header.Add("Cookie", "ASUSS="+cache.asuss+";")
+	req.Header.Add("User-Agent", "Apifox/1.0.0 (https://apifox.com)")
+	req.Header.Add("Accept", "*/*")
+	req.Header.Add("Host", "study.enaea.edu.cn")
+	req.Header.Add("Connection", "keep-alive")
+
+	// Execute the HTTP request
+	resp, err := client.Do(req)
+	if err != nil {
+		return "", err
+	}
+	defer resp.Body.Close()
+
+	// Read the response body
+	body, err := ioutil.ReadAll(resp.Body)
+	if err != nil {
+		return "", err
+	}
+	return string(body), nil
+}
