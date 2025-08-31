@@ -15,6 +15,8 @@ import (
 	"net/url"
 	"strings"
 	"time"
+
+	"github.com/yatori-dev/yatori-go-core/utils"
 )
 
 // 注意Api类文件主需要写最原始的接口请求和最后的json的string形式返回，不需要用结构体序列化。
@@ -106,6 +108,7 @@ func (cache *XueXiTUserCache) LoginApi() (string, error) {
 		"fid":               {"-1"},
 		"uname":             {phoneEncrypted},
 		"password":          {passwdEncrypted},
+		"refer":             {"http%3A%2F%2Fi.mooc.chaoxing.com"},
 		"t":                 {"true"},
 		"forbidotherlogin":  {"0"},
 		"validate":          {""},
@@ -138,7 +141,8 @@ func (cache *XueXiTUserCache) LoginApi() (string, error) {
 		//
 		//}
 	}
-	cache.cookies = resp.Cookies() //赋值cookie
+	//cache.cookies = resp.Cookies() //赋值cookie
+	utils.CookiesAddNoRepetition(cache.cookies, resp.Cookies()) //赋值cookie
 
 	cache.JsonContent = jsonContent
 	return string(body), nil

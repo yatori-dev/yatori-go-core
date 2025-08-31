@@ -501,6 +501,7 @@ func (cache *XueXiTUserCache) GetFaceQrCodeApi3(courseId, clazzid, chapterId, cp
 	for _, cookie := range cache.cookies {
 		req.AddCookie(cookie)
 	}
+	//req.AddCookie(&http.Cookie{Name: "videojs_id", Value: "9188460"}) //测试
 	req1.Header.Add("User-Agent", "Apifox/1.0.0 (https://apifox.com)")
 	req1.Header.Add("Accept", "*/*")
 	req1.Header.Add("Host", "mooc1.chaoxing.com")
@@ -585,8 +586,6 @@ func (cache *XueXiTUserCache) GetCourseFaceQrPlan1Api(courseId, classId, uuid, o
 		fmt.Println(err)
 		return "", nil
 	}
-	//替换Cookie
-	utils.CookiesAddNoRepetition(cache.cookies, res.Cookies())
 	return string(body), nil
 }
 
@@ -637,8 +636,7 @@ func (cache *XueXiTUserCache) GetCourseFaceQrPlan2Api(classId, courseId, knowled
 		fmt.Println(err)
 		return "", nil
 	}
-	//替换Cookie
-	utils.CookiesAddNoRepetition(cache.cookies, res.Cookies())
+
 	return string(body), nil
 }
 
@@ -688,8 +686,6 @@ func (cache *XueXiTUserCache) GetCourseFaceQrPlan3Api(uuid, clazzId, courseId, q
 	if err != nil {
 		return "", err
 	}
-	//替换Cookie
-	utils.CookiesAddNoRepetition(cache.cookies, res.Cookies())
 	return string(body), nil
 }
 
