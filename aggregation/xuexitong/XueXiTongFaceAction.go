@@ -115,6 +115,7 @@ func PassFaceAction3(cache *xuexitong.XueXiTUserCache, courseId, classId, cpi, c
 		}
 	}
 	successEnc := gojsonq.New().JSONString(stateApi).Find("videoFaceCaptureSuccessEnc").(string)
+
 	return uuid, qrEnc, ObjectId, successEnc, nil
 }
 

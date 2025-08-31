@@ -4,8 +4,11 @@ import (
 	"bytes"
 	"crypto/tls"
 	"fmt"
+
 	"github.com/yatori-dev/yatori-go-core/api/entity"
 	"github.com/yatori-dev/yatori-go-core/que-core/qtype"
+	"github.com/yatori-dev/yatori-go-core/utils"
+
 	"io/ioutil"
 	"mime/multipart"
 	"net/http"
@@ -169,5 +172,6 @@ func (cache *XueXiTUserCache) WorkNewSubmitAnswer(courseId string, classId strin
 	defer resp.Body.Close()
 
 	body, _ := ioutil.ReadAll(resp.Body)
+	utils.CookiesAddNoRepetition(&cache.cookies, resp.Cookies()) //赋值cookie
 	return string(body), nil
 }

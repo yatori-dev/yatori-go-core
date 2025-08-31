@@ -7,6 +7,8 @@ import (
 	"io/ioutil"
 	"net/http"
 	"net/url"
+
+	"github.com/yatori-dev/yatori-go-core/utils"
 )
 
 // CourseListApi 拉取对应账号的课程数据
@@ -43,7 +45,8 @@ func (cache *XueXiTUserCache) CourseListApi() (string, error) {
 	if err != nil {
 		return "", err
 	}
-	cache.cookies = append(cache.cookies, res.Cookies()...)
+	//cache.cookies = append(cache.cookies, res.Cookies()...)
+	utils.CookiesAddNoRepetition(&cache.cookies, res.Cookies()) //赋值cookie
 	defer res.Body.Close()
 	body, err := ioutil.ReadAll(res.Body)
 	if err != nil {

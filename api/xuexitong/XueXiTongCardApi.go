@@ -13,6 +13,7 @@ import (
 	"time"
 
 	"github.com/yatori-dev/yatori-go-core/api/entity"
+	"github.com/yatori-dev/yatori-go-core/utils"
 )
 
 // PageMobileChapterCard 客户端章节任务卡片 原始html数据返回
@@ -70,6 +71,7 @@ func (cache *XueXiTUserCache) PageMobileChapterCard(
 		fmt.Println(err)
 		return "", nil
 	}
+	utils.CookiesAddNoRepetition(&cache.cookies, res.Cookies()) //赋值cookie
 	return string(body), nil
 }
 
@@ -132,7 +134,7 @@ func (cache *XueXiTUserCache) VideoDtoFetch(p *entity.PointVideoDto) (string, er
 		return "", fmt.Errorf("failed to fetch video, status code: %d", res.StatusCode)
 	}
 	body, err := ioutil.ReadAll(res.Body)
-
+	utils.CookiesAddNoRepetition(&cache.cookies, res.Cookies()) //赋值cookie
 	return string(body), nil
 }
 
@@ -203,6 +205,7 @@ func (cache *XueXiTUserCache) VideoSubmitStudyTime(p *entity.PointVideoDto, play
 		return "", fmt.Errorf("failed to fetch video, status code: %d", res.StatusCode)
 	}
 	//fmt.Println(string(body))
+	utils.CookiesAddNoRepetition(&cache.cookies, res.Cookies()) //赋值cookie
 	return string(body), nil
 }
 
@@ -282,6 +285,7 @@ func (cache *XueXiTUserCache) VideoDtoPlayReport(p *entity.PointVideoDto, playin
 		return "", fmt.Errorf("failed to fetch video, status code: %d", res.StatusCode)
 	}
 	body, err := ioutil.ReadAll(res.Body)
+	utils.CookiesAddNoRepetition(&cache.cookies, res.Cookies()) //赋值cookie
 	return string(body), nil
 }
 
@@ -372,6 +376,7 @@ func (cache *XueXiTUserCache) WorkFetchQuestion(p *entity.PointWorkDto) (string,
 		fmt.Println(err)
 		return "", nil
 	}
+	utils.CookiesAddNoRepetition(&cache.cookies, res.Cookies()) //赋值cookie
 	return string(body), nil
 }
 
@@ -424,6 +429,7 @@ func (cache *XueXiTUserCache) WorkCommit(p *entity.PointWorkDto, fields []entity
 		fmt.Println(err)
 		return "", nil
 	}
+	utils.CookiesAddNoRepetition(&cache.cookies, res.Cookies()) //赋值cookie
 	return string(body), nil
 }
 
@@ -480,5 +486,6 @@ func (cache *XueXiTUserCache) DocumentDtoReadingReport(p *entity.PointDocumentDt
 	}
 
 	body, err := ioutil.ReadAll(res.Body)
+	utils.CookiesAddNoRepetition(&cache.cookies, res.Cookies()) //赋值cookie
 	return string(body), nil
 }

@@ -141,8 +141,7 @@ func (cache *XueXiTUserCache) LoginApi() (string, error) {
 		//
 		//}
 	}
-	//cache.cookies = resp.Cookies() //赋值cookie
-	utils.CookiesAddNoRepetition(cache.cookies, resp.Cookies()) //赋值cookie
+	utils.CookiesAddNoRepetition(&cache.cookies, resp.Cookies()) //赋值cookie
 
 	cache.JsonContent = jsonContent
 	return string(body), nil
@@ -207,6 +206,7 @@ func (cache *XueXiTUserCache) MonitorApi() (string, error) {
 		return "", nil
 	}
 	fmt.Println(string(body))
+	utils.CookiesAddNoRepetition(&cache.cookies, res.Cookies()) //赋值cookie
 	return string(body), nil
 }
 

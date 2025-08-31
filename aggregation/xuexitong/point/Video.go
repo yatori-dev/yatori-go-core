@@ -19,19 +19,19 @@ import (
 // 常规刷视屏逻辑
 func ExecuteVideo(cache *api.XueXiTUserCache, p *entity.PointVideoDto, key, courseCpi int) {
 
-	log.Println("触发人脸识别，正在进行绕过...")
-	pullJson, img, err2 := cache.GetHistoryFaceImg("")
-	if err2 == nil {
-		log2.Print(log2.DEBUG, pullJson, err2)
-
-		disturbImage := utils.ImageRGBDisturb(img)
-		uuid, qrEnc, ObjectId, _, err := action.PassFaceAction2(cache, p.CourseID, p.ClassID, p.Cpi, fmt.Sprintf("%d", p.KnowledgeID), p.Enc, p.JobID, p.ObjectID, p.Mid, p.RandomCaptureTime, disturbImage)
-		if err != nil {
-			log.Println(uuid, qrEnc, ObjectId, err.Error())
-		}
-		//p.VideoFaceCaptureEnc = successEnc
-		log.Println("绕过成功")
-	}
+	//log.Println("触发人脸识别，正在进行绕过...")
+	//pullJson, img, err2 := cache.GetHistoryFaceImg("")
+	//if err2 == nil {
+	//	log2.Print(log2.DEBUG, pullJson, err2)
+	//
+	//	disturbImage := utils.ImageRGBDisturb(img)
+	//	uuid, qrEnc, ObjectId, _, err := action.PassFaceAction2(cache, p.CourseID, p.ClassID, p.Cpi, fmt.Sprintf("%d", p.KnowledgeID), p.Enc, p.JobID, p.ObjectID, p.Mid, p.RandomCaptureTime, disturbImage)
+	//	if err != nil {
+	//		log.Println(uuid, qrEnc, ObjectId, err.Error())
+	//	}
+	//	//p.VideoFaceCaptureEnc = successEnc
+	//	log.Println("绕过成功")
+	//}
 
 	if state, _ := action.VideoDtoFetchAction(cache, p); state {
 		log.Printf("(%s)开始模拟播放....%d:%d开始\n", p.Title, p.PlayTime, p.Duration)
@@ -63,7 +63,7 @@ func ExecuteVideo(cache *api.XueXiTUserCache, p *entity.PointVideoDto, key, cour
 				}
 				p.VideoFaceCaptureEnc = successEnc
 				courseId, _ := strconv.Atoi(p.CourseID)
-				time.Sleep(5 * time.Second)
+				time.Sleep(2 * time.Second)
 				card, enc, err := action.PageMobileChapterCardAction(
 					cache, key, courseId, p.KnowledgeID, p.CardIndex, courseCpi)
 				if err != nil {
@@ -71,7 +71,7 @@ func ExecuteVideo(cache *api.XueXiTUserCache, p *entity.PointVideoDto, key, cour
 				}
 				p.Enc = enc
 				p.AttachmentsDetection(card)
-				time.Sleep(5 * time.Second)
+				time.Sleep(2 * time.Second)
 				playReport, err := cache.VideoSubmitStudyTime(p, playingTime, 3, 8, nil)
 				if err != nil {
 					log.Println(uuid, qrEnc, ObjectId, playReport, err.Error())

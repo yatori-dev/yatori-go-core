@@ -408,6 +408,7 @@ func (cache *XueXiTUserCache) GetFaceQrCodeApi2(courseId, clazzId, cpi string) (
 	//	uploadUid := doc.Find("input#uploadUid").First()
 	//	uuidVal, _ = uploadUid.Attr("value")
 	//}
+	utils.CookiesAddNoRepetition(&cache.cookies, res.Cookies()) //赋值cookie
 	return uuidVal, qrcEncVal, nil
 }
 
@@ -455,7 +456,7 @@ func (cache *XueXiTUserCache) GetFaceQrCodeApi3(courseId, clazzid, chapterId, cp
 	}
 	defer res.Body.Close()
 	//替换cookie
-	utils.CookiesAddNoRepetition(cache.cookies, res.Cookies())
+	utils.CookiesAddNoRepetition(&cache.cookies, res.Cookies())
 
 	body, err := ioutil.ReadAll(res.Body)
 	if err != nil {
@@ -515,7 +516,7 @@ func (cache *XueXiTUserCache) GetFaceQrCodeApi3(courseId, clazzid, chapterId, cp
 	defer res1.Body.Close()
 
 	//替换cookie
-	utils.CookiesAddNoRepetition(cache.cookies, res1.Cookies())
+	utils.CookiesAddNoRepetition(&cache.cookies, res1.Cookies())
 
 	body1, err := ioutil.ReadAll(res1.Body)
 	if err != nil {
@@ -532,6 +533,7 @@ func (cache *XueXiTUserCache) GetFaceQrCodeApi3(courseId, clazzid, chapterId, cp
 	}
 	newEnc := gojsonq.New().JSONString(string(body1)).Find("newEnc").(string)
 	newUuid := gojsonq.New().JSONString(string(body1)).Find("newUuid").(string)
+	utils.CookiesAddNoRepetition(&cache.cookies, res.Cookies()) //赋值cookie
 	return newUuid, newEnc, nil
 }
 
@@ -586,6 +588,7 @@ func (cache *XueXiTUserCache) GetCourseFaceQrPlan1Api(courseId, classId, uuid, o
 		fmt.Println(err)
 		return "", nil
 	}
+	utils.CookiesAddNoRepetition(&cache.cookies, res.Cookies()) //赋值cookie
 	return string(body), nil
 }
 
@@ -636,7 +639,7 @@ func (cache *XueXiTUserCache) GetCourseFaceQrPlan2Api(classId, courseId, knowled
 		fmt.Println(err)
 		return "", nil
 	}
-
+	utils.CookiesAddNoRepetition(&cache.cookies, res.Cookies()) //赋值cookie
 	return string(body), nil
 }
 
@@ -686,6 +689,7 @@ func (cache *XueXiTUserCache) GetCourseFaceQrPlan3Api(uuid, clazzId, courseId, q
 	if err != nil {
 		return "", err
 	}
+	utils.CookiesAddNoRepetition(&cache.cookies, res.Cookies()) //赋值cookie
 	return string(body), nil
 }
 
@@ -763,5 +767,6 @@ func (cache *XueXiTUserCache) GetCourseFaceQrStateApi(uuid, enc, clazzid, course
 		return "", nil
 	}
 	log2.Print(log2.DEBUG, string(body))
+	utils.CookiesAddNoRepetition(&cache.cookies, res.Cookies()) //赋值cookie
 	return string(body), nil
 }

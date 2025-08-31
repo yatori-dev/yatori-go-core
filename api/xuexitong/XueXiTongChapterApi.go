@@ -11,6 +11,8 @@ import (
 	"strconv"
 	"strings"
 	"time"
+
+	"github.com/yatori-dev/yatori-go-core/utils"
 )
 
 // PullChapter ??????????cpi ?key ?? ????
@@ -65,7 +67,7 @@ func (cache *XueXiTUserCache) PullChapter(cpi int, key int) (string, error) {
 		fmt.Println(err)
 		return "", err
 	}
-
+	utils.CookiesAddNoRepetition(&cache.cookies, res.Cookies()) //赋值cookie
 	return string(body), nil
 }
 
@@ -135,6 +137,7 @@ func (cache *XueXiTUserCache) FetchChapterPointStatus(nodes []int, clazzID, user
 	}
 	// 解码响应体（假设服务器返回的内容是 ISO-8859-1 编码）
 	// decodedBody, _, err := transform.Bytes(charmap.ISO8859_1.NewDecoder(), body)
+	utils.CookiesAddNoRepetition(&cache.cookies, res.Cookies()) //赋值cookie
 	return string(body), nil
 }
 
@@ -197,6 +200,7 @@ func (cache *XueXiTUserCache) FetchChapterCords(nodes []int, index, courseId int
 		return "", errors.New("触发验证码")
 	}
 	defer res.Body.Close()
+	utils.CookiesAddNoRepetition(&cache.cookies, res.Cookies()) //赋值cookie
 	return string(body), nil
 }
 
@@ -261,5 +265,6 @@ func (cache *XueXiTUserCache) FetchChapterCords2(clazzid, courseid, knowledgeid,
 	for _, v := range find {
 		return v[1], nil
 	}
+	utils.CookiesAddNoRepetition(&cache.cookies, res.Cookies()) //赋值cookie
 	return string(body), nil
 }
