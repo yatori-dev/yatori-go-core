@@ -170,7 +170,8 @@ func (cache *XueXiTUserCache) VideoSubmitStudyTime(p *entity.PointVideoDto, play
 		return "", nil
 	}
 
-	req.Header.Add("User-Agent", "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/136.0.0.0 Safari/537.36 Edg/136.0.0.0")
+	req.Header.Add("User-Agent", "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/139.0.0.0 Safari/537.36 Edg/139.0.0.0")
+	req.Header.Add("Sec-Ch-Ua-Platform", "Windows")
 	req.Header.Add("Accept", "*/*")
 	req.Header.Add("Host", "mooc1.chaoxing.com")
 	req.Header.Add("Connection", "keep-alive")
@@ -265,7 +266,8 @@ func (cache *XueXiTUserCache) VideoDtoPlayReport(p *entity.PointVideoDto, playin
 		return "", err
 	}
 
-	resp.Header.Add("User-Agent", "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/118.0.0.0 Safari/537.36")
+	resp.Header.Add("User-Agent", "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/139.0.0.0 Safari/537.36 Edg/139.0.0.0")
+	resp.Header.Add("Sec-Ch-Ua-Platform", "Windows")
 	resp.Header.Add("Accept", "*/*")
 	resp.Header.Add("Host", "mooc1.chaoxing.com")
 	resp.Header.Add("Connection", "keep-alive")
@@ -355,7 +357,8 @@ func (cache *XueXiTUserCache) WorkFetchQuestion(p *entity.PointWorkDto) (string,
 		fmt.Println(err)
 		return "", err
 	}
-	req.Header.Add("User-Agent", "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/136.0.0.0 Safari/537.36 Edg/136.0.0.0")
+	req.Header.Add("User-Agent", "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/139.0.0.0 Safari/537.36 Edg/139.0.0.0")
+	req.Header.Add("Sec-Ch-Ua-Platform", "Windows")
 	req.Header.Add("Accept", "*/*")
 	req.Header.Add("Host", "mooc1-api.chaoxing.com")
 	req.Header.Add("Connection", "keep-alive")
@@ -411,7 +414,8 @@ func (cache *XueXiTUserCache) WorkCommit(p *entity.PointWorkDto, fields []entity
 	for _, cookie := range cache.cookies {
 		req.AddCookie(cookie)
 	}
-	req.Header.Add("User-Agent", "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/136.0.0.0 Safari/537.36 Edg/136.0.0.0")
+	req.Header.Add("User-Agent", "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/139.0.0.0 Safari/537.36 Edg/139.0.0.0")
+	req.Header.Add("Sec-Ch-Ua-Platform", "Windows")
 	req.Header.Add("Content-Type", "application/json")
 	req.Header.Add("Accept", "*/*")
 	req.Header.Add("Host", "mooc1-api.chaoxing.com")
@@ -465,7 +469,8 @@ func (cache *XueXiTUserCache) DocumentDtoReadingReport(p *entity.PointDocumentDt
 		return "", err
 	}
 
-	resp.Header.Add("User-Agent", "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/136.0.0.0 Safari/537.36 Edg/136.0.0.0")
+	resp.Header.Add("User-Agent", "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/139.0.0.0 Safari/537.36 Edg/139.0.0.0")
+	resp.Header.Add("Sec-Ch-Ua-Platform", "Windows")
 	resp.Header.Add("Accept", "*/*")
 	resp.Header.Add("Host", "mooc1.chaoxing.com")
 	resp.Header.Add("Connection", "keep-alive")

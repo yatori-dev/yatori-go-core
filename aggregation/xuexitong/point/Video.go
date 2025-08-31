@@ -62,16 +62,16 @@ func ExecuteVideo(cache *api.XueXiTUserCache, p *entity.PointVideoDto, key, cour
 					log.Println(uuid, qrEnc, ObjectId, err.Error())
 				}
 				p.VideoFaceCaptureEnc = successEnc
-				courseId, _ := strconv.Atoi(p.CourseID)
-				time.Sleep(2 * time.Second)
-				card, enc, err := action.PageMobileChapterCardAction(
-					cache, key, courseId, p.KnowledgeID, p.CardIndex, courseCpi)
-				if err != nil {
-					log.Fatal(err)
-				}
-				p.Enc = enc
-				p.AttachmentsDetection(card)
-				time.Sleep(2 * time.Second)
+				//courseId, _ := strconv.Atoi(p.CourseID)
+				//time.Sleep(1 * time.Second)
+				//card, enc, err := action.PageMobileChapterCardAction(
+				//	cache, key, courseId, p.KnowledgeID, p.CardIndex, courseCpi)
+				//if err != nil {
+				//	log.Fatal(err)
+				//}
+				//p.Enc = enc
+				//p.AttachmentsDetection(card)
+				//time.Sleep(1 * time.Second)
 				playReport, err := cache.VideoSubmitStudyTime(p, playingTime, 3, 8, nil)
 				if err != nil {
 					log.Println(uuid, qrEnc, ObjectId, playReport, err.Error())
@@ -98,16 +98,16 @@ func ExecuteVideo(cache *api.XueXiTUserCache, p *entity.PointVideoDto, key, cour
 							log.Println(uuid, qrEnc, ObjectId, err.Error())
 						}
 						p.VideoFaceCaptureEnc = successEnc
-						courseId, _ := strconv.Atoi(p.CourseID)
-						time.Sleep(5 * time.Second)
-						card, enc, err := action.PageMobileChapterCardAction(
-							cache, key, courseId, p.KnowledgeID, p.CardIndex, courseCpi)
-						if err != nil {
-							log.Fatal(err)
-						}
-						p.Enc = enc
-						p.AttachmentsDetection(card)
-						time.Sleep(5 * time.Second)
+						//courseId, _ := strconv.Atoi(p.CourseID)
+						//time.Sleep(1 * time.Second)
+						//card, enc, err := action.PageMobileChapterCardAction(
+						//	cache, key, courseId, p.KnowledgeID, p.CardIndex, courseCpi)
+						//if err != nil {
+						//	log.Fatal(err)
+						//}
+						//p.Enc = enc
+						//p.AttachmentsDetection(card)
+						//time.Sleep(1 * time.Second)
 						playReport, err := cache.VideoSubmitStudyTime(p, playingTime, 3, 8, nil)
 						if err != nil {
 							log.Println(uuid, qrEnc, ObjectId, playReport, err.Error())
