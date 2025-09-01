@@ -18,3 +18,16 @@ func CookiesAddNoRepetition(addTarget *[]*http.Cookie, oldTarget []*http.Cookie)
 		}
 	}
 }
+
+// 过滤并获取指定Cookies并返回
+func CookiesFiltration(keys []string, cookies []*http.Cookie) []*http.Cookie {
+	res := make([]*http.Cookie, 0)
+	for i := range cookies {
+		for i2 := range keys {
+			if cookies[i].Name == keys[i2] {
+				res = append(res, cookies[i])
+			}
+		}
+	}
+	return res
+}

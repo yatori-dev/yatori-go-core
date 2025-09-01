@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"crypto/aes"
 	"crypto/cipher"
+	"crypto/md5"
 	"crypto/tls"
 	"encoding/base64"
 	"encoding/json"
@@ -52,8 +53,14 @@ const (
 	PageMobileWork  = "https://mooc1-api.chaoxing.com/android/mworkspecial"           // 这是个cxkitty中的
 	PageMobileWorkY = "https://mooc1-api.chaoxing.com/mooc-ans/work/phone/doHomeWork" // 这个是自己爬的
 
-	KEY = "u2oh6Vu^HWe4_AES" // 注意 Go 语言中字符串默认就是 UTF-8 编码
+	KEY             = "u2oh6Vu^HWe4_AES" // 注意 Go 语言中字符串默认就是 UTF-8 编码
+	APP_VERSION     = "6.4.5"
+	DEVICE_VENDOR   = "MI10"
+	BUILD           = "10831_263"
+	ANDROID_VERSION = "Android 9"
 )
+
+var IMEI = utils.TokenHex(16)
 
 type XueXiTUserCache struct {
 	Name     string //用户使用Phone
@@ -72,6 +79,43 @@ func (cache *XueXiTUserCache) GetCookie() string {
 }
 func (cache *XueXiTUserCache) GetCookies() []*http.Cookie        { return cache.cookies }
 func (cache *XueXiTUserCache) SetCookies(cookies []*http.Cookie) { cache.cookies = cookies }
+
+// GetUA 构建并获取 UA
+func GetUA(uaType string) string {
+	switch uaType {
+	case "mobile":
+		return strings.Join([]string{
+			fmt.Sprintf("Dalvik/2.1.0 (Linux; U; %s; %s Build/SKQ1.210216.001)", ANDROID_VERSION, DEVICE_VENDOR),
+			fmt.Sprintf("(schild:%s)", MobileUASign(DEVICE_VENDOR, "zh_CN", APP_VERSION, BUILD, IMEI)),
+			fmt.Sprintf("(device:%s)", DEVICE_VENDOR),
+			"Language/zh_CN",
+			fmt.Sprintf("com.chaoxing.mobile/ChaoXingStudy_3_%s_android_phone_%s", APP_VERSION, BUILD),
+			//APP_VERSION,
+			fmt.Sprintf("(@Kalimdor)_%s", IMEI),
+		}, " ")
+	case "web":
+		return "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/107.0.0.0 Safari/537.36 Edg/107.0.1418.35"
+	default:
+		return ""
+	}
+}
+
+func MobileUASign(model, locale, version, build, imei string) string {
+	// 拼接字符串，和 Python 的 " ".join 相同
+	str := strings.Join([]string{
+		"(schild:ipL$TkeiEmfy1gTXb2XHrdLN0a@7c^vu)",
+		fmt.Sprintf("(device:%s)", model),
+		fmt.Sprintf("Language/%s", locale),
+		fmt.Sprintf("com.chaoxing.mobile/ChaoXingStudy_3_%s_android_phone_%s", version, build),
+		fmt.Sprintf("(@Kalimdor)_%s", imei),
+	}, " ")
+
+	// 计算 md5
+	hash := md5.Sum([]byte(str))
+
+	// 转换为小写 hex 字符串
+	return fmt.Sprintf("%x", hash)
+}
 
 // pad 确保数据长度是块大小的整数倍，以便符合块加密算法的要求
 func pad(src []byte, blockSize int) []byte {
@@ -185,7 +229,8 @@ func (cache *XueXiTUserCache) MonitorApi() (string, error) {
 		fmt.Println(err)
 		return "", nil
 	}
-	req.Header.Add("User-Agent", "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/136.0.0.0 Safari/537.36 Edg/136.0.0.0")
+	//req.Header.Add("User-Agent", "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/136.0.0.0 Safari/537.36 Edg/136.0.0.0")
+	req.Header.Add("User-Agent", GetUA("mobile"))
 	req.Header.Add("Accept", "*/*")
 	req.Header.Add("Host", "detect.chaoxing.com")
 	req.Header.Add("Connection", "keep-alive")

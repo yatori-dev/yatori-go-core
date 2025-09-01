@@ -138,6 +138,7 @@ func (cache *XueXiTUserCache) WorkNewSubmitAnswer(courseId string, classId strin
 	if err != nil {
 		return "", err
 	}
+	req.Header.Add("User-Agent", GetUA("mobile"))
 	req.Header.Add("Accept", "*/*")
 	req.Header.Add("Host", "mooc1.chaoxing.com")
 	req.Header.Add("Connection", "keep-alive")

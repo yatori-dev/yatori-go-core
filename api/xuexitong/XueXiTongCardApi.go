@@ -54,7 +54,8 @@ func (cache *XueXiTUserCache) PageMobileChapterCard(
 	for _, cookie := range cache.cookies {
 		req.AddCookie(cookie)
 	}
-	req.Header.Add("User-Agent", "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/136.0.0.0 Safari/537.36 Edg/136.0.0.0")
+	req.Header.Add("User-Agent", GetUA("mobile"))
+	//req.Header.Add("User-Agent", "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/136.0.0.0 Safari/537.36 Edg/136.0.0.0")
 	req.Header.Add("Accept", "*/*")
 	req.Header.Add("Host", "mooc1-api.chaoxing.com")
 	req.Header.Add("Connection", "keep-alive")
@@ -112,7 +113,8 @@ func (cache *XueXiTUserCache) VideoDtoFetch(p *entity.PointVideoDto) (string, er
 	}
 	resp.Header.Add("Host", " mooc1-api.chaoxing.com")
 	resp.Header.Add("Connection", " keep-alive")
-	resp.Header.Add("User-Agent", " Mozilla/5.0 (Linux; Android 12; SM-N9006 Build/V417IR; wv) AppleWebKit/537.36 (KHTML, like Gecko) Version/4.0 Chrome/95.0.4638.74 Mobile Safari/537.36 (schild:e9b05c3f9fb49fef2f516e86ac3c4ff1) (device:SM-N9006) Language/zh_CN com.chaoxing.mobile/ChaoXingStudy_3_6.3.7_android_phone_10822_249 (@Kalimdor)_4627cad9c4b6415cba5dc6cac39e6c96")
+	//resp.Header.Add("User-Agent", " Mozilla/5.0 (Linux; Android 12; SM-N9006 Build/V417IR; wv) AppleWebKit/537.36 (KHTML, like Gecko) Version/4.0 Chrome/95.0.4638.74 Mobile Safari/537.36 (schild:e9b05c3f9fb49fef2f516e86ac3c4ff1) (device:SM-N9006) Language/zh_CN com.chaoxing.mobile/ChaoXingStudy_3_6.3.7_android_phone_10822_249 (@Kalimdor)_4627cad9c4b6415cba5dc6cac39e6c96")
+	resp.Header.Add("User-Agent", GetUA("mobile"))
 	resp.Header.Add("X-Requested-With", " XMLHttpRequest")
 	resp.Header.Add("Accept", " */*")
 	resp.Header.Add("Sec-Fetch-Site", " same-origin")
@@ -170,7 +172,8 @@ func (cache *XueXiTUserCache) VideoSubmitStudyTime(p *entity.PointVideoDto, play
 		return "", nil
 	}
 
-	req.Header.Add("User-Agent", "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/139.0.0.0 Safari/537.36 Edg/139.0.0.0")
+	//req.Header.Add("User-Agent", "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/139.0.0.0 Safari/537.36 Edg/139.0.0.0")
+	req.Header.Add("User-Agent", GetUA("mobile"))
 	req.Header.Add("Sec-Ch-Ua-Platform", "Windows")
 	req.Header.Add("Accept", "*/*")
 	req.Header.Add("Host", "mooc1.chaoxing.com")
@@ -181,14 +184,100 @@ func (cache *XueXiTUserCache) VideoSubmitStudyTime(p *entity.PointVideoDto, play
 	req.Header.Add("Sec-Fetch-Mode", " cors")
 	req.Header.Add("Sec-Fetch-Dest", " empty")
 	req.Header.Add("Pragam", "no-cache")
-	// 测试用
-	//req.Header.Add("Cookie", "k8s=1747821162.919.18678.319465")
-	//req.Header.Add("Cookie", "writenote=yes")
-	//req.Header.Add("Cookie", "styleId=")
-	//req.Header.Add("Cookie", "k8s=1747821162.919.18678.319465; writenote=yes; styleId=; fid=5339; route=0eb899bb9bb390391b050e8cb1d78cb4; _uid=348625454; _d=1748938533165; UID=348625454; vc3=elC7mmPdF2m7Q7%2FL7NrsE6bWdswUmsT%2FFp4UQJRlR771g%2Bbyp%2BEoqZAw9fxzrs86uQ1wLpSfEPyecdB5lFYhONjcsOPyyUn%2FhLBKcWyzi00EehqYjNyCkkzYmjFqHXueJbKmQas7fO%2FPiNZQ0brN1pNyc0G9fHwfKmgK13Ncsxg%3D6e79fc9cc83d1e383a40c0f45f12ae5c; uf=569b376a64ccf0313129ca082ab4eaeede7e7778b17f9ae8265c811413bbd05b27491cb4d64af4903544f256fb890bc2913b662843f1f4ade9295d8c89b08ad0f44425e20f927c6b94405ac272c83515fb98ce0e6210c3884a878d0a9a7b05dad8a8d0ca21d204eb3ad59b143144275b8d971faa04974831917d1864a9d6b19679123a9828d1f8e0; cx_p_token=1eab5c196cf18d650a7f3a52aaf21e34; p_auth_token=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1aWQiOiIzNDg2MjU0NTQiLCJsb2dpblRpbWUiOjE3NDg5Mzg1MzMxNjcsImV4cCI6MTc0OTU0MzMzM30.kfDSivE0vOGFh8egjQAHqtTbgblnF-ijfw96BUIMrE0; xxtenc=256f12e17e3f57e301008b366801437c; DSSTASH_LOG=C_38-UN_4533-US_348625454-T_1748938533167; source=num8; spaceFid=5339; spaceRoleId=3; tl=1; jrose=EEC8A85018324CC7BC9AB73D25C2AEA1.mooc-536300739-29174; videojs_id=7230547")
-	for _, cookie := range cache.cookies {
+	//fid,k8s,route,_uid,UID,vc3,uf,cx_p_token,p_auth_token,xxtenc,DSSTASH_LOG,jrose
+	//fanyamoocs,videos_id,thirdRegist
+	cache.cookies = append(cache.cookies, &http.Cookie{Name: "fanyamoocs", Value: "11401F839C536D9E"})
+	cache.cookies = append(cache.cookies, &http.Cookie{Name: "thirdRegist", Value: "0"})
+	cache.cookies = append(cache.cookies, &http.Cookie{Name: "videojs_id", Value: "1778753"})
+	filterCookies := utils.CookiesFiltration([]string{"fid", "k8s", "route", "fanyamoocs", "_uid", "UID", "vc3", "uf", "cx_p_token", "p_auth_token", "xxtenc", "DSSTASH_LOG", "jrose", "thirdRegist", "videojs_id"}, cache.cookies)
+	for _, cookie := range filterCookies {
 		req.AddCookie(cookie)
 	}
+
+	//req.AddCookie(&http.Cookie{Name: "fanyamoocs", Value: "11401F839C536D9E"})
+	//req.AddCookie(&http.Cookie{Name: "thirdRegist", Value: "0"})
+	//req.AddCookie(&http.Cookie{Name: "videojs_id", Value: "1778753"})
+
+	res, err := client.Do(req)
+	if err != nil {
+		fmt.Println(err)
+		return "", nil
+	}
+	defer res.Body.Close()
+
+	body, err := ioutil.ReadAll(res.Body)
+	if err != nil {
+		fmt.Println(err)
+		return "", nil
+	}
+
+	if res.StatusCode != http.StatusOK {
+		return "", fmt.Errorf("failed to fetch video, status code: %d", res.StatusCode)
+	}
+	//fmt.Println(string(body))
+	utils.CookiesAddNoRepetition(&cache.cookies, res.Cookies()) //赋值cookie
+	return string(body), nil
+}
+
+// VideoSubmitStudyTimePE 手机端学时提交
+func (cache *XueXiTUserCache) VideoSubmitStudyTimePE(p *entity.PointVideoDto, playingTime int, isdrag int /*提交模式，0代表正常视屏播放提交，2代表暂停播放状态，3代表着点击开始播放状态*/, retry int, lastErr error) (string, error) {
+	clipTime := fmt.Sprintf("0_%d", p.Duration)
+	hash := md5.Sum([]byte(fmt.Sprintf("[%s][%s][%s][%s][%d][%s][%d][%s]",
+		p.ClassID, cache.UserID, p.JobID, p.ObjectID, playingTime*1000, "d_yHJ!$pdA~5", p.Duration*1000, clipTime)))
+	enc := hex.EncodeToString(hash[:])
+	//
+	urlStr := "https://mooc1.chaoxing.com/mooc-ans/multimedia/log/a/" + p.Cpi + "/" + p.DToken + "?clazzId=" + p.ClassID + "&playingTime=" + strconv.Itoa(playingTime) + "&duration=" + strconv.Itoa(p.Duration) + "&clipTime=" + clipTime + "&objectId=" + p.ObjectID + "&otherInfo=" + p.OtherInfo + "&courseId=" + p.CourseID + "&jobid=" + p.JobID + "&userid=" + cache.UserID + "&isdrag=" + strconv.Itoa(isdrag) + "&view=json&enc=" + enc + "&rt=0.9" + "&videoFaceCaptureEnc=" + p.VideoFaceCaptureEnc + "&dtype=Video&_t=" + strconv.FormatInt(time.Now().UnixMilli(), 10) + "&attDuration=" + strconv.Itoa(p.Duration) + "&attDurationEnc=" + p.AttDurationEnc
+
+	method := "GET"
+
+	tr := &http.Transport{
+		TLSClientConfig: &tls.Config{
+			InsecureSkipVerify: true, // 跳过证书验证，仅用于开发环境
+		},
+	}
+
+	//如果开启了IP代理，那么就直接添加代理
+	if cache.IpProxySW {
+		tr.Proxy = func(req *http.Request) (*url.URL, error) {
+			return url.Parse(cache.ProxyIP) // 设置代理
+		}
+	}
+	client := &http.Client{
+		Transport: tr,
+	}
+	req, err := http.NewRequest(method, urlStr, nil)
+
+	if err != nil {
+		fmt.Println(err)
+		return "", nil
+	}
+
+	//req.Header.Add("User-Agent", "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/139.0.0.0 Safari/537.36 Edg/139.0.0.0")
+	req.Header.Add("User-Agent", GetUA("mobile"))
+	req.Header.Add("Sec-Ch-Ua-Platform", "Windows")
+	req.Header.Add("Accept", "*/*")
+	req.Header.Add("Host", "mooc1.chaoxing.com")
+	req.Header.Add("Connection", "keep-alive")
+	req.Header.Add("Content-Type", "application/json")
+	req.Header.Add("Sec-Ch-Ua-Platform", "Windows")
+	req.Header.Add("Sec-Fetch-Site", "same-origin")
+	req.Header.Add("Sec-Fetch-Mode", " cors")
+	req.Header.Add("Sec-Fetch-Dest", " empty")
+	req.Header.Add("Pragam", "no-cache")
+	//fid,k8s,route,_uid,UID,vc3,uf,cx_p_token,p_auth_token,xxtenc,DSSTASH_LOG,jrose
+	//fanyamoocs,videos_id,thirdRegist
+	cache.cookies = append(cache.cookies, &http.Cookie{Name: "fanyamoocs", Value: "11401F839C536D9E"})
+	cache.cookies = append(cache.cookies, &http.Cookie{Name: "thirdRegist", Value: "0"})
+	cache.cookies = append(cache.cookies, &http.Cookie{Name: "videojs_id", Value: "1778753"})
+	filterCookies := utils.CookiesFiltration([]string{"fid", "k8s", "route", "fanyamoocs", "_uid", "UID", "vc3", "uf", "cx_p_token", "p_auth_token", "xxtenc", "DSSTASH_LOG", "jrose", "thirdRegist", "videojs_id"}, cache.cookies)
+	for _, cookie := range filterCookies {
+		req.AddCookie(cookie)
+	}
+
+	//req.AddCookie(&http.Cookie{Name: "fanyamoocs", Value: "11401F839C536D9E"})
+	//req.AddCookie(&http.Cookie{Name: "thirdRegist", Value: "0"})
+	//req.AddCookie(&http.Cookie{Name: "videojs_id", Value: "1778753"})
+
 	res, err := client.Do(req)
 	if err != nil {
 		fmt.Println(err)
@@ -266,7 +355,8 @@ func (cache *XueXiTUserCache) VideoDtoPlayReport(p *entity.PointVideoDto, playin
 		return "", err
 	}
 
-	resp.Header.Add("User-Agent", "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/139.0.0.0 Safari/537.36 Edg/139.0.0.0")
+	//resp.Header.Add("User-Agent", "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/139.0.0.0 Safari/537.36 Edg/139.0.0.0")
+	resp.Header.Add("User-Agent", GetUA("mobile"))
 	resp.Header.Add("Sec-Ch-Ua-Platform", "Windows")
 	resp.Header.Add("Accept", "*/*")
 	resp.Header.Add("Host", "mooc1.chaoxing.com")
@@ -357,7 +447,8 @@ func (cache *XueXiTUserCache) WorkFetchQuestion(p *entity.PointWorkDto) (string,
 		fmt.Println(err)
 		return "", err
 	}
-	req.Header.Add("User-Agent", "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/139.0.0.0 Safari/537.36 Edg/139.0.0.0")
+	//req.Header.Add("User-Agent", "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/139.0.0.0 Safari/537.36 Edg/139.0.0.0")
+	req.Header.Add("User-Agent", GetUA("mobile"))
 	req.Header.Add("Sec-Ch-Ua-Platform", "Windows")
 	req.Header.Add("Accept", "*/*")
 	req.Header.Add("Host", "mooc1-api.chaoxing.com")
@@ -414,7 +505,8 @@ func (cache *XueXiTUserCache) WorkCommit(p *entity.PointWorkDto, fields []entity
 	for _, cookie := range cache.cookies {
 		req.AddCookie(cookie)
 	}
-	req.Header.Add("User-Agent", "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/139.0.0.0 Safari/537.36 Edg/139.0.0.0")
+	//req.Header.Add("User-Agent", "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/139.0.0.0 Safari/537.36 Edg/139.0.0.0")
+	req.Header.Add("User-Agent", GetUA("mobile"))
 	req.Header.Add("Sec-Ch-Ua-Platform", "Windows")
 	req.Header.Add("Content-Type", "application/json")
 	req.Header.Add("Accept", "*/*")
@@ -469,7 +561,8 @@ func (cache *XueXiTUserCache) DocumentDtoReadingReport(p *entity.PointDocumentDt
 		return "", err
 	}
 
-	resp.Header.Add("User-Agent", "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/139.0.0.0 Safari/537.36 Edg/139.0.0.0")
+	//resp.Header.Add("User-Agent", "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/139.0.0.0 Safari/537.36 Edg/139.0.0.0")
+	resp.Header.Add("User-Agent", GetUA("mobile"))
 	resp.Header.Add("Sec-Ch-Ua-Platform", "Windows")
 	resp.Header.Add("Accept", "*/*")
 	resp.Header.Add("Host", "mooc1.chaoxing.com")
