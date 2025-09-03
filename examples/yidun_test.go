@@ -311,7 +311,7 @@ func Test_yidun(t *testing.T) {
 	d := NewDun163("17c07e34e0384612bb239568b6b37643",
 		"https://id.163.com/mail/retrievepassword",
 		"app.miit-eidc.org.cn",
-		"Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/121.0.0.0 Safari/537.36")
+		utils.DefaultUserAgent,)
 
 	if err := d.CompileJS("dun163.js"); err != nil {
 		panic(err)

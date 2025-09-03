@@ -51,7 +51,7 @@ func (cache *CqieUserCache) VerificationCodeApi() (string, string) {
 		fmt.Println(err)
 		return "", ""
 	}
-	req.Header.Add("User-Agent", "Apifox/1.0.0 (https://apifox.com)")
+	req.Header.Add("User-Agent", utils.DefaultUserAgent)
 
 	res, err := client.Do(req)
 	if err != nil {
@@ -97,7 +97,7 @@ func (cache *CqieUserCache) LoginApi() (string, error) {
 		fmt.Println(err)
 		return "", err
 	}
-	req.Header.Add("User-Agent", "Apifox/1.0.0 (https://apifox.com)")
+	req.Header.Add("User-Agent", utils.DefaultUserAgent)
 	req.Header.Add("Content-Type", "application/json")
 
 	res, err := client.Do(req)
