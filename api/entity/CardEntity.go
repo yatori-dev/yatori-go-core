@@ -229,8 +229,10 @@ func (p *PointVideoDto) AttachmentsDetection(attachment interface{}) (bool, erro
 					resRT, err := strconv.ParseFloat(isStr, 64)
 					if err != nil {
 						resRT = 0.9
+					} else {
+						rt = resRT
 					}
-					p.RT = resRT
+
 				}
 			}
 
