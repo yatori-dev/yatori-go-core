@@ -27,7 +27,7 @@ type MOOCUserCache struct {
 }
 
 // 用于初始化Cookie参数
-func (cache *MOOCUserCache) InitCookies() {
+func (cache *MOOCUserCache) InitCookiesApi() {
 
 	url := "https://www.icourse163.org/member/login.htm"
 	method := "GET"
@@ -92,7 +92,7 @@ func (cache *MOOCUserCache) InitCookies() {
 }
 
 // powGetP 接口
-func (cache *MOOCUserCache) PowGetP() {
+func (cache *MOOCUserCache) PowGetPApi() {
 
 	url := "https://reg.icourse163.org/dl/zj/yd/powGetP"
 	method := "POST"
@@ -139,7 +139,7 @@ func (cache *MOOCUserCache) PowGetP() {
 	fmt.Println(string(body))
 }
 
-func (cache *MOOCUserCache) Gt() {
+func (cache *MOOCUserCache) GtApi() {
 
 	url := "https://reg.icourse163.org/dl/zj/yd/gt"
 	method := "POST"
@@ -180,7 +180,7 @@ func (cache *MOOCUserCache) Gt() {
 	utils.CookiesAddNoRepetition(&cache.cookies, res.Cookies())
 }
 
-func (cache *MOOCUserCache) Login() {
+func (cache *MOOCUserCache) LoginApi() {
 
 	url := "https://reg.icourse163.org/dl/zj/yd/pwd/l"
 	method := "POST"

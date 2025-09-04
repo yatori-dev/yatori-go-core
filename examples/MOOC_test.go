@@ -13,15 +13,16 @@ func TestPowGetP(t *testing.T) {
 	utils.YatoriCoreInit()
 	//测试账号
 	setup()
+	//构建用户结构体
 	cache := mooc.MOOCUserCache{
 		Account:   global.Config.Users[22].Account,
 		Password:  global.Config.Users[22].Password,
 		IpProxySW: false,
 		ProxyIP:   "",
 	}
-	cache.InitCookies() //初始化Cookie
-	cache.Gt()          //通过gt接口获取必要登录参数
-	cache.PowGetP()     //通过powGetP接口获取必要登录参数
-	cache.Login()       //登录
+	cache.InitCookiesApi() //初始化Cookie
+	cache.GtApi()          //通过gt接口获取必要登录参数
+	cache.PowGetPApi()     //通过powGetP接口获取必要登录参数
+	cache.LoginApi()       //登录
 
 }
