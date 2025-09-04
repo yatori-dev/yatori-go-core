@@ -9,7 +9,6 @@ import (
 	"strings"
 
 	"github.com/yatori-dev/yatori-go-core/models/ctype"
-	log2 "github.com/yatori-dev/yatori-go-core/utils/log"
 )
 
 type IAttachment interface {
@@ -218,19 +217,21 @@ func (p *PointVideoDto) AttachmentsDetection(attachment interface{}) (bool, erro
 			}
 
 			// 获取 "rt" 的值
-			rt, ok1 := property["rt"].(float64)
-			if !ok1 {
-				resRT, err := strconv.ParseFloat(property["rt"].(string), 64)
-				if err != nil {
-					log2.Print(log2.DEBUG, "RT转换失败")
-				} else {
-					rt = resRT
-					ok1 = true
+			rtObj, ok1 := property["rt"]
+			rt := 0.0
+			if ok1 {
+				isNum, ok2 := rtObj.(float64)
+				if ok2 {
+					rt = isNum
 				}
-			}
-			if !ok1 {
-				// 如果 "rt" 键不存在，则使用默认值 0.9
-				rt = 0.9
+				isStr, ok3 := rtObj.(string)
+				if ok3 {
+					resRT, err := strconv.ParseFloat(isStr, 64)
+					if err != nil {
+						resRT = 0.9
+					}
+					p.RT = resRT
+				}
 			}
 
 			//playTime, ok := attachment["playTime"].(float64)
