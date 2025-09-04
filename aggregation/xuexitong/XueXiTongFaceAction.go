@@ -14,7 +14,8 @@ import (
 
 // 人脸识别1
 func PassFaceAction1(cache *xuexitong.XueXiTUserCache, courseId, classId, cpi, chapterId, enc, videojobid, chaptervideoobjectid, mid, videoRandomCollectTime string, face image.Image) (string, string, string, string /*识别状态*/, error) {
-	uuid, qrEnc, err := cache.GetFaceQrCodeApi2(courseId, classId, cpi)
+	//uuid, qrEnc, err := cache.GetFaceQrCodeApi2(courseId, classId, cpi)
+	uuid, qrEnc, err := cache.GetFaceQrCodeApi3(courseId, classId, chapterId, cpi, enc, videojobid, chaptervideoobjectid)
 	if err != nil {
 		return "", "", "", "", err
 	}
@@ -39,6 +40,7 @@ func PassFaceAction1(cache *xuexitong.XueXiTUserCache, courseId, classId, cpi, c
 	}
 	plan2Api, err := cache.GetCourseFaceQrPlan2Api(classId, courseId, chapterId, cpi, ObjectId)
 	//plan3Api, err := cache.GetCourseFaceQrPlan1Api(courseId, classId, uuid, ObjectId, qrEnc, "0")
+	log2.Print(log2.DEBUG, plan2Api)
 	passMsg := gojsonq.New().JSONString(plan2Api).Find("msg")
 	if err != nil {
 		return "", "", "", "", err

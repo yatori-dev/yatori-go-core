@@ -3,7 +3,6 @@ package point
 import (
 	"fmt"
 	"log"
-	"os"
 	"strings"
 	"time"
 
@@ -25,59 +24,31 @@ func ExecuteVideo(cache *api.XueXiTUserCache, p *entity.PointVideoDto, key, cour
 		stopVal := 0
 		for {
 			if flag == 58 {
-				//playReport, err := cache.VideoDtoPlayReport(p, playingTime, 3, 8, nil)
-				playReport, err := cache.VideoSubmitStudyTimePE(p, playingTime, 0, 8, nil)
+				playReport, err := cache.VideoSubmitStudyTime(p, playingTime, 0, 8, nil)
 				log.Println(playReport, err)
 				if err != nil {
 					if strings.Contains(err.Error(), "failed to fetch video, status code: 403") || strings.Contains(err.Error(), "failed to fetch video, status code: 404") { //触发403立即使用人脸检测
 
 						log.Println("触发人脸识别，正在进行绕过...")
-						pullJson, img1, err2 := cache.GetHistoryFaceImg("")
-						if err2 != nil {
+						pullJson, img, err2 := cache.GetHistoryFaceImg("")
+						if err2 == nil {
 							log2.Print(log2.DEBUG, pullJson, err2)
-							os.Exit(0)
-						}
-						disturbImage := utils.ImageRGBDisturb(img1)
-						uuid, qrEnc, ObjectId, successEnc, err := action.PassFaceAction3(cache, p.CourseID, p.ClassID, p.Cpi, fmt.Sprintf("%d", p.KnowledgeID), p.Enc, p.JobID, p.ObjectID, p.Mid, p.RandomCaptureTime, disturbImage)
-						if err != nil {
-							log.Println(uuid, qrEnc, ObjectId, err.Error())
-						}
-						p.VideoFaceCaptureEnc = successEnc
-						//courseId, _ := strconv.Atoi(p.CourseID)
-						//time.Sleep(1 * time.Second)
-						//card, enc, err := action.PageMobileChapterCardAction(
-						//	cache, key, courseId, p.KnowledgeID, p.CardIndex, courseCpi)
-						//if err != nil {
-						//	log.Fatal(err)
-						//}
-						//p.Enc = enc
-						//p.AttachmentsDetection(card)
-						//time.Sleep(5 * time.Second)
-						//p.VideoFaceCaptureEnc = successEnc
-						playReport, err := cache.VideoSubmitStudyTimePE(p, playingTime, 3, 8, nil)
-						if err != nil {
-							log.Println(uuid, qrEnc, ObjectId, playReport, err.Error())
-						}
 
-						//log.Println("触发人脸识别，正在进行绕过...")
-						//pullJson, img, err2 := cache.GetHistoryFaceImg("")
-						//if err2 == nil {
-						//	log2.Print(log2.DEBUG, pullJson, err2)
-						//
-						//	disturbImage := utils.ImageRGBDisturb(img)
-						//	uuid, qrEnc, ObjectId, _, err := action.PassFaceAction1(cache, p.CourseID, p.ClassID, p.Cpi, fmt.Sprintf("%d", p.KnowledgeID), p.Enc, p.JobID, p.ObjectID, p.Mid, p.RandomCaptureTime, disturbImage)
-						//	if err != nil {
-						//		log.Println(uuid, qrEnc, ObjectId, err.Error())
-						//	}
-						//	//p.VideoFaceCaptureEnc = successEnc
-						//	log.Println("绕过成功")
-						//	time.Sleep(5 * time.Second)
-						//}
+							disturbImage := utils.ImageRGBDisturb(img)
+							uuid, qrEnc, ObjectId, _, err := action.PassFaceAction1(cache, p.CourseID, p.ClassID, p.Cpi, fmt.Sprintf("%d", p.KnowledgeID), p.Enc, p.JobID, p.ObjectID, p.Mid, p.RandomCaptureTime, disturbImage)
+							if err != nil {
+								log.Println(uuid, qrEnc, ObjectId, err.Error())
+							}
+							//p.VideoFaceCaptureEnc = successEnc
+							log.Println("绕过成功")
+							time.Sleep(5 * time.Second)
+						}
 						stopVal += 1
 						log.Println("绕过成功")
 
 						continue
 					}
+
 				}
 				//playReport, _ := cache.VideoSubmitStudyTime(p, playingTime, 3, 8, nil)
 				playingTime += flag
