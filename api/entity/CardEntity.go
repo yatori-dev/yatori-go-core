@@ -2,12 +2,14 @@ package entity
 
 import (
 	"errors"
-	"github.com/yatori-dev/yatori-go-core/models/ctype"
 	"iter"
 	"log"
 	"net/http"
 	"strconv"
 	"strings"
+
+	"github.com/yatori-dev/yatori-go-core/models/ctype"
+	log2 "github.com/yatori-dev/yatori-go-core/utils/log"
 )
 
 type IAttachment interface {
@@ -216,13 +218,21 @@ func (p *PointVideoDto) AttachmentsDetection(attachment interface{}) (bool, erro
 			}
 
 			// 获取 "rt" 的值
-			rt, ok := property["rt"].(float64)
-			if !ok {
+			rt, ok1 := property["rt"].(float64)
+			if !ok1 {
+				resRT, err := strconv.ParseFloat(property["rt"].(string), 64)
+				if err != nil {
+					log2.Print(log2.DEBUG, "RT转换失败")
+				} else {
+					rt = resRT
+					ok1 = true
+				}
+			}
+			if !ok1 {
 				// 如果 "rt" 键不存在，则使用默认值 0.9
 				rt = 0.9
-			} else {
-				rt = 0.9
 			}
+
 			//playTime, ok := attachment["playTime"].(float64)
 			//if !ok {
 			//	p.PlayTime = 0
