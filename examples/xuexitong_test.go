@@ -470,9 +470,12 @@ func TestXueXiToFlushCourse(t *testing.T) {
 	courseList, err := xuexitong.XueXiTPullCourseAction(&userCache) //拉取所有课程
 	for _, course := range courseList {                             //遍历课程
 
-		if course.CourseName != "算法与程序的奥秘" {
+		if course.CourseName != "Blockly 创意趣味编程（网络共享课）" {
 			continue
 		}
+		//if course.CourseName != "算法与程序的奥秘" {
+		//	continue
+		//}
 		// 6c444b8d5c6203ee2f2aef4b76f5b2ce qrcEnc
 
 		key, _ := strconv.Atoi(course.Key)

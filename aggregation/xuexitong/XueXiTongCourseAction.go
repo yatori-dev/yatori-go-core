@@ -211,9 +211,10 @@ func PullCourseChapterAction(cache *xuexitong.XueXiTUserCache, cpi, key int) (ch
 	var chatid string
 	if v, ok := chapterData[0]["chatid"].(string); ok {
 		chatid = v
-	} else {
-		return ChaptersList{}, false, errors.New("[" + cache.Name + "] " + "[" + chaptersList.ChatID + "] " + " 课程获取失败" + chapter)
 	}
+	//else {//chatid并不是非必要项，所以所以注释掉了
+	//	return ChaptersList{}, false, errors.New("[" + cache.Name + "] " + "[" + chaptersList.ChatID + "] " + " 课程获取失败" + chapter)
+	//}
 
 	// 提取 knowledge
 	var knowledgeData []map[string]interface{}
