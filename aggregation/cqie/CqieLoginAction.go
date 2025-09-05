@@ -103,7 +103,7 @@ func CqieLoginTokenAction(cache *cqieApi.CqieUserCache, token string) error {
 // CqiePullCourseListAction 拉取课程列表信息
 func CqiePullCourseListAction(cache *cqieApi.CqieUserCache) ([]CqieCourse, error) {
 	var courseList []CqieCourse
-	courseApi, err := cache.PullCourseListApi(5, nil)
+	courseApi, err := cache.PullCourseListApiNew(5, nil)
 	if err != nil {
 	}
 	if gojsonq.New().JSONString(courseApi).Find("msg") != "操作成功" {

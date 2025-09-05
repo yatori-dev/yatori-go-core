@@ -139,7 +139,7 @@ func TestCqieVideosBrushFast(t *testing.T) {
 	users := global.Config.Users[4]
 
 	cache := cqieApi.CqieUserCache{Account: users.Account, Password: users.Password} //构建用户
-	token := "eyJhbGciOiJIUzUxMiJ9.eyIwIjoiMSIsInVzZXJfaWQiOiJiODc5N2FkNjdhMGNmZDk2N2ViNGJhOWM4ODBkOWY5MCIsImFwcElkIjoiMjAyNDEyMDIwMTA3NTY5MTY4MiIsInVzZXJfa2V5IjoiYmU5ZDFjZjAtMWExNi00ZTUxLWE0YTgtYTQwYzRhNDA0ODFjIiwidXNlcm5hbWUiOiLlrovlhYPlhbUifQ.Z5on9z6u2kODw737WpIHwcQQr1G1GVMAYcwivh0zmdYBOx9i9shiLJTS8cwQpPLL9RJm2rCYzD5LnovO2nRQxQ"
+	token := "eyJhbGciOiJIUzUxMiJ9.eyIwIjoiMSIsInVzZXJfaWQiOiJiODc5N2FkNjdhMGNmZDk2N2ViNGJhOWM4ODBkOWY5MCIsImFwcElkIjoiMjAyNTA5MDYwMTA3NTczNzYwNCIsInVzZXJfa2V5IjoiMGI3YWU3NmUtZDhiOC00YzFkLThhYmYtMjdhODJjZjVkYjY2IiwidXNlcm5hbWUiOiLlrovlhYPlhbUifQ.vb2B9szsu1uYV9vgPIknkJ518jWblujfzqJaV2zedXdbl2RLWwzAFgI4_8mKQ09y-ikZ8vjbGXC29Xaf58QJXA"
 	cqie.CqieLoginTokenAction(&cache, token)               //登录
 	courseList, _ := cqie.CqiePullCourseListAction(&cache) //拉取课程列表
 	for _, course := range courseList {

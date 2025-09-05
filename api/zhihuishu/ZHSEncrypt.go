@@ -3,12 +3,16 @@ package zhihuishu
 import (
 	"crypto/aes"
 	"crypto/cipher"
+	"crypto/md5"
 	"encoding/base64"
+	"encoding/hex"
 	"encoding/json"
 	"fmt"
 	"strconv"
 	"strings"
 )
+
+const SALT = "o6xpt3b#Qy$Z"
 
 func getConfig() map[string]map[string]string {
 	// This is a placeholder for your configuration retrieval function.
@@ -144,4 +148,34 @@ func genWatchPoint(startTime, endTime int) string {
 		}
 	}
 	return watchPoint
+}
+
+type SignParams struct {
+	Uuid           string
+	CourseId       string
+	FileId         string
+	StudyTotalTime string
+	StartDate      string
+	EndDate        string
+	EndWatchTime   string
+	StartWatchTime string
+}
+
+// 提交学时用的签名
+func sign(p SignParams) string {
+	// 拼接原始字符串
+	raw := SALT +
+		p.Uuid +
+		p.CourseId +
+		p.FileId +
+		p.StudyTotalTime +
+		p.StartDate +
+		p.EndDate +
+		p.EndWatchTime +
+		p.StartWatchTime +
+		p.Uuid
+
+	// 计算 MD5
+	hash := md5.Sum([]byte(raw))
+	return hex.EncodeToString(hash[:])
 }

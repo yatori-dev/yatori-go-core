@@ -95,6 +95,56 @@ func (cache *CqieUserCache) PullCourseListApi(retry int, lastErr error) (string,
 	return string(body), nil
 }
 
+func (cache *CqieUserCache) PullCourseListApiNew(retry int, lastErr error) (string, error) {
+	if retry < 0 {
+		return "", lastErr
+	}
+	//url := "https://study.cqie.edu.cn/gateway/system/orgStudent/pagedMyCourse"
+	url := "https://study.cqie.edu.cn/gateway/frequent/orgStudent/pagedMyCourse"
+	method := "POST"
+
+	payload := strings.NewReader(`{
+   "filters": {
+	 "courseNature": "",
+	 "name": "",
+	 "schoolYear": "",
+	 "studentId": "` + cache.studentId + `",
+	 "term": "",
+	 "majorId": "` + cache.orgMajorId + `"
+   },
+   "pageIndex": 1,
+   "pageSize": 200
+ }`)
+
+	client := &http.Client{}
+	req, err := http.NewRequest(method, url, payload)
+
+	if err != nil {
+		time.Sleep(time.Millisecond * 150)
+		return cache.PullCourseListApi(retry-1, err)
+	}
+	req.Header.Add("Authorization", cache.access_token)
+	req.Header.Add("User-Agent", "Apifox/1.0.0 (https://apifox.com)")
+	req.Header.Add("Content-Type", "application/json")
+	req.Header.Add("Accept", "*/*")
+	req.Header.Add("Host", "study.cqie.edu.cn")
+	req.Header.Add("Connection", "keep-alive")
+
+	res, err := client.Do(req)
+	if err != nil {
+		time.Sleep(time.Millisecond * 150)
+		return cache.PullCourseListApi(retry-1, err)
+	}
+	defer res.Body.Close()
+
+	body, err := ioutil.ReadAll(res.Body)
+	if err != nil {
+		time.Sleep(time.Millisecond * 150)
+		return cache.PullCourseListApi(retry-1, err)
+	}
+	return string(body), nil
+}
+
 // GetVideoStudyIdApi 学习视屏前需要先调用此接口获取id才能学习
 func (cache *CqieUserCache) GetVideoStudyIdApi(studentCourseId, videoId string, retry int, lastErr error) (string, error) {
 	if retry < 0 {
@@ -246,6 +296,7 @@ func (cache *CqieUserCache) PullCourseDetailApi(courseId, studentCourseId string
 		return "", lastErr
 	}
 	url := "https://study.cqie.edu.cn/gateway/system/orgStudent/myCourseDetails?studentId=" + cache.studentId + "&id=" + courseId + "&majorId=" + cache.orgMajorId + "&studentCourseId=" + studentCourseId + "&version=ZSB_DSJ_24"
+	//url := "https://study.cqie.edu.cn/gateway/system/orgStudent/myCourseDetails?studentId=" + cache.studentId + "&courseId=" + courseId + "&majorId=" + cache.orgMajorId + "&studentCourseId=" + studentCourseId + "&version=ZSB_DSJ_24"
 	method := "GET"
 
 	client := &http.Client{}
