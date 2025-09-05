@@ -7,13 +7,16 @@ import (
 	"io/ioutil"
 	"net/http"
 	"net/url"
+	"strings"
 
 	"github.com/yatori-dev/yatori-go-core/utils"
 )
 
 // CourseListApi 拉取对应账号的课程数据
-func (cache *XueXiTUserCache) CourseListApi() (string, error) {
-
+func (cache *XueXiTUserCache) CourseListApi(retry int, lastErr error) (string, error) {
+	if retry < 0 {
+		return "", lastErr
+	}
 	method := "GET"
 
 	tr := &http.Transport{
@@ -51,6 +54,9 @@ func (cache *XueXiTUserCache) CourseListApi() (string, error) {
 	body, err := ioutil.ReadAll(res.Body)
 	if err != nil {
 		return "", err
+	}
+	if strings.Contains(string(body), "很抱歉，您所浏览的页面不存在") { //防止学习通抽风
+		return cache.CourseListApi(retry-1, err)
 	}
 	return string(body), nil
 }

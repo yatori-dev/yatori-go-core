@@ -234,6 +234,8 @@ func (p *PointVideoDto) AttachmentsDetection(attachment interface{}) (bool, erro
 					}
 
 				}
+			} else {
+				rt = 0.9 //RT默认0.9
 			}
 
 			//playTime, ok := attachment["playTime"].(float64)

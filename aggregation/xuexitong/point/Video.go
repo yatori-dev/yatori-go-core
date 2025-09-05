@@ -24,7 +24,7 @@ func ExecuteVideo(cache *api.XueXiTUserCache, p *entity.PointVideoDto, key, cour
 		stopVal := 0
 		for {
 			if flag == 58 {
-				playReport, err := cache.VideoSubmitStudyTime(p, playingTime, 0, 8, nil)
+				playReport, err := cache.VideoSubmitStudyTimePE(p, playingTime, 0, 8, nil)
 				log.Println(playReport, err)
 				if err != nil {
 					if strings.Contains(err.Error(), "failed to fetch video, status code: 403") || strings.Contains(err.Error(), "failed to fetch video, status code: 404") { //触发403立即使用人脸检测

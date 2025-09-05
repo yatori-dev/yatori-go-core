@@ -5,14 +5,15 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
-	"github.com/yatori-dev/yatori-go-core/utils"
 	"log"
 	"sort"
 	"strconv"
 	"strings"
 
+	ort "github.com/yalue/onnxruntime_go"
 	"github.com/yatori-dev/yatori-go-core/api/entity"
 	"github.com/yatori-dev/yatori-go-core/api/xuexitong"
+	"github.com/yatori-dev/yatori-go-core/utils"
 	log2 "github.com/yatori-dev/yatori-go-core/utils/log"
 )
 
@@ -38,26 +39,42 @@ func (x *XueXiTCourse) ToString() string {
 
 // 拉取学习通所有课程列表并返回
 func XueXiTPullCourseAction(cache *xuexitong.XueXiTUserCache) ([]XueXiTCourse, error) {
-	courses, err := cache.CourseListApi()
+	courses, err := cache.CourseListApi(3, nil)
 	if err != nil {
 		log2.Print(log2.INFO, "["+cache.Name+"] "+" 拉取失败")
 	}
 
 	//判断是否触发验证码
 	if strings.Contains(courses, "输入验证码") {
-		log2.Print(log2.DEBUG, utils.RunFuncName(), "触发验证码，自动重新登录")
-		PassVerAnd202(cache) //越过验证码或者202
-		courses, err = cache.CourseListApi()
-		if err != nil {
-			log2.Print(log2.INFO, "["+cache.Name+"] "+" 拉取失败")
+		log2.Print(log2.DEBUG, utils.RunFuncName(), "触发验证码，正在进行AI智能识别绕过.....")
+		for {
+			codePath, err1 := cache.XueXiTVerificationCodeApi(5, nil)
+			if err1 != nil {
+				panic(err1)
+			}
+			if codePath == "" { //如果path为空，那么可能是账号问题
+				return nil, errors.New("无法正常获取对应网站验证码，请检查对应url是否正常")
+			}
+			img, _ := utils.ReadImg(codePath)                              //读取验证码图片
+			codeResult := utils.AutoVerification(img, ort.NewShape(1, 23)) //自动识别
+			utils.DeleteFile(codePath)                                     //删除验证码文件
+			status, err1 := cache.XueXiTPassVerificationCode(codeResult, 5, nil)
+			fmt.Println(codeResult)
+			fmt.Println(status)
+			if status {
+				break
+			}
 		}
-		log2.Print(log2.DEBUG, utils.RunFuncName(), "重新登录后courses以及err值>>", fmt.Sprintf("%+v", courses))
+		courses, err = cache.CourseListApi(3, nil)
+		log2.Print(log2.DEBUG, utils.RunFuncName(), "绕过成功")
 	}
+
 	var xueXiTCourse entity.XueXiTCourseJson
 	err = json.Unmarshal([]byte(courses), &xueXiTCourse)
 	if err != nil {
 		log2.Print(log2.INFO, "["+cache.Name+"] "+" 解析失败", courses)
 		log2.Print(log2.DEBUG, "["+cache.Name+"] "+" 解析失败", courses)
+
 		panic(err)
 	}
 	log2.Print(log2.INFO, "["+cache.Name+"] "+" 课程数量："+strconv.Itoa(len(xueXiTCourse.ChannelList)))
