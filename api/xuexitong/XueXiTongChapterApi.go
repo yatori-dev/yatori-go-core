@@ -147,7 +147,10 @@ func (cache *XueXiTUserCache) FetchChapterPointStatus(nodes []int, clazzID, user
 // Args:
 //
 //	nodes: 任务点集合 , index: 任务点索引
-func (cache *XueXiTUserCache) FetchChapterCords(nodes []int, index, courseId int) (string, error) {
+func (cache *XueXiTUserCache) FetchChapterCords(nodes []int, index, courseId int, retry int, lastErr error) (string, error) {
+	if retry < 0 {
+		return "", lastErr
+	}
 	method := "GET"
 	values := url.Values{}
 	values.Add("id", strconv.Itoa(nodes[index]))
@@ -189,6 +192,10 @@ func (cache *XueXiTUserCache) FetchChapterCords(nodes []int, index, courseId int
 	req.Header.Add("Accept", "*/*")
 
 	res, err := client.Do(req)
+
+	if res.StatusCode == 500 {
+		return cache.FetchChapterCords(nodes, index, courseId, retry-1, errors.New("status code: 500"))
+	}
 	if err != nil {
 		fmt.Println(err)
 		return "", nil

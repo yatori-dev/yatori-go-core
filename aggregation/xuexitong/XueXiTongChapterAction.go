@@ -4,15 +4,16 @@ import (
 	"bytes"
 	"encoding/json"
 	"fmt"
+	"regexp"
+	"strconv"
+	"strings"
+
 	"github.com/thedevsaddam/gojsonq"
 	"github.com/yatori-dev/yatori-go-core/api/entity"
 	"github.com/yatori-dev/yatori-go-core/api/xuexitong"
 	"github.com/yatori-dev/yatori-go-core/models/ctype"
 	log2 "github.com/yatori-dev/yatori-go-core/utils/log"
 	"golang.org/x/net/html"
-	"regexp"
-	"strconv"
-	"strings"
 )
 
 // Card 代表卡片信息
@@ -59,14 +60,22 @@ func ChapterFetchCardsAction(
 	index, courseId, classId, cpi int) ([]Card, []entity.PointDto, error) {
 	var apiResp APIResponse
 
-	cords, err := cache.FetchChapterCords(nodes, index, courseId)
+	cords, err := cache.FetchChapterCords(nodes, index, courseId, 5, nil)
 
 	if err != nil {
-		if err.Error() == "触发验证码" {
+		if err.Error() == "status code: 500" {
+			log2.Print(log2.DEBUG, "触发请求频繁500，自动重新登录")
+			PassVerAnd202(cache)                                                 //越过验证码或者202
+			cords, err = cache.FetchChapterCords(nodes, index, courseId, 5, nil) //尝试重新拉取卡片信息
+			if err != nil {
+				log2.Print(log2.DEBUG, "重新登录后cords拉取错误err值>>", fmt.Sprintf("%s", err.Error()))
+			}
+			log2.Print(log2.DEBUG, "重新登录后cords值>>", fmt.Sprintf("%+v", cords))
+		} else if err.Error() == "触发验证码" {
 			//重新登录逻辑
 			log2.Print(log2.DEBUG, "触发验证码，自动重新登录")
-			PassVerAnd202(cache)                                         //越过验证码或者202
-			cords, err = cache.FetchChapterCords(nodes, index, courseId) //尝试重新拉取卡片信息
+			PassVerAnd202(cache)                                                 //越过验证码或者202
+			cords, err = cache.FetchChapterCords(nodes, index, courseId, 5, nil) //尝试重新拉取卡片信息
 			if err != nil {
 				log2.Print(log2.DEBUG, "重新登录后cords拉取错误err值>>", fmt.Sprintf("%s", err.Error()))
 			}
