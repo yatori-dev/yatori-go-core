@@ -50,7 +50,7 @@ func XueXiTPullCourseAction(cache *xuexitong.XueXiTUserCache) ([]XueXiTCourse, e
 		for {
 			codePath, err1 := cache.XueXiTVerificationCodeApi(5, nil)
 			if err1 != nil {
-				panic(err1)
+				return nil, err1
 			}
 			if codePath == "" { //如果path为空，那么可能是账号问题
 				return nil, errors.New("无法正常获取对应网站验证码，请检查对应url是否正常")
@@ -59,8 +59,8 @@ func XueXiTPullCourseAction(cache *xuexitong.XueXiTUserCache) ([]XueXiTCourse, e
 			codeResult := utils.AutoVerification(img, ort.NewShape(1, 23)) //自动识别
 			utils.DeleteFile(codePath)                                     //删除验证码文件
 			status, err1 := cache.XueXiTPassVerificationCode(codeResult, 5, nil)
-			fmt.Println(codeResult)
-			fmt.Println(status)
+			//fmt.Println(codeResult)
+			//fmt.Println(status)
 			if status {
 				break
 			}
@@ -75,7 +75,8 @@ func XueXiTPullCourseAction(cache *xuexitong.XueXiTUserCache) ([]XueXiTCourse, e
 		log2.Print(log2.INFO, "["+cache.Name+"] "+" 解析失败", courses)
 		log2.Print(log2.DEBUG, "["+cache.Name+"] "+" 解析失败", courses)
 
-		panic(err)
+		//panic(err)
+		return nil, err
 	}
 	log2.Print(log2.INFO, "["+cache.Name+"] "+" 课程数量："+strconv.Itoa(len(xueXiTCourse.ChannelList)))
 	// log2.Print(log2.INFO, "["+cache.Name+"] "+courses)
