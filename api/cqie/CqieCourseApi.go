@@ -6,6 +6,8 @@ import (
 	"strconv"
 	"strings"
 	"time"
+	
+	"github.com/yatori-dev/yatori-go-core/utils"
 )
 
 // UserDetailsApi 获取用户信息
@@ -24,7 +26,7 @@ func (cache *CqieUserCache) UserDetailsApi(retry int, lastErr error) (string, er
 		return cache.UserDetailsApi(retry-1, err)
 	}
 	req.Header.Add("Authorization", cache.access_token)
-	req.Header.Add("User-Agent", "Apifox/1.0.0 (https://apifox.com)")
+	req.Header.Add("User-Agent", utils.DefaultUserAgent)
 	req.Header.Add("Accept", "*/*")
 	req.Header.Add("Host", "study.cqie.edu.cn")
 	req.Header.Add("Connection", "keep-alive")
@@ -74,7 +76,7 @@ func (cache *CqieUserCache) PullCourseListApi(retry int, lastErr error) (string,
 		return cache.PullCourseListApi(retry-1, err)
 	}
 	req.Header.Add("Authorization", cache.access_token)
-	req.Header.Add("User-Agent", "Apifox/1.0.0 (https://apifox.com)")
+	req.Header.Add("User-Agent", utils.DefaultUserAgent)
 	req.Header.Add("Content-Type", "application/json")
 	req.Header.Add("Accept", "*/*")
 	req.Header.Add("Host", "study.cqie.edu.cn")
@@ -111,7 +113,7 @@ func (cache *CqieUserCache) GetVideoStudyIdApi(studentCourseId, videoId string, 
 		return cache.GetVideoStudyIdApi(studentCourseId, videoId, retry-1, lastErr)
 	}
 	req.Header.Add("Authorization", cache.access_token)
-	req.Header.Add("User-Agent", "Apifox/1.0.0 (https://apifox.com)")
+	req.Header.Add("User-Agent", utils.DefaultUserAgent)
 
 	res, err := client.Do(req)
 	if err != nil {
@@ -175,7 +177,7 @@ func (cache *CqieUserCache) SubmitStudyTimeApi(
 	}
 	req.Header.Add("Authorization", cache.GetAccess_Token())
 	req.Header.Add("Cookie", cache.GetCookie())
-	req.Header.Add("User-Agent", "Apifox/1.0.0 (https://apifox.com)")
+	req.Header.Add("User-Agent", utils.DefaultUserAgent)
 	req.Header.Add("Content-Type", "application/json")
 
 	res, err := client.Do(req)
@@ -222,7 +224,7 @@ func (cache *CqieUserCache) SaveStudyTimeApi(courseId, studentCourseId, unitId, 
 		return cache.SaveStudyTimeApi(courseId, studentCourseId, unitId, videoId, coursewareId, startPos, stopPos, retry-1, err)
 	}
 	req.Header.Add("Authorization", cache.access_token)
-	req.Header.Add("User-Agent", "Apifox/1.0.0 (https://apifox.com)")
+	req.Header.Add("User-Agent", utils.DefaultUserAgent)
 	req.Header.Add("Content-Type", "application/json")
 
 	res, err := client.Do(req)
@@ -256,7 +258,7 @@ func (cache *CqieUserCache) PullCourseDetailApi(courseId, studentCourseId string
 		return cache.PullCourseDetailApi(courseId, studentCourseId, retry-1, lastErr)
 	}
 	req.Header.Add("Authorization", cache.access_token)
-	req.Header.Add("User-Agent", "Apifox/1.0.0 (https://apifox.com)")
+	req.Header.Add("User-Agent", utils.DefaultUserAgent)
 
 	res, err := client.Do(req)
 	if err != nil {
@@ -289,7 +291,7 @@ func (cache *CqieUserCache) PullProgressDetailApi(courseId, studentCourseId stri
 		return cache.PullProgressDetailApi(courseId, studentCourseId, retry-1, lastErr)
 	}
 	req.Header.Add("Authorization", cache.access_token)
-	req.Header.Add("User-Agent", "Apifox/1.0.0 (https://apifox.com)")
+	req.Header.Add("User-Agent", utils.DefaultUserAgent)
 
 	res, err := client.Do(req)
 	if err != nil {

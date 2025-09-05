@@ -10,6 +10,8 @@ import (
 	"net/url"
 	"strings"
 	"time"
+	
+	"github.com/yatori-dev/yatori-go-core/utils"
 )
 
 type EnaeaUserCache struct {
@@ -38,7 +40,7 @@ func LoginApi(cache *EnaeaUserCache) (string, error) {
 	}
 
 	req.Header.Add("Referer", "https://study.enaea.edu.cn/login.do")
-	req.Header.Add("User-Agent", "Apifox/1.0.0 (https://apifox.com)")
+	req.Header.Add("User-Agent", utils.DefaultUserAgent)
 	req.Header.Add("Accept", "*/*")
 	req.Header.Add("Host", "passport.enaea.edu.cn")
 	req.Header.Add("Connection", "keep-alive")
@@ -84,7 +86,7 @@ func PullProjectsApi(cache *EnaeaUserCache) (string, error) {
 
 	// Add headers
 	req.Header.Add("Cookie", "ASUSS="+cache.asuss+";")
-	req.Header.Add("User-Agent", "Apifox/1.0.0 (https://apifox.com)")
+	req.Header.Add("User-Agent", utils.DefaultUserAgent)
 	req.Header.Add("Accept", "*/*")
 	req.Header.Add("Host", "study.enaea.edu.cn")
 	req.Header.Add("Connection", "keep-alive")
@@ -116,7 +118,7 @@ func PullStudyCourseHTMLApi(cache *EnaeaUserCache, circleId string) (string, err
 
 	// Set the headers
 	req.Header.Add("Cookie", "ASUSS="+cache.asuss+";")
-	req.Header.Add("User-Agent", "Apifox/1.0.0 (https://apifox.com)")
+	req.Header.Add("User-Agent", utils.DefaultUserAgent)
 	req.Header.Add("Accept", "*/*")
 	req.Header.Add("Host", "study.enaea.edu.cn")
 	req.Header.Add("Connection", "keep-alive")
@@ -156,7 +158,7 @@ func PullStudyCourseListApi(cache *EnaeaUserCache, circleId, syllabusId, moudle 
 
 	// Set headers
 	req.Header.Add("Cookie", "ASUSS="+cache.asuss+";")
-	req.Header.Add("User-Agent", "Apifox/1.0.0 (https://apifox.com)")
+	req.Header.Add("User-Agent", utils.DefaultUserAgent)
 	req.Header.Add("Accept", "*/*")
 	req.Header.Add("Host", "study.enaea.edu.cn")
 	req.Header.Add("Connection", "keep-alive")
@@ -190,7 +192,7 @@ func PullCourseVideoListApi(cache *EnaeaUserCache, circleId, courseId string) (s
 
 	// Add headers
 	req.Header.Add("Cookie", "ASUSS="+cache.asuss+";")
-	req.Header.Add("User-Agent", "Apifox/1.0.0 (https://apifox.com)")
+	req.Header.Add("User-Agent", utils.DefaultUserAgent)
 	req.Header.Add("Accept", "*/*")
 	req.Header.Add("Host", "study.enaea.edu.cn")
 	req.Header.Add("Connection", "keep-alive")
@@ -225,7 +227,7 @@ func StatisticTicForCCVideApi(cache *EnaeaUserCache, courseId, courseContentId, 
 
 	// Add headers
 	req.Header.Add("Cookie", "ASUSS="+cache.asuss+";")
-	req.Header.Add("User-Agent", "Apifox/1.0.0 (https://apifox.com)")
+	req.Header.Add("User-Agent", utils.DefaultUserAgent)
 	req.Header.Add("Accept", "*/*")
 	req.Header.Add("Host", "study.enaea.edu.cn")
 	req.Header.Add("Connection", "keep-alive")
@@ -276,7 +278,7 @@ func SubmitStudyTimeApi(cache *EnaeaUserCache, circleId, SCFUCKPKey, SCFUCKPValu
 	// Add headers
 	cookie := fmt.Sprintf("ASUSS=%s;%s=%s", cache.asuss, SCFUCKPKey, SCFUCKPValue)
 	req.Header.Add("Cookie", cookie)
-	req.Header.Add("User-Agent", "Apifox/1.0.0 (https://apifox.com)")
+	req.Header.Add("User-Agent", utils.DefaultUserAgent)
 	req.Header.Add("Accept", "*/*")
 	req.Header.Add("Host", "study.enaea.edu.cn")
 	req.Header.Add("Connection", "keep-alive")
@@ -324,7 +326,7 @@ func SubmitStudyTimeFastApi(cache *EnaeaUserCache, circleId, SCFUCKPKey, SCFUCKP
 	// Add headers
 	cookie := fmt.Sprintf("ASUSS=%s;%s=%s", cache.asuss, SCFUCKPKey, SCFUCKPValue)
 	req.Header.Add("Cookie", cookie)
-	req.Header.Add("User-Agent", "Apifox/1.0.0 (https://apifox.com)")
+	req.Header.Add("User-Agent", utils.DefaultUserAgent)
 	req.Header.Add("Accept", "*/*")
 	req.Header.Add("Host", "study.enaea.edu.cn")
 	req.Header.Add("Connection", "keep-alive")
@@ -370,7 +372,7 @@ func PullExamListApi(cache *EnaeaUserCache, circleId, syllabusId, moudle string)
 
 	// Set headers
 	req.Header.Add("Cookie", "ASUSS="+cache.asuss+";")
-	req.Header.Add("User-Agent", "Apifox/1.0.0 (https://apifox.com)")
+	req.Header.Add("User-Agent", utils.DefaultUserAgent)
 	req.Header.Add("Accept", "*/*")
 	req.Header.Add("Host", "study.enaea.edu.cn")
 	req.Header.Add("Connection", "keep-alive")

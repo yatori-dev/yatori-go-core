@@ -10,6 +10,7 @@ import (
 	"strings"
 
 	"github.com/thedevsaddam/gojsonq"
+	"github.com/yatori-dev/yatori-go-core/utils"
 )
 
 func GetValidate() string {
@@ -59,7 +60,7 @@ func ZhidaoQrCode() (string, string, error) {
 		fmt.Println(err)
 		return "", "", err
 	}
-	req.Header.Add("User-Agent", "Apifox/1.0.0 (https://apifox.com)")
+	req.Header.Add("User-Agent", utils.DefaultUserAgent)
 	req.Header.Add("Accept", "*/*")
 	req.Header.Add("Host", "passport.zhihuishu.com")
 	req.Header.Add("Connection", "keep-alive")
@@ -94,7 +95,7 @@ func ZhidaoQrCheck(qrToken string) (string, error) {
 		fmt.Println(err)
 		return "", err
 	}
-	req.Header.Add("User-Agent", "Apifox/1.0.0 (https://apifox.com)")
+	req.Header.Add("User-Agent", utils.DefaultUserAgent)
 	req.Header.Add("Accept", "*/*")
 	req.Header.Add("Host", "passport.zhihuishu.com")
 	req.Header.Add("Connection", "keep-alive")

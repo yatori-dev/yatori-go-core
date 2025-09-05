@@ -5,6 +5,8 @@ import (
 	"io/ioutil"
 	"net/http"
 	"strings"
+
+	"github.com/yatori-dev/yatori-go-core/utils"
 )
 
 type IcveUserCache struct {
@@ -31,7 +33,7 @@ func (cache *IcveUserCache) IcveLoginApi() error {
 		fmt.Println(err)
 		return err
 	}
-	req.Header.Add("User-Agent", "Apifox/1.0.0 (https://apifox.com)")
+	req.Header.Add("User-Agent", utils.DefaultUserAgent)
 	req.Header.Add("Content-Type", "application/json")
 	req.Header.Add("Accept", "*/*")
 	req.Header.Add("Host", "sso.icve.com.cn")

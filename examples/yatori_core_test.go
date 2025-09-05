@@ -10,6 +10,7 @@ import (
 
 	"github.com/yatori-dev/yatori-go-core/common"
 	"github.com/yatori-dev/yatori-go-core/global"
+	"github.com/yatori-dev/yatori-go-core/utils"
 )
 
 func setup() {
@@ -67,7 +68,7 @@ func TestProxyIp(t *testing.T) {
 	}
 
 	// 设置 User-Agent 等头信息（根据需求）
-	req.Header.Set("User-Agent", "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/114.0.0.0 Safari/537.36")
+	req.Header.Set("User-Agent", utils.DefaultUserAgent)
 
 	// 执行请求
 	resp, err := client.Do(req)
