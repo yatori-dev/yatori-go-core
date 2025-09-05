@@ -3,15 +3,18 @@ package xuexitong
 import (
 	"bytes"
 	"encoding/json"
+	"errors"
 	"fmt"
 	"regexp"
 	"strconv"
 	"strings"
 
 	"github.com/thedevsaddam/gojsonq"
+	ort "github.com/yalue/onnxruntime_go"
 	"github.com/yatori-dev/yatori-go-core/api/entity"
 	"github.com/yatori-dev/yatori-go-core/api/xuexitong"
 	"github.com/yatori-dev/yatori-go-core/models/ctype"
+	"github.com/yatori-dev/yatori-go-core/utils"
 	log2 "github.com/yatori-dev/yatori-go-core/utils/log"
 	"golang.org/x/net/html"
 )
@@ -72,14 +75,27 @@ func ChapterFetchCardsAction(
 			}
 			log2.Print(log2.DEBUG, "重新登录后cords值>>", fmt.Sprintf("%+v", cords))
 		} else if err.Error() == "触发验证码" {
-			//重新登录逻辑
-			log2.Print(log2.DEBUG, "触发验证码，自动重新登录")
-			PassVerAnd202(cache)                                                 //越过验证码或者202
-			cords, err = cache.FetchChapterCords(nodes, index, courseId, 5, nil) //尝试重新拉取卡片信息
-			if err != nil {
-				log2.Print(log2.DEBUG, "重新登录后cords拉取错误err值>>", fmt.Sprintf("%s", err.Error()))
+			log2.Print(log2.DEBUG, utils.RunFuncName(), "触发验证码，正在进行AI智能识别绕过.....")
+			for {
+				codePath, err1 := cache.XueXiTVerificationCodeApi(5, nil)
+				if err1 != nil {
+					return nil, nil, err1
+				}
+				if codePath == "" { //如果path为空，那么可能是账号问题
+					return nil, nil, errors.New("无法正常获取对应网站验证码，请检查对应url是否正常")
+				}
+				img, _ := utils.ReadImg(codePath)                              //读取验证码图片
+				codeResult := utils.AutoVerification(img, ort.NewShape(1, 23)) //自动识别
+				utils.DeleteFile(codePath)                                     //删除验证码文件
+				status, err1 := cache.XueXiTPassVerificationCode(codeResult, 5, nil)
+				//fmt.Println(codeResult)
+				//fmt.Println(status)
+				if status {
+					break
+				}
 			}
-			log2.Print(log2.DEBUG, "重新登录后cords值>>", fmt.Sprintf("%+v", cords))
+			cords, err = cache.FetchChapterCords(nodes, index, courseId, 5, nil) //尝试重新拉取卡片信息
+			log2.Print(log2.DEBUG, utils.RunFuncName(), "绕过成功")
 		}
 	}
 
