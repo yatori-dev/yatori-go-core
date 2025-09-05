@@ -180,7 +180,7 @@ func PassVerAnd202(cache *xuexitong.XueXiTUserCache) {
 	//重新登录逻辑
 	log2.Print(log2.DEBUG, "触发验证码或者202，正在绕过...")
 	cache.SetCookies([]*http.Cookie{})
-	cache.LoginApi()      //重新登录设置cookie
-	cache.CourseListApi() //重新设置k8s值
+	cache.LoginApi()            //重新登录设置cookie
+	cache.CourseListApi(3, nil) //重新设置k8s值
 	log2.Print(log2.DEBUG, "重新登录后cookie值>>", fmt.Sprintf("%+v", cache.GetCookies()))
 }
