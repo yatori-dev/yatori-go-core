@@ -26,8 +26,9 @@ type XueXiTCourse struct {
 	CourseName    string `json:"courseName"`    //课程名
 	CourseImage   string `json:"courseImage"`
 	// 两个标识 暂时不知道有什么用
-	CourseDataID int `json:"courseDataId"`
-	ContentID    int `json:"ContentID"`
+	CourseDataID int  `json:"courseDataId"`
+	ContentID    int  `json:"ContentID"`
+	IsStart      bool `json:"isstart"` //是否开课了，开课了为true，没开课为false。一般来说开课才能刷，不然刷不了的
 }
 
 func (x *XueXiTCourse) ToString() string {
@@ -118,6 +119,7 @@ func XueXiTPullCourseAction(cache *xuexitong.XueXiTUserCache) ([]XueXiTCourse, e
 			CourseImage:   courseImage,
 			CourseDataID:  courseDataID,
 			ContentID:     channel.Content.Id,
+			IsStart:       channel.Content.Isstart,
 		}
 		for _, course := range courseList {
 			if course.CourseID == courseID {
