@@ -355,7 +355,12 @@ func (p *PointDocumentDto) AttachmentsDetection(attachment interface{}) (bool, e
 				if property["jobid"] != nil {
 					p.JobID = property["jobid"].(string)
 				}
+			}
+			if att["jtoken"] != nil {
 				p.Jtoken = att["jtoken"].(string)
+			}
+			if property["bookname"] != nil { //针对insertbook类型
+				p.Title = property["bookname"].(string)
 			}
 		} else if att["type"].(string) == "document" {
 			property, ok := att["property"].(map[string]interface{})

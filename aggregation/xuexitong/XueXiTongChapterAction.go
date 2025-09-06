@@ -223,6 +223,7 @@ func ChapterFetchCardsAction(
 					log2.Print(log2.DEBUG, "(%d, %d) 任务点 'workid', 'schoolid' 或 '_jobid' 不存在或为空 %+v", cardIndex, pointIndex, point)
 					continue
 				}
+
 			case string(ctype.Insertdoc):
 				// 同为文档类型，暂未做区分
 				fallthrough
@@ -240,6 +241,26 @@ func ChapterFetchCardsAction(
 						ObjectID:    objectID,
 						JobID:       jobID,
 						Type:        ctype.Document,
+						IsSet:       ok,
+					}
+				} else {
+					log2.Print(log2.DEBUG, "(%d, %d) 任务点 'objectid' 不存在或为空 %+v", cardIndex, pointIndex, point)
+					continue
+				}
+			case string(ctype.InsertBook):
+				//InserBoot类型直接当文档处理
+				jobID, ok3 := point.Data["_jobid"].(string)
+
+				if ok3 && jobID != "" {
+					pointObj.PointDocumentDto = entity.PointDocumentDto{
+						CardIndex:   cardIndex,
+						CourseID:    strconv.Itoa(courseId),
+						ClassID:     strconv.Itoa(classId),
+						KnowledgeID: card.KnowledgeID,
+						Cpi:         strconv.Itoa(cpi),
+						ObjectID:    "",
+						JobID:       jobID,
+						Type:        ctype.InsertBook,
 						IsSet:       ok,
 					}
 				} else {

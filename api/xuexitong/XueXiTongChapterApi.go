@@ -193,7 +193,7 @@ func (cache *XueXiTUserCache) FetchChapterCords(nodes []int, index, courseId int
 
 	res, err := client.Do(req)
 
-	if res.StatusCode == 500 {
+	if res == nil || res.StatusCode == 500 {
 		return cache.FetchChapterCords(nodes, index, courseId, retry-1, errors.New("status code: 500"))
 	}
 	if err != nil {

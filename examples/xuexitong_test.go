@@ -456,7 +456,7 @@ func TestXueXiToFlushCourse(t *testing.T) {
 	utils.YatoriCoreInit()
 	//测试账号
 	setup()
-	user := global.Config.Users[25]
+	user := global.Config.Users[27]
 
 	userCache := xuexitongApi.XueXiTUserCache{
 		Name:     user.Account,
@@ -471,12 +471,12 @@ func TestXueXiToFlushCourse(t *testing.T) {
 	courseList, err := xuexitong.XueXiTPullCourseAction(&userCache) //拉取所有课程
 	for _, course := range courseList {                             //遍历课程
 
-		if course.CourseName != "机械设计基础" {
-			continue
-		}
-		//if course.CourseName != "算法与程序的奥秘" {
+		//if course.CourseName != "机械设计基础" {
 		//	continue
 		//}
+		if course.CourseName != "算法与程序的奥秘" {
+			continue
+		}
 		// 6c444b8d5c6203ee2f2aef4b76f5b2ce qrcEnc
 
 		key, _ := strconv.Atoi(course.Key)
@@ -522,7 +522,7 @@ func TestXueXiToFlushCourse(t *testing.T) {
 			log.Printf("ID.%d(%s/%s)正在执行任务点\n",
 				item,
 				pointAction.Knowledge[index].Label, pointAction.Knowledge[index].Name)
-			if pointAction.Knowledge[index].Label == "8.8" {
+			if pointAction.Knowledge[index].Label == "9.2" {
 				fmt.Println("断点")
 			}
 			_, fetchCards, err := xuexitong.ChapterFetchCardsAction(&userCache, &action, nodes, index, courseId, key, course.Cpi)

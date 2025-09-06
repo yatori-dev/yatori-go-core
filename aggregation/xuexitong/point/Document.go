@@ -6,10 +6,18 @@ import (
 	"github.com/thedevsaddam/gojsonq"
 	"github.com/yatori-dev/yatori-go-core/api/entity"
 	"github.com/yatori-dev/yatori-go-core/api/xuexitong"
+	"github.com/yatori-dev/yatori-go-core/models/ctype"
 )
 
 func ExecuteDocument(cache *xuexitong.XueXiTUserCache, p *entity.PointDocumentDto) {
-	report, err := cache.DocumentDtoReadingReport(p)
+	var report string
+	var err error
+	if p.Type == ctype.Document || p.Type == ctype.Insertdoc {
+		report, err = cache.DocumentDtoReadingReport(p)
+	} else {
+		report, err = cache.DocumentDtoReadingReportWeb(p)
+	}
+
 	if err != nil {
 		log.Fatalln(err)
 	}
