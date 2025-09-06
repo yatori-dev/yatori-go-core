@@ -531,7 +531,6 @@ func (cache *XueXiTUserCache) WorkCommit(p *entity.PointWorkDto, fields []entity
 
 func (cache *XueXiTUserCache) DocumentDtoReadingReport(p *entity.PointDocumentDto) (string, error) {
 	method := "GET"
-
 	tr := &http.Transport{
 		TLSClientConfig: &tls.Config{
 			InsecureSkipVerify: true, // 跳过证书验证，仅用于开发环境
@@ -557,6 +556,66 @@ func (cache *XueXiTUserCache) DocumentDtoReadingReport(p *entity.PointDocumentDt
 	params.Add("_dc", strconv.FormatInt(time.Now().UnixMilli(), 10))
 
 	resp, err := http.NewRequest(method, ApiDocumentReadingReport+"?"+params.Encode(), nil)
+	if err != nil {
+		return "", err
+	}
+
+	//resp.Header.Add("User-Agent", "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/139.0.0.0 Safari/537.36 Edg/139.0.0.0")
+	resp.Header.Add("User-Agent", GetUA("mobile"))
+	resp.Header.Add("Sec-Ch-Ua-Platform", "Windows")
+	resp.Header.Add("Accept", "*/*")
+	resp.Header.Add("Host", "mooc1.chaoxing.com")
+	resp.Header.Add("Connection", "keep-alive")
+	//resp.Header.Add("Cookie", cache.cookie)
+	for _, cookie := range cache.cookies {
+		resp.AddCookie(cookie)
+	}
+	resp.Header.Add("Content-Type", " application/json")
+
+	res, err := client.Do(resp)
+	if err != nil {
+		return "", err
+	}
+	defer res.Body.Close()
+
+	if res.StatusCode != http.StatusOK {
+		return "", fmt.Errorf("failed to fetch video, status code: %d", res.StatusCode)
+	}
+
+	body, err := ioutil.ReadAll(res.Body)
+	utils.CookiesAddNoRepetition(&cache.cookies, res.Cookies()) //赋值cookie
+	return string(body), nil
+}
+
+// 另一个文档完成接口
+func (cache *XueXiTUserCache) DocumentDtoReadingReportWeb(p *entity.PointDocumentDto) (string, error) {
+	method := "GET"
+
+	tr := &http.Transport{
+		TLSClientConfig: &tls.Config{
+			InsecureSkipVerify: true, // 跳过证书验证，仅用于开发环境
+		},
+	}
+
+	//如果开启了IP代理，那么就直接添加代理
+	if cache.IpProxySW {
+		tr.Proxy = func(req *http.Request) (*url.URL, error) {
+			return url.Parse(cache.ProxyIP) // 设置代理
+		}
+	}
+	client := &http.Client{
+		Transport: tr,
+	}
+	params := url.Values{}
+
+	params.Add("jobid", p.JobID)
+	params.Add("knowledgeid", strconv.Itoa(p.KnowledgeID))
+	params.Add("courseid", p.CourseID)
+	params.Add("clazzid", p.ClassID)
+	params.Add("jtoken", p.Jtoken)
+	params.Add("_dc", strconv.FormatInt(time.Now().UnixMilli(), 10))
+
+	resp, err := http.NewRequest(method, "https://mooc1.chaoxing.com/ananas/job?"+params.Encode(), nil)
 	if err != nil {
 		return "", err
 	}

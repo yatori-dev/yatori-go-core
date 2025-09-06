@@ -352,25 +352,28 @@ func (p *PointDocumentDto) AttachmentsDetection(attachment interface{}) (bool, e
 			objectid := property["objectid"]
 			if objectid == p.ObjectID {
 				p.Title = property["name"].(string)
-				if property["jobid"] == nil {
-					p.JobID = ""
-				} else {
+				if property["jobid"] != nil {
 					p.JobID = property["jobid"].(string)
+				} else {
+					p.JobID = ""
 				}
 				p.Jtoken = att["jtoken"].(string)
 			}
 		} else if att["type"].(string) == "document" {
 			property, ok := att["property"].(map[string]interface{})
+			//if strings.Contains(p.Title, "二进制的由来.pdf") || p.KnowledgeID == 1008383209 {
+			//	fmt.Println("断点")
+			//}
 			if !ok {
 				return false, errors.New("invalid property structure")
 			}
 			objectid := property["objectid"]
 			if objectid == p.ObjectID {
 				p.Title = property["name"].(string)
-				if property["jobid"] == nil {
-					p.JobID = ""
-				} else {
+				if property["jobid"] != nil {
 					p.JobID = property["jobid"].(string)
+				} else {
+					p.JobID = ""
 				}
 				p.Jtoken = att["jtoken"].(string)
 			}

@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"log"
 	"strconv"
+	"strings"
 	"testing"
 	"time"
 
@@ -470,7 +471,7 @@ func TestXueXiToFlushCourse(t *testing.T) {
 	courseList, err := xuexitong.XueXiTPullCourseAction(&userCache) //拉取所有课程
 	for _, course := range courseList {                             //遍历课程
 
-		if course.CourseName != "Blockly 创意趣味编程（网络共享课）" {
+		if course.CourseName != "机械设计基础" {
 			continue
 		}
 		//if course.CourseName != "算法与程序的奥秘" {
@@ -503,6 +504,10 @@ func TestXueXiToFlushCourse(t *testing.T) {
 				return false
 			}
 			i := pointAction.Knowledge[index]
+			if i.PointTotal == 0 && i.PointFinished == 0 {
+				userCache.EnterChapterForwardCall(strconv.Itoa(courseId), strconv.Itoa(key), strconv.Itoa(pointAction.Knowledge[index].ID), strconv.Itoa(course.Cpi))
+				return false
+			}
 			return i.PointTotal >= 0 && i.PointTotal == i.PointFinished
 		}
 
@@ -517,7 +522,9 @@ func TestXueXiToFlushCourse(t *testing.T) {
 			log.Printf("ID.%d(%s/%s)正在执行任务点\n",
 				item,
 				pointAction.Knowledge[index].Label, pointAction.Knowledge[index].Name)
-
+			if pointAction.Knowledge[index].Label == "8.8" {
+				fmt.Println("断点")
+			}
 			_, fetchCards, err := xuexitong.ChapterFetchCardsAction(&userCache, &action, nodes, index, courseId, key, course.Cpi)
 
 			if err != nil {
@@ -529,7 +536,7 @@ func TestXueXiToFlushCourse(t *testing.T) {
 			}
 
 			// 视频刷取
-			if videoDTOs != nil && true {
+			if videoDTOs != nil && false {
 				for _, videoDTO := range videoDTOs {
 					card, enc, err := xuexitong.PageMobileChapterCardAction(
 						&userCache, key, courseId, videoDTO.KnowledgeID, videoDTO.CardIndex, course.Cpi)
@@ -556,6 +563,9 @@ func TestXueXiToFlushCourse(t *testing.T) {
 					}
 
 					documentDTO.AttachmentsDetection(card)
+					if strings.Contains(documentDTO.Title, "列表.pdf") {
+						fmt.Println("断点")
+					}
 					point.ExecuteDocument(&userCache, &documentDTO)
 					if err != nil {
 						log.Fatal(err)
