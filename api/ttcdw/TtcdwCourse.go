@@ -10,6 +10,8 @@ import (
 	"net/http"
 	"strings"
 	"time"
+
+	"github.com/yatori-dev/yatori-go-core/utils"
 )
 
 // 拉取所有项目
@@ -31,7 +33,7 @@ func (cache *TtcdwUserCache) PullProjectApi(retry int, lastErr error) (string, e
 	for _, v := range cache.cookies {
 		req.AddCookie(v)
 	}
-	req.Header.Add("User-Agent", "Apifox/1.0.0 (https://apifox.com)")
+	req.Header.Add("User-Agent", utils.DefaultUserAgent)
 	req.Header.Add("Accept", "*/*")
 	req.Header.Add("Host", "www.ttcdw.cn")
 	req.Header.Add("Connection", "keep-alive")
@@ -66,7 +68,7 @@ func (cache *TtcdwUserCache) PullClassRoomApi(courseProjectId string, classId st
 	if err != nil {
 		return "", err
 	}
-	req.Header.Add("User-Agent", "Apifox/1.0.0 (https://apifox.com)")
+	req.Header.Add("User-Agent", utils.DefaultUserAgent)
 	req.Header.Add("Accept", "*/*")
 	req.Header.Add("Host", "www.ttcdw.cn")
 	req.Header.Add("Connection", "keep-alive")
@@ -96,7 +98,7 @@ func (cache *TtcdwUserCache) PullCourseInfoApi(segmentId, courseId string, retry
 	if err != nil {
 		return "", nil
 	}
-	req.Header.Add("User-Agent", "Apifox/1.0.0 (https://apifox.com)")
+	req.Header.Add("User-Agent", utils.DefaultUserAgent)
 	req.Header.Add("Accept", "*/*")
 	req.Header.Add("Host", "www.ttcdw.cn")
 	req.Header.Add("Connection", "keep-alive")
@@ -134,7 +136,7 @@ func (cache *TtcdwUserCache) PullCourseApi(segmentId, itemId string, retry int, 
 	for _, v := range cache.cookies {
 		req.AddCookie(v)
 	}
-	req.Header.Add("User-Agent", "Apifox/1.0.0 (https://apifox.com)")
+	req.Header.Add("User-Agent", utils.DefaultUserAgent)
 	req.Header.Add("Accept", "*/*")
 	req.Header.Add("Host", "www.ttcdw.cn")
 	req.Header.Add("Connection", "keep-alive")
@@ -170,7 +172,7 @@ func (cache *TtcdwUserCache) PullChapterListHtmlApi(cid string, retry int, lastE
 	for _, v := range cache.cookies {
 		req.AddCookie(v)
 	}
-	req.Header.Add("User-Agent", "Apifox/1.0.0 (https://apifox.com)")
+	req.Header.Add("User-Agent", utils.DefaultUserAgent)
 	req.Header.Add("Accept", "*/*")
 	req.Header.Add("Host", "service.icourses.cn")
 	req.Header.Add("Connection", "keep-alive")
@@ -204,7 +206,7 @@ func (cache *TtcdwUserCache) PullGetResApi(sectionId string, retry int, lastErr 
 	if err != nil {
 		return "", err
 	}
-	req.Header.Add("User-Agent", "Apifox/1.0.0 (https://apifox.com)")
+	req.Header.Add("User-Agent", utils.DefaultUserAgent)
 	req.Header.Add("Accept", "*/*")
 	req.Header.Add("Host", "service.icourses.cn")
 	req.Header.Add("Connection", "keep-alive")
