@@ -5,6 +5,8 @@ import (
 	"io/ioutil"
 	"net/http"
 	"strings"
+
+	"github.com/yatori-dev/yatori-go-core/utils"
 )
 
 // CourseListApi 拉取课程
@@ -22,7 +24,7 @@ func (cache *IcveUserCache) CourseListApi() {
 		fmt.Println(err)
 		return
 	}
-	req.Header.Add("User-Agent", "Apifox/1.0.0 (https://apifox.com)")
+	req.Header.Add("User-Agent", utils.DefaultUserAgent)
 	req.Header.Add("Content-Type", "application/json")
 	req.Header.Add("Accept", "*/*")
 	req.Header.Add("Host", "mooc.icve.com.cn")

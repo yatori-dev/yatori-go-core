@@ -9,6 +9,7 @@ import (
 	"strings"
 
 	"github.com/thedevsaddam/gojsonq"
+	"github.com/yatori-dev/yatori-go-core/utils"
 )
 
 type TtcdwUserCache struct {
@@ -38,7 +39,7 @@ func (cache *TtcdwUserCache) TtcdwLoginApi() error {
 		fmt.Println(err)
 		return err
 	}
-	req.Header.Add("User-Agent", "Apifox/1.0.0 (https://apifox.com)")
+	req.Header.Add("User-Agent", utils.DefaultUserAgent)
 	req.Header.Add("Accept", "*/*")
 	req.Header.Add("Host", "www.ttcdw.cn")
 	req.Header.Add("Connection", "keep-alive")

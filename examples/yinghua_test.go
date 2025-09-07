@@ -355,7 +355,7 @@ func TestApi(t *testing.T) {
 	if err != nil {
 		fmt.Println(err)
 	}
-	req.Header.Add("User-Agent", "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/136.0.0.0 Safari/537.36 Edg/136.0.0.0")
+	req.Header.Add("User-Agent", utils.DefaultUserAgent)
 
 	res, err := client.Do(req)
 	if err != nil {
@@ -380,7 +380,7 @@ func TestCapterImg(t *testing.T) {
 	}
 
 	// 设置真实浏览器常见的 User-Agent
-	req.Header.Set("User-Agent", "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/114.0.0.0 Safari/537.36")
+	req.Header.Set("User-Agent", utils.DefaultUserAgent)
 	req.Header.Set("Accept", "image/avif,image/webp,image/apng,image/*,*/*;q=0.8")
 	req.Header.Set("Referer", "https://bwgl.qiankj.com/")
 	req.Header.Set("Connection", "keep-alive")
