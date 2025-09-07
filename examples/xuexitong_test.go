@@ -456,7 +456,7 @@ func TestXueXiToFlushCourse(t *testing.T) {
 	utils.YatoriCoreInit()
 	//测试账号
 	setup()
-	user := global.Config.Users[27]
+	user := global.Config.Users[28]
 
 	userCache := xuexitongApi.XueXiTUserCache{
 		Name:     user.Account,
@@ -471,12 +471,12 @@ func TestXueXiToFlushCourse(t *testing.T) {
 	courseList, err := xuexitong.XueXiTPullCourseAction(&userCache) //拉取所有课程
 	for _, course := range courseList {                             //遍历课程
 
-		//if course.CourseName != "机械设计基础" {
-		//	continue
-		//}
-		if course.CourseName != "算法与程序的奥秘" {
+		if course.CourseName != "机械设计基础" {
 			continue
 		}
+		//if course.CourseName != "Blockly 创意趣味编程（网络共享课）" {
+		//	continue
+		//}
 		// 6c444b8d5c6203ee2f2aef4b76f5b2ce qrcEnc
 
 		key, _ := strconv.Atoi(course.Key)
@@ -522,8 +522,9 @@ func TestXueXiToFlushCourse(t *testing.T) {
 			log.Printf("ID.%d(%s/%s)正在执行任务点\n",
 				item,
 				pointAction.Knowledge[index].Label, pointAction.Knowledge[index].Name)
-			if pointAction.Knowledge[index].Label == "9.2" {
-				fmt.Println("断点")
+			if pointAction.Knowledge[index].Label != "5.5" {
+				//fmt.Println("断点")
+				continue
 			}
 			_, fetchCards, err := xuexitong.ChapterFetchCardsAction(&userCache, &action, nodes, index, courseId, key, course.Cpi)
 
@@ -554,7 +555,7 @@ func TestXueXiToFlushCourse(t *testing.T) {
 				}
 			}
 			// 文档刷取
-			if documentDTOs != nil && true {
+			if documentDTOs != nil && false {
 				for _, documentDTO := range documentDTOs {
 					card, _, err := xuexitong.PageMobileChapterCardAction(
 						&userCache, key, courseId, documentDTO.KnowledgeID, documentDTO.CardIndex, course.Cpi)
@@ -574,16 +575,16 @@ func TestXueXiToFlushCourse(t *testing.T) {
 				}
 			}
 			//作业刷取
-			if workDTOs != nil && false {
+			if workDTOs != nil && true {
 				for _, workDTO := range workDTOs {
 
 					//以手机端拉取章节卡片数据
 					mobileCard, _, _ := xuexitong.PageMobileChapterCardAction(&userCache, key, courseId, workDTO.KnowledgeID, workDTO.CardIndex, course.Cpi)
 					workDTO.AttachmentsDetection(mobileCard)
-					fromAction, _ := xuexitong.WorkPageFromAction(&userCache, &workDTO)
-					for _, input := range fromAction {
-						fmt.Printf("Name: %s, Value: %s, Type: %s, ID: %s\n", input.Name, input.Value, input.Type, input.ID)
-					}
+					//fromAction, _ := xuexitong.WorkPageFromAction(&userCache, &workDTO)
+					//for _, input := range fromAction {
+					//	fmt.Printf("Name: %s, Value: %s, Type: %s, ID: %s\n", input.Name, input.Value, input.Type, input.ID)
+					//}
 					questionAction := xuexitong.ParseWorkQuestionAction(&userCache, &workDTO)
 					fmt.Println(questionAction)
 					for i := range questionAction.Choice {
@@ -594,9 +595,35 @@ func TestXueXiToFlushCourse(t *testing.T) {
 						aiSetting := global.Config.Setting.AiSetting //获取AI设置
 						q.AnswerAIGet(userCache.UserID, aiSetting.AiUrl, aiSetting.Model, aiSetting.AiType, message, aiSetting.APIKEY)
 					}
-					for i, que := range questionAction.Choice {
-						fmt.Println(fmt.Sprintf("%d. %v", i, que.Answers))
+					//判断题
+					for i := range questionAction.Judge {
+						q := &questionAction.Judge[i] // 获取对应选项
+						message := xuexitong.AIProblemMessage(q.Type.String(), q.Text, entity.ExamTurn{
+							XueXJudgeQue: *q,
+						})
+
+						aiSetting := global.Config.Setting.AiSetting //获取AI设置
+						q.AnswerAIGet(userCache.UserID, aiSetting.AiUrl, aiSetting.Model, aiSetting.AiType, message, aiSetting.APIKEY)
 					}
+					//填空题
+					for i := range questionAction.Fill {
+						q := &questionAction.Fill[i] // 获取对应选项
+						message := xuexitong.AIProblemMessage(q.Type.String(), q.Text, entity.ExamTurn{
+							XueXFillQue: *q,
+						})
+						aiSetting := global.Config.Setting.AiSetting //获取AI设置
+						q.AnswerAIGet(userCache.UserID, aiSetting.AiUrl, aiSetting.Model, aiSetting.AiType, message, aiSetting.APIKEY)
+					}
+					//简答题
+					for i := range questionAction.Short {
+						q := &questionAction.Short[i] // 获取对应选项
+						message := xuexitong.AIProblemMessage(q.Type.String(), q.Text, entity.ExamTurn{
+							XueXShortQue: *q,
+						})
+						aiSetting := global.Config.Setting.AiSetting //获取AI设置
+						q.AnswerAIGet(userCache.UserID, aiSetting.AiUrl, aiSetting.Model, aiSetting.AiType, message, aiSetting.APIKEY)
+					}
+
 					xuexitong.WorkNewSubmitAnswerAction(&userCache, questionAction, false)
 				}
 			}
