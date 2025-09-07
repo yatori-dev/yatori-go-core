@@ -141,6 +141,9 @@ func (cache *XueXiTUserCache) VideoDtoFetch(p *entity.PointVideoDto) (string, er
 }
 
 func (cache *XueXiTUserCache) VideoSubmitStudyTime(p *entity.PointVideoDto, playingTime int, isdrag int /*提交模式，0代表正常视屏播放提交，2代表暂停播放状态，3代表着点击开始播放状态*/, retry int, lastErr error) (string, error) {
+	if retry < 0 {
+		return "", lastErr
+	}
 	clipTime := fmt.Sprintf("0_%d", p.Duration)
 	hash := md5.Sum([]byte(fmt.Sprintf("[%s][%s][%s][%s][%d][%s][%d][%s]",
 		p.ClassID, cache.UserID, p.JobID, p.ObjectID, playingTime*1000, "d_yHJ!$pdA~5", p.Duration*1000, clipTime)))
@@ -212,7 +215,7 @@ func (cache *XueXiTUserCache) VideoSubmitStudyTime(p *entity.PointVideoDto, play
 	}
 
 	if res.StatusCode != http.StatusOK {
-		return "", fmt.Errorf("failed to fetch video, status code: %d", res.StatusCode)
+		return cache.VideoSubmitStudyTime(p, playingTime, isdrag, retry, fmt.Errorf("failed to fetch video, status code: %d", res.StatusCode))
 	}
 	//fmt.Println(string(body))
 	utils.CookiesAddNoRepetition(&cache.cookies, res.Cookies()) //赋值cookie
@@ -221,6 +224,9 @@ func (cache *XueXiTUserCache) VideoSubmitStudyTime(p *entity.PointVideoDto, play
 
 // VideoSubmitStudyTimePE 手机端学时提交
 func (cache *XueXiTUserCache) VideoSubmitStudyTimePE(p *entity.PointVideoDto, playingTime int, isdrag int /*提交模式，0代表正常视屏播放提交，2代表暂停播放状态，3代表着点击开始播放状态*/, retry int, lastErr error) (string, error) {
+	if retry < 0 {
+		return "", lastErr
+	}
 	clipTime := fmt.Sprintf("0_%d", p.Duration)
 	hash := md5.Sum([]byte(fmt.Sprintf("[%s][%s][%s][%s][%d][%s][%d][%s]",
 		p.ClassID, cache.UserID, p.JobID, p.ObjectID, playingTime*1000, "d_yHJ!$pdA~5", p.Duration*1000, clipTime)))
@@ -292,7 +298,7 @@ func (cache *XueXiTUserCache) VideoSubmitStudyTimePE(p *entity.PointVideoDto, pl
 	}
 
 	if res.StatusCode != http.StatusOK {
-		return "", fmt.Errorf("failed to fetch video, status code: %d", res.StatusCode)
+		return cache.VideoSubmitStudyTimePE(p, playingTime, isdrag, retry, fmt.Errorf("failed to fetch video, status code: %d", res.StatusCode))
 	}
 	//fmt.Println(string(body))
 	utils.CookiesAddNoRepetition(&cache.cookies, res.Cookies()) //赋值cookie
