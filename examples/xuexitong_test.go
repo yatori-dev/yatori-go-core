@@ -14,6 +14,7 @@ import (
 	xuexitongApi "github.com/yatori-dev/yatori-go-core/api/xuexitong"
 	"github.com/yatori-dev/yatori-go-core/global"
 	"github.com/yatori-dev/yatori-go-core/utils"
+	"golang.org/x/net/html"
 )
 
 // TestLoginXueXiTo 测试学习通登录以及课程数据拉取
@@ -451,6 +452,12 @@ func TestXueXiToChapterCardDocument(t *testing.T) {
 	}
 }
 
+// 解析HTML数字实体
+func TestUnicodeToText(t *testing.T) {
+	unicode := html.UnescapeString(`9.4&#23567;&#33410;&#27979;&#39564;`)
+	fmt.Println(unicode)
+}
+
 // 遍历所有课程并刷取
 func TestXueXiToFlushCourse(t *testing.T) {
 	utils.YatoriCoreInit()
@@ -522,7 +529,7 @@ func TestXueXiToFlushCourse(t *testing.T) {
 			log.Printf("ID.%d(%s/%s)正在执行任务点\n",
 				item,
 				pointAction.Knowledge[index].Label, pointAction.Knowledge[index].Name)
-			if pointAction.Knowledge[index].Label != "5.5" {
+			if pointAction.Knowledge[index].Label != "10.2" {
 				//fmt.Println("断点")
 				continue
 			}
@@ -624,7 +631,8 @@ func TestXueXiToFlushCourse(t *testing.T) {
 						q.AnswerAIGet(userCache.UserID, aiSetting.AiUrl, aiSetting.Model, aiSetting.AiType, message, aiSetting.APIKEY)
 					}
 
-					xuexitong.WorkNewSubmitAnswerAction(&userCache, questionAction, false)
+					answerAction := xuexitong.WorkNewSubmitAnswerAction(&userCache, questionAction, false)
+					fmt.Printf("%s答题完成，返回信息：%s\n", questionAction.Title, answerAction)
 				}
 			}
 

@@ -3,14 +3,15 @@ package entity
 import (
 	"encoding/json"
 	"fmt"
+	"os"
+	"regexp"
+	"strconv"
+
 	"github.com/yatori-dev/yatori-go-core/models/ctype"
 	"github.com/yatori-dev/yatori-go-core/que-core/aiq"
 	"github.com/yatori-dev/yatori-go-core/que-core/qentity"
 	"github.com/yatori-dev/yatori-go-core/que-core/qtype"
 	"github.com/yatori-dev/yatori-go-core/utils/log"
-	"os"
-	"regexp"
-	"strconv"
 )
 
 // XueXiTCourse 课程所有信息
@@ -139,6 +140,7 @@ type ShortQue struct {
 
 // Question TODO 这里考虑是否在其中直接将答案做出 直接上报提交 或 保存提交
 type Question struct {
+	Title            string //试卷标题
 	Cpi              string
 	JobId            string
 	WorkId           string

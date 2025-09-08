@@ -2,6 +2,7 @@ package utils
 
 import (
 	"fmt"
+
 	"github.com/PuerkitoBio/goquery"
 )
 
@@ -51,5 +52,12 @@ func ParseWorkInform(doc *goquery.Document) (map[string]interface{}, error) {
 			}
 		})
 	}
+	//截取试卷标题
+	doc.Find(".chapter-title").Each(func(i int, s *goquery.Selection) {
+		val, exists := s.Attr("workname")
+		if exists {
+			dataMap["title"] = val
+		}
+	})
 	return dataMap, nil
 }

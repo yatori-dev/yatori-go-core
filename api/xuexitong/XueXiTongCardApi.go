@@ -14,6 +14,7 @@ import (
 
 	"github.com/yatori-dev/yatori-go-core/api/entity"
 	"github.com/yatori-dev/yatori-go-core/utils"
+	log2 "github.com/yatori-dev/yatori-go-core/utils/log"
 )
 
 // PageMobileChapterCard 客户端章节任务卡片 原始html数据返回
@@ -203,8 +204,11 @@ func (cache *XueXiTUserCache) VideoSubmitStudyTime(p *entity.PointVideoDto, play
 
 	res, err := client.Do(req)
 	if err != nil {
-		fmt.Println(err)
-		return "", nil
+		if strings.Contains(err.Error(), "An established connection was aborted by the software") {
+			return cache.VideoSubmitStudyTimePE(p, playingTime, isdrag, retry-1, fmt.Errorf("failed to fetch video, status code: %d", res.StatusCode))
+		}
+		log2.Print(log2.INFO, err.Error())
+		return "", err
 	}
 	defer res.Body.Close()
 
@@ -215,7 +219,7 @@ func (cache *XueXiTUserCache) VideoSubmitStudyTime(p *entity.PointVideoDto, play
 	}
 
 	if res.StatusCode != http.StatusOK {
-		return cache.VideoSubmitStudyTime(p, playingTime, isdrag, retry, fmt.Errorf("failed to fetch video, status code: %d", res.StatusCode))
+		return cache.VideoSubmitStudyTime(p, playingTime, isdrag, retry-1, fmt.Errorf("failed to fetch video, status code: %d", res.StatusCode))
 	}
 	//fmt.Println(string(body))
 	utils.CookiesAddNoRepetition(&cache.cookies, res.Cookies()) //赋值cookie
@@ -254,7 +258,8 @@ func (cache *XueXiTUserCache) VideoSubmitStudyTimePE(p *entity.PointVideoDto, pl
 	req, err := http.NewRequest(method, urlStr, nil)
 
 	if err != nil {
-		fmt.Println(err)
+		//fmt.Println(err)
+		log2.Print(log2.INFO, err.Error())
 		return "", nil
 	}
 
@@ -286,19 +291,24 @@ func (cache *XueXiTUserCache) VideoSubmitStudyTimePE(p *entity.PointVideoDto, pl
 
 	res, err := client.Do(req)
 	if err != nil {
-		fmt.Println(err)
-		return "", nil
+		if strings.Contains(err.Error(), "An established connection was aborted by the software") {
+			return cache.VideoSubmitStudyTimePE(p, playingTime, isdrag, retry-1, fmt.Errorf("failed to fetch video, status code: %d", res.StatusCode))
+		}
+		//fmt.Println(err)
+		log2.Print(log2.INFO, err.Error())
+		return "", err
 	}
 	defer res.Body.Close()
 
 	body, err := ioutil.ReadAll(res.Body)
 	if err != nil {
-		fmt.Println(err)
-		return "", nil
+		//fmt.Println(err)
+		log2.Print(log2.INFO, err.Error())
+		return "", err
 	}
 
 	if res.StatusCode != http.StatusOK {
-		return cache.VideoSubmitStudyTimePE(p, playingTime, isdrag, retry, fmt.Errorf("failed to fetch video, status code: %d", res.StatusCode))
+		return cache.VideoSubmitStudyTimePE(p, playingTime, isdrag, retry-1, fmt.Errorf("failed to fetch video, status code: %d", res.StatusCode))
 	}
 	//fmt.Println(string(body))
 	utils.CookiesAddNoRepetition(&cache.cookies, res.Cookies()) //赋值cookie
@@ -467,7 +477,7 @@ func (cache *XueXiTUserCache) WorkFetchQuestion(p *entity.PointWorkDto) (string,
 	res, err := client.Do(req)
 	if err != nil {
 		fmt.Println(err)
-		return "", nil
+		return "", err
 	}
 	defer res.Body.Close()
 
