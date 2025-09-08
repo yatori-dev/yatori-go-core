@@ -11,6 +11,8 @@ import (
 	"regexp"
 	"testing"
 	"time"
+
+	"github.com/yatori-dev/yatori-go-core/utils"
 )
 import "github.com/dop251/goja"
 
@@ -311,7 +313,7 @@ func Test_yidun(t *testing.T) {
 	d := NewDun163("17c07e34e0384612bb239568b6b37643",
 		"https://id.163.com/mail/retrievepassword",
 		"app.miit-eidc.org.cn",
-		utils.DefaultUserAgent,)
+		utils.DefaultUserAgent)
 
 	if err := d.CompileJS("dun163.js"); err != nil {
 		panic(err)

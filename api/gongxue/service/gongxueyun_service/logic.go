@@ -3,6 +3,10 @@ package gongxueyun_service
 import (
 	"encoding/json"
 	"fmt"
+	"strconv"
+	"strings"
+	"time"
+
 	"github.com/google/uuid"
 	"github.com/yatori-dev/yatori-go-core/api/gongxue/api"
 	"github.com/yatori-dev/yatori-go-core/api/gongxue/entity"
@@ -10,11 +14,8 @@ import (
 	data2 "github.com/yatori-dev/yatori-go-core/api/gongxue/service/gongxueyun_service/data"
 	"github.com/yatori-dev/yatori-go-core/api/gongxue/utils"
 	"github.com/yatori-dev/yatori-go-core/api/gongxue/utils/blockPuzzle"
+	utils2 "github.com/yatori-dev/yatori-go-core/utils"
 	log2 "github.com/yatori-dev/yatori-go-core/utils/log"
-	"strconv"
-	"strings"
-	"time"
-	"github.com/yatori-dev/yatori-go-core/utils"
 )
 
 func (m *MoguDing) Run(runType string) {
@@ -58,7 +59,7 @@ const (
 
 var (
 	headers = map[string][]string{
-		"User-Agent":   {utils.DefaultUserAgent},
+		"User-Agent":   {utils2.DefaultUserAgent},
 		"Content-Type": {"application/json; charset=UTF-8"},
 		"host":         {"api.moguding.net:9000"},
 	}
