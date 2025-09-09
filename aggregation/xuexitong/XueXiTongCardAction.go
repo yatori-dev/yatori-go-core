@@ -137,7 +137,7 @@ func VideoDtoFetchAction(cache *xuexitong.XueXiTUserCache, p *entity.PointVideoD
 	p.Duration = int(duration)
 	titleStr, turnErr := url.QueryUnescape(gojsonq.New().JSONString(fetch).Find("filename").(string))
 	//转换
-	if turnErr == nil {
+	if turnErr != nil {
 		log2.Print(log2.INFO, titleStr, "解码失败")
 		p.Title = gojsonq.New().JSONString(fetch).Find("filename").(string)
 	} else {
