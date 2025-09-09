@@ -191,6 +191,7 @@ type ExamTurn struct {
 	XueXJudgeQue  JudgeQue
 	XueXFillQue   FillQue
 	XueXShortQue  ShortQue
+	XueXReadQue   ReadQue
 	YingHuaExamTopic
 }
 

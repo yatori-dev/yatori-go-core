@@ -635,6 +635,11 @@ func TestXueXiToFlushCourse(t *testing.T) {
 						q.AnswerAIGet(userCache.UserID, aiSetting.AiUrl, aiSetting.Model, aiSetting.AiType, message, aiSetting.APIKEY)
 					}
 
+					for i := range questionAction.Read {
+						q := &questionAction.Read[i] //获取对应题目
+						xuexitong.AIProblemMessage(q.Type.String(), q.Text, entity.ExamTurn{})
+					}
+
 					answerAction := xuexitong.WorkNewSubmitAnswerAction(&userCache, questionAction, false)
 					fmt.Printf("%s答题完成，返回信息：%s\n", questionAction.Title, answerAction)
 				}
