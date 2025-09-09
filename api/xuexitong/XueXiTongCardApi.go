@@ -19,7 +19,10 @@ import (
 
 // PageMobileChapterCard 客户端章节任务卡片 原始html数据返回
 func (cache *XueXiTUserCache) PageMobileChapterCard(
-	classId, courseId, knowledgeId, cardIndex, cpi int) (string, error) {
+	classId, courseId, knowledgeId, cardIndex, cpi int, retry int, lastErr error) (string, error) {
+	if retry < 0 {
+		return "", lastErr
+	}
 	method := "GET"
 
 	params := url.Values{}
@@ -48,7 +51,8 @@ func (cache *XueXiTUserCache) PageMobileChapterCard(
 	req, err := http.NewRequest(method, PageMobileChapterCard+"?"+params.Encode(), nil)
 
 	if err != nil {
-		fmt.Println(err)
+		//fmt.Println(err)
+		log2.Print(log2.INFO, err.Error())
 		return "", err
 	}
 	//req.Header.Add("Cookie", cache.cookie)
@@ -63,8 +67,9 @@ func (cache *XueXiTUserCache) PageMobileChapterCard(
 
 	res, err := client.Do(req)
 	if err != nil {
-		fmt.Println(err)
-		return "", nil
+		//fmt.Println(err)
+		//log2.Print(log2.INFO, err.Error())
+		return cache.PageMobileChapterCard(classId, courseId, knowledgeId, cardIndex, cpi, retry-1, err)
 	}
 	defer res.Body.Close()
 

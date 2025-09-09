@@ -41,7 +41,7 @@ func (e APIError) Error() string {
 func PageMobileChapterCardAction(
 	cache *xuexitong.XueXiTUserCache,
 	classId, courseId, knowledgeId, cardIndex, cpi int) (interface{}, string, error) {
-	cardHtml, err := cache.PageMobileChapterCard(classId, courseId, knowledgeId, cardIndex, cpi)
+	cardHtml, err := cache.PageMobileChapterCard(classId, courseId, knowledgeId, cardIndex, cpi, 3, nil)
 	var att interface{}
 
 	if err != nil {
@@ -126,10 +126,12 @@ func PageMobileChapterCardAction(
 
 func VideoDtoFetchAction(cache *xuexitong.XueXiTUserCache, p *entity.PointVideoDto) (bool, error) {
 	fetch, err := cache.VideoDtoFetch(p, 5, nil)
-	if strings.Contains(err.Error(), "status code: 500") { //遇到500则重新登录
+	//500处理
+	if err != nil && strings.Contains(err.Error(), "status code: 500") {
 		PassVerAnd202(cache) //重新登录
 		fetch, err = cache.VideoDtoFetch(p, 5, nil)
 	}
+
 	if err != nil {
 		log.Println("VideoDtoFetchAction:", err)
 		return false, err
