@@ -143,12 +143,14 @@ type ReadQue struct {
 	Type         qtype.QueType
 	Qid          string
 	Text         string
-	OpFormAnswer map[string]struct {
-		ChildType  int
-		ChildId    string
-		DataItemID string
-		Text       map[string]string // 内部选项的 选择 和 具体内容
-	} //内部题目和 选项
+	OpFormAnswer []map[string]ReadChoice //内部题目和 选项
+}
+
+type ReadChoice struct {
+	ChildType  int
+	ChildId    string
+	DataItemID string
+	Text       map[string]string // 内部选项的 选择 和 具体内容
 }
 
 // Question TODO 这里考虑是否在其中直接将答案做出 直接上报提交 或 保存提交

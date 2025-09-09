@@ -9,6 +9,7 @@ import (
 	"log"
 	"net/url"
 	"regexp"
+	"strconv"
 	"strings"
 
 	"github.com/PuerkitoBio/goquery"
@@ -431,45 +432,37 @@ func ParseWorkQuestionAction(cache *xuexitong.XueXiTUserCache, workPoint *entity
 			readQue.Type = qtype.ReadingComprehension
 			readQue.Qid = qs.ID
 			readQue.Text = quesText
-			//opFormAnswer := readQue.OpFormAnswer
-
 			var (
-				ops, childTypes, childIds, dataItemIDs []string
-				textOp                                 map[string]string
+				ops, childTypes, childIds []string
+				textOp                    []map[string]string
 			)
-			textOp = make(map[string]string)
+			choice := make(map[string]string)
 			// TODO 这里我在做尝试 之前是分批处理的 和到一块无法提取
 			qdoc.Find("div.readComprehension").Each(func(i int, s *goquery.Selection) {
 				s.Find("ul.answerList").Each(func(i int, ul *goquery.Selection) {
 					li := ul.Find("li.ignoreli")
-					val, exists := li.Attr("data-itemId")
-					if exists {
-						dataItemIDs = append(dataItemIDs, val)
-					}
 					op := li.Find("span").Text() + li.Find("div.ans-cc").Text()
 					ops = append(ops, op)
 					ul.Find(`li[data="answer"]`).Each(func(i int, li1 *goquery.Selection) {
 						text := li1.Find("em").Text()
-						// TODO 拿不到选项中的 内容
+						choice[text] = ""
 						//fmt.Println(li1.Html())
 						li1.Find("p.type14").NextAll().EachWithBreak(func(i int, s *goquery.Selection) bool {
 							txt := strings.TrimSpace(s.Text())
 							if txt != "" {
-								fmt.Println(txt) // 输出 3
-								textOp[text] = txt
+								//fmt.Println(txt) // 输出 3
+								choice[text] = txt
 								return false // 停止遍历
 							}
 							return true
 						})
-						//answerTxt := li1.Find("pp").Text()
-						//fmt.Println(answerTxt)
-						//textOp[text] = "选项内容"
 					})
-
+					textOp = append(textOp, choice)
+					//fmt.Println("--------")
+					choice = make(map[string]string)
 				})
-				fmt.Println("ops：", ops)
-				fmt.Println("textOp：", dataItemIDs)
-				fmt.Println("textOp：", textOp)
+				//fmt.Println("ops：", ops)
+				//fmt.Println("textOp：", textOp)
 				s.Find("input").Each(func(i int, s *goquery.Selection) {
 					name, exName := s.Attr("name")
 					value, exValue := s.Attr("value")
@@ -482,10 +475,27 @@ func ParseWorkQuestionAction(cache *xuexitong.XueXiTUserCache, workPoint *entity
 						}
 					}
 				})
-				fmt.Println("childTypes：", childTypes)
-				fmt.Println("childIds：", childIds)
-			})
+				//fmt.Println("childTypes：", childTypes)
+				//fmt.Println("childIds：", childIds)
+				//dataItemID = childIds[0]
 
+				opFrom := func(i, childType int, text, childId string, choice map[string]string) map[string]entity.ReadChoice {
+					res := make(map[string]entity.ReadChoice)
+					res[text] = entity.ReadChoice{
+						Text:       choice,
+						ChildType:  childType,
+						ChildId:    childId,
+						DataItemID: childId,
+					}
+					return res
+				}
+
+				for j, text := range ops {
+					iChildType, _ := strconv.Atoi(childTypes[j])
+					readQue.OpFormAnswer = append(readQue.OpFormAnswer, opFrom(j, iChildType, text, childIds[j], textOp[j]))
+				}
+				textOp = []map[string]string{}
+			})
 			readQuestion = append(readQuestion, readQue)
 		}
 	}
