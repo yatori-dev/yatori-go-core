@@ -14,7 +14,7 @@
 	<link href="//mooc1-api.chaoxing.com/mooc-ans/css/work/phone/basic-s.css?v=2023-0619-1500" rel="stylesheet" type="text/css" />
 	<link href="//mooc1-api.chaoxing.com/mooc-ans/css/work/phone/css-s.css?v=28.4" type="text/css" rel="stylesheet"/>
 	<link href="/mooc-ans/spacx/work/phone/sdo.css?v=27" rel="stylesheet" type="text/css" />
-	<link href="/mooc-ans/spacx/new/css/work-css-tpl.cssx?enc=8c72555db143040f5b899ea32d18a2ad" rel="stylesheet" type="text/css" />
+	<link href="/mooc-ans/spacx/new/css/work-css-tpl.cssx?enc=2c8f4c653d9699a54a29b26b86762214" rel="stylesheet" type="text/css" />
 	<link href="//mooc1-api.chaoxing.com/mooc-ans/css/work/phone/sdo-opt.css?v=27" rel="stylesheet" type="text/css" />
 
 	<link href="//mooc1-api.chaoxing.com/mooc-ans/css/questionBank/questionBankUsual.css?v=2019-1120-1400" type="text/css" rel="stylesheet"/><link rel="stylesheet" href="//mooc1-api.chaoxing.com/mooc-ans/css/work/phone/s/css/style-normal.css?v=1.0.1" />
@@ -111,7 +111,7 @@
 		'zuoye': '作业',
 		'ClassroomInteraction': '课程积分',
 		'attendance': '签到',
-		'videoWeight': '课程音视频',
+		'videoWeight': '章节任务点',
 		'chaptertest': '章节测验',
 		'visittimes': '章节学习次数',
 		'talk': '讨论',
@@ -126,11 +126,11 @@
 		'examWeightTip': '所有考试的平均分',
 		'homework': '作业',
 		'homeworkWeightTip': '按在线作业的平均分计分。如设置作业明细分配，则按（按班级发放的作业成绩*权重占比＋按人发放的作业成绩)/(1＋按人发放的作业数量）或按班级发放的作业成绩*权重占比计分',
-		'ClassroomInteractionTip1': '参与投票、问卷、抢答、选人、讨论、随堂练习等课程活动可以获得相应分数，积分达',
+		'ClassroomInteractionTip1': '参与抢答、主题讨论、选人、问卷、评分、随堂练习、投票全部课程活动以及老师加分可以获得相应分数，积分达',
 		'ClassroomInteractionTip2': '分为满分',
 		'attendanceTip1': '按次数累计，每签到一次+1，签到数达',
 		'attendanceTip2': '次为满分',
-		'courseVideo': '课程视频',
+		'courseVideo': '章节任务点',
 		'videoWeightTip': '课程视频/音频全部完成得满分,单个视频/音频分值平均分配，满分100分',
 		'coursetestWeightTip': '只计算为任务点的章节测验,取学生章节测验平均分,未做测验按“0”分计算',
 		'PBLWeightTip': '学生在每个分组任务活动获得的分数取平均分',
@@ -312,17 +312,17 @@
 	<script type="text/javascript" src="//mooc-res2.chaoxing.com/mooc-ans/js/common/jquery-migrate.min.js"></script>    <script src="//mooc1-api.chaoxing.com/mooc-ans/js/phone/touch-1.2.0.js"></script>
 	<script src="//mooc1-api.chaoxing.com/mooc-ans/static/js/domain.js"></script>
 	<script type="text/javascript" src="//mooc1-api.chaoxing.com/mooc-ans/space/doworkinphone/js/prettyCheckboxes.js"></script>
-	<script src="/ananas/space/exam/js/enc_js_work.js?v=1748252499427"></script>
+	<script src="/ananas/space/exam/js/enc_js_work.js?v=1757341177119"></script>
 	<script src="//mooc1-api.chaoxing.com/mooc-ans/js/phone/rem750s1.js"></script>
 	<script type="text/javascript" src="//mooc1-api.chaoxing.com/mooc-ans/js/common/viewer.js"></script>
 	<script type="text/javascript" src="//mooc1-api.chaoxing.com/mooc-ans/js/common/jquery-viewer.min.js"></script>
-	<script type="text/javascript" src="//mooc1-api.chaoxing.com/mooc-ans/mooc2/js/oraltest-quiz.js?v=2025-0228-1600"></script>
+	<script type="text/javascript" src="//mooc1-api.chaoxing.com/mooc-ans/mooc2/js/oraltest-quiz.js?v=2025-0702-1700"></script>
 	<script type="text/javascript" src="//mooc1-api.chaoxing.com/mooc-ans/mooc2/js/workEnglishWriting.js?v=2024-0116-2000"></script>
-	<script src="//mooc1-api.chaoxing.com/mooc-ans/js/work/phone/work-attach.js?v=2024-0513-1100"></script>    <script>
+	<script src="//mooc1-api.chaoxing.com/mooc-ans/js/work/phone/work-attach.js?v=2025-0527-1100"></script>    <script>
 	var enterTipText = '输入答案';
-	window["uid"] = '253568561';
-	window["currentTime"] = '1748252499416';
-	window["uploadEnc"] = 'adbbd3f83240f0a3a106ba73e1509d15';
+	window["uid"] = '335117331';
+	window["currentTime"] = '1757341177106';
+	window["uploadEnc"] = '365999afd98bb9e982e04909d11e9bd6';
 
 	var editors = new Array();
 	var placeholderTip = '<span style="color:#ccc;font-size:16px;">' + enterTipText +'</span>';
@@ -330,12 +330,201 @@
 </script>
 	<script src="//mooc1-api.chaoxing.com/mooc-ans/js/work/phone/add-audio.js"></script>
 	<script src="//mooc1-api.chaoxing.com/mooc-ans/js/exam/phone/testPaperUtils.js?v=2024-0425-1600"></script>
-</head>
+	<script>
+		$(function () {
+			try {
+				window.confirm = function (message) {
+					var iframe = document.createElement("IFRAME");
+					iframe.style.display = "none";
+					iframe.setAttribute("src", 'data:text/plain,');
+					document.documentElement.appendChild(iframe);
+					var alertFrame = window.frames[0];
+					var result = alertFrame.window.confirm(message);
+					iframe.parentNode.removeChild(iframe);
+					return result;
+				};
+
+				window.alert = function (message) {
+					var iframe = document.createElement("IFRAME");
+					iframe.style.display = "none";
+					iframe.setAttribute("src", 'data:text/plain,');
+					document.documentElement.appendChild(iframe);
+					window.frames[0].window.alert(message);
+					iframe.parentNode.removeChild(iframe);
+				};
+			} catch (e) {
+			}
+		});
+	</script>    <script type="text/javascript" src="//mooc1-api.chaoxing.com/mooc-ans/space/new/way-upload/plupload.full.min.js?v=2020-1230-1020"></script>
+	<script type="text/javascript" src="//mooc1-api.chaoxing.com/mooc-ans/space/new/way-upload/css/DD_belatedPNG_0.0.8a-min.js"></script>
+	<script>
+
+		function initImgWebUpload(btnid,editorItem) {
+
+			var args = {};
+			(function () {
+				if (/rv:(.*)\) like Gecko/.test(navigator.userAgent)) {
+					if (parseInt(RegExp["$1"]) == 11) {
+						args.newIE = true;
+					}
+				}
+			})();
+
+			function getcookie(objname) {
+				var arrstr = document.cookie.split("; ");
+				for (var i = 0; i < arrstr.length; i++) {
+					var temp = arrstr[i].split("=");
+					if (temp[0] == objname) {
+						return unescape(temp[1]);
+					}
+				}
+			}
+
+			var uploader = new plupload.Uploader({
+				runtimes: args.newIE ? 'flash' : 'html5,flash',
+				filters: [{
+					title: ' ',
+					extensions: 'jpg,jpeg,gif,png'
+				}
+				],
+				browse_button: btnid,
+				max_file_size: '20MB',
+				url: ServerHost.uploadDomain + "/upload/edit/upload-image?uid=335117331&enc2=365999afd98bb9e982e04909d11e9bd6&t=1757341177106",
+				flash_swf_url: _HOST_CP2_ + '/space/new/way-upload/Moxie.swf',
+				multi_selection: false, // 是否可以选择多个
+				multiple_queues: false, // 是否可以上传多次
+				file_data_name: "file"
+			});
+
+			uploader.bind('Init', function (up, params) {});
+			uploader.init();
+
+			// 当文件添加到上传队列后触发
+			uploader.bind('FilesAdded', function (up, files) {
+				try {
+					up.refresh();
+					uploader.start();
+				} catch (ex) {
+					console.log(ex);
+				}
+			});
+
+			// 当发生错误时触发
+			uploader.bind('Error', function (up, err) {
+				var msg = "上传失败";
+				if (err) {
+					var errorCode = err.code || 0;
+					if (errorCode == -601) {
+						msg = "文件格式不支持";
+					} else if (errorCode == -600) {
+						msg = "文件大小超过20M限制";
+					} else {
+						msg = "上传失败, error: " + JSON.stringify(err);
+					}
+				}
+				alert(msg);
+			});
+
+			// 当队列中的某一个文件上传完成后触发
+			uploader.bind('FileUploaded', function (up, file, rep) {
+				try {
+					var url = rep.response.split("_")[1];
+					var idTypeArray = url.split('origin/')[1].split('.');
+					var data = {'objectid':idTypeArray[0],'type':idTypeArray[1]};
+					if (typeof(clickStep) != "undefined") {
+						clickStep = parseInt($(editorItem).attr("data-editorIndex"));
+					}
+					InsertPic(data);
+				} catch (ex) {
+					console.log(ex);
+				}
+			});
+
+			$(editorItem).bind('tap','.moxie-shim-html5',function(){
+				editorIndex = parseInt($(this).attr("data-editorIndex"));
+			});
+		}
+	</script>    <link href="//mooc1-api.chaoxing.com/mooc-ans/js/webuploader-0.1.5/webuploader.css" type="text/css" rel="stylesheet"/>
+	<script src="//mooc1-api.chaoxing.com/mooc-ans/js/webuploader-0.1.5/webuploader.nolog.min.js"></script>
+	<style>
+		.webuploader-pick {background: none;padding: 0px; color: black}
+		.webuploader-pick-hover {background: none;padding: 0px; color:black}
+	</style>
+
+	<input type="hidden" id="userId" value="335117331" />
+	<input type="hidden" id="uploadEnc" value="365999afd98bb9e982e04909d11e9bd6" />
+	<input type="hidden" id="uploadTimeStamp" value="1757341177106" />
+
+	<script>
+		var userId = $("#userId").val();
+		var uploadEnc = $("#uploadEnc").val();
+		var uploadTimeStamp = $("#uploadTimeStamp").val();
+
+		function initWebuploader(itemId) {
+			WebUploader.create({
+				//默认值：false  设置为 true 后，不需要手动调用上传，有文件选择即开始上传
+				auto: true,
+				swf: "/js/webuploader-0.1.5/Uploader.swf",
+				server: ServerHost.uploadDomain + "/ueditorupload/attachment",
+				//配置压缩的图片的选项。如果此选项为false, 则图片在上传前不进行压缩。
+				compress: false,
+				fileSingleSizeLimit: 500 * 1024 * 1024,
+				withCredentials: true,
+				fileVal: "upfile",
+				pick: {
+					id: "#" + itemId,
+					innerHTML: ""
+				},
+				//[默认值：undefined] 设置为 true 后不去重，设置false 去重， 根据文件名字、文件大小和最后修改时间来生成hash Key.
+				duplicate: true,
+				formData: {
+					"source": "1",
+					"uploadtype": "normal",
+					"uid": userId,
+					"enc2": uploadEnc,
+					"t": uploadTimeStamp
+				},
+
+				//当文件被加入队列以后触发。
+				onFileQueued: function () {
+
+				},
+				//当文件上传成功时触发。
+				onUploadSuccess: function (file, serverData) {
+					try {
+						var fileName = serverData.original;
+						var objectId = serverData.objectid;
+						var fileType = serverData.fileType.replace(".", "").toLowerCase();
+
+						if (typeof(clickStep) != "undefined") {
+							clickStep = parseInt($("#" + itemId).attr("data-editorIndex"));
+						}
+
+						if (fileType == "jpg" || fileType == "png" || fileType == "jpeg") {
+							var src = ServerHost.purl + "/star3/750_1024/" + objectId + "." + fileType;
+							insertImagWithPtage(src);
+							return;
+						}
+
+						var img = getImg(fileType);
+						insertAttach(img, objectId, fileName, fileType)
+					} catch (exception) {
+						alert("上传失败")
+					}
+				},
+				//当文件上传出错时触发。
+				onError: function () {
+					alert("上传失败");
+				}
+			});
+		}
+	</script>    </head>
 <body>
-<input type="hidden" id="currentTime" value="1748252499416"/>
-<input type="hidden" id="uploadEnc" value="adbbd3f83240f0a3a106ba73e1509d15"/>
-<input type="hidden" id="uploadUid" value="253568561"/>
+<input type="hidden" id="currentTime" value="1757341177106"/>
+<input type="hidden" id="uploadEnc" value="365999afd98bb9e982e04909d11e9bd6"/>
+<input type="hidden" id="uploadUid" value="335117331"/>
 <input type="hidden" id="openChapterVideo" value="1"/>
+<input type="hidden" id="oralEvalSync" value="0" />
 
 <div class="Wrappadding main-box">
 	<div class="cyTag">
@@ -345,8 +534,8 @@
 	</div>
 	<div class="chapter-content">
 		<div class="left-content">
-			<h3 class="chapter-title" workName="1.2">
-				1.2
+			<h3 class="chapter-title" workName="&#31532;&#19968;&#31456;&#27979;&#39564;">
+				&#31532;&#19968;&#31456;&#27979;&#39564;
 			</h3>
 		</div>
 		<div class="right-content">
@@ -359,190 +548,493 @@
 
 	<p class="con_info"><span>由此作答<i><img src="//mooc1-api.chaoxing.com/mooc-ans/images/work/phone/ceyan-tip.png" tabindex="-1" aria-hidden="true" /></i></span></p>
 
-	<form action="/mooc-ans/work/addStudentWorkNew?keyboardDisplayRequiresUserAction=1&_classId=117860940&courseid=247600650&token=4f0fbbda67ea4db89545251f2ece5e44&workAnswerId=55256455&workid=41370293&cpi=283918535&jobid=work-4e2b7b95bb5a4de4bd8010567d0f4e99&knowledgeid=921559691&originJobId=work-4e2b7b95bb5a4de4bd8010567d0f4e99" method="post" name="form1" id="form1" >
+	<form action="/mooc-ans/work/addStudentWorkNew?keyboardDisplayRequiresUserAction=1&_classId=125571857&courseid=250215285&token=67142eda32c942e995ad7fd8e29d3cec&workAnswerId=55110609&workid=44959190&cpi=416967469&jobid=work-1686c411151848d4b88c2be1d56a7b1e&knowledgeid=951782946&originJobId=null" method="post" name="form1" id="form1" >
 		<!--是否提交还是暂不提交-->
 		<input type="hidden" name="pyFlag" id="pyFlag"/>
 
 		<!--需要传递的参数-->
-		<input type="hidden" name="courseId" id="courseId" value="247600650"/>
-		<input type="hidden" id="classId" name="classId" value="117860940" />
+		<input type="hidden" name="courseId" id="courseId" value="250215285"/>
+		<input type="hidden" id="classId" name="classId" value="125571857" />
 		<input type="hidden" name="api" id="api" value="1"/>
 		<input type="hidden" name="mooc" id="mooc" value="0"/>
-		<input type="hidden" name="workAnswerId" id="workAnswerId" value="55256455"/>
-		<input type="hidden" id="answerId" value="55256455"/>
-		<input type="hidden" name="totalQuestionNum" id="totalQuestionNum" value="e0fd4ae12458a2365c8d760026d000cf"/><!--总题数-->
+		<input type="hidden" name="workAnswerId" id="workAnswerId" value="55110609"/>
+		<input type="hidden" id="answerId" value="55110609"/>
+		<input type="hidden" name="totalQuestionNum" id="totalQuestionNum" value="ea6e069c909c29501d2d7f2f42629c7d"/><!--总题数-->
 		<input type="hidden" name="fullScore" id="fullScore" value="100.0"/><!--满分-->
-		<input type="hidden" name="knowledgeid" id="knowledgeid" value="921559691"/><!--章节id-->
+		<input type="hidden" name="knowledgeid" id="knowledgeid" value="951782946"/><!--章节id-->
 		<input type="hidden" name="oldSchoolId" id="oldSchoolId" value=""/><!--原始作业单位id-->
-		<input type="hidden" name="oldWorkId" id="oldWorkId" value="4e2b7b95bb5a4de4bd8010567d0f4e99"/><!--最原始原始作业id-->
-		<input type="hidden" name="jobid" id="jobid" value="work-4e2b7b95bb5a4de4bd8010567d0f4e99"/>
-		<input type="hidden" name="workRelationId" id="workRelationId" value="41370293"/>
-		<input type="hidden" id="workId" value="41370293"/>
-		<input type="hidden" name="enc_work" id="enc_work" value="4f0fbbda67ea4db89545251f2ece5e44"/>
+		<input type="hidden" name="oldWorkId" id="oldWorkId" value="1686c411151848d4b88c2be1d56a7b1e"/><!--最原始原始作业id-->
+		<input type="hidden" name="jobid" id="jobid" value="work-1686c411151848d4b88c2be1d56a7b1e"/>
+		<input type="hidden" name="workRelationId" id="workRelationId" value="44959190"/>
+		<input type="hidden" id="workId" value="44959190"/>
+		<input type="hidden" name="enc_work" id="enc_work" value="67142eda32c942e995ad7fd8e29d3cec"/>
 		<input type="hidden" name="isphone" id="isphone" value="true"/>
-		<input type="hidden" id="userId" name="userId" value="253568561"/>
+		<input type="hidden" id="userId" name="userId" value="335117331"/>
 		<input type="hidden" id="addTimes" value="0"/>
 		<input type="hidden" name="workTimesEnc" id="workTimesEnc" value=""/>
 		<input type="hidden" id="limitWorkSubmitTimes" value="100" />
-		<input type="hidden" id="cpi" value="283918535" />
-		<input type="hidden" id="isChaoxingClient" value="true" />
+		<input type="hidden" id="cpi" value="416967469" />
+		<input type="hidden" id="isChaoxingClient" value="false" />
 		<input type="hidden" id="randomOptions" value="false" />
-		<input type="hidden" id="matchEnc" value="114730e66f055fb663be8c3715220d22" />
-		<input type="hidden" id="cfid" value="7950" />
+		<input type="hidden" id="matchEnc" value="fc3ce121ccae336081a7028759c9ce95" />
+		<input type="hidden" id="cfid" value="123402" />
 		<input type="text" value="" style="display: none;"/>
 		<div class="zquestions">
 
-			<div class="Py-mian1 singleQuesId" data="213031704">
+			<div class="Py-mian1 singleQuesId" data="404885919">
 				<div>
 					<div class="Py-m1-title fs16 fontLabel" tabindex="0" role="text" >
-						1.<span class="quesType">[填空题]</span>
-						软件工程包括（&nbsp; &nbsp; ）和（&nbsp; &nbsp; ）两方面的内容，是（&nbsp; &nbsp; ）与（&nbsp; &nbsp; ）紧密结合所形成的（&nbsp; &nbsp; ）学科。<br/></p><p><br/>
+						1.<span class="quesType">[单选题]</span>
+						<font face="Times New Roman, serif"><u>____</u></font><span style="font-family:宋体">是构成机械的最小单元，也是制造机械时的最小单元。</span>
+					</div>
+					<ul class="answerList singleChoice">
+						<li id-param="404885919"
+							class="clearfix more-choose-item"
+							tabindex="0" role="text" >
+							<em id-param="A" class="choose-opt">A</em>
+							<div class="choose-desc">
+								<cc><p><span style="font-size:14px;font-family:宋体">机器</span></p></cc>
+							</div>
+						</li>
+						<li id-param="404885919"
+							class="clearfix more-choose-item"
+							tabindex="0" role="text" >
+							<em id-param="B" class="choose-opt">B</em>
+							<div class="choose-desc">
+								<cc><p><span style="font-size:14px;font-family:宋体">零件</span></p></cc>
+							</div>
+						</li>
+						<li id-param="404885919"
+							class="clearfix more-choose-item"
+							tabindex="0" role="text" >
+							<em id-param="C" class="choose-opt">C</em>
+							<div class="choose-desc">
+								<cc><p><span style="font-size:14px;font-family:宋体">构件</span></p></cc>
+							</div>
+						</li>
+						<li id-param="404885919"
+							class="clearfix more-choose-item"
+							tabindex="0" role="text" >
+							<em id-param="D" class="choose-opt">D</em>
+							<div class="choose-desc">
+								<cc><p><span style="font-size:14px;font-family:宋体">机构</span></p></cc>
+							</div>
+						</li>
+					</ul>
+
+					<input type="hidden" id="answer404885919" name="answer404885919"   value="" class="answerInput"/>
+					<input type="hidden" id="answertype404885919" name="answertype404885919" value="0"/>
+
+				</div>
+			</div>
+
+			<div class="Py-mian1 singleQuesId" data="404885920">
+				<div>
+					<div class="Py-m1-title fs16 fontLabel" tabindex="0" role="text" >
+						2.<span class="quesType">[单选题]</span>
+						<span style="font-family:宋体">两个构件之间以线或点接触形成的运动副，称为<u>____</u></span><span style="font-family:宋体">。</span>
+					</div>
+					<ul class="answerList singleChoice">
+						<li id-param="404885920"
+							class="clearfix more-choose-item"
+							tabindex="0" role="text" >
+							<em id-param="A" class="choose-opt">A</em>
+							<div class="choose-desc">
+								<cc><p><span style="font-size:14px;font-family:宋体">低副</span></p></cc>
+							</div>
+						</li>
+						<li id-param="404885920"
+							class="clearfix more-choose-item"
+							tabindex="0" role="text" >
+							<em id-param="B" class="choose-opt">B</em>
+							<div class="choose-desc">
+								<cc><p><span style="font-size:14px;font-family:宋体">高副</span></p></cc>
+							</div>
+						</li>
+						<li id-param="404885920"
+							class="clearfix more-choose-item"
+							tabindex="0" role="text" >
+							<em id-param="C" class="choose-opt">C</em>
+							<div class="choose-desc">
+								<cc><p><span style="font-size:14px;font-family:宋体">移动副</span></p></cc>
+							</div>
+						</li>
+						<li id-param="404885920"
+							class="clearfix more-choose-item"
+							tabindex="0" role="text" >
+							<em id-param="D" class="choose-opt">D</em>
+							<div class="choose-desc">
+								<cc><p><span style="font-size:14px;font-family:宋体">转动副</span></p></cc>
+							</div>
+						</li>
+					</ul>
+
+					<input type="hidden" id="answer404885920" name="answer404885920"   value="" class="answerInput"/>
+					<input type="hidden" id="answertype404885920" name="answertype404885920" value="0"/>
+
+				</div>
+			</div>
+
+			<div class="Py-mian1 singleQuesId" data="404885921">
+				<div>
+					<div class="Py-m1-title fs16 fontLabel" tabindex="0" role="text" >
+						3.<span class="quesType">[单选题]</span>
+						<span style="font-family:宋体">图示为一机构模型，其对应的机构运动简图为（&nbsp;</span><span style="font-family:&#39;Times&nbsp;New&nbsp;Roman&#39;,serif">&nbsp;</span><span style="font-family:宋体">）</span></p><p><span style="font-family:宋体"><img src="http://p.ananas.chaoxing.com/star3/origin/8d295f6e43d084d5fd70f12d96037ef9.jpg" title="?????7.jpg"/></span></p><p><span style="font-family:宋体"><br/></span></p><p><span style="font-family:宋体"><span style="font-family:宋体">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;图</span><span style="font-family:&#39;Times&nbsp;New&nbsp;Roman&#39;,serif">3-3</span></span></p><p><span style="font-family:宋体"><span style="font-family:&#39;Times&nbsp;New&nbsp;Roman&#39;,serif"><img src="http://p.ananas.chaoxing.com/star3/origin/9675ee9044b24cec4bfefa99abe55857.jpg" title="?????8.jpg"/></span></span>
+					</div>
+					<ul class="answerList singleChoice">
+						<li id-param="404885921"
+							class="clearfix more-choose-item"
+							tabindex="0" role="text" >
+							<em id-param="A" class="choose-opt">A</em>
+							<div class="choose-desc">
+								<cc><p><span style="font-size:14px;font-family:宋体">图</span><span style="font-size:14px;font-family:&#39;Times&nbsp;New&nbsp;Roman&#39;,serif">a</span></p></cc>
+							</div>
+						</li>
+						<li id-param="404885921"
+							class="clearfix more-choose-item"
+							tabindex="0" role="text" >
+							<em id-param="B" class="choose-opt">B</em>
+							<div class="choose-desc">
+								<cc><p><span style="font-size:14px;font-family:宋体">图</span><span style="font-size:14px;font-family:&#39;Times&nbsp;New&nbsp;Roman&#39;,serif">b</span></p></cc>
+							</div>
+						</li>
+						<li id-param="404885921"
+							class="clearfix more-choose-item"
+							tabindex="0" role="text" >
+							<em id-param="C" class="choose-opt">C</em>
+							<div class="choose-desc">
+								<cc><p><span style="font-size:14px;font-family:宋体">图</span><span style="font-size:14px;font-family:&#39;Times&nbsp;New&nbsp;Roman&#39;,serif">c</span></p></cc>
+							</div>
+						</li>
+						<li id-param="404885921"
+							class="clearfix more-choose-item"
+							tabindex="0" role="text" >
+							<em id-param="D" class="choose-opt">D</em>
+							<div class="choose-desc">
+								<cc><p><span style="font-size:14px;font-family:宋体">图</span><span style="font-size:14px;font-family:&#39;Times&nbsp;New&nbsp;Roman&#39;,serif">d</span></p></cc>
+							</div>
+						</li>
+					</ul>
+
+					<input type="hidden" id="answer404885921" name="answer404885921"   value="" class="answerInput"/>
+					<input type="hidden" id="answertype404885921" name="answertype404885921" value="0"/>
+
+				</div>
+			</div>
+
+			<div class="Py-mian1 singleQuesId" data="404885922">
+				<div>
+					<div class="Py-m1-title fs16 fontLabel" tabindex="0" role="text" >
+						4.<span class="quesType">[填空题]</span>
+						<span style="font-family:宋体">机</span><span style="font-family:宋体">械是<strong style="white-space: normal;"><span style=" font-family: Times&nbsp;New&nbsp;Roman, serif;"><span style="text-decoration-line: underline;">&nbsp;</span></span><span style="text-decoration-line: underline;"><span style=" font-family: 宋体;">&nbsp;&nbsp;</span></span></strong><strong style=""><span style="text-decoration:underline;"></span>和</strong></span><strong><span style="font-family:&#39;Times&nbsp;New&nbsp;Roman&#39;,serif"><span style="text-decoration:underline;">&nbsp;</span></span><span style="text-decoration:underline;"><span style="font-family:宋体">&nbsp;&nbsp;</span></span></strong><span style="font-size:&nbsp;14px;font-family:宋体">的总称。</span>
 					</div>
 
 
 					<ul class="blankList2">
 						<p style="font-size:.3rem;color:#999;padding:.2rem 0;">第1空:</p>
-						<div class="Briefanswer editorBlank213031704" data-itemId="2130317041" data-editorIndex="0" style="border:1px solid #EBEBEB;overflow:hidden;border-radius:.1rem;margin-top:0;min-height: 60px;">
+						<div class="Briefanswer editorBlank404885922" data-itemId="4048859221" data-editorIndex="0" style="border:1px solid #EBEBEB;overflow:hidden;border-radius:.1rem;margin-top:0;min-height: 60px;">
 							<div class="jdt" style="padding:0px;border:none;" data-editorIndex="0">
-								<div id="ananas-editor-answer2130317041" class="ananas-editor-answer"></div>
-								<textarea id="answer2130317041" name="answer2130317041" style="display:none;"></textarea>
+								<div id="ananas-editor-answer4048859221" class="ananas-editor-answer"></div>
+								<textarea id="answer4048859221" name="answer4048859221" style="display:none;"></textarea>
 							</div>
 						</div>
 						<p style="font-size:.3rem;color:#999;padding:.2rem 0;">第2空:</p>
-						<div class="Briefanswer editorBlank213031704" data-itemId="2130317042" data-editorIndex="1" style="border:1px solid #EBEBEB;overflow:hidden;border-radius:.1rem;margin-top:0;min-height: 60px;">
+						<div class="Briefanswer editorBlank404885922" data-itemId="4048859222" data-editorIndex="1" style="border:1px solid #EBEBEB;overflow:hidden;border-radius:.1rem;margin-top:0;min-height: 60px;">
 							<div class="jdt" style="padding:0px;border:none;" data-editorIndex="1">
-								<div id="ananas-editor-answer2130317042" class="ananas-editor-answer"></div>
-								<textarea id="answer2130317042" name="answer2130317042" style="display:none;"></textarea>
+								<div id="ananas-editor-answer4048859222" class="ananas-editor-answer"></div>
+								<textarea id="answer4048859222" name="answer4048859222" style="display:none;"></textarea>
+							</div>
+						</div>
+					</ul>
+
+
+					<input type="hidden" name="tiankongsize404885922" value="2">
+					<input type="hidden" id="answertype404885922" name="answertype404885922" value="2"/>
+
+
+					<script>
+						var body = Ext.getBody();
+						var editorBlanks = $(".editorBlank404885922");
+						var editorNum = editorBlanks.length;
+						var qtid = "404885922";
+
+						var ueConfig ={
+							initialFrameHeight : 200,
+							autoHeightEnabled : true,
+							iframeCssUrl : '/ananas/ueditor/themes/iframe_wap_editor.css'
+						}
+						if('1' == '1' && '0' != '1'){
+							ueConfig.initialFrameHeight = 60;
+							ueConfig.pasteplain = true;
+							ueConfig.disablePasteImage = true;
+						}
+						editorBlanks.each(function(idx) {
+							var index = parseInt($(this).attr("data-editorIndex"));
+							var itemId = $(this).attr("data-itemId");
+							editors[index] = Ext.create('ananas.InnerEditor', {
+								renderTo : "ananas-editor-answer" + itemId,
+								ueditorConfig : ueConfig
+							});
+
+							editors[index].on('ready', function() {
+								document.activeElement.blur();
+								var ueditor = this.ueditor;
+								var c = $('#answer' + itemId).val();
+								if (c) {
+									ueditor.setContent(c);
+								} else {
+									ueditor.setContent("");
+								}
+
+								ueditor && ueditor.addListener('blur', function(e) {
+									$('#answer' + itemId).val(ueditor.getContent());
+								});
+
+								ueditor && ueditor.addListener('contentChange', function(e) {
+									var balnkAnswer = ueditor.getContent();
+									var truelyChange = balnkAnswer != $('#answer' + itemId).val();
+									$('#answer' + itemId).val(balnkAnswer);
+									controlEmoticons(ueditor, true);
+									if(truelyChange){
+										stopSwipe();
+									}
+								});
+
+								ueditor.emptyPlaceHolder && ueditor.emptyPlaceHolder('请输入答案');
+
+								var imgs = $('.ans-ued-img', ueditor.document.body);
+								if (imgs && imgs.length > 0) {
+									var img = imgs[imgs.length - 1];
+									img.onload = function() {
+										ueditor.adjustHeight();
+									}
+								}
+
+							});
+						});
+
+					</script>
+				</div>
+			</div>
+
+			<div class="Py-mian1 singleQuesId" data="404885923">
+				<div>
+					<div class="Py-m1-title fs16 fontLabel" tabindex="0" role="text" >
+						5.<span class="quesType">[填空题]</span>
+						<span style="font-family:宋体">机构中各个构件相对于机架能够产生独立运动的数目称为</span><strong><span style="font-family: 宋体"> <span style="text-decoration:underline;">&nbsp;&nbsp;</span></span><span style="font-family:宋体">。</span></strong>
+					</div>
+
+
+					<ul class="blankList2">
+						<p style="font-size:.3rem;color:#999;padding:.2rem 0;">第1空:</p>
+						<div class="Briefanswer editorBlank404885923" data-itemId="4048859231" data-editorIndex="2" style="border:1px solid #EBEBEB;overflow:hidden;border-radius:.1rem;margin-top:0;min-height: 60px;">
+							<div class="jdt" style="padding:0px;border:none;" data-editorIndex="2">
+								<div id="ananas-editor-answer4048859231" class="ananas-editor-answer"></div>
+								<textarea id="answer4048859231" name="answer4048859231" style="display:none;"></textarea>
+							</div>
+						</div>
+					</ul>
+
+
+					<input type="hidden" name="tiankongsize404885923" value="1">
+					<input type="hidden" id="answertype404885923" name="answertype404885923" value="2"/>
+
+
+					<script>
+						var body = Ext.getBody();
+						var editorBlanks = $(".editorBlank404885923");
+						var editorNum = editorBlanks.length;
+						var qtid = "404885923";
+
+						var ueConfig ={
+							initialFrameHeight : 200,
+							autoHeightEnabled : true,
+							iframeCssUrl : '/ananas/ueditor/themes/iframe_wap_editor.css'
+						}
+						if('1' == '1' && '0' != '1'){
+							ueConfig.initialFrameHeight = 60;
+							ueConfig.pasteplain = true;
+							ueConfig.disablePasteImage = true;
+						}
+						editorBlanks.each(function(idx) {
+							var index = parseInt($(this).attr("data-editorIndex"));
+							var itemId = $(this).attr("data-itemId");
+							editors[index] = Ext.create('ananas.InnerEditor', {
+								renderTo : "ananas-editor-answer" + itemId,
+								ueditorConfig : ueConfig
+							});
+
+							editors[index].on('ready', function() {
+								document.activeElement.blur();
+								var ueditor = this.ueditor;
+								var c = $('#answer' + itemId).val();
+								if (c) {
+									ueditor.setContent(c);
+								} else {
+									ueditor.setContent("");
+								}
+
+								ueditor && ueditor.addListener('blur', function(e) {
+									$('#answer' + itemId).val(ueditor.getContent());
+								});
+
+								ueditor && ueditor.addListener('contentChange', function(e) {
+									var balnkAnswer = ueditor.getContent();
+									var truelyChange = balnkAnswer != $('#answer' + itemId).val();
+									$('#answer' + itemId).val(balnkAnswer);
+									controlEmoticons(ueditor, true);
+									if(truelyChange){
+										stopSwipe();
+									}
+								});
+
+								ueditor.emptyPlaceHolder && ueditor.emptyPlaceHolder('请输入答案');
+
+								var imgs = $('.ans-ued-img', ueditor.document.body);
+								if (imgs && imgs.length > 0) {
+									var img = imgs[imgs.length - 1];
+									img.onload = function() {
+										ueditor.adjustHeight();
+									}
+								}
+
+							});
+						});
+
+					</script>
+				</div>
+			</div>
+
+			<div class="Py-mian1 singleQuesId" data="404885924">
+				<div>
+					<div class="Py-m1-title fs16 fontLabel" tabindex="0" role="text" >
+						6.<span class="quesType">[填空题]</span>
+						平面机构的自由度计算公式为：______。
+					</div>
+
+
+					<ul class="blankList2">
+						<p style="font-size:.3rem;color:#999;padding:.2rem 0;">第1空:</p>
+						<div class="Briefanswer editorBlank404885924" data-itemId="4048859241" data-editorIndex="3" style="border:1px solid #EBEBEB;overflow:hidden;border-radius:.1rem;margin-top:0;min-height: 60px;">
+							<div class="jdt" style="padding:0px;border:none;" data-editorIndex="3">
+								<div id="ananas-editor-answer4048859241" class="ananas-editor-answer"></div>
+								<textarea id="answer4048859241" name="answer4048859241" style="display:none;"></textarea>
+							</div>
+						</div>
+					</ul>
+
+
+					<input type="hidden" name="tiankongsize404885924" value="1">
+					<input type="hidden" id="answertype404885924" name="answertype404885924" value="2"/>
+
+
+					<script>
+						var body = Ext.getBody();
+						var editorBlanks = $(".editorBlank404885924");
+						var editorNum = editorBlanks.length;
+						var qtid = "404885924";
+
+						var ueConfig ={
+							initialFrameHeight : 200,
+							autoHeightEnabled : true,
+							iframeCssUrl : '/ananas/ueditor/themes/iframe_wap_editor.css'
+						}
+						if('1' == '1' && '0' != '1'){
+							ueConfig.initialFrameHeight = 60;
+							ueConfig.pasteplain = true;
+							ueConfig.disablePasteImage = true;
+						}
+						editorBlanks.each(function(idx) {
+							var index = parseInt($(this).attr("data-editorIndex"));
+							var itemId = $(this).attr("data-itemId");
+							editors[index] = Ext.create('ananas.InnerEditor', {
+								renderTo : "ananas-editor-answer" + itemId,
+								ueditorConfig : ueConfig
+							});
+
+							editors[index].on('ready', function() {
+								document.activeElement.blur();
+								var ueditor = this.ueditor;
+								var c = $('#answer' + itemId).val();
+								if (c) {
+									ueditor.setContent(c);
+								} else {
+									ueditor.setContent("");
+								}
+
+								ueditor && ueditor.addListener('blur', function(e) {
+									$('#answer' + itemId).val(ueditor.getContent());
+								});
+
+								ueditor && ueditor.addListener('contentChange', function(e) {
+									var balnkAnswer = ueditor.getContent();
+									var truelyChange = balnkAnswer != $('#answer' + itemId).val();
+									$('#answer' + itemId).val(balnkAnswer);
+									controlEmoticons(ueditor, true);
+									if(truelyChange){
+										stopSwipe();
+									}
+								});
+
+								ueditor.emptyPlaceHolder && ueditor.emptyPlaceHolder('请输入答案');
+
+								var imgs = $('.ans-ued-img', ueditor.document.body);
+								if (imgs && imgs.length > 0) {
+									var img = imgs[imgs.length - 1];
+									img.onload = function() {
+										ueditor.adjustHeight();
+									}
+								}
+
+							});
+						});
+
+					</script>
+				</div>
+			</div>
+
+			<div class="Py-mian1 singleQuesId" data="404885925">
+				<div>
+					<div class="Py-m1-title fs16 fontLabel" tabindex="0" role="text" >
+						7.<span class="quesType">[填空题]</span>
+						下图中吊扇的扇叶与吊架组成_____副，书桌的桌身与抽斗组成____副，机车直线运动时的车轮与路轨组成____副。</p><p><img src="http://p.ananas.chaoxing.com/star3/origin/c5a60bd4ef0b26f81ba5aeba7118c48e.jpg" style="width:&nbsp;200px;&nbsp;height:&nbsp;135px;" title="?????1.jpg" width="200" height="135" border="0" hspace="0" vspace="0"/>&nbsp; &nbsp;&nbsp;<img src="http://p.ananas.chaoxing.com/star3/origin/01817ecf3b00a67d68e2e02cb2374530.jpg" title="?????2.jpg" width="200" height="150" border="0" hspace="0" vspace="0"/>&nbsp; &nbsp;&nbsp;<img src="http://p.ananas.chaoxing.com/star3/origin/477045a593da2fdaee7f6510756ca558.jpg" title="?????3.jpg"/></p><p><br/></p><p><br/>
+					</div>
+
+
+					<ul class="blankList2">
+						<p style="font-size:.3rem;color:#999;padding:.2rem 0;">第1空:</p>
+						<div class="Briefanswer editorBlank404885925" data-itemId="4048859251" data-editorIndex="4" style="border:1px solid #EBEBEB;overflow:hidden;border-radius:.1rem;margin-top:0;min-height: 60px;">
+							<div class="jdt" style="padding:0px;border:none;" data-editorIndex="4">
+								<div id="ananas-editor-answer4048859251" class="ananas-editor-answer"></div>
+								<textarea id="answer4048859251" name="answer4048859251" style="display:none;"></textarea>
+							</div>
+						</div>
+						<p style="font-size:.3rem;color:#999;padding:.2rem 0;">第2空:</p>
+						<div class="Briefanswer editorBlank404885925" data-itemId="4048859252" data-editorIndex="5" style="border:1px solid #EBEBEB;overflow:hidden;border-radius:.1rem;margin-top:0;min-height: 60px;">
+							<div class="jdt" style="padding:0px;border:none;" data-editorIndex="5">
+								<div id="ananas-editor-answer4048859252" class="ananas-editor-answer"></div>
+								<textarea id="answer4048859252" name="answer4048859252" style="display:none;"></textarea>
 							</div>
 						</div>
 						<p style="font-size:.3rem;color:#999;padding:.2rem 0;">第3空:</p>
-						<div class="Briefanswer editorBlank213031704" data-itemId="2130317043" data-editorIndex="2" style="border:1px solid #EBEBEB;overflow:hidden;border-radius:.1rem;margin-top:0;min-height: 60px;">
-							<div class="jdt" style="padding:0px;border:none;" data-editorIndex="2">
-								<div id="ananas-editor-answer2130317043" class="ananas-editor-answer"></div>
-								<textarea id="answer2130317043" name="answer2130317043" style="display:none;"></textarea>
-							</div>
-						</div>
-						<p style="font-size:.3rem;color:#999;padding:.2rem 0;">第4空:</p>
-						<div class="Briefanswer editorBlank213031704" data-itemId="2130317044" data-editorIndex="3" style="border:1px solid #EBEBEB;overflow:hidden;border-radius:.1rem;margin-top:0;min-height: 60px;">
-							<div class="jdt" style="padding:0px;border:none;" data-editorIndex="3">
-								<div id="ananas-editor-answer2130317044" class="ananas-editor-answer"></div>
-								<textarea id="answer2130317044" name="answer2130317044" style="display:none;"></textarea>
-							</div>
-						</div>
-						<p style="font-size:.3rem;color:#999;padding:.2rem 0;">第5空:</p>
-						<div class="Briefanswer editorBlank213031704" data-itemId="2130317045" data-editorIndex="4" style="border:1px solid #EBEBEB;overflow:hidden;border-radius:.1rem;margin-top:0;min-height: 60px;">
-							<div class="jdt" style="padding:0px;border:none;" data-editorIndex="4">
-								<div id="ananas-editor-answer2130317045" class="ananas-editor-answer"></div>
-								<textarea id="answer2130317045" name="answer2130317045" style="display:none;"></textarea>
-							</div>
-						</div>
-					</ul>
-
-
-					<input type="hidden" name="tiankongsize213031704" value="5">
-					<input type="hidden" id="answertype213031704" name="answertype213031704" value="2"/>
-
-
-					<script>
-						var body = Ext.getBody();
-						var editorBlanks = $(".editorBlank213031704");
-						var editorNum = editorBlanks.length;
-						var qtid = "213031704";
-
-						var ueConfig ={
-							initialFrameHeight : 200,
-							autoHeightEnabled : true,
-							iframeCssUrl : '/ananas/ueditor/themes/iframe_wap_editor.css'
-						}
-						if('1' == '1' && '0' != '1'){
-							ueConfig.initialFrameHeight = 60;
-							ueConfig.pasteplain = true;
-							ueConfig.disablePasteImage = true;
-						}
-						editorBlanks.each(function(idx) {
-							var index = parseInt($(this).attr("data-editorIndex"));
-							var itemId = $(this).attr("data-itemId");
-							editors[index] = Ext.create('ananas.InnerEditor', {
-								renderTo : "ananas-editor-answer" + itemId,
-								ueditorConfig : ueConfig
-							});
-
-							editors[index].on('ready', function() {
-								document.activeElement.blur();
-								var ueditor = this.ueditor;
-								var c = $('#answer' + itemId).val();
-								if (c) {
-									ueditor.setContent(c);
-								} else {
-									ueditor.setContent("");
-								}
-
-								ueditor && ueditor.addListener('blur', function(e) {
-									$('#answer' + itemId).val(ueditor.getContent());
-								});
-
-								ueditor && ueditor.addListener('contentChange', function(e) {
-									var balnkAnswer = ueditor.getContent();
-									var truelyChange = balnkAnswer != $('#answer' + itemId).val();
-									$('#answer' + itemId).val(balnkAnswer);
-									controlEmoticons(ueditor, true);
-									if(truelyChange){
-										stopSwipe();
-									}
-								});
-
-								ueditor.emptyPlaceHolder && ueditor.emptyPlaceHolder('请输入答案');
-
-								var imgs = $('.ans-ued-img', ueditor.document.body);
-								if (imgs && imgs.length > 0) {
-									var img = imgs[imgs.length - 1];
-									img.onload = function() {
-										ueditor.adjustHeight();
-									}
-								}
-
-							});
-						});
-
-					</script>
-				</div>
-			</div>
-
-			<div class="Py-mian1 singleQuesId" data="213031705">
-				<div>
-					<div class="Py-m1-title fs16 fontLabel" tabindex="0" role="text" >
-						2.<span class="quesType">[填空题]</span>
-						软件工程方法学分为（&nbsp; &nbsp; ）和（&nbsp; &nbsp; ）。<br/>
-					</div>
-
-
-					<ul class="blankList2">
-						<p style="font-size:.3rem;color:#999;padding:.2rem 0;">第1空:</p>
-						<div class="Briefanswer editorBlank213031705" data-itemId="2130317051" data-editorIndex="5" style="border:1px solid #EBEBEB;overflow:hidden;border-radius:.1rem;margin-top:0;min-height: 60px;">
-							<div class="jdt" style="padding:0px;border:none;" data-editorIndex="5">
-								<div id="ananas-editor-answer2130317051" class="ananas-editor-answer"></div>
-								<textarea id="answer2130317051" name="answer2130317051" style="display:none;"></textarea>
-							</div>
-						</div>
-						<p style="font-size:.3rem;color:#999;padding:.2rem 0;">第2空:</p>
-						<div class="Briefanswer editorBlank213031705" data-itemId="2130317052" data-editorIndex="6" style="border:1px solid #EBEBEB;overflow:hidden;border-radius:.1rem;margin-top:0;min-height: 60px;">
+						<div class="Briefanswer editorBlank404885925" data-itemId="4048859253" data-editorIndex="6" style="border:1px solid #EBEBEB;overflow:hidden;border-radius:.1rem;margin-top:0;min-height: 60px;">
 							<div class="jdt" style="padding:0px;border:none;" data-editorIndex="6">
-								<div id="ananas-editor-answer2130317052" class="ananas-editor-answer"></div>
-								<textarea id="answer2130317052" name="answer2130317052" style="display:none;"></textarea>
+								<div id="ananas-editor-answer4048859253" class="ananas-editor-answer"></div>
+								<textarea id="answer4048859253" name="answer4048859253" style="display:none;"></textarea>
 							</div>
 						</div>
 					</ul>
 
 
-					<input type="hidden" name="tiankongsize213031705" value="2">
-					<input type="hidden" id="answertype213031705" name="answertype213031705" value="2"/>
+					<input type="hidden" name="tiankongsize404885925" value="3">
+					<input type="hidden" id="answertype404885925" name="answertype404885925" value="2"/>
 
 
 					<script>
 						var body = Ext.getBody();
-						var editorBlanks = $(".editorBlank213031705");
+						var editorBlanks = $(".editorBlank404885925");
 						var editorNum = editorBlanks.length;
-						var qtid = "213031705";
+						var qtid = "404885925";
 
 						var ueConfig ={
 							initialFrameHeight : 200,
@@ -603,83 +1095,739 @@
 				</div>
 			</div>
 
-			<div class="Py-mian1 singleQuesId" data="213031706">
+			<div class="Py-mian1 singleQuesId" data="404885936">
 				<div>
 					<div class="Py-m1-title fs16 fontLabel" tabindex="0" role="text" >
-						3.<span class="quesType">[判断题]</span>
-						传统方法学也称为生命周期方法学或结构化范型。
+						8.<span class="quesType">[阅读理解]</span>
+						如图所示机构中，（标有箭头的构件为原动件）<br/></p><p><img src="http://p.ananas.chaoxing.com/star3/origin/efcae8f8203384b2bcd8d976cfba17ad.jpg" title="?????10.jpg"/>
+					</div>
+					<style>
+						.blankList li{width:100%}
+						.blankInp{width: 5.4rem; border:none; border-bottom:1px solid #e1e1e1;}
+					</style>
+					<div class="readComprehension">
+						<input type="hidden" name="readCompreHension-childType" value="0"/>
+						<input type="hidden" name="readCompreHension-childId" value="0205f9c7-0530-4ec9-bfee-9590c43a61f3"/>
+						<ul class="answerList" style="border-top:1px solid #f2f2f2;">
+							<li style="font-size:15px;" class="ignoreli clearfix">
+								<span style="color:#666">1 (单选题)</span>
+								<div class="ans-cc"><p>复合铰链有（ &nbsp;）处</p></div>
+							</li>
+							<li data="answer" data-itemId="0205f9c7-0530-4ec9-bfee-9590c43a61f3"  class="clearfix single" >
+								<em id-param="A">A</em>
+								<p class="type14">
+									<cc><p>0<br/></p></cc>
+								</p>
+							</li>
+							<li data="answer" data-itemId="0205f9c7-0530-4ec9-bfee-9590c43a61f3"  class="clearfix single" >
+								<em id-param="B">B</em>
+								<p class="type14">
+									<cc><p>3</p></cc>
+								</p>
+							</li>
+							<li data="answer" data-itemId="0205f9c7-0530-4ec9-bfee-9590c43a61f3"  class="clearfix single" >
+								<em id-param="C">C</em>
+								<p class="type14">
+									<cc><p>2</p></cc>
+								</p>
+							</li>
+							<li data="answer" data-itemId="0205f9c7-0530-4ec9-bfee-9590c43a61f3"  class="clearfix single" >
+								<em id-param="D">D</em>
+								<p class="type14">
+									<cc><p>1</p></cc>
+								</p>
+							</li>
+						</ul>
+						<input type="hidden" name="readCompreHension-childType" value="0"/>
+						<input type="hidden" name="readCompreHension-childId" value="3ade5909-0d73-40ab-99f0-31292ed5315f"/>
+						<ul class="answerList" style="border-top:1px solid #f2f2f2;">
+							<li style="font-size:15px;" class="ignoreli clearfix">
+								<span style="color:#666">2 (单选题)</span>
+								<div class="ans-cc"><p>局部自由度在（ &nbsp; ）</p></div>
+							</li>
+							<li data="answer" data-itemId="3ade5909-0d73-40ab-99f0-31292ed5315f"  class="clearfix single" >
+								<em id-param="A">A</em>
+								<p class="type14">
+									<cc><p>铰链D处</p></cc>
+								</p>
+							</li>
+							<li data="answer" data-itemId="3ade5909-0d73-40ab-99f0-31292ed5315f"  class="clearfix single" >
+								<em id-param="B">B</em>
+								<p class="type14">
+									<cc><p>铰链B处</p></cc>
+								</p>
+							</li>
+							<li data="answer" data-itemId="3ade5909-0d73-40ab-99f0-31292ed5315f"  class="clearfix single" >
+								<em id-param="C">C</em>
+								<p class="type14">
+									<cc><p>铰链E处</p></cc>
+								</p>
+							</li>
+							<li data="answer" data-itemId="3ade5909-0d73-40ab-99f0-31292ed5315f"  class="clearfix single" >
+								<em id-param="D">D</em>
+								<p class="type14">
+									<cc><p>铰链C处</p></cc>
+								</p>
+							</li>
+						</ul>
+						<input type="hidden" name="readCompreHension-childType" value="0"/>
+						<input type="hidden" name="readCompreHension-childId" value="957ff4fb-a063-49b3-8738-a875e3fb72fb"/>
+						<ul class="answerList" style="border-top:1px solid #f2f2f2;">
+							<li style="font-size:15px;" class="ignoreli clearfix">
+								<span style="color:#666">3 (单选题)</span>
+								<div class="ans-cc"><p>可用作自由度计算的高副有（ &nbsp;）处</p></div>
+							</li>
+							<li data="answer" data-itemId="957ff4fb-a063-49b3-8738-a875e3fb72fb"  class="clearfix single" >
+								<em id-param="A">A</em>
+								<p class="type14">
+									<cc><p>2<br/></p></cc>
+								</p>
+							</li>
+							<li data="answer" data-itemId="957ff4fb-a063-49b3-8738-a875e3fb72fb"  class="clearfix single" >
+								<em id-param="B">B</em>
+								<p class="type14">
+									<cc><p>1</p></cc>
+								</p>
+							</li>
+							<li data="answer" data-itemId="957ff4fb-a063-49b3-8738-a875e3fb72fb"  class="clearfix single" >
+								<em id-param="C">C</em>
+								<p class="type14">
+									<cc><p>3</p></cc>
+								</p>
+							</li>
+							<li data="answer" data-itemId="957ff4fb-a063-49b3-8738-a875e3fb72fb"  class="clearfix single" >
+								<em id-param="D">D</em>
+								<p class="type14">
+									<cc><p>0</p></cc>
+								</p>
+							</li>
+						</ul>
+						<input type="hidden" name="readCompreHension-childType" value="0"/>
+						<input type="hidden" name="readCompreHension-childId" value="4879e4a8-4ffa-49d2-af6e-52503336ed24"/>
+						<ul class="answerList" style="border-top:1px solid #f2f2f2;">
+							<li style="font-size:15px;" class="ignoreli clearfix">
+								<span style="color:#666">4 (单选题)</span>
+								<div class="ans-cc"><p>可用自由度计算的转动副有（ &nbsp; ）处</p></div>
+							</li>
+							<li data="answer" data-itemId="4879e4a8-4ffa-49d2-af6e-52503336ed24"  class="clearfix single" >
+								<em id-param="A">A</em>
+								<p class="type14">
+									<cc><p>1</p></cc>
+								</p>
+							</li>
+							<li data="answer" data-itemId="4879e4a8-4ffa-49d2-af6e-52503336ed24"  class="clearfix single" >
+								<em id-param="B">B</em>
+								<p class="type14">
+									<cc><p>2</p></cc>
+								</p>
+							</li>
+							<li data="answer" data-itemId="4879e4a8-4ffa-49d2-af6e-52503336ed24"  class="clearfix single" >
+								<em id-param="C">C</em>
+								<p class="type14">
+									<cc><p>3</p></cc>
+								</p>
+							</li>
+							<li data="answer" data-itemId="4879e4a8-4ffa-49d2-af6e-52503336ed24"  class="clearfix single" >
+								<em id-param="D">D</em>
+								<p class="type14">
+									<cc><p>4</p></cc>
+								</p>
+							</li>
+						</ul>
+						<input type="hidden" name="readCompreHension-childType" value="0"/>
+						<input type="hidden" name="readCompreHension-childId" value="3f744517-c7b8-4b45-b045-7676b5cfc61a"/>
+						<ul class="answerList" style="border-top:1px solid #f2f2f2;">
+							<li style="font-size:15px;" class="ignoreli clearfix">
+								<span style="color:#666">5 (单选题)</span>
+								<div class="ans-cc"><p>可用自由度计算的移动副有（ &nbsp;）处</p></div>
+							</li>
+							<li data="answer" data-itemId="3f744517-c7b8-4b45-b045-7676b5cfc61a"  class="clearfix single" >
+								<em id-param="A">A</em>
+								<p class="type14">
+									<cc><p>2<br/></p></cc>
+								</p>
+							</li>
+							<li data="answer" data-itemId="3f744517-c7b8-4b45-b045-7676b5cfc61a"  class="clearfix single" >
+								<em id-param="B">B</em>
+								<p class="type14">
+									<cc><p>1</p></cc>
+								</p>
+							</li>
+							<li data="answer" data-itemId="3f744517-c7b8-4b45-b045-7676b5cfc61a"  class="clearfix single" >
+								<em id-param="C">C</em>
+								<p class="type14">
+									<cc><p>3</p></cc>
+								</p>
+							</li>
+							<li data="answer" data-itemId="3f744517-c7b8-4b45-b045-7676b5cfc61a"  class="clearfix single" >
+								<em id-param="D">D</em>
+								<p class="type14">
+									<cc><p>0</p></cc>
+								</p>
+							</li>
+						</ul>
+						<input type="hidden" name="readCompreHension-childType" value="0"/>
+						<input type="hidden" name="readCompreHension-childId" value="dd2f4e16-9253-40a3-bdcc-14cd2c4f95e4"/>
+						<ul class="answerList" style="border-top:1px solid #f2f2f2;">
+							<li style="font-size:15px;" class="ignoreli clearfix">
+								<span style="color:#666">6 (单选题)</span>
+								<div class="ans-cc"><p><span style="font-size: 14px;font-family: 宋体">机构的自由度数为（ &nbsp;）</span></p></div>
+							</li>
+							<li data="answer" data-itemId="dd2f4e16-9253-40a3-bdcc-14cd2c4f95e4"  class="clearfix single" >
+								<em id-param="A">A</em>
+								<p class="type14">
+									<cc><p>2<br/></p></cc>
+								</p>
+							</li>
+							<li data="answer" data-itemId="dd2f4e16-9253-40a3-bdcc-14cd2c4f95e4"  class="clearfix single" >
+								<em id-param="B">B</em>
+								<p class="type14">
+									<cc><p>1</p></cc>
+								</p>
+							</li>
+							<li data="answer" data-itemId="dd2f4e16-9253-40a3-bdcc-14cd2c4f95e4"  class="clearfix single" >
+								<em id-param="C">C</em>
+								<p class="type14">
+									<cc><p>3</p></cc>
+								</p>
+							</li>
+							<li data="answer" data-itemId="dd2f4e16-9253-40a3-bdcc-14cd2c4f95e4"  class="clearfix single" >
+								<em id-param="D">D</em>
+								<p class="type14">
+									<cc><p>0</p></cc>
+								</p>
+							</li>
+						</ul>
+						<input type="hidden" name="readCompreHension-childType" value="0"/>
+						<input type="hidden" name="readCompreHension-childId" value="2a28e10b-055f-4659-8460-678a678ec62b"/>
+						<ul class="answerList" style="border-top:1px solid #f2f2f2;">
+							<li style="font-size:15px;" class="ignoreli clearfix">
+								<span style="color:#666">7 (单选题)</span>
+								<div class="ans-cc"><p>该机构是否具有确定运动。</p></div>
+							</li>
+							<li data="answer" data-itemId="2a28e10b-055f-4659-8460-678a678ec62b"  class="clearfix single" >
+								<em id-param="A">A</em>
+								<p class="type14">
+									<cc><p>是</p></cc>
+								</p>
+							</li>
+							<li data="answer" data-itemId="2a28e10b-055f-4659-8460-678a678ec62b"  class="clearfix single" >
+								<em id-param="B">B</em>
+								<p class="type14">
+									<cc><p>否</p></cc>
+								</p>
+							</li>
+						</ul>
+						<input type="hidden" id="answertype404885936" name="answertype404885936" value="15"/>
+						<input type="hidden" name="answer404885936" id="answer404885936"  value="[{&quot;4879e4a8-4ffa-49d2-af6e-52503336ed24&quot;:&quot;{\&quot;score\&quot;:0.0,\&quot;answer\&quot;:\&quot;\&quot;,\&quot;judege\&quot;:\&quot;wrong\&quot;,\&quot;type\&quot;:0}&quot;,&quot;3f744517-c7b8-4b45-b045-7676b5cfc61a&quot;:&quot;{\&quot;score\&quot;:0.0,\&quot;answer\&quot;:\&quot;\&quot;,\&quot;judege\&quot;:\&quot;wrong\&quot;,\&quot;type\&quot;:0}&quot;,&quot;0205f9c7-0530-4ec9-bfee-9590c43a61f3&quot;:&quot;{\&quot;score\&quot;:0.0,\&quot;answer\&quot;:\&quot;\&quot;,\&quot;judege\&quot;:\&quot;wrong\&quot;,\&quot;type\&quot;:0}&quot;,&quot;3ade5909-0d73-40ab-99f0-31292ed5315f&quot;:&quot;{\&quot;score\&quot;:0.0,\&quot;answer\&quot;:\&quot;\&quot;,\&quot;judege\&quot;:\&quot;wrong\&quot;,\&quot;type\&quot;:0}&quot;,&quot;957ff4fb-a063-49b3-8738-a875e3fb72fb&quot;:&quot;{\&quot;score\&quot;:0.0,\&quot;answer\&quot;:\&quot;\&quot;,\&quot;judege\&quot;:\&quot;wrong\&quot;,\&quot;type\&quot;:0}&quot;,&quot;2a28e10b-055f-4659-8460-678a678ec62b&quot;:&quot;{\&quot;score\&quot;:0.0,\&quot;answer\&quot;:\&quot;\&quot;,\&quot;judege\&quot;:\&quot;wrong\&quot;,\&quot;type\&quot;:0}&quot;,&quot;dd2f4e16-9253-40a3-bdcc-14cd2c4f95e4&quot;:&quot;{\&quot;score\&quot;:0.0,\&quot;answer\&quot;:\&quot;\&quot;,\&quot;judege\&quot;:\&quot;wrong\&quot;,\&quot;type\&quot;:0}&quot;}]" class="answerInput"/>
+					</div>
+					<script>
+						var shortAnswers = $(".shortAnswer404885936");
+						var editorNum = shortAnswers.length;
+						var blankobj = '1' == '1';
+						shortAnswers.each(function() {
+							var index = $(this).attr("data-editorIndex");
+							var ueConfig = {
+								initialFrameHeight : 200,
+								autoHeightEnabled : true,
+								iframeCssUrl : '/ananas/ueditor/themes/iframe_wap_editor.css?v=2022-0616-2100'
+							}
+							if(blankobj && $(this).hasClass('blankItem')){
+								ueConfig.initialFrameHeight = 60;
+								ueConfig.pasteplain = true;
+								ueConfig.disablePasteImage = true;
+							}
+							var itemId = $(this).attr("data-itemId");
+							editors[index] = Ext.create('ananas.InnerEditor',{
+								renderTo : "ananas-editor-answer"+itemId,
+								ueditorConfig : ueConfig
+							});
+
+							editors[index].on('ready',function(){
+								document.activeElement.blur();
+								var ueditor = this.ueditor;
+								var c = $('#answer'+itemId).val();
+								if(c){
+									ueditor.setContent(c);
+								}else{
+									ueditor.setContent("");
+								}
+
+								ueditor && ueditor.addListener("blur", function(e) {
+									$("#answer" + itemId).val(ueditor.getContent());
+								});
+
+								ueditor && ueditor.addListener("contentChange", function(e) {
+									var str = ueditor.getContent();
+									var truelyChange = str != $("#answer" + itemId).val();
+									$("#answer" + itemId).val(str);
+									if(truelyChange){
+										stopSwipe();
+									}
+								});
+
+								var imgs = $('.ans-ued-img',ueditor.document.body);
+								if(imgs && imgs.length > 0){
+									var img = imgs[imgs.length-1];
+									img.onload = function() {ueditor.adjustHeight();}
+								}
+
+								//放粘贴功能 0
+							});
+						});
+
+					</script>								                                                                        </div>
+			</div>
+
+			<div class="Py-mian1 singleQuesId" data="404885937">
+				<div>
+					<div class="Py-m1-title fs16 fontLabel" tabindex="0" role="text" >
+						9.<span class="quesType">[阅读理解]</span>
+						如图所示机构中，（标有箭头的构件为原动件）。</p><p><img src="http://p.ananas.chaoxing.com/star3/origin/c6ba31dc88cf41c073237ec7d0d03c54.jpg" title="?????11.jpg"/>
+					</div>
+					<style>
+						.blankList li{width:100%}
+						.blankInp{width: 5.4rem; border:none; border-bottom:1px solid #e1e1e1;}
+					</style>
+					<div class="readComprehension">
+						<input type="hidden" name="readCompreHension-childType" value="0"/>
+						<input type="hidden" name="readCompreHension-childId" value="3efd68fb-52b7-46cf-a0f0-b63ac91f3a92"/>
+						<ul class="answerList" style="border-top:1px solid #f2f2f2;">
+							<li style="font-size:15px;" class="ignoreli clearfix">
+								<span style="color:#666">1 (单选题)</span>
+								<div class="ans-cc"><p>复合铰链在（ &nbsp; ）处</p></div>
+							</li>
+							<li data="answer" data-itemId="3efd68fb-52b7-46cf-a0f0-b63ac91f3a92"  class="clearfix single" >
+								<em id-param="A">A</em>
+								<p class="type14">
+									<cc><p>铰链A处</p></cc>
+								</p>
+							</li>
+							<li data="answer" data-itemId="3efd68fb-52b7-46cf-a0f0-b63ac91f3a92"  class="clearfix single" >
+								<em id-param="B">B</em>
+								<p class="type14">
+									<cc><p>铰链B处</p></cc>
+								</p>
+							</li>
+							<li data="answer" data-itemId="3efd68fb-52b7-46cf-a0f0-b63ac91f3a92"  class="clearfix single" >
+								<em id-param="C">C</em>
+								<p class="type14">
+									<cc><p>铰链C处</p></cc>
+								</p>
+							</li>
+							<li data="answer" data-itemId="3efd68fb-52b7-46cf-a0f0-b63ac91f3a92"  class="clearfix single" >
+								<em id-param="D">D</em>
+								<p class="type14">
+									<cc><p>&nbsp;铰链E处</p></cc>
+								</p>
+							</li>
+						</ul>
+						<input type="hidden" name="readCompreHension-childType" value="0"/>
+						<input type="hidden" name="readCompreHension-childId" value="4707bfbd-5f82-4012-bf1b-05f1db22bb1e"/>
+						<ul class="answerList" style="border-top:1px solid #f2f2f2;">
+							<li style="font-size:15px;" class="ignoreli clearfix">
+								<span style="color:#666">2 (单选题)</span>
+								<div class="ans-cc"><p><span style="font-size: 14px;font-family: 宋体">活动构件数有（ ）个。</span></p></div>
+							</li>
+							<li data="answer" data-itemId="4707bfbd-5f82-4012-bf1b-05f1db22bb1e"  class="clearfix single" >
+								<em id-param="A">A</em>
+								<p class="type14">
+									<cc><p>5<br/></p></cc>
+								</p>
+							</li>
+							<li data="answer" data-itemId="4707bfbd-5f82-4012-bf1b-05f1db22bb1e"  class="clearfix single" >
+								<em id-param="B">B</em>
+								<p class="type14">
+									<cc><p>6</p></cc>
+								</p>
+							</li>
+							<li data="answer" data-itemId="4707bfbd-5f82-4012-bf1b-05f1db22bb1e"  class="clearfix single" >
+								<em id-param="C">C</em>
+								<p class="type14">
+									<cc><p>7</p></cc>
+								</p>
+							</li>
+							<li data="answer" data-itemId="4707bfbd-5f82-4012-bf1b-05f1db22bb1e"  class="clearfix single" >
+								<em id-param="D">D</em>
+								<p class="type14">
+									<cc><p>8</p></cc>
+								</p>
+							</li>
+						</ul>
+						<input type="hidden" name="readCompreHension-childType" value="0"/>
+						<input type="hidden" name="readCompreHension-childId" value="3eda132f-0b5f-44f6-9721-99ccb1d92a3f"/>
+						<ul class="answerList" style="border-top:1px solid #f2f2f2;">
+							<li style="font-size:15px;" class="ignoreli clearfix">
+								<span style="color:#666">3 (单选题)</span>
+								<div class="ans-cc"><p>可用自由度计算的转动副有（ &nbsp;）处</p></div>
+							</li>
+							<li data="answer" data-itemId="3eda132f-0b5f-44f6-9721-99ccb1d92a3f"  class="clearfix single" >
+								<em id-param="A">A</em>
+								<p class="type14">
+									<cc><p>3</p></cc>
+								</p>
+							</li>
+							<li data="answer" data-itemId="3eda132f-0b5f-44f6-9721-99ccb1d92a3f"  class="clearfix cur single" >
+								<em id-param="B">B</em>
+								<p class="type14">
+									<cc><p>4</p></cc>
+								</p>
+							</li>
+							<li data="answer" data-itemId="3eda132f-0b5f-44f6-9721-99ccb1d92a3f"  class="clearfix single" >
+								<em id-param="C">C</em>
+								<p class="type14">
+									<cc><p>5</p></cc>
+								</p>
+							</li>
+							<li data="answer" data-itemId="3eda132f-0b5f-44f6-9721-99ccb1d92a3f"  class="clearfix single" >
+								<em id-param="D">D</em>
+								<p class="type14">
+									<cc><p>6</p></cc>
+								</p>
+							</li>
+						</ul>
+						<input type="hidden" name="readCompreHension-childType" value="0"/>
+						<input type="hidden" name="readCompreHension-childId" value="0e91ce7e-24df-457d-b1f1-ff01e5086dc7"/>
+						<ul class="answerList" style="border-top:1px solid #f2f2f2;">
+							<li style="font-size:15px;" class="ignoreli clearfix">
+								<span style="color:#666">4 (单选题)</span>
+								<div class="ans-cc"><p><span style="font-size: 14px;font-family: 宋体">可用自由度计算的移动副有（ &nbsp;）处</span></p></div>
+							</li>
+							<li data="answer" data-itemId="0e91ce7e-24df-457d-b1f1-ff01e5086dc7"  class="clearfix single" >
+								<em id-param="A">A</em>
+								<p class="type14">
+									<cc><p>1</p></cc>
+								</p>
+							</li>
+							<li data="answer" data-itemId="0e91ce7e-24df-457d-b1f1-ff01e5086dc7"  class="clearfix single" >
+								<em id-param="B">B</em>
+								<p class="type14">
+									<cc><p>2</p></cc>
+								</p>
+							</li>
+							<li data="answer" data-itemId="0e91ce7e-24df-457d-b1f1-ff01e5086dc7"  class="clearfix single" >
+								<em id-param="C">C</em>
+								<p class="type14">
+									<cc><p>3</p></cc>
+								</p>
+							</li>
+							<li data="answer" data-itemId="0e91ce7e-24df-457d-b1f1-ff01e5086dc7"  class="clearfix single" >
+								<em id-param="D">D</em>
+								<p class="type14">
+									<cc><p>4</p></cc>
+								</p>
+							</li>
+						</ul>
+						<input type="hidden" name="readCompreHension-childType" value="0"/>
+						<input type="hidden" name="readCompreHension-childId" value="6d90101d-a976-4f8f-a968-c4f46e27ff9c"/>
+						<ul class="answerList" style="border-top:1px solid #f2f2f2;">
+							<li style="font-size:15px;" class="ignoreli clearfix">
+								<span style="color:#666">5 (单选题)</span>
+								<div class="ans-cc"><p><span style="font-size: 14px;font-family: 宋体">机构的自由度数为（ &nbsp; ）</span></p></div>
+							</li>
+							<li data="answer" data-itemId="6d90101d-a976-4f8f-a968-c4f46e27ff9c"  class="clearfix cur single" >
+								<em id-param="A">A</em>
+								<p class="type14">
+									<cc><p>2</p></cc>
+								</p>
+							</li>
+							<li data="answer" data-itemId="6d90101d-a976-4f8f-a968-c4f46e27ff9c"  class="clearfix single" >
+								<em id-param="B">B</em>
+								<p class="type14">
+									<cc><p>1</p></cc>
+								</p>
+							</li>
+							<li data="answer" data-itemId="6d90101d-a976-4f8f-a968-c4f46e27ff9c"  class="clearfix single" >
+								<em id-param="C">C</em>
+								<p class="type14">
+									<cc><p>3</p></cc>
+								</p>
+							</li>
+							<li data="answer" data-itemId="6d90101d-a976-4f8f-a968-c4f46e27ff9c"  class="clearfix single" >
+								<em id-param="D">D</em>
+								<p class="type14">
+									<cc><p>0</p></cc>
+								</p>
+							</li>
+						</ul>
+						<input type="hidden" name="readCompreHension-childType" value="0"/>
+						<input type="hidden" name="readCompreHension-childId" value="96d05580-caef-48ac-bf44-be1336a5c505"/>
+						<ul class="answerList" style="border-top:1px solid #f2f2f2;">
+							<li style="font-size:15px;" class="ignoreli clearfix">
+								<span style="color:#666">6 (单选题)</span>
+								<div class="ans-cc"><p>该机构是否具有确定运动。</p></div>
+							</li>
+							<li data="answer" data-itemId="96d05580-caef-48ac-bf44-be1336a5c505"  class="clearfix single" >
+								<em id-param="A">A</em>
+								<p class="type14">
+									<cc><p><span style="font-size: 10.5pt; font-family: 宋体;">是</span></p></cc>
+								</p>
+							</li>
+							<li data="answer" data-itemId="96d05580-caef-48ac-bf44-be1336a5c505"  class="clearfix single" >
+								<em id-param="B">B</em>
+								<p class="type14">
+									<cc><p><span style="font-size: 10.5pt; font-family: 宋体;">否</span></p></cc>
+								</p>
+							</li>
+						</ul>
+						<input type="hidden" id="answertype404885937" name="answertype404885937" value="15"/>
+						<input type="hidden" name="answer404885937" id="answer404885937"  value="[{&quot;3efd68fb-52b7-46cf-a0f0-b63ac91f3a92&quot;:&quot;{\&quot;score\&quot;:0.0,\&quot;answer\&quot;:\&quot;\&quot;,\&quot;judege\&quot;:\&quot;wrong\&quot;,\&quot;type\&quot;:0}&quot;,&quot;3eda132f-0b5f-44f6-9721-99ccb1d92a3f&quot;:&quot;{\&quot;score\&quot;:0.0,\&quot;answer\&quot;:\&quot;B\&quot;,\&quot;judege\&quot;:\&quot;wrong\&quot;,\&quot;type\&quot;:0}&quot;,&quot;0e91ce7e-24df-457d-b1f1-ff01e5086dc7&quot;:&quot;{\&quot;score\&quot;:0.0,\&quot;answer\&quot;:\&quot;\&quot;,\&quot;judege\&quot;:\&quot;wrong\&quot;,\&quot;type\&quot;:0}&quot;,&quot;6d90101d-a976-4f8f-a968-c4f46e27ff9c&quot;:&quot;{\&quot;score\&quot;:0.0,\&quot;answer\&quot;:\&quot;A\&quot;,\&quot;judege\&quot;:\&quot;wrong\&quot;,\&quot;type\&quot;:0}&quot;,&quot;96d05580-caef-48ac-bf44-be1336a5c505&quot;:&quot;{\&quot;score\&quot;:0.0,\&quot;answer\&quot;:\&quot;\&quot;,\&quot;judege\&quot;:\&quot;wrong\&quot;,\&quot;type\&quot;:0}&quot;,&quot;4707bfbd-5f82-4012-bf1b-05f1db22bb1e&quot;:&quot;{\&quot;score\&quot;:0.0,\&quot;answer\&quot;:\&quot;\&quot;,\&quot;judege\&quot;:\&quot;wrong\&quot;,\&quot;type\&quot;:0}&quot;}]" class="answerInput"/>
+					</div>
+					<script>
+						var shortAnswers = $(".shortAnswer404885937");
+						var editorNum = shortAnswers.length;
+						var blankobj = '1' == '1';
+						shortAnswers.each(function() {
+							var index = $(this).attr("data-editorIndex");
+							var ueConfig = {
+								initialFrameHeight : 200,
+								autoHeightEnabled : true,
+								iframeCssUrl : '/ananas/ueditor/themes/iframe_wap_editor.css?v=2022-0616-2100'
+							}
+							if(blankobj && $(this).hasClass('blankItem')){
+								ueConfig.initialFrameHeight = 60;
+								ueConfig.pasteplain = true;
+								ueConfig.disablePasteImage = true;
+							}
+							var itemId = $(this).attr("data-itemId");
+							editors[index] = Ext.create('ananas.InnerEditor',{
+								renderTo : "ananas-editor-answer"+itemId,
+								ueditorConfig : ueConfig
+							});
+
+							editors[index].on('ready',function(){
+								document.activeElement.blur();
+								var ueditor = this.ueditor;
+								var c = $('#answer'+itemId).val();
+								if(c){
+									ueditor.setContent(c);
+								}else{
+									ueditor.setContent("");
+								}
+
+								ueditor && ueditor.addListener("blur", function(e) {
+									$("#answer" + itemId).val(ueditor.getContent());
+								});
+
+								ueditor && ueditor.addListener("contentChange", function(e) {
+									var str = ueditor.getContent();
+									var truelyChange = str != $("#answer" + itemId).val();
+									$("#answer" + itemId).val(str);
+									if(truelyChange){
+										stopSwipe();
+									}
+								});
+
+								var imgs = $('.ans-ued-img',ueditor.document.body);
+								if(imgs && imgs.length > 0){
+									var img = imgs[imgs.length-1];
+									img.onload = function() {ueditor.adjustHeight();}
+								}
+
+								//放粘贴功能 0
+							});
+						});
+
+					</script>								                                                                        </div>
+			</div>
+
+			<div class="Py-mian1 singleQuesId" data="404885926">
+				<div>
+					<div class="Py-m1-title fs16 fontLabel" tabindex="0" role="text" >
+						10.<span class="quesType">[判断题]</span>
+						<span style="font-family:宋体">两个构件之间为面接触形成的运动副，称为低副。</span>
 					</div>
 					<ul class="answerList panduan">
-						<li  val-param="true" id-param="213031706"
+						<li  val-param="true" id-param="404885926"
 							 class="clearfix"  tabindex="0"  role="text" ><em>A</em><p>对</p>
 						</li>
-						<li  val-param="false" id-param="213031706"
+						<li  val-param="false" id-param="404885926"
 							 class="clearfix"   tabindex="0"  role="text" ><em>B</em><p>错</p></li>
 					</ul>
 
 
-					<input type="hidden" id="answer213031706" name="answer213031706" value="" class="answerInput"/>
-					<input type="hidden" id="answertype213031706" name="answertype213031706" value="3"/>
+					<input type="hidden" id="answer404885926" name="answer404885926" value="" class="answerInput"/>
+					<input type="hidden" id="answertype404885926" name="answertype404885926" value="3"/>
 				</div>
 			</div>
 
-			<div class="Py-mian1 singleQuesId" data="213031707">
+			<div class="Py-mian1 singleQuesId" data="404885927">
 				<div>
 					<div class="Py-m1-title fs16 fontLabel" tabindex="0" role="text" >
-						4.<span class="quesType">[判断题]</span>
-						面向对象方法学把软件生命周期的全过程依次划分为若干个阶段，然后顺序地完成每个阶段的任务。<br/></p><p><br/>
+						11.<span class="quesType">[判断题]</span>
+						<span style="font-family:宋体">一个低副的形成引入两个约束。</span>
 					</div>
 					<ul class="answerList panduan">
-						<li  val-param="true" id-param="213031707"
+						<li  val-param="true" id-param="404885927"
 							 class="clearfix"  tabindex="0"  role="text" ><em>A</em><p>对</p>
 						</li>
-						<li  val-param="false" id-param="213031707"
+						<li  val-param="false" id-param="404885927"
 							 class="clearfix"   tabindex="0"  role="text" ><em>B</em><p>错</p></li>
 					</ul>
 
 
-					<input type="hidden" id="answer213031707" name="answer213031707" value="" class="answerInput"/>
-					<input type="hidden" id="answertype213031707" name="answertype213031707" value="3"/>
+					<input type="hidden" id="answer404885927" name="answer404885927" value="" class="answerInput"/>
+					<input type="hidden" id="answertype404885927" name="answertype404885927" value="3"/>
 				</div>
 			</div>
 
-			<div class="Py-mian1 singleQuesId" data="213031708">
+			<div class="Py-mian1 singleQuesId" data="404885928">
 				<div>
 					<div class="Py-m1-title fs16 fontLabel" tabindex="0" role="text" >
-						5.<span class="quesType">[判断题]</span>
-						目前，传统方法学仍然是人们在开发软件时使用得十分广泛的软件工程方法学。<br/>
+						12.<span class="quesType">[判断题]</span>
+						<span style="font-family:宋体">一个高副的形成引入两个约束。</span>
 					</div>
 					<ul class="answerList panduan">
-						<li  val-param="true" id-param="213031708"
+						<li  val-param="true" id-param="404885928"
 							 class="clearfix"  tabindex="0"  role="text" ><em>A</em><p>对</p>
 						</li>
-						<li  val-param="false" id-param="213031708"
+						<li  val-param="false" id-param="404885928"
 							 class="clearfix"   tabindex="0"  role="text" ><em>B</em><p>错</p></li>
 					</ul>
 
 
-					<input type="hidden" id="answer213031708" name="answer213031708" value="" class="answerInput"/>
-					<input type="hidden" id="answertype213031708" name="answertype213031708" value="3"/>
+					<input type="hidden" id="answer404885928" name="answer404885928" value="" class="answerInput"/>
+					<input type="hidden" id="answertype404885928" name="answertype404885928" value="3"/>
 				</div>
 			</div>
 
-			<div class="Py-mian1 singleQuesId" data="213031709">
+			<div class="Py-mian1 singleQuesId" data="404885929">
 				<div>
 					<div class="Py-m1-title fs16 fontLabel" tabindex="0" role="text" >
-						6.<span class="quesType">[判断题]</span>
-						与传统方法相反，面向对象方法把数据和行为看成是同等重要的。
+						13.<span class="quesType">[判断题]</span>
+						<span style="font-family:宋体">在计算机构自由度时，可不考虑虚约束。</span>
 					</div>
 					<ul class="answerList panduan">
-						<li  val-param="true" id-param="213031709"
+						<li  val-param="true" id-param="404885929"
 							 class="clearfix"  tabindex="0"  role="text" ><em>A</em><p>对</p>
 						</li>
-						<li  val-param="false" id-param="213031709"
+						<li  val-param="false" id-param="404885929"
 							 class="clearfix"   tabindex="0"  role="text" ><em>B</em><p>错</p></li>
 					</ul>
 
 
-					<input type="hidden" id="answer213031709" name="answer213031709" value="" class="answerInput"/>
-					<input type="hidden" id="answertype213031709" name="answertype213031709" value="3"/>
+					<input type="hidden" id="answer404885929" name="answer404885929" value="" class="answerInput"/>
+					<input type="hidden" id="answertype404885929" name="answertype404885929" value="3"/>
+				</div>
+			</div>
+
+			<div class="Py-mian1 singleQuesId" data="404885930">
+				<div>
+					<div class="Py-m1-title fs16 fontLabel" tabindex="0" role="text" >
+						14.<span class="quesType">[判断题]</span>
+						<span style="font-family: 宋体; ">局部自由度是与机构运动无关的自由度。</span>
+					</div>
+					<ul class="answerList panduan">
+						<li  val-param="true" id-param="404885930"
+							 class="clearfix"  tabindex="0"  role="text" ><em>A</em><p>对</p>
+						</li>
+						<li  val-param="false" id-param="404885930"
+							 class="clearfix"   tabindex="0"  role="text" ><em>B</em><p>错</p></li>
+					</ul>
+
+
+					<input type="hidden" id="answer404885930" name="answer404885930" value="" class="answerInput"/>
+					<input type="hidden" id="answertype404885930" name="answertype404885930" value="3"/>
+				</div>
+			</div>
+
+			<div class="Py-mian1 singleQuesId" data="404885931">
+				<div>
+					<div class="Py-m1-title fs16 fontLabel" tabindex="0" role="text" >
+						15.<span class="quesType">[判断题]</span>
+						<span style="font-family:宋体">虚约束是在机构中存在的多余约束</span><span style="font-family:&#39;Times New Roman&#39;,serif">,</span><span style="font-family:宋体">计算机构自由度时应除去。</span>
+					</div>
+					<ul class="answerList panduan">
+						<li  val-param="true" id-param="404885931"
+							 class="clearfix"  tabindex="0"  role="text" ><em>A</em><p>对</p>
+						</li>
+						<li  val-param="false" id-param="404885931"
+							 class="clearfix"   tabindex="0"  role="text" ><em>B</em><p>错</p></li>
+					</ul>
+
+
+					<input type="hidden" id="answer404885931" name="answer404885931" value="" class="answerInput"/>
+					<input type="hidden" id="answertype404885931" name="answertype404885931" value="3"/>
+				</div>
+			</div>
+
+			<div class="Py-mian1 singleQuesId" data="404885932">
+				<div>
+					<div class="Py-m1-title fs16 fontLabel" tabindex="0" role="text" >
+						16.<span class="quesType">[判断题]</span>
+						<span style="font-family:宋体">机构中每个可动构件都应该有自由度，如图所示的搅面机机构有三个可动构件，所以搅面机有三个自由度。</span></p><p><span style="font-family:宋体"><img src="http://p.ananas.chaoxing.com/star3/origin/a2556e9117496dbfbe46c38508822e4e.jpg" title="?????4.jpg" width="200" height="144" border="0" hspace="0" vspace="0" style="width: 200px; height: 144px;"/></span>
+					</div>
+					<ul class="answerList panduan">
+						<li  val-param="true" id-param="404885932"
+							 class="clearfix"  tabindex="0"  role="text" ><em>A</em><p>对</p>
+						</li>
+						<li  val-param="false" id-param="404885932"
+							 class="clearfix"   tabindex="0"  role="text" ><em>B</em><p>错</p></li>
+					</ul>
+
+
+					<input type="hidden" id="answer404885932" name="answer404885932" value="" class="answerInput"/>
+					<input type="hidden" id="answertype404885932" name="answertype404885932" value="3"/>
+				</div>
+			</div>
+
+			<div class="Py-mian1 singleQuesId" data="404885933">
+				<div>
+					<div class="Py-m1-title fs16 fontLabel" tabindex="0" role="text" >
+						17.<span class="quesType">[判断题]</span>
+						<span style="font-family:宋体">图中构件</span><span style="font-size:&nbsp;14px;font-family:&#39;Times&nbsp;New&nbsp;Roman&#39;,serif">1</span><span style="font-family:宋体">相对于构件</span><span style="font-family:&#39;Times&nbsp;New&nbsp;Roman&#39;,serif">2</span><span style="font-family:&nbsp;宋体">能沿切向</span><em><span style="font-family:&#39;Times&nbsp;New&nbsp;Roman&#39;,serif">A</span></em><sub><span style="font-size:&nbsp;14px;font-family:&#39;Times&nbsp;New&nbsp;Roman&#39;,serif">t</span></sub>&nbsp;<span style="font-family:&nbsp;宋体">移动，沿法向</span><em><span style="font-family:&#39;Times&nbsp;New&nbsp;Roman&#39;,serif">A</span></em><sub><span style="font-size:&nbsp;14px;font-family:&#39;Times&nbsp;New&nbsp;Roman&#39;,serif">n</span></sub><span style="font-family:宋体">向上移动和绕接触点</span><em><span style="font-family:&#39;Times&nbsp;New&nbsp;Roman&#39;,serif">A</span></em><span style="font-family:宋体">转动，所以构件</span><span style="font-family:&#39;Times&nbsp;New&nbsp;Roman&#39;,serif">1</span><span style="font-family:&nbsp;宋体">与</span><span style="font-family:&#39;Times&nbsp;New&nbsp;Roman&#39;,serif">2</span><span style="font-family:宋体">组成的运动副保留三个相对运动。</span></p><p><img src="http://p.ananas.chaoxing.com/star3/origin/f8baecc27e71b940266e9bd3bd87e4f7.jpg" title="?????5.jpg"/>
+					</div>
+					<ul class="answerList panduan">
+						<li  val-param="true" id-param="404885933"
+							 class="clearfix"  tabindex="0"  role="text" ><em>A</em><p>对</p>
+						</li>
+						<li  val-param="false" id-param="404885933"
+							 class="clearfix"   tabindex="0"  role="text" ><em>B</em><p>错</p></li>
+					</ul>
+
+
+					<input type="hidden" id="answer404885933" name="answer404885933" value="" class="answerInput"/>
+					<input type="hidden" id="answertype404885933" name="answertype404885933" value="3"/>
+				</div>
+			</div>
+
+			<div class="Py-mian1 singleQuesId" data="404885934">
+				<div>
+					<div class="Py-m1-title fs16 fontLabel" tabindex="0" role="text" >
+						18.<span class="quesType">[判断题]</span>
+						<span style="font-family:宋体">图中构件</span><span style="font-family:&#39;Times New Roman&#39;,serif">1</span><span style="font-family:宋体">与</span><span style="font-family:&#39;Times New Roman&#39;,serif">2</span><span style="font-family: 宋体">在</span><em><span style="font-family:&#39;Times New Roman&#39;,serif">A</span><span style="font-family: 宋体">、A<sup>’</sup></span></em><span style="font-family:宋体">两处接触，所以构件</span><span style="font-family:&#39;Times New Roman&#39;,serif">1</span><span style="font-family: 宋体">与</span><span style="font-family:&#39;Times New Roman&#39;,serif">2</span><span style="font-family:宋体">组成两个高副。</span></p><p><span style="font-family:宋体"><img src="http://p.ananas.chaoxing.com/star3/origin/84bbab5992c4d5640e9fa2149d53355c.jpg" title="?????6.jpg"/></span>
+					</div>
+					<ul class="answerList panduan">
+						<li  val-param="true" id-param="404885934"
+							 class="clearfix"  tabindex="0"  role="text" ><em>A</em><p>对</p>
+						</li>
+						<li  val-param="false" id-param="404885934"
+							 class="clearfix"   tabindex="0"  role="text" ><em>B</em><p>错</p></li>
+					</ul>
+
+
+					<input type="hidden" id="answer404885934" name="answer404885934" value="" class="answerInput"/>
+					<input type="hidden" id="answertype404885934" name="answertype404885934" value="3"/>
+				</div>
+			</div>
+
+			<div class="Py-mian1 singleQuesId" data="404885935">
+				<div>
+					<div class="Py-m1-title fs16 fontLabel" tabindex="0" role="text" >
+						19.<span class="quesType">[判断题]</span>
+						<span style="font-family:宋体">虽然局部自由度不影响整个机构运动，</span><span style="font-family:宋体">但为了改善机构的运动性能，将滑动摩擦变为滚动摩擦,在</span><span style="font-family:宋体">实际机构中还是采用了局部自由度的结构。</span>
+					</div>
+					<ul class="answerList panduan">
+						<li  val-param="true" id-param="404885935"
+							 class="clearfix"  tabindex="0"  role="text" ><em>A</em><p>对</p>
+						</li>
+						<li  val-param="false" id-param="404885935"
+							 class="clearfix"   tabindex="0"  role="text" ><em>B</em><p>错</p></li>
+					</ul>
+
+
+					<input type="hidden" id="answer404885935" name="answer404885935" value="" class="answerInput"/>
+					<input type="hidden" id="answertype404885935" name="answertype404885935" value="3"/>
 				</div>
 			</div>
 			<input type="hidden" id="answerwqbid" name="answerwqbid"/>
@@ -831,7 +1979,7 @@
 		if(isChaoxingClient == "false") {
 			document.addEventListener('visibilitychange', function () {
 				try {
-					var wnStatus = '0';
+					var wnStatus = '1';
 					if (document.visibilityState === 'hidden' && parent.document.visibilityState === 'hidden' && (wnStatus == '0' || wnStatus == '1' || wnStatus == '5' )) {
 						// 当页面变为不可见状态时执行的操作
 						noSubmitNoTips();
@@ -1263,7 +2411,7 @@
 	}
 	function toadd(){
 		$("#pyFlag").val("");
-		var a = "213031704,213031705,213031706,213031707,213031708,213031709";
+		var a = "404885919,404885920,404885921,404885922,404885923,404885924,404885925,404885936,404885937,404885926,404885927,404885928,404885929,404885930,404885931,404885932,404885933,404885934,404885935";
 		synUeditorContent2FormField();
 		/*
         var legal = true;
@@ -1552,12 +2700,19 @@
 		if (flag) {
 			showTips = "您还有未做完的 " + tipStr + " ，确认提交吗？";
 		}
-		if (window.confirm(showTips)) {
+		$(".cx_alert-box").css("top", "4rem");
+		var workPop = workPop2;
+		if(top.workPop2){
+			workPop = top.workPop2
+		}else if(parent.parent.workPop2){
+			workPop = parent.parent.workPop2;
+		}
+		workPop(showTips, "确认", "取消", function () {
 			openWindowHint(HINT_TYPE_TIME, '', "正在提交...", function () {
 			}, 500);
 			escapeBlank();
 			submitAction();
-		}
+		});
 
 	}
 
@@ -1674,7 +2829,7 @@
 	}
 
 	function noSubmit(){
-		var a = "213031704,213031705,213031706,213031707,213031708,213031709";
+		var a = "404885919,404885920,404885921,404885922,404885923,404885924,404885925,404885936,404885937,404885926,404885927,404885928,404885929,404885930,404885931,404885932,404885933,404885934,404885935";
 		$("#answerwqbid").val(a);
 		$("#pyFlag").val("1");
 		synUeditorContent2FormField();
@@ -1696,7 +2851,7 @@
 		escapeBlank();
 		setCompoundQuesAnswer();
 		//临时保存或时间到系统自动提交试卷
-		var ajax_url = _HOST_CP2_ + "/work/addStudentWorkNew?_classId="+$("#classId").val()+"&courseid="+$("#courseId").val()+"&token="+$("#enc_work").val()+"&workAnswerId=55256455"; //表单目标
+		var ajax_url = _HOST_CP2_ + "/work/addStudentWorkNew?_classId="+$("#classId").val()+"&courseid="+$("#courseId").val()+"&token="+$("#enc_work").val()+"&workAnswerId=55110609"; //表单目标
 		var ajax_type = $("#form1").attr('method'); //提交方法
 		var ajax_data = $("#form1").serialize(); //表单数据
 		ajax_url += '&ua='+clientType();
@@ -1721,14 +2876,14 @@
 		});
 	}
 	function noSubmitNoTips(){
-		var a = "213031704,213031705,213031706,213031707,213031708,213031709";
+		var a = "404885919,404885920,404885921,404885922,404885923,404885924,404885925,404885936,404885937,404885926,404885927,404885928,404885929,404885930,404885931,404885932,404885933,404885934,404885935";
 		$("#answerwqbid").val(a);
 		$("#pyFlag").val("2");
 		synUeditorContent2FormField();
 		escapeBlank();
 		setCompoundQuesAnswer();
 		//临时保存或时间到系统自动提交试卷
-		var ajax_url = _HOST_CP2_ + "/work/addStudentWorkNew?_classId="+$("#classId").val()+"&courseid="+$("#courseId").val()+"&token="+$("#enc_work").val()+"&workAnswerId=55256455"; //表单目标
+		var ajax_url = _HOST_CP2_ + "/work/addStudentWorkNew?_classId="+$("#classId").val()+"&courseid="+$("#courseId").val()+"&token="+$("#enc_work").val()+"&workAnswerId=55110609"; //表单目标
 		var ajax_type = $("#form1").attr('method'); //提交方法
 		var ajax_data = $("#form1").serialize(); //表单数据
 		ajax_url += '&ua='+clientType();
@@ -1744,29 +2899,26 @@
 		});
 	}
 
-	Zepto(function(){
-		Zepto(".selLineList li .selDiv span").tap(function(){
-			var me = Zepto(this);
-			if(me.hasClass("selItemBtn")){
-				me.removeClass("selItemBtn");
-				me.parent().next().val("");
-				me.siblings("div").hide();
-			}else{
-				me.addClass("selItemBtn");
-				me.siblings("span").removeClass("selItemBtn");
-				me.siblings("div").hide();
-				me.siblings("div."+me.html()).show();
-				me.parent().next().val(me.html());
-			}
-			setConnLineAnswer(me);
-			stopSwipe();
-			try{
-				parent.dynIframeSize(parent.document.getElementById("frame_content"));
-			}catch(e){}
+	$(".selLineList li .selDiv span").click(function(){
+		var me = $(this);
+		if(me.hasClass("selItemBtn")){
+			me.removeClass("selItemBtn");
+			me.parent().next().val("");
+			me.siblings("div").hide();
+		}else{
+			me.addClass("selItemBtn");
+			me.siblings("span").removeClass("selItemBtn");
+			me.siblings("div").hide();
+			me.siblings("div."+me.html()).show();
+			me.parent().next().val(me.html());
+		}
+		setConnLineAnswer(me);
+		stopSwipe();
+		try{
+			parent.dynIframeSize(parent.document.getElementById("frame_content"));
+		}catch(e){}
 
-		});
-
-	})
+	});
 
 	function clientType(){
 		var userAgent = navigator.userAgent;
@@ -1875,7 +3027,7 @@
 		}
 		var isChaoxingClient = $("#isChaoxingClient").val() || "";
 		// 设置测验修改信息(客户端和H5共用，无需判断来源)
-		var workLiraryId = '9f53e317c6644c28ad073887bf000cf3';
+		var workLiraryId = '276f53c9054e4d0aa4e9aedee834c1c6';
 		var workName = $('.chapter-title').attr('workName');
 		if(top.doWorkList){
 			var doWorkFlag = true;
@@ -1907,7 +3059,7 @@
 		}
 		var isChaoxingClient = $("#isChaoxingClient").val() || "";
 		// 设置测验修改信息(客户端和H5共用，无需判断来源)
-		var workLiraryId = '9f53e317c6644c28ad073887bf000cf3';
+		var workLiraryId = '276f53c9054e4d0aa4e9aedee834c1c6';
 		if(top.doWorkList){
 			var index = -1;
 			for (let i = 0; i < top.doWorkList.length; i++) {

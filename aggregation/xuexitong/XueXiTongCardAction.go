@@ -267,6 +267,7 @@ func ParseWorkQuestionAction(cache *xuexitong.XueXiTUserCache, workPoint *entity
 	var judgeQuestion []entity.JudgeQue
 	var fillQuestion []entity.FillQue
 	var shortQuestion []entity.ShortQue
+	var readQuestion []entity.ReadQue
 	question, _ := cache.WorkFetchQuestion(workPoint)
 
 	// 使用 goquery 解析 HTML
@@ -424,6 +425,55 @@ func ParseWorkQuestionAction(cache *xuexitong.XueXiTUserCache, workPoint *entity
 			options["简答"] = []string{"简答答案"}
 			shortQue.OpFromAnswer = options
 			shortQuestion = append(shortQuestion, shortQue)
+		case qtype.ReadingComprehension.String():
+			readQue := entity.ReadQue{}
+			readQue.Type = qtype.ReadingComprehension
+			readQue.Qid = qs.ID
+			readQue.Text = quesText
+			//opFormAnswer := readQue.OpFormAnswer
+
+			var (
+				ops, childTypes, childIds, dataItemIDs []string
+				textOp                                 map[string]string
+			)
+			// TODO 这里我在做尝试 之前是分批处理的 和到一块无法提取
+			qdoc.Find("div.readComprehension").Each(func(i int, s *goquery.Selection) {
+				s.Find("ul.answerList").Each(func(i int, ul *goquery.Selection) {
+					li := ul.Find("li.ignoreli")
+					val, exists := li.Attr("data-itemId")
+					if exists {
+						dataItemIDs = append(dataItemIDs, val)
+					}
+					op := li.Find("span").Text() + li.Find("div.ans-cc").Text()
+					ops = append(ops, op)
+					ul.Find("li[data='answer']").Each(func(i int, li *goquery.Selection) {
+						text := li.Find("em").Text()
+						// TODO 拿不到选项中的 内容
+						println(li.Find("p").Find("p").Text())
+						textOp[text] = "选项内容"
+					})
+
+				})
+				fmt.Println("ops：", ops)
+				fmt.Println("textOp：", dataItemIDs)
+				fmt.Println("textOp：", textOp)
+				s.Find("input").Each(func(i int, s *goquery.Selection) {
+					name, exName := s.Attr("name")
+					value, exValue := s.Attr("value")
+					if exName && exValue {
+						if name == "readCompreHension-childType" {
+							childTypes = append(childTypes, value)
+						}
+						if name == "readCompreHension-childId" {
+							childIds = append(childIds, value)
+						}
+					}
+				})
+				fmt.Println("childTypes：", childTypes)
+				fmt.Println("childIds：", childIds)
+			})
+
+			readQuestion = append(readQuestion, readQue)
 		}
 	}
 
@@ -431,6 +481,7 @@ func ParseWorkQuestionAction(cache *xuexitong.XueXiTUserCache, workPoint *entity
 	questionEntity.Judge = judgeQuestion
 	questionEntity.Fill = fillQuestion
 	questionEntity.Short = shortQuestion
+	questionEntity.Read = readQuestion
 	return questionEntity
 }
 

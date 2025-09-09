@@ -138,6 +138,19 @@ type ShortQue struct {
 	OpFromAnswer map[string][]string
 }
 
+// 阅读理解
+type ReadQue struct {
+	Type         qtype.QueType
+	Qid          string
+	Text         string
+	OpFormAnswer map[string]struct {
+		ChildType  int
+		ChildId    string
+		DataItemID string
+		Text       map[string]string // 内部选项的 选择 和 具体内容
+	} //内部题目和 选项
+}
+
 // Question TODO 这里考虑是否在其中直接将答案做出 直接上报提交 或 保存提交
 type Question struct {
 	Title            string //试卷标题
@@ -169,6 +182,7 @@ type Question struct {
 	Judge            []JudgeQue  //判断类型
 	Fill             []FillQue   //填空类型
 	Short            []ShortQue  //简答类型
+	Read             []ReadQue   //阅读类型
 }
 type ExamTurn struct {
 	XueXChoiceQue ChoiceQue
