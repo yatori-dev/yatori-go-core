@@ -1,5 +1,6 @@
 package xuexitong
 
+import "C"
 import (
 	"bytes"
 	"encoding/json"
@@ -436,6 +437,7 @@ func ParseWorkQuestionAction(cache *xuexitong.XueXiTUserCache, workPoint *entity
 				ops, childTypes, childIds, dataItemIDs []string
 				textOp                                 map[string]string
 			)
+			textOp = make(map[string]string)
 			// TODO 这里我在做尝试 之前是分批处理的 和到一块无法提取
 			qdoc.Find("div.readComprehension").Each(func(i int, s *goquery.Selection) {
 				s.Find("ul.answerList").Each(func(i int, ul *goquery.Selection) {
@@ -446,11 +448,22 @@ func ParseWorkQuestionAction(cache *xuexitong.XueXiTUserCache, workPoint *entity
 					}
 					op := li.Find("span").Text() + li.Find("div.ans-cc").Text()
 					ops = append(ops, op)
-					ul.Find("li[data='answer']").Each(func(i int, li *goquery.Selection) {
-						text := li.Find("em").Text()
+					ul.Find(`li[data="answer"]`).Each(func(i int, li1 *goquery.Selection) {
+						text := li1.Find("em").Text()
 						// TODO 拿不到选项中的 内容
-						println(li.Find("p").Find("p").Text())
-						textOp[text] = "选项内容"
+						//fmt.Println(li1.Html())
+						li1.Find("p.type14").NextAll().EachWithBreak(func(i int, s *goquery.Selection) bool {
+							txt := strings.TrimSpace(s.Text())
+							if txt != "" {
+								fmt.Println(txt) // 输出 3
+								textOp[text] = txt
+								return false // 停止遍历
+							}
+							return true
+						})
+						//answerTxt := li1.Find("pp").Text()
+						//fmt.Println(answerTxt)
+						//textOp[text] = "选项内容"
 					})
 
 				})
