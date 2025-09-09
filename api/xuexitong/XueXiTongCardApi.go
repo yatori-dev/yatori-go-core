@@ -204,11 +204,8 @@ func (cache *XueXiTUserCache) VideoSubmitStudyTime(p *entity.PointVideoDto, play
 
 	res, err := client.Do(req)
 	if err != nil {
-		if strings.Contains(err.Error(), "An established connection was aborted by the software") {
-			return cache.VideoSubmitStudyTimePE(p, playingTime, isdrag, retry-1, fmt.Errorf("failed to fetch video, status code: %d", res.StatusCode))
-		}
-		log2.Print(log2.INFO, err.Error())
-		return "", err
+		log2.Print(log2.DEBUG, err.Error())
+		return cache.VideoSubmitStudyTime(p, playingTime, isdrag, retry-1, err)
 	}
 	defer res.Body.Close()
 
@@ -291,12 +288,9 @@ func (cache *XueXiTUserCache) VideoSubmitStudyTimePE(p *entity.PointVideoDto, pl
 
 	res, err := client.Do(req)
 	if err != nil {
-		if strings.Contains(err.Error(), "An established connection was aborted by the software") {
-			return cache.VideoSubmitStudyTimePE(p, playingTime, isdrag, retry-1, fmt.Errorf("failed to fetch video, status code: %d", res.StatusCode))
-		}
 		//fmt.Println(err)
-		log2.Print(log2.INFO, err.Error())
-		return "", err
+		log2.Print(log2.DEBUG, err.Error())
+		return cache.VideoSubmitStudyTimePE(p, playingTime, isdrag, retry-1, err)
 	}
 	defer res.Body.Close()
 
