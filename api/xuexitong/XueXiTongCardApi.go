@@ -86,7 +86,10 @@ func (e *APIError) Error() string {
 }
 
 // VideoDtoFetch 视频数据
-func (cache *XueXiTUserCache) VideoDtoFetch(p *entity.PointVideoDto) (string, error) {
+func (cache *XueXiTUserCache) VideoDtoFetch(p *entity.PointVideoDto, retry int, lastErr error) (string, error) {
+	if retry < 0 {
+		return "", lastErr
+	}
 	params := url.Values{}
 	params.Set("k", strconv.Itoa(p.FID))
 	params.Set("flag", "normal")
@@ -134,7 +137,7 @@ func (cache *XueXiTUserCache) VideoDtoFetch(p *entity.PointVideoDto) (string, er
 	defer res.Body.Close()
 
 	if res.StatusCode != http.StatusOK {
-		return "", fmt.Errorf("failed to fetch video, status code: %d", res.StatusCode)
+		return cache.VideoDtoFetch(p, retry-1, fmt.Errorf("status code: %d", res.StatusCode))
 	}
 	body, err := ioutil.ReadAll(res.Body)
 	utils.CookiesAddNoRepetition(&cache.cookies, res.Cookies()) //赋值cookie

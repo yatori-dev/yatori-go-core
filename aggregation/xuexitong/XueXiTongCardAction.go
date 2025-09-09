@@ -125,7 +125,11 @@ func PageMobileChapterCardAction(
 }
 
 func VideoDtoFetchAction(cache *xuexitong.XueXiTUserCache, p *entity.PointVideoDto) (bool, error) {
-	fetch, err := cache.VideoDtoFetch(p)
+	fetch, err := cache.VideoDtoFetch(p, 5, nil)
+	if strings.Contains(err.Error(), "status code: 500") { //遇到500则重新登录
+		PassVerAnd202(cache) //重新登录
+		fetch, err = cache.VideoDtoFetch(p, 5, nil)
+	}
 	if err != nil {
 		log.Println("VideoDtoFetchAction:", err)
 		return false, err
