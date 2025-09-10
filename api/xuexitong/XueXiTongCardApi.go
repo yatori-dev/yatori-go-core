@@ -547,7 +547,10 @@ func (cache *XueXiTUserCache) WorkCommit(p *entity.PointWorkDto, fields []entity
 	return string(body), nil
 }
 
-func (cache *XueXiTUserCache) DocumentDtoReadingReport(p *entity.PointDocumentDto) (string, error) {
+func (cache *XueXiTUserCache) DocumentDtoReadingReport(p *entity.PointDocumentDto, retry int, lastErr error) (string, error) {
+	if retry < 0 {
+		return "", lastErr
+	}
 	method := "GET"
 	tr := &http.Transport{
 		TLSClientConfig: &tls.Config{
@@ -592,12 +595,12 @@ func (cache *XueXiTUserCache) DocumentDtoReadingReport(p *entity.PointDocumentDt
 
 	res, err := client.Do(resp)
 	if err != nil {
-		return "", err
+		return cache.DocumentDtoReadingReport(p, retry-1, err)
 	}
 	defer res.Body.Close()
 
 	if res.StatusCode != http.StatusOK {
-		return "", fmt.Errorf("failed to fetch video, status code: %d", res.StatusCode)
+		return cache.DocumentDtoReadingReport(p, retry-1, fmt.Errorf("status code: %d", res.StatusCode))
 	}
 
 	body, err := ioutil.ReadAll(res.Body)
@@ -606,7 +609,10 @@ func (cache *XueXiTUserCache) DocumentDtoReadingReport(p *entity.PointDocumentDt
 }
 
 // 另一个文档完成接口
-func (cache *XueXiTUserCache) DocumentDtoReadingReportWeb(p *entity.PointDocumentDto) (string, error) {
+func (cache *XueXiTUserCache) DocumentDtoReadingReportWeb(p *entity.PointDocumentDto, retry int, lastErr error) (string, error) {
+	if retry < 0 {
+		return "", lastErr
+	}
 	method := "GET"
 
 	tr := &http.Transport{
@@ -652,12 +658,11 @@ func (cache *XueXiTUserCache) DocumentDtoReadingReportWeb(p *entity.PointDocumen
 
 	res, err := client.Do(resp)
 	if err != nil {
-		return "", err
+		return cache.DocumentDtoReadingReportWeb(p, retry-1, err)
 	}
 	defer res.Body.Close()
-
 	if res.StatusCode != http.StatusOK {
-		return "", fmt.Errorf("failed to fetch video, status code: %d", res.StatusCode)
+		return cache.DocumentDtoReadingReportWeb(p, retry-1, fmt.Errorf("status code: %d", res.StatusCode))
 	}
 
 	body, err := ioutil.ReadAll(res.Body)
