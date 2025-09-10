@@ -29,6 +29,7 @@ type XueXiTCourse struct {
 	CourseDataID int  `json:"courseDataId"`
 	ContentID    int  `json:"ContentID"`
 	IsStart      bool `json:"isstart"` //是否开课了，开课了为true，没开课为false。一般来说开课才能刷，不然刷不了的
+	State        int  `json:"state"`   //课程状态，0为正常，1为课程已经结束
 }
 
 func (x *XueXiTCourse) ToString() string {
@@ -120,6 +121,7 @@ func XueXiTPullCourseAction(cache *xuexitong.XueXiTUserCache) ([]XueXiTCourse, e
 			CourseDataID:  courseDataID,
 			ContentID:     channel.Content.Id,
 			IsStart:       channel.Content.Isstart,
+			State:         channel.Content.State,
 		}
 		for _, course := range courseList {
 			if course.CourseID == courseID {

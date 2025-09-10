@@ -478,7 +478,7 @@ func TestXueXiToFlushCourse(t *testing.T) {
 	courseList, err := xuexitong.XueXiTPullCourseAction(&userCache) //拉取所有课程
 	for _, course := range courseList {                             //遍历课程
 
-		//if course.CourseName != "机械设计基础" {
+		//if course.CourseName != "戏剧鉴赏" {
 		//	continue
 		//}
 		if course.CourseName != "机床夹具设计" {
