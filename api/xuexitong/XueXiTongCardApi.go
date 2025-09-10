@@ -609,7 +609,7 @@ func (cache *XueXiTUserCache) DocumentDtoReadingReport(p *entity.PointDocumentDt
 }
 
 // 另一个文档完成接口
-func (cache *XueXiTUserCache) DocumentDtoReadingReportWeb(p *entity.PointDocumentDto, retry int, lastErr error) (string, error) {
+func (cache *XueXiTUserCache) DocumentDtoReadingBookReport(p *entity.PointDocumentDto, retry int, lastErr error) (string, error) {
 	if retry < 0 {
 		return "", lastErr
 	}
@@ -658,11 +658,11 @@ func (cache *XueXiTUserCache) DocumentDtoReadingReportWeb(p *entity.PointDocumen
 
 	res, err := client.Do(resp)
 	if err != nil {
-		return cache.DocumentDtoReadingReportWeb(p, retry-1, err)
+		return cache.DocumentDtoReadingBookReport(p, retry-1, err)
 	}
 	defer res.Body.Close()
 	if res.StatusCode != http.StatusOK {
-		return cache.DocumentDtoReadingReportWeb(p, retry-1, fmt.Errorf("status code: %d", res.StatusCode))
+		return cache.DocumentDtoReadingBookReport(p, retry-1, fmt.Errorf("status code: %d", res.StatusCode))
 	}
 
 	body, err := ioutil.ReadAll(res.Body)
