@@ -97,9 +97,9 @@ type PointDocumentDto struct {
 	Title    string
 	JobID    string
 	Jtoken   string
-
-	Type  ctype.CardType
-	IsSet bool
+	IsJob    bool //是否是任务点(看完的文档也算在非任务点里面)，如果是任务点则为true，不是则为false
+	Type     ctype.CardType
+	IsSet    bool
 }
 type Session struct {
 	Client *http.Client
@@ -359,6 +359,11 @@ func (p *PointDocumentDto) AttachmentsDetection(attachment interface{}) (bool, e
 			if att["jtoken"] != nil {
 				p.Jtoken = att["jtoken"].(string)
 			}
+			if att["job"] != nil {
+				p.IsJob = att["job"].(bool)
+			} else {
+				p.IsJob = false
+			}
 			if property["bookname"] != nil { //针对insertbook类型
 				p.Title = property["bookname"].(string)
 			}
@@ -369,6 +374,9 @@ func (p *PointDocumentDto) AttachmentsDetection(attachment interface{}) (bool, e
 			//}
 			if !ok {
 				return false, errors.New("invalid property structure")
+			}
+			if att["job"] != nil {
+				p.IsJob = att["job"].(bool)
 			}
 			objectid := property["objectid"]
 			if objectid == p.ObjectID {

@@ -175,8 +175,8 @@ func PassFaceAction3(cache *xuexitong.XueXiTUserCache, courseId, classId, cpi, c
 	return uuid, qrEnc, ObjectId, successEnc, nil
 }
 
-// PassVerAnd202 绕过验证码和状态202情况
-func PassVerAnd202(cache *xuexitong.XueXiTUserCache) {
+// ReLogin 重登
+func ReLogin(cache *xuexitong.XueXiTUserCache) {
 	//重新登录逻辑
 	log2.Print(log2.DEBUG, "触发验证码或者202，正在绕过...")
 	cache.SetCookies([]*http.Cookie{})

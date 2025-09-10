@@ -1,27 +1,43 @@
 package xuexitong
 
 import (
+	"strings"
+
 	"github.com/yatori-dev/yatori-go-core/api/entity"
 	"github.com/yatori-dev/yatori-go-core/api/xuexitong"
-	"strings"
-	"time"
 )
 
 // VideoSubmitStudyTimeAction 视屏学时提交
-func VideoSubmitStudyTimeAction(cache *xuexitong.XueXiTUserCache, p *entity.PointVideoDto, playingTIme int, isdrag int) (string, error) {
-	playReport, err := cache.VideoSubmitStudyTime(p, playingTIme, isdrag, 8, nil)
-	if err != nil {
-		//预防202
-		if strings.Contains(err.Error(), "failed to fetch video, status code: 202") {
-			PassVerAnd202(cache) //绕过202
-			time.Sleep(5 * time.Second)
-			playReport, err = cache.VideoSubmitStudyTime(p, playingTIme, isdrag, 8, nil)
-		}
-		//预防404
-		if strings.Contains(err.Error(), "failed to fetch video, status code: 404") { //触发202立即使用人脸检测
-			time.Sleep(5 * time.Second)
-			playReport, err = cache.VideoSubmitStudyTime(p, playingTIme, isdrag, 8, nil)
+
+func VideoSubmitStudyTimeAction(cache *xuexitong.XueXiTUserCache, p *entity.PointVideoDto, playingTime int, mode /*0为PC模式，1为PE模式*/, isdrag int /*提交模式，0代表正常视屏播放提交，2代表暂停播放状态，3代表着点击开始播放状态*/) (string, error) {
+	var playReport string
+	var err error
+	if mode == 0 {
+		playReport, err = cache.VideoSubmitStudyTimeApi(p, playingTime, isdrag, 8, nil)
+	} else if mode == 1 {
+		playReport, err = cache.VideoSubmitStudyTimePEApi(p, playingTime, isdrag, 8, nil)
+	}
+	//如果遇到500
+	if err != nil && strings.Contains(err.Error(), "failed to fetch video, status code: 500") {
+		ReLogin(cache) //重登
+		if mode == 0 {
+			playReport, err = cache.VideoSubmitStudyTimeApi(p, playingTime, isdrag, 8, nil)
+		} else if mode == 1 {
+			playReport, err = cache.VideoSubmitStudyTimePEApi(p, playingTime, isdrag, 8, nil)
 		}
 	}
-	return playReport, err
+	//触发202
+	if err != nil && strings.Contains(err.Error(), "failed to fetch video, status code: 202") {
+		ReLogin(cache) //重登
+		if mode == 0 {
+			playReport, err = cache.VideoSubmitStudyTimeApi(p, playingTime, isdrag, 8, nil)
+		} else if mode == 1 {
+			playReport, err = cache.VideoSubmitStudyTimePEApi(p, playingTime, isdrag, 8, nil)
+		}
+	}
+	if err != nil {
+		return "", err
+	}
+
+	return playReport, nil
 }

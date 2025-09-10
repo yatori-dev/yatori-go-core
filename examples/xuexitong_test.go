@@ -4,7 +4,6 @@ import (
 	"fmt"
 	"log"
 	"strconv"
-	"strings"
 	"testing"
 	"time"
 
@@ -14,6 +13,7 @@ import (
 	xuexitongApi "github.com/yatori-dev/yatori-go-core/api/xuexitong"
 	"github.com/yatori-dev/yatori-go-core/global"
 	"github.com/yatori-dev/yatori-go-core/utils"
+	log2 "github.com/yatori-dev/yatori-go-core/utils/log"
 	"golang.org/x/net/html"
 )
 
@@ -478,12 +478,12 @@ func TestXueXiToFlushCourse(t *testing.T) {
 	courseList, err := xuexitong.XueXiTPullCourseAction(&userCache) //拉取所有课程
 	for _, course := range courseList {                             //遍历课程
 
-		if course.CourseName != "机械设计基础" {
-			continue
-		}
-		//if course.CourseName != "Blockly 创意趣味编程（网络共享课）" {
+		//if course.CourseName != "机械设计基础" {
 		//	continue
 		//}
+		if course.CourseName != "机床夹具设计" {
+			continue
+		}
 		// 6c444b8d5c6203ee2f2aef4b76f5b2ce qrcEnc
 
 		key, _ := strconv.Atoi(course.Key)
@@ -544,7 +544,7 @@ func TestXueXiToFlushCourse(t *testing.T) {
 			}
 
 			// 视频刷取
-			if videoDTOs != nil && false {
+			if videoDTOs != nil && true {
 				for _, videoDTO := range videoDTOs {
 					card, enc, err := xuexitong.PageMobileChapterCardAction(
 						&userCache, key, courseId, videoDTO.KnowledgeID, videoDTO.CardIndex, course.Cpi)
@@ -556,7 +556,7 @@ func TestXueXiToFlushCourse(t *testing.T) {
 						continue
 					}
 					videoDTO.Enc = enc
-					point.ExecuteVideo(&userCache, &videoDTO, key, course.Cpi) //常规
+					point.ExecuteVideoTest(&userCache, &videoDTO, key, course.Cpi) //常规
 					//point.ExecuteFastVideo(&userCache, &videoDTO) //秒刷
 					time.Sleep(5 * time.Second)
 				}
@@ -569,20 +569,22 @@ func TestXueXiToFlushCourse(t *testing.T) {
 					if err != nil {
 						log.Fatal(err)
 					}
-
 					documentDTO.AttachmentsDetection(card)
-					if strings.Contains(documentDTO.Title, "列表.pdf") {
-						fmt.Println("断点")
+
+					if !documentDTO.IsJob {
+						log.Printf("(%s)该文档非任务点或已完成，已自动跳过\n", documentDTO.Title)
+						continue
 					}
-					point.ExecuteDocument(&userCache, &documentDTO)
-					if err != nil {
-						log.Fatal(err)
+					document, err1 := point.ExecuteDocument(&userCache, &documentDTO)
+					if err1 != nil {
+						log.Fatal(err1)
 					}
+					log2.Print(log2.INFO, "(", documentDTO.Title, ")", document)
 					time.Sleep(5 * time.Second)
 				}
 			}
 			//作业刷取
-			if workDTOs != nil && true {
+			if workDTOs != nil && false {
 				for _, workDTO := range workDTOs {
 
 					//以手机端拉取章节卡片数据
@@ -747,7 +749,7 @@ func TestFaceQrScanPlan1(t *testing.T) {
 						log.Fatal(err)
 					}
 					videoDTO.AttachmentsDetection(card)
-					point.ExecuteVideo(&userCache, &videoDTO, key, course.Cpi) //常规
+					point.ExecuteVideoTest(&userCache, &videoDTO, key, course.Cpi) //常规
 					//point.ExecuteFastVideo(&userCache, &videoDTO) //秒刷
 					time.Sleep(5 * time.Second)
 				}

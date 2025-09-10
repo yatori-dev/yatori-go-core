@@ -15,7 +15,7 @@ import (
 )
 
 // 常规刷视屏逻辑
-func ExecuteVideo(cache *api.XueXiTUserCache, p *entity.PointVideoDto, key, courseCpi int) {
+func ExecuteVideoTest(cache *api.XueXiTUserCache, p *entity.PointVideoDto, key, courseCpi int) {
 
 	if state, _ := action.VideoDtoFetchAction(cache, p); state {
 		log.Printf("(%s)开始模拟播放....%d:%d开始\n", p.Title, p.PlayTime, p.Duration)
@@ -24,7 +24,7 @@ func ExecuteVideo(cache *api.XueXiTUserCache, p *entity.PointVideoDto, key, cour
 		stopVal := 0
 		for {
 			if flag == 58 {
-				playReport, err := cache.VideoSubmitStudyTimePE(p, playingTime, 0, 8, nil)
+				playReport, err := action.VideoSubmitStudyTimeAction(cache, p, playingTime, 1, 0)
 				log.Println(playReport, err)
 				if err != nil {
 					if strings.Contains(err.Error(), "failed to fetch video, status code: 403") || strings.Contains(err.Error(), "failed to fetch video, status code: 404") { //触发403立即使用人脸检测
@@ -60,7 +60,7 @@ func ExecuteVideo(cache *api.XueXiTUserCache, p *entity.PointVideoDto, key, cour
 				}
 				log.Printf("播放中....%d:%d\n", playingTime, p.Duration)
 			} else if playingTime >= p.Duration {
-				playReport, err := cache.VideoSubmitStudyTime(p, playingTime, 0, 8, nil)
+				playReport, err := action.VideoSubmitStudyTimeAction(cache, p, playingTime, 1, 0)
 				//playReport, err := cache.VideoDtoPlayReport(p, playingTime, 0, 8, nil)
 				playingTime += 1
 				log.Println(playReport, err)
@@ -129,18 +129,13 @@ func ExecuteVideo(cache *api.XueXiTUserCache, p *entity.PointVideoDto, key, cour
 	}
 }
 
-// 第二套方案
-func ExecuteVideo2(cache *api.XueXiTUserCache, p *entity.PointVideoDto) {
-
-}
-
 // 秒刷视屏逻辑
-func ExecuteFastVideo(cache *api.XueXiTUserCache, p *entity.PointVideoDto) {
+func ExecuteFastVideoTest(cache *api.XueXiTUserCache, p *entity.PointVideoDto) {
 	if state, _ := action.VideoDtoFetchAction(cache, p); state {
 		log.Printf("(%s)开始模拟播放....%d:%d开始\n", p.Title, p.PlayTime, p.Duration)
 		var playingTime = p.PlayTime
 		for {
-			playReport, _ := cache.VideoSubmitStudyTime(p, playingTime, 3, 8, nil)
+			playReport, _ := action.VideoSubmitStudyTimeAction(cache, p, playingTime, 3, 0)
 			if gojsonq.New().JSONString(playReport).Find("isPassed").(bool) == true {
 				log.Println("播放结束")
 				break

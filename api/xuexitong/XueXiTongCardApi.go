@@ -149,7 +149,7 @@ func (cache *XueXiTUserCache) VideoDtoFetch(p *entity.PointVideoDto, retry int, 
 	return string(body), nil
 }
 
-func (cache *XueXiTUserCache) VideoSubmitStudyTime(p *entity.PointVideoDto, playingTime int, isdrag int /*提交模式，0代表正常视屏播放提交，2代表暂停播放状态，3代表着点击开始播放状态*/, retry int, lastErr error) (string, error) {
+func (cache *XueXiTUserCache) VideoSubmitStudyTimeApi(p *entity.PointVideoDto, playingTime int, isdrag int /*提交模式，0代表正常视屏播放提交，2代表暂停播放状态，3代表着点击开始播放状态*/, retry int, lastErr error) (string, error) {
 	if retry < 0 {
 		return "", lastErr
 	}
@@ -213,7 +213,7 @@ func (cache *XueXiTUserCache) VideoSubmitStudyTime(p *entity.PointVideoDto, play
 	res, err := client.Do(req)
 	if err != nil {
 		log2.Print(log2.DEBUG, err.Error())
-		return cache.VideoSubmitStudyTime(p, playingTime, isdrag, retry-1, err)
+		return cache.VideoSubmitStudyTimeApi(p, playingTime, isdrag, retry-1, err)
 	}
 	defer res.Body.Close()
 
@@ -224,7 +224,7 @@ func (cache *XueXiTUserCache) VideoSubmitStudyTime(p *entity.PointVideoDto, play
 	}
 
 	if res.StatusCode != http.StatusOK {
-		return cache.VideoSubmitStudyTime(p, playingTime, isdrag, retry-1, fmt.Errorf("failed to fetch video, status code: %d", res.StatusCode))
+		return cache.VideoSubmitStudyTimeApi(p, playingTime, isdrag, retry-1, fmt.Errorf("failed to fetch video, status code: %d", res.StatusCode))
 	}
 	//fmt.Println(string(body))
 	utils.CookiesAddNoRepetition(&cache.cookies, res.Cookies()) //赋值cookie
@@ -232,7 +232,7 @@ func (cache *XueXiTUserCache) VideoSubmitStudyTime(p *entity.PointVideoDto, play
 }
 
 // VideoSubmitStudyTimePE 手机端学时提交
-func (cache *XueXiTUserCache) VideoSubmitStudyTimePE(p *entity.PointVideoDto, playingTime int, isdrag int /*提交模式，0代表正常视屏播放提交，2代表暂停播放状态，3代表着点击开始播放状态*/, retry int, lastErr error) (string, error) {
+func (cache *XueXiTUserCache) VideoSubmitStudyTimePEApi(p *entity.PointVideoDto, playingTime int, isdrag int /*提交模式，0代表正常视屏播放提交，2代表暂停播放状态，3代表着点击开始播放状态*/, retry int, lastErr error) (string, error) {
 	if retry < 0 {
 		return "", lastErr
 	}
@@ -298,7 +298,7 @@ func (cache *XueXiTUserCache) VideoSubmitStudyTimePE(p *entity.PointVideoDto, pl
 	if err != nil {
 		//fmt.Println(err)
 		log2.Print(log2.DEBUG, err.Error())
-		return cache.VideoSubmitStudyTimePE(p, playingTime, isdrag, retry-1, err)
+		return cache.VideoSubmitStudyTimePEApi(p, playingTime, isdrag, retry-1, err)
 	}
 	defer res.Body.Close()
 
@@ -310,7 +310,7 @@ func (cache *XueXiTUserCache) VideoSubmitStudyTimePE(p *entity.PointVideoDto, pl
 	}
 
 	if res.StatusCode != http.StatusOK {
-		return cache.VideoSubmitStudyTimePE(p, playingTime, isdrag, retry-1, fmt.Errorf("failed to fetch video, status code: %d", res.StatusCode))
+		return cache.VideoSubmitStudyTimePEApi(p, playingTime, isdrag, retry-1, fmt.Errorf("failed to fetch video, status code: %d", res.StatusCode))
 	}
 	//fmt.Println(string(body))
 	utils.CookiesAddNoRepetition(&cache.cookies, res.Cookies()) //赋值cookie

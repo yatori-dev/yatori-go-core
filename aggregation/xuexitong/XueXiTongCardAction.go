@@ -128,7 +128,7 @@ func VideoDtoFetchAction(cache *xuexitong.XueXiTUserCache, p *entity.PointVideoD
 	fetch, err := cache.VideoDtoFetch(p, 5, nil)
 	//500处理
 	if err != nil && strings.Contains(err.Error(), "status code: 500") {
-		PassVerAnd202(cache) //重新登录
+		ReLogin(cache) //重新登录
 		fetch, err = cache.VideoDtoFetch(p, 5, nil)
 	}
 

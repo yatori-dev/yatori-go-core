@@ -68,7 +68,7 @@ func ChapterFetchCardsAction(
 	if err != nil {
 		if err.Error() == "status code: 500" {
 			log2.Print(log2.DEBUG, "触发请求频繁500，自动重新登录")
-			PassVerAnd202(cache)                                                 //越过验证码或者202
+			ReLogin(cache)                                                       //越过验证码或者202
 			cords, err = cache.FetchChapterCords(nodes, index, courseId, 5, nil) //尝试重新拉取卡片信息
 			if err != nil {
 				log2.Print(log2.DEBUG, "重新登录后cords拉取错误err值>>", fmt.Sprintf("%s", err.Error()))

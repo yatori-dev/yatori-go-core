@@ -26,9 +26,11 @@ type CelaUserCache struct {
 	Account     string //账号
 	Password    string //密码
 	Cookies     []*http.Cookie
-	asuss       string //token
 	Code        string //验证码
 	LoginParams string //登录用的params
+	Sign        string //Sign
+	Refer       string //Refer
+	Ticket      string //ticket
 }
 
 // 初始化登录数据接口
@@ -266,7 +268,13 @@ func (cache *CelaUserCache) GetLoginAfterData(data string) {
 	url1 := "https://www.cela.gov.cn/cas/account/login/process/" + data
 	method := "GET"
 
-	client := &http.Client{}
+	client := &http.Client{
+		// 禁止自动重定向
+		CheckRedirect: func(req *http.Request, via []*http.Request) error {
+			// 返回 http.ErrUseLastResponse 表示不要跟随重定向
+			return http.ErrUseLastResponse
+		},
+	}
 	req, err := http.NewRequest(method, url1, nil)
 
 	if err != nil {
@@ -295,7 +303,106 @@ func (cache *CelaUserCache) GetLoginAfterData(data string) {
 		return
 	}
 	fmt.Println(string(body))
+	//如果成功了
+	//https://www.cela.gov.cn/cas/sign/generate?sign=eyJ1aWQiOiIzZDYxZGE4ZWIzYjVlMWY1NTRiYTRlOWQ4M2E4MzEwZSIsInVnIjoiVVNFUiIsImlzcyI6IjhhOTk4YTE0NmQ3MzRlYzIwMTZkNzM1MjI2NjcwMDAyIn0.pV4VL-pMxBURMhw1mbWvtbqVF-9n8ggSxXhOs67QSYs&refer=http://www.cela.gov.cn/home/redirect/url&store=true
+	if res.StatusCode == 302 {
+		parseURL, err1 := url.Parse(res.Header.Get("Location"))
+		if err1 != nil {
+			fmt.Println(err1)
+		}
+		query := parseURL.Query()
+		cache.Sign = query.Get("sign")
+		cache.Refer = query.Get("refer")
+		store := query.Get("store")
+		log2.Print(log2.DEBUG, "store:", store)
+	}
+
 	utils.CookiesAddNoRepetition(&cache.Cookies, res.Cookies()) //重新设置Cookies
+
+	req1, err1 := http.NewRequest("GET", res.Header.Get("Location"), nil)
+
+	if err1 != nil {
+		fmt.Println(err1)
+		return
+	}
+	req1.Header.Add("User-Agent", utils.DefaultUserAgent)
+	req1.Header.Add("Accept", "*/*")
+	req1.Header.Add("Host", "www.cela.gov.cn")
+	req1.Header.Add("Connection", "keep-alive")
+	//req.Header.Add("Referer", "https://www.cela.gov.cn/home/redirect/url?ticket=145940318dac11f0a078eb3fe0b5e919")
+	for _, cookie := range cache.Cookies {
+		req1.AddCookie(cookie)
+	}
+
+	res1, err1 := client.Do(req1)
+	if err1 != nil {
+		fmt.Println(err1)
+		return
+	}
+	defer res1.Body.Close()
+
+	body1, err1 := ioutil.ReadAll(res1.Body)
+	if err1 != nil {
+		fmt.Println(err1)
+		return
+	}
+	fmt.Println(string(body1))
+	//如果成功了
+	//https://www.cela.gov.cn/cas/sign/generate?sign=eyJ1aWQiOiIzZDYxZGE4ZWIzYjVlMWY1NTRiYTRlOWQ4M2E4MzEwZSIsInVnIjoiVVNFUiIsImlzcyI6IjhhOTk4YTE0NmQ3MzRlYzIwMTZkNzM1MjI2NjcwMDAyIn0.pV4VL-pMxBURMhw1mbWvtbqVF-9n8ggSxXhOs67QSYs&refer=http://www.cela.gov.cn/home/redirect/url&store=true
+	if res1.StatusCode == 302 {
+		parseURL, err2 := url.Parse(res1.Header.Get("Location"))
+		if err2 != nil {
+			fmt.Println(err2)
+		}
+		query := parseURL.Query()
+		cache.Ticket = query.Get("ticket")
+	}
+	utils.CookiesAddNoRepetition(&cache.Cookies, res1.Cookies()) //重新设置Cookies
+
+	//第三段-----------------
+	req2, err2 := http.NewRequest("GET", res1.Header.Get("Location"), nil)
+
+	if err2 != nil {
+		fmt.Println(err2)
+		return
+	}
+	req2.Header.Add("User-Agent", utils.DefaultUserAgent)
+	req2.Header.Add("Accept", "*/*")
+	req2.Header.Add("Host", "www.cela.gov.cn")
+	req2.Header.Add("Connection", "keep-alive")
+	//req.Header.Add("Referer", "https://www.cela.gov.cn/home/redirect/url?ticket=145940318dac11f0a078eb3fe0b5e919")
+	for _, cookie := range cache.Cookies {
+		req2.AddCookie(cookie)
+	}
+
+	res2, err2 := client.Do(req2)
+	if err2 != nil {
+		fmt.Println(err2)
+		return
+	}
+	defer res2.Body.Close()
+
+	body2, err2 := ioutil.ReadAll(res2.Body)
+	if err2 != nil {
+		fmt.Println(err2)
+		return
+	}
+	fmt.Println(string(body2))
+	//如果成功了
+	//https://www.cela.gov.cn/cas/sign/generate?sign=eyJ1aWQiOiIzZDYxZGE4ZWIzYjVlMWY1NTRiYTRlOWQ4M2E4MzEwZSIsInVnIjoiVVNFUiIsImlzcyI6IjhhOTk4YTE0NmQ3MzRlYzIwMTZkNzM1MjI2NjcwMDAyIn0.pV4VL-pMxBURMhw1mbWvtbqVF-9n8ggSxXhOs67QSYs&refer=http://www.cela.gov.cn/home/redirect/url&store=true
+	//if res2.StatusCode == 302 {
+	//	parseURL, err3 := url.Parse(res2.Header.Get("Location"))
+	//	if err3 != nil {
+	//		fmt.Println(err3)
+	//	}
+	//	query := parseURL.Query()
+	//	cache.Sign = query.Get("sign")
+	//	cache.Refer = query.Get("refer")
+	//	store := query.Get("store")
+	//	log2.Print(log2.DEBUG, "store:", store)
+	//}
+
+	utils.CookiesAddNoRepetition(&cache.Cookies, res2.Cookies()) //重新设置Cookies
 }
 
 // PKCS7 填充
