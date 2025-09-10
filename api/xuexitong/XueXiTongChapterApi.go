@@ -281,7 +281,10 @@ func (cache *XueXiTUserCache) FetchChapterCords2(clazzid, courseid, knowledgeid,
 }
 
 // 每次进入章节前进行一次调用，防止0任务点无法学习的情况
-func (cache *XueXiTUserCache) EnterChapterForwardCall(courseId, clazzid, chapterId, cpi string) {
+func (cache *XueXiTUserCache) EnterChapterForwardCallApi(courseId, clazzid, chapterId, cpi string, retry int, lastErr error) error {
+	if retry < 0 {
+		return lastErr
+	}
 	urlStr := "https://mooc1.chaoxing.com/mooc-ans/mycourse/studentstudyAjax?courseId=" + courseId + "&clazzid=" + clazzid + "&chapterId=" + chapterId + "&cpi=" + cpi + "&verificationcode=&mooc2=1&toComputer=false&microTopicId=0"
 	method := "GET"
 
@@ -316,7 +319,11 @@ func (cache *XueXiTUserCache) EnterChapterForwardCall(courseId, clazzid, chapter
 
 	res, err := client.Do(req)
 	if err != nil {
-		fmt.Println(err)
+		return cache.EnterChapterForwardCallApi(courseId, clazzid, chapterId, cpi, retry-1, err)
 	}
 	defer res.Body.Close()
+	if res.StatusCode != 200 {
+		return cache.EnterChapterForwardCallApi(courseId, clazzid, chapterId, cpi, retry-1, fmt.Errorf("status code: %d", res.StatusCode))
+	}
+	return nil
 }

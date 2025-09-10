@@ -512,7 +512,10 @@ func TestXueXiToFlushCourse(t *testing.T) {
 			}
 			i := pointAction.Knowledge[index]
 			if i.PointTotal == 0 && i.PointFinished == 0 {
-				userCache.EnterChapterForwardCall(strconv.Itoa(courseId), strconv.Itoa(key), strconv.Itoa(pointAction.Knowledge[index].ID), strconv.Itoa(course.Cpi))
+				err2 := xuexitong.EnterChapterForwardCallAction(&userCache, strconv.Itoa(courseId), strconv.Itoa(key), strconv.Itoa(pointAction.Knowledge[index].ID), strconv.Itoa(course.Cpi))
+				if err2 != nil {
+					log.Fatal(err2)
+				}
 				return false
 			}
 			return i.PointTotal >= 0 && i.PointTotal == i.PointFinished

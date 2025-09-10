@@ -282,6 +282,16 @@ func ChapterFetchCardsAction(
 	return cards, pointObjs, nil
 }
 
+// 每次进入章节前进行一次调用，防止0任务点无法学习的情况
+func EnterChapterForwardCallAction(cache *xuexitong.XueXiTUserCache, courseId, clazzid, chapterId, cpi string) error {
+	err := cache.EnterChapterForwardCallApi(courseId, clazzid, chapterId, cpi, 3, nil)
+	if err != nil && strings.Contains(err.Error(), "status code: 500") {
+		ReLogin(cache) //重登
+		err = cache.EnterChapterForwardCallApi(courseId, clazzid, chapterId, cpi, 3, nil)
+	}
+	return err
+}
+
 // IframeAttributes iframe 的属性
 type IframeAttributes struct {
 	Data    map[string]interface{} `json:"data"`
