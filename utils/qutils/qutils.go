@@ -64,6 +64,7 @@ func SimilarityArrayAndSort(target string, v []string) []int {
 	return nil
 }
 
+// 直接返回对应最大匹配的ABCD
 func SimilarityArraySelect(target string, v []string) string {
 	coList := make([]Co, len(v))
 	for i := 0; i < len(v); i++ {
@@ -79,4 +80,21 @@ func SimilarityArraySelect(target string, v []string) string {
 		}
 	}
 	return slist[index]
+}
+
+// 直接返回最大匹配的答案文字
+func SimilarityArrayAnswer(target string, v []string) string {
+	coList := make([]Co, len(v))
+	for i := 0; i < len(v); i++ {
+		coList[i] = Co{index: i, score: Similarity(v[i], target)}
+	}
+	var sco = 0.0
+	var index = 0
+	for _, co := range coList {
+		if sco < co.score {
+			sco = co.score
+			index = co.index
+		}
+	}
+	return v[index]
 }
