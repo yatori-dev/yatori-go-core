@@ -386,7 +386,7 @@ func (cache *XueXiTUserCache) VideoDtoPlayReport(p *entity.PointVideoDto, playin
 	resp.Header.Add("Content-Type", " application/json")
 	res, err := client.Do(resp)
 	if err != nil {
-		time.Sleep(150 * time.Millisecond)
+		time.Sleep(time.Duration(retry*5) * time.Second)
 		return cache.VideoDtoPlayReport(p, playingTime, isdrag, retry-1, err)
 	}
 	defer res.Body.Close()
@@ -422,7 +422,10 @@ func replaceSpecialChars(s string) string {
 }
 
 // WorkFetchQuestion 获取作业题目
-func (cache *XueXiTUserCache) WorkFetchQuestion(p *entity.PointWorkDto) (string, error) {
+func (cache *XueXiTUserCache) WorkFetchQuestion(p *entity.PointWorkDto, retry int, lastErr error) (string, error) {
+	if retry < 0 {
+		return "", lastErr
+	}
 	method := "GET"
 
 	params := url.Values{}
@@ -478,8 +481,10 @@ func (cache *XueXiTUserCache) WorkFetchQuestion(p *entity.PointWorkDto) (string,
 
 	res, err := client.Do(req)
 	if err != nil {
-		fmt.Println(err)
-		return "", err
+		//fmt.Println(err)
+		time.Sleep(time.Duration(retry*5) * time.Second)
+		return cache.WorkFetchQuestion(p, retry-1, err)
+		//return "", err
 	}
 	defer res.Body.Close()
 
@@ -492,7 +497,10 @@ func (cache *XueXiTUserCache) WorkFetchQuestion(p *entity.PointWorkDto) (string,
 	return string(body), nil
 }
 
-func (cache *XueXiTUserCache) WorkCommit(p *entity.PointWorkDto, fields []entity.WorkInputField) (string, error) {
+func (cache *XueXiTUserCache) WorkCommit(p *entity.PointWorkDto, fields []entity.WorkInputField, retry int, lastErr error) (string, error) {
+	if retry < 0 {
+		return "", lastErr
+	}
 	method := "POST"
 
 	//TODO 此处需要对答案进行分析后提交 具体body模板 在 examples 中
@@ -533,8 +541,9 @@ func (cache *XueXiTUserCache) WorkCommit(p *entity.PointWorkDto, fields []entity
 
 	res, err := client.Do(req)
 	if err != nil {
-		fmt.Println(err)
-		return "", nil
+		//fmt.Println(err)
+		time.Sleep(time.Duration(retry*5) * time.Second)
+		return cache.WorkCommit(p, fields, retry, err)
 	}
 	defer res.Body.Close()
 
@@ -595,6 +604,7 @@ func (cache *XueXiTUserCache) DocumentDtoReadingReport(p *entity.PointDocumentDt
 
 	res, err := client.Do(resp)
 	if err != nil {
+		time.Sleep(time.Duration(retry*5) * time.Second)
 		return cache.DocumentDtoReadingReport(p, retry-1, err)
 	}
 	defer res.Body.Close()
@@ -658,6 +668,7 @@ func (cache *XueXiTUserCache) DocumentDtoReadingBookReport(p *entity.PointDocume
 
 	res, err := client.Do(resp)
 	if err != nil {
+		time.Sleep(time.Duration(retry*5) * time.Second)
 		return cache.DocumentDtoReadingBookReport(p, retry-1, err)
 	}
 	defer res.Body.Close()
