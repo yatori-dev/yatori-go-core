@@ -106,70 +106,80 @@ type YingHuaExamTopic struct {
 
 // ChoiceQue 选择类型
 type ChoiceQue struct {
-	Type    qtype.QueType
-	Qid     string //题目ID
-	Text    string
-	Options map[string]string
-	Answers []string // 答案
+	Type    qtype.QueType     `json:"type"`
+	Qid     string            `json:"qid"` //题目ID
+	Text    string            `json:"text"`
+	Options map[string]string `json:"options"`
+	Answers []string          `json:"answers"` // 答案
 }
 
 // JudgeQue 判断类型
 type JudgeQue struct {
-	Type    qtype.QueType
-	Qid     string //题目ID
-	Text    string
-	Options map[string]string
-	Answers []string // 答案
+	Type    qtype.QueType     `json:"type"`
+	Qid     string            `json:"qid"` //题目ID
+	Text    string            `json:"text"`
+	Options map[string]string `json:"options"`
+	Answers []string          `json:"answers"` // 答案
 }
 
 // FillQue 填空类型
 type FillQue struct {
-	Type         qtype.QueType
-	Qid          string
-	Text         string
-	OpFromAnswer map[string][]string // 位置与答案
+	Type         qtype.QueType       `json:"type"`
+	Qid          string              `json:"qid"`
+	Text         string              `json:"text"`
+	OpFromAnswer map[string][]string `json:"opFromAnswer"` // 位置与答案
 }
 
 // 简答类型
 type ShortQue struct {
-	Type         qtype.QueType
-	Qid          string
-	Text         string
-	OpFromAnswer map[string][]string
+	Type         qtype.QueType       `json:"type"`
+	Qid          string              `json:"qid"`
+	Text         string              `json:"text"`
+	OpFromAnswer map[string][]string `json:"opFromAnswer"`
 }
 
 // Question TODO 这里考虑是否在其中直接将答案做出 直接上报提交 或 保存提交
 type Question struct {
-	Title            string //试卷标题
-	Cpi              string
-	JobId            string
-	WorkId           string
-	ClassId          string
-	CourseId         string
-	Ua               string
-	FormType         string
-	SaveStatus       string
-	Version          string
-	Tempsave         string
-	PyFlag           string
-	UserId           string
-	Knowledgeid      string
-	OldWorkId        string //最原始作业id
-	FullScore        string //满分是多少
-	OldSchoolId      string //原始作业单位id
-	Api              string //api值
-	WorkRelationId   string
-	Enc_work         string
-	Isphone          string
-	RandomOptions    string
-	WorkAnswerId     string
-	AnswerId         string
-	TotalQuestionNum string
+	Title            string      `json:"title"` //试卷标题
+	Cpi              string      `json:"cpi""`
+	JobId            string      `json:"jobId"`
+	WorkId           string      `json:"workId"`
+	ClassId          string      `json:"classId"`
+	CourseId         string      `json:"courseId"`
+	Ua               string      `json:"ua"`
+	FormType         string      `json:"formType"`
+	SaveStatus       string      `json:"saveStatus"`
+	Version          string      `json:"version"`
+	Tempsave         string      `json:"tempsave"`
+	PyFlag           string      `json:"pyFlag"`
+	UserId           string      `json:"userId"`
+	Knowledgeid      string      `json:"knowledgeId"`
+	OldWorkId        string      `json:"oldWorkId"`   //最原始作业id
+	FullScore        string      `json:"fullScore"`   //满分是多少
+	OldSchoolId      string      `json:"oldSchoolId"` //原始作业单位id
+	Api              string      `json:"api"`         //api值
+	WorkRelationId   string      `json:"workRelationId"`
+	Enc_work         string      `json:"enc_Work"`
+	Isphone          string      `json:"isphone"`
+	RandomOptions    string      `json:"randomOptions"`
+	WorkAnswerId     string      `json:"workAnswerId"`
+	AnswerId         string      `json:"answerId"`
+	TotalQuestionNum string      `json:"totalQuestionNum"`
 	Choice           []ChoiceQue //选择类型
 	Judge            []JudgeQue  //判断类型
 	Fill             []FillQue   //填空类型
 	Short            []ShortQue  //简答类型
 }
+
+// 序列化输出答题信息
+func (f Question) String() string {
+	marshal, err := json.Marshal(f)
+	if err != nil {
+		return fmt.Sprintf("%v", f)
+	}
+	return string(marshal)
+}
+
 type ExamTurn struct {
 	XueXChoiceQue ChoiceQue
 	XueXJudgeQue  JudgeQue
