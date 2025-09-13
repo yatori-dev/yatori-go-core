@@ -48,18 +48,18 @@ func max(a, b int) int {
 }
 
 type Co struct {
-	index int
-	score float64
+	Index int
+	Score float64
 }
 
 // 相似度匹配并排序
 func SimilarityArrayAndSort(target string, v []string) []Co {
 	coList := make([]Co, len(v))
 	for i := 0; i < len(v); i++ {
-		coList[i] = Co{index: i, score: Similarity(v[i], target)}
+		coList[i] = Co{Index: i, Score: Similarity(v[i], target)}
 	}
 	sort.Slice(coList, func(i, j int) bool {
-		if coList[i].score >= coList[j].score {
+		if coList[i].Score >= coList[j].Score {
 			return true
 		}
 		return false
@@ -71,15 +71,15 @@ func SimilarityArrayAndSort(target string, v []string) []Co {
 func SimilarityArraySelect(target string, v []string) string {
 	coList := make([]Co, len(v))
 	for i := 0; i < len(v); i++ {
-		coList[i] = Co{index: i, score: Similarity(v[i], target)}
+		coList[i] = Co{Index: i, Score: Similarity(v[i], target)}
 	}
 	var sco = 0.0
 	var index = 0
 	slist := []string{"A", "B", "C", "D", "E", "F", "G", "H", "I", "J", "K", "R", "M", "N", "O", "P", "Q"}
 	for _, co := range coList {
-		if sco < co.score {
-			sco = co.score
-			index = co.index
+		if sco < co.Score {
+			sco = co.Score
+			index = co.Index
 		}
 	}
 	return slist[index]
@@ -89,14 +89,14 @@ func SimilarityArraySelect(target string, v []string) string {
 func SimilarityArrayAnswer(target string, v []string) string {
 	coList := make([]Co, len(v))
 	for i := 0; i < len(v); i++ {
-		coList[i] = Co{index: i, score: Similarity(v[i], target)}
+		coList[i] = Co{Index: i, Score: Similarity(v[i], target)}
 	}
 	var sco = 0.0
 	var index = 0
 	for _, co := range coList {
-		if sco < co.score {
-			sco = co.score
-			index = co.index
+		if sco < co.Score {
+			sco = co.Score
+			index = co.Index
 		}
 	}
 	return v[index]
