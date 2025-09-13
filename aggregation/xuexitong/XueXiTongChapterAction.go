@@ -277,6 +277,54 @@ func ChapterFetchCardsAction(
 					log2.Print(log2.DEBUG, "(%d, %d) 任务点 'objectid' 不存在或为空 %+v", cardIndex, pointIndex, point)
 					continue
 				}
+			case string(ctype.Hyperlink):
+
+				jobID, ok3 := point.Data["_jobid"].(string)
+				linkType, ok4 := point.Data["linkType"].(float64)
+
+				if ok3 && jobID != "" {
+					pointObj.PointHyperlinkDto = entity.PointHyperlinkDto{
+						CardIndex:   cardIndex,
+						CourseID:    strconv.Itoa(courseId),
+						ClassID:     strconv.Itoa(classId),
+						KnowledgeID: card.KnowledgeID,
+						Cpi:         strconv.Itoa(cpi),
+						ObjectID:    "",
+						JobID:       jobID,
+						Type:        ctype.Hyperlink,
+						IsSet:       ok,
+					}
+					if ok4 {
+						pointObj.PointHyperlinkDto.LinkType = int(linkType)
+					}
+				} else {
+					log2.Print(log2.DEBUG, "(%d, %d) 任务点 'objectid' 不存在或为空 %+v", cardIndex, pointIndex, point)
+					continue
+				}
+			case string(ctype.Insertlive):
+
+				jobID, ok3 := point.Data["_jobid"].(string)
+				linkType, ok4 := point.Data["linkType"].(float64)
+
+				if ok3 && jobID != "" {
+					pointObj.PointHyperlinkDto = entity.PointHyperlinkDto{
+						CardIndex:   cardIndex,
+						CourseID:    strconv.Itoa(courseId),
+						ClassID:     strconv.Itoa(classId),
+						KnowledgeID: card.KnowledgeID,
+						Cpi:         strconv.Itoa(cpi),
+						ObjectID:    "",
+						JobID:       jobID,
+						Type:        ctype.Insertlive,
+						IsSet:       ok,
+					}
+					if ok4 {
+						pointObj.PointHyperlinkDto.LinkType = int(linkType)
+					}
+				} else {
+					log2.Print(log2.DEBUG, "(%d, %d) 任务点 'objectid' 不存在或为空 %+v", cardIndex, pointIndex, point)
+					continue
+				}
 			default:
 				log2.Print(log2.DEBUG, "未知的任务点类型: %s\n", pointType)
 				log2.Print(log2.DEBUG, "%+v", point)

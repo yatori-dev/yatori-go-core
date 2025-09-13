@@ -680,3 +680,40 @@ func (cache *XueXiTUserCache) DocumentDtoReadingBookReport(p *entity.PointDocume
 	utils.CookiesAddNoRepetition(&cache.cookies, res.Cookies()) //赋值cookie
 	return string(body), nil
 }
+
+// 外链完成接口
+func (cache *XueXiTUserCache) HyperlinkDtoCompleteReport(p *entity.PointHyperlinkDto, retry int, lastErr error) (string, error) {
+
+	url := "https://mooc1.chaoxing.com/ananas/job/hyperlink?jobid=" + p.JobID + "&knowledgeid=" + strconv.Itoa(p.KnowledgeID) + "&courseid=" + p.CourseID + "&clazzid=" + p.ClassID + "&jtoken=" + p.Jtoken + "&checkMicroTopic=true&microTopicId=undefined&_dc=" + strconv.FormatInt(time.Now().UnixMilli(), 10)
+	method := "GET"
+
+	client := &http.Client{}
+	req, err := http.NewRequest(method, url, nil)
+
+	if err != nil {
+		fmt.Println(err)
+		return "", nil
+	}
+	req.Header.Add("User-Agent", utils.DefaultUserAgent)
+	req.Header.Add("Accept", "*/*")
+	req.Header.Add("Host", "mooc1.chaoxing.com")
+	req.Header.Add("Connection", "keep-alive")
+	for _, cookie := range cache.cookies {
+		req.AddCookie(cookie)
+	}
+
+	res, err := client.Do(req)
+	if err != nil {
+		fmt.Println(err)
+		return "", nil
+	}
+	defer res.Body.Close()
+
+	body, err := ioutil.ReadAll(res.Body)
+	if err != nil {
+		fmt.Println(err)
+		return "", nil
+	}
+	//fmt.Println(string(body))
+	return string(body), nil
+}

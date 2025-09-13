@@ -197,7 +197,7 @@ func TestXueXiToChapterCord(t *testing.T) {
 	//	videoDTO entity.PointVideoDto
 	//)
 	// 处理返回的任务点对象
-	videoDTOs, _, _ := entity.ParsePointDto(fetchCards)
+	videoDTOs, _, _, _ := entity.ParsePointDto(fetchCards)
 
 	//card3, err := xuexitong.PageMobileChapterCardAction(
 	//	&userCache, key, courseId, videoDTOs[3].KnowledgeID, videoDTOs[3].CardIndex, course[index].Cpi)
@@ -278,7 +278,7 @@ func TestXueXiToChapterCardWork(t *testing.T) {
 	_, fetchCards, err := xuexitong.ChapterFetchCardsAction(&userCache, &action, nodes, 51, courseId,
 		key, course[index].Cpi)
 
-	videoDTOs, workDTOs, documentDTOs := entity.ParsePointDto(fetchCards)
+	videoDTOs, workDTOs, documentDTOs, _ := entity.ParsePointDto(fetchCards)
 	fmt.Println(videoDTOs)
 	fmt.Println(workDTOs)
 	fmt.Println(documentDTOs)
@@ -481,7 +481,7 @@ func TestXueXiToFlushCourse(t *testing.T) {
 		//if course.CourseName != "戏剧鉴赏" {
 		//	continue
 		//}
-		if course.CourseName != "BIM建模技术" {
+		if course.CourseName != "用经济学智慧解读中国" {
 			continue
 		}
 		// 6c444b8d5c6203ee2f2aef4b76f5b2ce qrcEnc
@@ -532,7 +532,7 @@ func TestXueXiToFlushCourse(t *testing.T) {
 			log.Printf("ID.%d(%s/%s)正在执行任务点\n",
 				item,
 				pointAction.Knowledge[index].Label, pointAction.Knowledge[index].Name)
-			if pointAction.Knowledge[index].Label != "2.1.1" {
+			if pointAction.Knowledge[index].Label != "9.1" {
 				//fmt.Println("断点")
 				continue
 			}
@@ -541,8 +541,8 @@ func TestXueXiToFlushCourse(t *testing.T) {
 			if err != nil {
 				log.Fatal(err)
 			}
-			videoDTOs, workDTOs, documentDTOs := entity.ParsePointDto(fetchCards)
-			if videoDTOs == nil && workDTOs == nil && documentDTOs == nil {
+			videoDTOs, workDTOs, documentDTOs, hyperlinkDTOs := entity.ParsePointDto(fetchCards)
+			if videoDTOs == nil && workDTOs == nil && documentDTOs == nil && hyperlinkDTOs == nil {
 				log.Println("没有可学习的内容")
 			}
 
@@ -565,7 +565,7 @@ func TestXueXiToFlushCourse(t *testing.T) {
 				}
 			}
 			// 文档刷取
-			if documentDTOs != nil && false {
+			if documentDTOs != nil && true {
 				for _, documentDTO := range documentDTOs {
 					card, _, err := xuexitong.PageMobileChapterCardAction(
 						&userCache, key, courseId, documentDTO.KnowledgeID, documentDTO.CardIndex, course.Cpi)
@@ -587,7 +587,7 @@ func TestXueXiToFlushCourse(t *testing.T) {
 				}
 			}
 			//作业刷取
-			if workDTOs != nil && true {
+			if workDTOs != nil && false {
 				for _, workDTO := range workDTOs {
 
 					//以手机端拉取章节卡片数据
@@ -640,7 +640,24 @@ func TestXueXiToFlushCourse(t *testing.T) {
 					fmt.Printf("%s答题完成，返回信息：%s\n", questionAction.Title, answerAction)
 				}
 			}
+			//外链任务点刷取
+			if hyperlinkDTOs != nil && true {
+				for _, hyperlinkDTO := range hyperlinkDTOs {
+					card, _, err := xuexitong.PageMobileChapterCardAction(
+						&userCache, key, courseId, hyperlinkDTO.KnowledgeID, hyperlinkDTO.CardIndex, course.Cpi)
+					if err != nil {
+						log.Fatal(err)
+					}
+					hyperlinkDTO.AttachmentsDetection(card)
 
+					document, err1 := point.ExecuteHyperlink(&userCache, &hyperlinkDTO)
+					if err1 != nil {
+						log.Fatal(err1)
+					}
+					log2.Print(log2.INFO, "(", hyperlinkDTO.Title, ")", document)
+					time.Sleep(5 * time.Second)
+				}
+			}
 		}
 	}
 }
@@ -738,7 +755,7 @@ func TestFaceQrScanPlan1(t *testing.T) {
 			if err != nil {
 				log.Fatal(err)
 			}
-			videoDTOs, workDTOs, documentDTOs := entity.ParsePointDto(fetchCards)
+			videoDTOs, workDTOs, documentDTOs, _ := entity.ParsePointDto(fetchCards)
 			if videoDTOs == nil && workDTOs == nil && documentDTOs == nil {
 				log.Println("没有可学习的内容")
 			}

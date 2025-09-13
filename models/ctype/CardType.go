@@ -8,4 +8,6 @@ const (
 	Insertdoc  CardType = "insertdoc"
 	Document   CardType = "document"
 	InsertBook CardType = "insertbook"
+	Hyperlink  CardType = "hyperlink"
+	Insertlive CardType = "insertlive"
 )

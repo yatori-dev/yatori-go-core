@@ -9,6 +9,7 @@ import (
 	"strings"
 
 	"github.com/yatori-dev/yatori-go-core/models/ctype"
+	log2 "github.com/yatori-dev/yatori-go-core/utils/log"
 )
 
 type IAttachment interface {
@@ -24,6 +25,7 @@ type PointDto struct {
 	PointVideoDto
 	PointWorkDto
 	PointDocumentDto
+	PointHyperlinkDto
 }
 
 // PointVideoDto 视频任务点
@@ -78,7 +80,7 @@ type PointWorkDto struct {
 }
 
 // 外链
-type HyperlinkDto struct {
+type PointHyperlinkDto struct {
 	CardIndex   int
 	CourseID    string
 	ClassID     string
@@ -89,9 +91,32 @@ type HyperlinkDto struct {
 	Title    string
 	JobID    string
 	Jtoken   string
-	IsJob    bool //是否是任务点(看完的文档也算在非任务点里面)，如果是任务点则为true，不是则为false
-	Type     ctype.CardType
-	IsSet    bool
+	LinkType int //外链类型
+	//IsJob    bool //是否是任务点(看完的文档也算在非任务点里面)，如果是任务点则为true，不是则为false
+	Type  ctype.CardType
+	IsSet bool
+}
+
+// 直播任务对象
+type PointLiveDto struct {
+	CardIndex   int
+	CourseID    string
+	ClassID     string
+	KnowledgeID int
+	Cpi         string
+
+	UserId     string //用户ID
+	Live       bool
+	LiveId     string //直播ID
+	Vdoid      string //不知道是个啥
+	Mid        string
+	Title      string //直播标题
+	JobID      string
+	StreamName string //直播流名称
+	LiveStatus string //直播状态
+	Type       ctype.CardType
+	Module     string //类型
+	IsSet      bool
 }
 
 // WorkInputField represents an <input> element in the HTML form.
@@ -139,6 +164,9 @@ func (p *PointDto) All() iter.Seq[IPointDto] {
 		if !yield(p.PointDocumentDto) {
 			return
 		}
+		if !yield(p.PointHyperlinkDto) {
+			return
+		}
 	}
 }
 
@@ -156,8 +184,9 @@ func GroupPointDtos[T IPointDto](pointDTOs []PointDto, predicate func(T) bool) [
 	return result
 }
 
-func ParsePointDto(pointDTOs []PointDto) (videoDTOs []PointVideoDto, workDTOs []PointWorkDto, documentDTOs []PointDocumentDto) {
-	for _, card := range pointDTOs {
+func ParsePointDto(pointDTOs []PointDto) (videoDTOs []PointVideoDto, workDTOs []PointWorkDto, documentDTOs []PointDocumentDto, hyperlinkDTOs []PointHyperlinkDto) {
+	for i, card := range pointDTOs {
+		log2.Print(log2.INFO, strconv.Itoa(i))
 		for dto := range card.All() {
 			switch v := dto.(type) {
 			case PointVideoDto:
@@ -171,6 +200,10 @@ func ParsePointDto(pointDTOs []PointDto) (videoDTOs []PointVideoDto, workDTOs []
 			case PointDocumentDto:
 				if v.IsSet {
 					documentDTOs = append(documentDTOs, v)
+				}
+			case PointHyperlinkDto:
+				if v.IsSet {
+					hyperlinkDTOs = append(hyperlinkDTOs, v)
 				}
 			}
 		}
@@ -186,6 +219,9 @@ func (w PointWorkDto) IsSetted() bool          { return w.IsSet }
 
 func (d PointDocumentDto) GetType() ctype.CardType { return d.Type }
 func (d PointDocumentDto) IsSetted() bool          { return d.IsSet }
+
+func (d PointHyperlinkDto) GetType() ctype.CardType { return d.Type }
+func (d PointHyperlinkDto) IsSetted() bool          { return d.IsSet }
 
 // AttachmentsDetection 使用接口对每种DTO进行检测再次赋值, 以对应后续的刷取请求
 func (p *PointVideoDto) AttachmentsDetection(attachment interface{}) (bool, error) {
@@ -359,19 +395,28 @@ func (p *PointDocumentDto) AttachmentsDetection(attachment interface{}) (bool, e
 
 	for _, a := range attachments {
 		att, _ := a.(map[string]interface{})
-
+		typeStr := "" //类型值
+		//进行不同方案的类型值获取
+		if att["type"] != nil {
+			typeStr = att["type"].(string)
+		} else if att["property"] != nil {
+			if att["property"].(map[string]interface{})["module"] != nil {
+				typeStr = att["property"].(map[string]interface{})["module"].(string)
+			}
+		}
 		// 如果未给出文档类型（垃圾学习通，一点都不规范），那么先进行文档解析尝试。
-		if att["type"] == nil {
+		if typeStr == "" {
 			property, ok := att["property"].(map[string]interface{})
 			if !ok {
 				return false, errors.New("invalid property structure")
 			}
-			objectid := property["objectid"]
-			if objectid == p.ObjectID {
+
+			if property["name"] != nil {
 				p.Title = property["name"].(string)
-				if property["jobid"] != nil {
-					p.JobID = property["jobid"].(string)
-				}
+			}
+
+			if property["jobid"] != nil {
+				p.JobID = property["jobid"].(string)
 			}
 			if att["jtoken"] != nil {
 				p.Jtoken = att["jtoken"].(string)
@@ -384,7 +429,36 @@ func (p *PointDocumentDto) AttachmentsDetection(attachment interface{}) (bool, e
 			if property["bookname"] != nil { //针对insertbook类型
 				p.Title = property["bookname"].(string)
 			}
-		} else if att["type"].(string) == "document" {
+			//过滤
+			objectid := property["objectid"]
+			jobid := property["jobid"]
+			if (p.ObjectID != "" && objectid == p.ObjectID) || (jobid != nil && p.JobID == jobid) {
+				break
+			}
+		} else if typeStr == "insertbook" {
+			property, ok := att["property"].(map[string]interface{})
+			if !ok {
+				return false, errors.New("invalid property structure")
+			}
+
+			if att["jtoken"] != nil {
+				p.Jtoken = att["jtoken"].(string)
+			}
+			if att["job"] != nil {
+				p.IsJob = att["job"].(bool)
+			} else {
+				p.IsJob = false
+			}
+			if property["bookname"] != nil { //针对insertbook类型
+				p.Title = property["bookname"].(string)
+			}
+			//过滤
+			objectid := property["objectid"]
+			jobid := property["jobid"]
+			if (p.ObjectID != "" && objectid == p.ObjectID) || (jobid != nil && p.JobID == jobid) {
+				break
+			}
+		} else if typeStr == "document" {
 			property, ok := att["property"].(map[string]interface{})
 			//if strings.Contains(p.Title, "二进制的由来.pdf") || p.KnowledgeID == 1008383209 {
 			//	fmt.Println("断点")
@@ -403,9 +477,40 @@ func (p *PointDocumentDto) AttachmentsDetection(attachment interface{}) (bool, e
 				}
 				p.Jtoken = att["jtoken"].(string)
 			}
-		} else if att["type"].(string) == "wrodid" { //预留作业的
-
 		}
+	}
+	return true, nil
+}
+
+func (p *PointHyperlinkDto) AttachmentsDetection(attachment interface{}) (bool, error) {
+	attachmentMap, ok := attachment.(map[string]interface{})
+	if !ok {
+		return false, errors.New("无法将 Attachment 转换为 map[string]interface{}")
+	}
+	attachments, ok := attachmentMap["attachments"].([]interface{})
+	if !ok {
+		return false, errors.New("invalid attachment structure")
+	}
+
+	for _, a := range attachments {
+		att, _ := a.(map[string]interface{})
+		if att["jobid"] != nil {
+			if att["jobid"].(string) != p.JobID {
+				continue
+			}
+			property, ok := att["property"].(map[string]interface{})
+			if !ok {
+				return false, errors.New("invalid property structure")
+			}
+
+			p.Title = property["title"].(string)
+			if property["jobid"] != nil {
+				p.JobID = property["jobid"].(string)
+			}
+			p.Jtoken = att["jtoken"].(string)
+			return true, nil
+		}
+
 	}
 	return true, nil
 }
