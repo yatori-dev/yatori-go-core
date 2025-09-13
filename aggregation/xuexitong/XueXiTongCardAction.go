@@ -157,7 +157,7 @@ func VideoDtoFetchAction(cache *xuexitong.XueXiTUserCache, p *entity.PointVideoD
 }
 
 func WorkPageFromAction(cache *xuexitong.XueXiTUserCache, workPoint *entity.PointWorkDto) ([]entity.WorkInputField, error) {
-	questionHtml, err := cache.WorkFetchQuestion(workPoint)
+	questionHtml, err := cache.WorkFetchQuestion(workPoint, 3, nil)
 	if err != nil {
 		return nil, fmt.Errorf("failed to fetch WorkFetchQuestion: %w", err)
 	}
@@ -273,7 +273,7 @@ func ParseWorkQuestionAction(cache *xuexitong.XueXiTUserCache, workPoint *entity
 	var judgeQuestion []entity.JudgeQue
 	var fillQuestion []entity.FillQue
 	var shortQuestion []entity.ShortQue
-	question, _ := cache.WorkFetchQuestion(workPoint)
+	question, _ := cache.WorkFetchQuestion(workPoint, 3, nil)
 
 	// 使用 goquery 解析 HTML
 	doc, err := goquery.NewDocumentFromReader(bytes.NewReader([]byte(question)))
