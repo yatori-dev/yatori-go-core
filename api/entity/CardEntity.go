@@ -186,7 +186,7 @@ func GroupPointDtos[T IPointDto](pointDTOs []PointDto, predicate func(T) bool) [
 
 func ParsePointDto(pointDTOs []PointDto) (videoDTOs []PointVideoDto, workDTOs []PointWorkDto, documentDTOs []PointDocumentDto, hyperlinkDTOs []PointHyperlinkDto) {
 	for i, card := range pointDTOs {
-		log2.Print(log2.INFO, strconv.Itoa(i))
+		log2.Print(log2.DEBUG, strconv.Itoa(i))
 		for dto := range card.All() {
 			switch v := dto.(type) {
 			case PointVideoDto:
