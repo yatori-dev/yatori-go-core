@@ -53,15 +53,18 @@ type Co struct {
 }
 
 // 相似度匹配并排序
-func SimilarityArrayAndSort(target string, v []string) []int {
+func SimilarityArrayAndSort(target string, v []string) []Co {
 	coList := make([]Co, len(v))
 	for i := 0; i < len(v); i++ {
 		coList[i] = Co{index: i, score: Similarity(v[i], target)}
 	}
 	sort.Slice(coList, func(i, j int) bool {
+		if coList[i].score >= coList[j].score {
+			return true
+		}
 		return false
 	})
-	return nil
+	return coList
 }
 
 // 直接返回对应最大匹配的ABCD
