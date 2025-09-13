@@ -77,6 +77,23 @@ type PointWorkDto struct {
 	IsSet bool
 }
 
+// 外链
+type HyperlinkDto struct {
+	CardIndex   int
+	CourseID    string
+	ClassID     string
+	KnowledgeID int
+	Cpi         string
+
+	ObjectID string
+	Title    string
+	JobID    string
+	Jtoken   string
+	IsJob    bool //是否是任务点(看完的文档也算在非任务点里面)，如果是任务点则为true，不是则为false
+	Type     ctype.CardType
+	IsSet    bool
+}
+
 // WorkInputField represents an <input> element in the HTML form.
 type WorkInputField struct {
 	Name  string
