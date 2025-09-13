@@ -8,6 +8,7 @@ import (
 	"github.com/yatori-dev/yatori-go-core/api/entity"
 	"github.com/yatori-dev/yatori-go-core/que-core/qtype"
 	"github.com/yatori-dev/yatori-go-core/utils"
+	"github.com/yatori-dev/yatori-go-core/utils/qutils"
 
 	"io/ioutil"
 	"mime/multipart"
@@ -15,7 +16,6 @@ import (
 	"net/url"
 	"regexp"
 	"strconv"
-	"strings"
 )
 
 // WorkNewSubmitAnswer 新的提交作业答案的接口
@@ -53,26 +53,39 @@ func (cache *XueXiTUserCache) WorkNewSubmitAnswer(courseId string, classId strin
 		}
 		if ch.Type == qtype.SingleChoice {
 			answers := ""
+			candidateSelects := []string{} //待选
+			for _, option := range ch.Options {
+				candidateSelects = append(candidateSelects, option)
+			}
 			for _, item := range ch.Answers {
-				for k, v := range ch.Options {
-					if strings.Contains(v, item) {
-						answers += k
-					}
-
-				}
+				//for k, v := range ch.Options {
+				//	if strings.Contains(v, item) {
+				//		answers += k
+				//	}
+				//
+				//}
+				answers += qutils.SimilarityArraySelect(item, candidateSelects)
 			}
 			_ = writer.WriteField("answer"+ch.Qid, answers)
 			_ = writer.WriteField("answertype"+ch.Qid, "0")
 		}
 		if ch.Type == qtype.MultipleChoice {
+			//answers := ""
+			//for _, item := range ch.Answers {
+			//	for k, v := range ch.Options {
+			//		if strings.Contains(v, item) {
+			//			answers += k
+			//		}
+			//
+			//	}
+			//}
 			answers := ""
+			candidateSelects := []string{} //待选
+			for _, option := range ch.Options {
+				candidateSelects = append(candidateSelects, option)
+			}
 			for _, item := range ch.Answers {
-				for k, v := range ch.Options {
-					if strings.Contains(v, item) {
-						answers += k
-					}
-
-				}
+				answers += qutils.SimilarityArraySelect(item, candidateSelects)
 			}
 			_ = writer.WriteField("answer"+ch.Qid, answers)
 			_ = writer.WriteField("answertype"+ch.Qid, "1")

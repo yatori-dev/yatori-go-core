@@ -4,3 +4,6 @@
 examples/*.yaml
 examples/*.db
 face/*
+/examples/node_modules/
+/examples/package.json
+/examples/package-lock.json
