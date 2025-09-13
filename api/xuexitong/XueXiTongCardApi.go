@@ -683,7 +683,9 @@ func (cache *XueXiTUserCache) DocumentDtoReadingBookReport(p *entity.PointDocume
 
 // 外链完成接口
 func (cache *XueXiTUserCache) HyperlinkDtoCompleteReport(p *entity.PointHyperlinkDto, retry int, lastErr error) (string, error) {
-
+	if retry < 0 {
+		return "", lastErr
+	}
 	url := "https://mooc1.chaoxing.com/ananas/job/hyperlink?jobid=" + p.JobID + "&knowledgeid=" + strconv.Itoa(p.KnowledgeID) + "&courseid=" + p.CourseID + "&clazzid=" + p.ClassID + "&jtoken=" + p.Jtoken + "&checkMicroTopic=true&microTopicId=undefined&_dc=" + strconv.FormatInt(time.Now().UnixMilli(), 10)
 	method := "GET"
 
@@ -704,8 +706,9 @@ func (cache *XueXiTUserCache) HyperlinkDtoCompleteReport(p *entity.PointHyperlin
 
 	res, err := client.Do(req)
 	if err != nil {
-		fmt.Println(err)
-		return "", nil
+		//fmt.Println(err)
+		time.Sleep(time.Duration(retry*5) * time.Second)
+		return cache.HyperlinkDtoCompleteReport(p, retry-1, lastErr)
 	}
 	defer res.Body.Close()
 
