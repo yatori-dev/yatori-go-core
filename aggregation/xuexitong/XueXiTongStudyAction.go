@@ -35,6 +35,24 @@ func VideoSubmitStudyTimeAction(cache *xuexitong.XueXiTUserCache, p *entity.Poin
 			playReport, err = cache.VideoSubmitStudyTimePEApi(p, playingTime, isdrag, 8, nil)
 		}
 	}
+	//触发400
+	if err != nil && strings.Contains(err.Error(), "failed to fetch video, status code: 400") {
+		ReLogin(cache) //重登
+		if mode == 0 {
+			playReport, err = cache.VideoSubmitStudyTimeApi(p, playingTime, isdrag, 8, nil)
+		} else if mode == 1 {
+			playReport, err = cache.VideoSubmitStudyTimePEApi(p, playingTime, isdrag, 8, nil)
+		}
+	}
+	//触发403,触发403的时候会进行一次重登测试，如果之后还是403那说明是人脸了
+	if err != nil && strings.Contains(err.Error(), "failed to fetch video, status code: 403") {
+		ReLogin(cache) //重登
+		if mode == 0 {
+			playReport, err = cache.VideoSubmitStudyTimeApi(p, playingTime, isdrag, 8, nil)
+		} else if mode == 1 {
+			playReport, err = cache.VideoSubmitStudyTimePEApi(p, playingTime, isdrag, 8, nil)
+		}
+	}
 	if err != nil {
 		return "", err
 	}

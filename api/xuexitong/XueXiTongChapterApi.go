@@ -18,7 +18,10 @@ import (
 // PullChapter ??????????cpi ?key ?? ????
 // cpi ? key ?? ????json?????? int
 // TODO???? int ???????? ?Course???????? ? ?action?????XueXiTCourseDetailForCourseIdAction???? ???
-func (cache *XueXiTUserCache) PullChapter(cpi int, key int) (string, error) {
+func (cache *XueXiTUserCache) PullChapter(cpi int, key int, retry int, lastErr error) (string, error) {
+	if retry < 0 {
+		return "", lastErr
+	}
 	method := "GET"
 
 	params := url.Values{}
@@ -58,8 +61,10 @@ func (cache *XueXiTUserCache) PullChapter(cpi int, key int) (string, error) {
 	}
 	res, err := client.Do(req)
 	if err != nil {
-		fmt.Println(err)
-		return "", err
+		time.Sleep(time.Duration(retry*5) * time.Second)
+		//fmt.Println(err)
+		//return "", err
+		return cache.PullChapter(cpi, key, retry-1, err)
 	}
 	defer res.Body.Close()
 
@@ -74,7 +79,10 @@ func (cache *XueXiTUserCache) PullChapter(cpi int, key int) (string, error) {
 
 // FetchChapterPointStatus 章节状态
 // nodes 各章节对应ID
-func (cache *XueXiTUserCache) FetchChapterPointStatus(nodes []int, clazzID, userID, cpi, courseID int) (string, error) {
+func (cache *XueXiTUserCache) FetchChapterPointStatus(nodes []int, clazzID, userID, cpi, courseID int, retry int, lastErr error) (string, error) {
+	if retry < 0 {
+		return "", lastErr
+	}
 	method := "POST"
 	strInts := make([]string, len(nodes))
 	for i, v := range nodes {
@@ -127,8 +135,9 @@ func (cache *XueXiTUserCache) FetchChapterPointStatus(nodes []int, clazzID, user
 	}
 	res, err := client.Do(req)
 	if err != nil {
-		fmt.Println(err)
-		return "", err
+		//fmt.Println(err)
+		time.Sleep(time.Duration(retry*5) * time.Second)
+		return cache.FetchChapterPointStatus(nodes, clazzID, userID, cpi, courseID, retry-1, err)
 	}
 	defer res.Body.Close()
 
@@ -218,8 +227,10 @@ func (cache *XueXiTUserCache) FetchChapterCords(nodes []int, index, courseId int
 // Args:
 //
 //	nodes: 任务点集合 , index: 任务点索引
-func (cache *XueXiTUserCache) FetchChapterCords2(clazzid, courseid, knowledgeid, cpi string) (string, error) {
-
+func (cache *XueXiTUserCache) FetchChapterCords2(clazzid, courseid, knowledgeid, cpi string, retry int, lastErr error) (string, error) {
+	if retry < 0 {
+		return "", lastErr
+	}
 	urlStr := "https://mooc1.chaoxing.com/mooc-ans/knowledge/cards?clazzid=" + clazzid + "&courseid=" + courseid + "&knowledgeid=" + knowledgeid + "&num=0&ut=s&cpi=" + cpi + "&v=2025-0424-1038-3&mooc2=1&isMicroCourse=false&editorPreview=0"
 	method := "GET"
 
@@ -256,8 +267,10 @@ func (cache *XueXiTUserCache) FetchChapterCords2(clazzid, courseid, knowledgeid,
 
 	res, err := client.Do(req)
 	if err != nil {
-		fmt.Println(err)
-		return "", nil
+		time.Sleep(time.Duration(retry*5) * time.Second)
+		//fmt.Println(err)
+		//return "", nil
+		return cache.FetchChapterCords2(clazzid, courseid, knowledgeid, cpi, retry-1, err)
 	}
 	defer res.Body.Close()
 
@@ -319,6 +332,7 @@ func (cache *XueXiTUserCache) EnterChapterForwardCallApi(courseId, clazzid, chap
 
 	res, err := client.Do(req)
 	if err != nil {
+		time.Sleep(time.Duration(retry*5) * time.Second)
 		return cache.EnterChapterForwardCallApi(courseId, clazzid, chapterId, cpi, retry-1, err)
 	}
 	defer res.Body.Close()

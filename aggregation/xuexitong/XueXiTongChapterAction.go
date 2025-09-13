@@ -97,6 +97,16 @@ func ChapterFetchCardsAction(
 			cords, err = cache.FetchChapterCords(nodes, index, courseId, 5, nil) //尝试重新拉取卡片信息
 			log2.Print(log2.DEBUG, utils.RunFuncName(), "绕过成功")
 		}
+		//触发202
+		if err != nil && strings.Contains(err.Error(), "status code: 202") {
+			ReLogin(cache)                                                       //重登
+			cords, err = cache.FetchChapterCords(nodes, index, courseId, 5, nil) //尝试重新拉取卡片信息
+		}
+		//触发400
+		if err != nil && strings.Contains(err.Error(), "status code: 400") {
+			ReLogin(cache)                                                       //重登
+			cords, err = cache.FetchChapterCords(nodes, index, courseId, 5, nil) //尝试重新拉取卡片信息
+		}
 	}
 
 	if err != nil {
@@ -157,7 +167,7 @@ func ChapterFetchCardsAction(
 						Type:        ctype.Video,
 						IsSet:       ok,
 					}
-					cords2, _ := cache.FetchChapterCords2(strconv.Itoa(classId), strconv.Itoa(courseId), strconv.Itoa(card.KnowledgeID), strconv.Itoa(cpi))
+					cords2, _ := cache.FetchChapterCords2(strconv.Itoa(classId), strconv.Itoa(courseId), strconv.Itoa(card.KnowledgeID), strconv.Itoa(cpi), 3, nil)
 					find := gojsonq.New().JSONString(cords2).Find("attachments")
 					if find != nil {
 						list := gojsonq.New().JSONString(cords2).Find("attachments")

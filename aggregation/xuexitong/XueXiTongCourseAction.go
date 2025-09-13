@@ -193,7 +193,7 @@ type KnowledgeItem struct {
 // PullCourseChapterAction 获取对应课程的章节信息包括节点信息
 func PullCourseChapterAction(cache *xuexitong.XueXiTUserCache, cpi, key int) (chaptersList ChaptersList, ok bool, err error) {
 	//拉取对应课程的章节信息
-	chapter, err := cache.PullChapter(cpi, key)
+	chapter, err := cache.PullChapter(cpi, key, 3, nil)
 	if err != nil {
 		return ChaptersList{}, false, errors.New("[" + cache.Name + "] " + " 拉取章节失败" + err.Error())
 	}
@@ -321,7 +321,7 @@ func ChapterFetchPointAction(cache *xuexitong.XueXiTUserCache,
 	chapters *ChaptersList,
 	clazzID, userID, cpi, courseID int,
 ) (ChaptersList, error) {
-	status, err := cache.FetchChapterPointStatus(nodes, clazzID, userID, cpi, courseID)
+	status, err := cache.FetchChapterPointStatus(nodes, clazzID, userID, cpi, courseID, 3, nil)
 	if err != nil {
 		log2.Print(log2.DEBUG, "["+cache.Name+"] "+" 获取章节状态失败")
 	}
