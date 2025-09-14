@@ -481,7 +481,7 @@ func TestXueXiToFlushCourse(t *testing.T) {
 		//if course.CourseName != "戏剧鉴赏" {
 		//	continue
 		//}
-		if course.CourseName != "用经济学智慧解读中国" {
+		if course.CourseName != "形势与政策（2025年秋）" {
 			continue
 		}
 		// 6c444b8d5c6203ee2f2aef4b76f5b2ce qrcEnc
@@ -532,7 +532,7 @@ func TestXueXiToFlushCourse(t *testing.T) {
 			log.Printf("ID.%d(%s/%s)正在执行任务点\n",
 				item,
 				pointAction.Knowledge[index].Label, pointAction.Knowledge[index].Name)
-			if pointAction.Knowledge[index].Label != "9.1" {
+			if pointAction.Knowledge[index].Label != "7.1" {
 				//fmt.Println("断点")
 				continue
 			}

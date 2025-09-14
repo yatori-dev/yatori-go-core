@@ -80,13 +80,29 @@ func PullLiveInfoAction(cache *xuexitong.XueXiTUserCache, p *entity.PointLiveDto
 		if percentValue != nil {
 			p.VideoCompletePercent = percentValue.(float64)
 		}
-
+		videoDuration := gojsonq.New().JSONString(liveData).Find("temp.data.duration")
+		if videoDuration != nil {
+			p.VideoDuration = int(videoDuration.(float64))
+		}
+		liveStatusCode := gojsonq.New().JSONString(liveData).Find("temp.data.liveStatus")
+		if liveStatusCode != nil {
+			p.LiveStatusCode = int(liveStatusCode.(float64))
+		}
 	}
 	return nil
 }
 
 // 测试用的Live直播学时函数
 func ExecuteLiveTest(cache *xuexitong.XueXiTUserCache, p *entity.PointLiveDto) {
+	PullLiveInfoAction(cache, p)
+	var passValue float64 = 90
+	if p.LiveStatusCode == 0 {
+		fmt.Println(p.Title, "该直播还未开始，已自动跳过：")
+		return
+	}
+	if p.VideoCompletePercent >= passValue {
+		return //防止学了的继续学
+	}
 	relation, err := LiveCreateRelationAction(cache, p)
 	if err != nil {
 		fmt.Println(err)
@@ -99,7 +115,7 @@ func ExecuteLiveTest(cache *xuexitong.XueXiTUserCache, p *entity.PointLiveDto) {
 			fmt.Println(err1)
 		}
 		fmt.Println(p.Title, "观看状态："+live, "当前观看进度：", fmt.Sprintf("%.2f", p.VideoCompletePercent), "%")
-		if p.VideoCompletePercent >= 90 {
+		if p.VideoCompletePercent >= passValue {
 			fmt.Println(p.Title, "已完成直播任务点")
 			break
 		}

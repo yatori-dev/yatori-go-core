@@ -337,7 +337,7 @@ func ChapterFetchCardsAction(
 						pointObj.PointLiveDto.Title = title
 					}
 					if ok5 {
-						pointObj.PointLiveDto.LiveStatus = liveStatus
+						pointObj.PointLiveDto.LiveStatusStr = liveStatus
 					}
 					if ok6 {
 						pointObj.PointLiveDto.StreamName = streamName

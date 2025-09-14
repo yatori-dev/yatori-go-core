@@ -114,7 +114,9 @@ type PointLiveDto struct {
 	Title                string //直播标题
 	JobID                string
 	StreamName           string //直播流名称
-	LiveStatus           string //直播状态
+	LiveStatusStr        string //直播状态文字
+	LiveStatusCode       int    // 直播状态码
+	VideoDuration        int    //视屏时长
 	Type                 ctype.CardType
 	Module               string //类型
 	IsJob                bool   //是否为任务点
