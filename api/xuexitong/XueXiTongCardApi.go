@@ -8,7 +8,6 @@ import (
 	"io/ioutil"
 	"net/http"
 	"net/url"
-	"regexp"
 	"strconv"
 	"strings"
 	"time"
@@ -674,6 +673,7 @@ func (cache *XueXiTUserCache) DocumentDtoReadingBookReport(p *entity.PointDocume
 	}
 	defer res.Body.Close()
 	if res.StatusCode != http.StatusOK {
+		time.Sleep(time.Duration(retry*5) * time.Second)
 		return cache.DocumentDtoReadingBookReport(p, retry-1, fmt.Errorf("status code: %d", res.StatusCode))
 	}
 
@@ -687,11 +687,11 @@ func (cache *XueXiTUserCache) HyperlinkDtoCompleteReport(p *entity.PointHyperlin
 	if retry < 0 {
 		return "", lastErr
 	}
-	url := "https://mooc1.chaoxing.com/ananas/job/hyperlink?jobid=" + p.JobID + "&knowledgeid=" + strconv.Itoa(p.KnowledgeID) + "&courseid=" + p.CourseID + "&clazzid=" + p.ClassID + "&jtoken=" + p.Jtoken + "&checkMicroTopic=true&microTopicId=undefined&_dc=" + strconv.FormatInt(time.Now().UnixMilli(), 10)
+	urlStr := "https://mooc1.chaoxing.com/ananas/job/hyperlink?jobid=" + p.JobID + "&knowledgeid=" + strconv.Itoa(p.KnowledgeID) + "&courseid=" + p.CourseID + "&clazzid=" + p.ClassID + "&jtoken=" + p.Jtoken + "&checkMicroTopic=true&microTopicId=undefined&_dc=" + strconv.FormatInt(time.Now().UnixMilli(), 10)
 	method := "GET"
 
 	client := &http.Client{}
-	req, err := http.NewRequest(method, url, nil)
+	req, err := http.NewRequest(method, urlStr, nil)
 
 	if err != nil {
 		fmt.Println(err)
@@ -712,6 +712,9 @@ func (cache *XueXiTUserCache) HyperlinkDtoCompleteReport(p *entity.PointHyperlin
 		return cache.HyperlinkDtoCompleteReport(p, retry-1, lastErr)
 	}
 	defer res.Body.Close()
+	if res.StatusCode != http.StatusOK {
+		return cache.HyperlinkDtoCompleteReport(p, retry-1, fmt.Errorf("status code: %d", res.StatusCode))
+	}
 
 	body, err := ioutil.ReadAll(res.Body)
 	if err != nil {
@@ -723,61 +726,65 @@ func (cache *XueXiTUserCache) HyperlinkDtoCompleteReport(p *entity.PointHyperlin
 }
 
 // 拉取u参数
-func (cache *XueXiTUserCache) PullLiveUParam(liveId string) (string, int) {
-
-	url := "https://zhibo.chaoxing.com/" + liveId + "?courseId=251085317&classId=128238814&knowledgeId=967705955&jobId=live-6000256327632944&userId=221172669&rt=0.9&livesetenc=6b70119b3792fc81816f8ca1f4ba54c8&isjob=true&watchingInCourse=1&customPara1=128238814_251085317&customPara2=92401b9a2dce6d2e49c0706a186247c3&jobfs=0&isNotDrag=1&livedragenc=3a828d58949143863af938a250d4026c&sw=0&ds=0&liveswdsenc=b2f601fb4b8e506dd3e823232106918b"
-	method := "GET"
-
-	client := &http.Client{}
-	req, err := http.NewRequest(method, url, nil)
-
-	if err != nil {
-		fmt.Println(err)
-		return "", 0
-	}
-	req.Header.Add("User-Agent", "Apifox/1.0.0 (https://apifox.com)")
-	req.Header.Add("Accept", "*/*")
-	req.Header.Add("Host", "zhibo.chaoxing.com")
-	req.Header.Add("Connection", "keep-alive")
-	for _, cookie := range cache.cookies {
-		req.AddCookie(cookie)
-	}
-
-	res, err := client.Do(req)
-	if err != nil {
-		fmt.Println(err)
-		return "", 0
-	}
-	defer res.Body.Close()
-
-	body, err := ioutil.ReadAll(res.Body)
-	if err != nil {
-		fmt.Println(err)
-		return "", 0
-	}
-	//fmt.Println(string(body))
-	r, _ := regexp.Compile("var uInfo = '([\\w\\W]*?)';")
-	match := r.FindStringSubmatch(string(body))
-	if len(match) <= 0 {
-		return "", 0
-	}
-
-	r1, _ := regexp.Compile("var watchMoment = ([\\d]*?);")
-	match1 := r1.FindStringSubmatch(string(body))
-	if len(match1) <= 0 {
-		return "", 0
-	}
-	atoi, err := strconv.Atoi(match1[1])
-	if err != nil {
-		return "", 0
-	}
-	utils.CookiesAddNoRepetition(&cache.cookies, res.Cookies())
-	return match[1], atoi
-}
+//func (cache *XueXiTUserCache) PullLiveUParam(liveId string, retry int, lastErr error) (string, int) {
+//	if retry < 0 {
+//		return "", lastErr
+//	}
+//	urlStr := "https://zhibo.chaoxing.com/" + liveId + "?courseId=251085317&classId=128238814&knowledgeId=967705955&jobId=live-6000256327632944&userId=221172669&rt=0.9&livesetenc=6b70119b3792fc81816f8ca1f4ba54c8&isjob=true&watchingInCourse=1&customPara1=128238814_251085317&customPara2=92401b9a2dce6d2e49c0706a186247c3&jobfs=0&isNotDrag=1&livedragenc=3a828d58949143863af938a250d4026c&sw=0&ds=0&liveswdsenc=b2f601fb4b8e506dd3e823232106918b"
+//	method := "GET"
+//
+//	client := &http.Client{}
+//	req, err := http.NewRequest(method, urlStr, nil)
+//
+//	if err != nil {
+//		fmt.Println(err)
+//		return "", 0
+//	}
+//	req.Header.Add("User-Agent", "Apifox/1.0.0 (https://apifox.com)")
+//	req.Header.Add("Accept", "*/*")
+//	req.Header.Add("Host", "zhibo.chaoxing.com")
+//	req.Header.Add("Connection", "keep-alive")
+//	for _, cookie := range cache.cookies {
+//		req.AddCookie(cookie)
+//	}
+//
+//	res, err := client.Do(req)
+//	if err != nil {
+//		fmt.Println(err)
+//		return "", 0
+//	}
+//	defer res.Body.Close()
+//
+//	body, err := ioutil.ReadAll(res.Body)
+//	if err != nil {
+//		fmt.Println(err)
+//		return "", 0
+//	}
+//	//fmt.Println(string(body))
+//	r, _ := regexp.Compile("var uInfo = '([\\w\\W]*?)';")
+//	match := r.FindStringSubmatch(string(body))
+//	if len(match) <= 0 {
+//		return "", 0
+//	}
+//
+//	r1, _ := regexp.Compile("var watchMoment = ([\\d]*?);")
+//	match1 := r1.FindStringSubmatch(string(body))
+//	if len(match1) <= 0 {
+//		return "", 0
+//	}
+//	atoi, err := strconv.Atoi(match1[1])
+//	if err != nil {
+//		return "", 0
+//	}
+//	utils.CookiesAddNoRepetition(&cache.cookies, res.Cookies())
+//	return match[1], atoi
+//}
 
 // 拉取直播数据
-func (cache *XueXiTUserCache) PullLiveInfoApi(p *entity.PointLiveDto) (string, error) {
-
+func (cache *XueXiTUserCache) PullLiveInfoApi(p *entity.PointLiveDto, retry int, lastErr error) (string, error) {
+	if retry < 0 {
+		return "", lastErr
+	}
 	urlStr := "https://mooc1.chaoxing.com/ananas/live/liveinfo?liveid=" + p.LiveId + "&userid=" + p.UserId + "&clazzid=" + p.ClassID + "&knowledgeid=" + fmt.Sprintf("%d", p.KnowledgeID) + "&courseid=" + p.CourseID + "&jobid=" + p.JobID + "&ut=s"
 	method := "GET"
 
@@ -799,11 +806,15 @@ func (cache *XueXiTUserCache) PullLiveInfoApi(p *entity.PointLiveDto) (string, e
 
 	res, err := client.Do(req)
 	if err != nil {
-		fmt.Println(err)
-		return "", err
+		time.Sleep(time.Duration(retry*5) * time.Second)
+		return cache.PullLiveInfoApi(p, retry-1, err)
 	}
 	defer res.Body.Close()
 
+	if res.StatusCode != http.StatusOK {
+		time.Sleep(time.Duration(retry*5) * time.Second)
+		return cache.PullLiveInfoApi(p, retry-1, fmt.Errorf("status code: %d", res.StatusCode))
+	}
 	body, err := ioutil.ReadAll(res.Body)
 	if err != nil {
 		fmt.Println(err)
@@ -814,13 +825,15 @@ func (cache *XueXiTUserCache) PullLiveInfoApi(p *entity.PointLiveDto) (string, e
 }
 
 // 看直播前先建立连接
-func (cache *XueXiTUserCache) LiveRelationReport(p *entity.PointLiveDto) (string, error) {
-
-	url := "https://mooc1.chaoxing.com/mooc-ans/live/relation?courseid=" + p.CourseID + "&knowledgeid=" + fmt.Sprintf("%d", p.KnowledgeID) + "&ut=s&jobid=" + p.JobID + "&aid=1950435061"
+func (cache *XueXiTUserCache) LiveRelationReport(p *entity.PointLiveDto, retry int, lastErr error) (string, error) {
+	if retry < 0 {
+		return "", lastErr
+	}
+	urlStr := "https://mooc1.chaoxing.com/mooc-ans/live/relation?courseid=" + p.CourseID + "&knowledgeid=" + fmt.Sprintf("%d", p.KnowledgeID) + "&ut=s&jobid=" + p.JobID + "&aid=1950435061"
 	method := "GET"
 
 	client := &http.Client{}
-	req, err := http.NewRequest(method, url, nil)
+	req, err := http.NewRequest(method, urlStr, nil)
 
 	if err != nil {
 		fmt.Println(err)
@@ -836,11 +849,16 @@ func (cache *XueXiTUserCache) LiveRelationReport(p *entity.PointLiveDto) (string
 	}
 	res, err := client.Do(req)
 	if err != nil {
-		fmt.Println(err)
-		return "", err
+		time.Sleep(time.Duration(retry*5) * time.Second)
+		return cache.LiveRelationReport(p, retry-1, err)
 	}
+
 	defer res.Body.Close()
 
+	if res.StatusCode != 200 {
+		time.Sleep(time.Duration(retry*5) * time.Second)
+		return cache.LiveRelationReport(p, retry-1, fmt.Errorf("status code: %d", res.StatusCode))
+	}
 	body, err := ioutil.ReadAll(res.Body)
 	if err != nil {
 		fmt.Println(err)
@@ -877,7 +895,10 @@ func (cache *XueXiTUserCache) LiveWatchMomentReport(p *entity.PointLiveDto, UPar
 		return "", nil
 	}
 	defer res.Body.Close()
-
+	if res.StatusCode != 200 {
+		time.Sleep(time.Duration(retry*5) * time.Second)
+		return cache.LiveWatchMomentReport(p, UParam, watchMoment, retry-1, fmt.Errorf("status code: %d", res.StatusCode))
+	}
 	body, err := ioutil.ReadAll(res.Body)
 	if err != nil {
 		fmt.Println(err)
@@ -916,7 +937,10 @@ func (cache *XueXiTUserCache) LiveSaveTimePcReport(p *entity.PointLiveDto, retry
 		return "", nil
 	}
 	defer res.Body.Close()
-
+	if res.StatusCode != 200 {
+		time.Sleep(time.Duration(retry*5) * time.Second)
+		return cache.LiveSaveTimePcReport(p, retry-1, fmt.Errorf("status code: %d", res.StatusCode))
+	}
 	body, err := ioutil.ReadAll(res.Body)
 	if err != nil {
 		fmt.Println(err)

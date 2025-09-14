@@ -1,6 +1,7 @@
 package point
 
 import (
+	"errors"
 	"fmt"
 	"strings"
 	"time"
@@ -17,13 +18,12 @@ func ExecuteLive(cache *xuexitong.XueXiTUserCache, p *entity.PointLiveDto) (stri
 
 	report1, err1 := cache.LiveSaveTimePcReport(p, 3, nil)
 
-	if err1 != nil {
-		// 触发500
-		if err1 != nil && strings.Contains(err1.Error(), "status code: 500") {
-			xuexitong2.ReLogin(cache) //重登
-			report1, err1 = cache.LiveSaveTimePcReport(p, 3, nil)
-		}
+	// 触发500
+	if err1 != nil && strings.Contains(err1.Error(), "status code: 500") {
+		xuexitong2.ReLogin(cache) //重登
+		report1, err1 = cache.LiveSaveTimePcReport(p, 3, nil)
 	}
+
 	if err1 != nil {
 		return "", err1
 	}
@@ -34,16 +34,45 @@ func ExecuteLive(cache *xuexitong.XueXiTUserCache, p *entity.PointLiveDto) (stri
 		log2.Print(log2.DEBUG, "(", p.Title, ")外链任务点无法正常学习：返回：(", gojsonq.New().JSONString(report1).Find("msg"), ")")
 	}
 	return report1, nil
+}
 
+// {
+// "msg": "关联建立成功",
+// "status": true
+// }
+// 建立直播联系
+func LiveCreateRelationAction(cache *xuexitong.XueXiTUserCache, p *entity.PointLiveDto) (string, error) {
+	report, err := cache.LiveRelationReport(p, 3, nil)
+
+	// 触发500
+	if err != nil && strings.Contains(err.Error(), "status code: 500") {
+		xuexitong2.ReLogin(cache) //重登
+		report, err = cache.LiveRelationReport(p, 3, nil)
+	}
+
+	if err != nil {
+		return "", err
+	}
+	if !gojsonq.New().JSONString(report).Find("status").(bool) {
+		return "", errors.New(report)
+	}
+	return report, nil
 }
 
 // 获取直播信息
-func PullLiveInfoAction(cache *xuexitong.XueXiTUserCache, p *entity.PointLiveDto) {
-	liveData, err1 := cache.PullLiveInfoApi(p)
+func PullLiveInfoAction(cache *xuexitong.XueXiTUserCache, p *entity.PointLiveDto) error {
+	liveData, err1 := cache.PullLiveInfoApi(p, 3, nil)
+
+	// 触发500
+	if err1 != nil && strings.Contains(err1.Error(), "status code: 500") {
+		xuexitong2.ReLogin(cache) //重登
+		liveData, err1 = cache.PullLiveInfoApi(p, 3, nil)
+	}
 
 	if err1 != nil {
-		fmt.Println(err1)
+		return err1
 	}
+
 	//如果获取成功
 	if gojsonq.New().JSONString(liveData).Find("status").(bool) {
 		//获取观看进度
@@ -53,16 +82,16 @@ func PullLiveInfoAction(cache *xuexitong.XueXiTUserCache, p *entity.PointLiveDto
 		}
 
 	}
+	return nil
 }
 
 // 测试用的Live直播学时函数
 func ExecuteLiveTest(cache *xuexitong.XueXiTUserCache, p *entity.PointLiveDto) {
-	report, err := cache.LiveRelationReport(p)
+	relation, err := LiveCreateRelationAction(cache, p)
 	if err != nil {
 		fmt.Println(err)
 	}
-	fmt.Println(report)
-
+	fmt.Println(relation)
 	for {
 		live, err1 := ExecuteLive(cache, p)
 		PullLiveInfoAction(cache, p) //实时更新直播结构体信息
