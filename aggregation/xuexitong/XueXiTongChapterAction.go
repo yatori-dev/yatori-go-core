@@ -303,7 +303,7 @@ func ChapterFetchCardsAction(
 				}
 			case string(ctype.Insertlive):
 				module, ok1 := point.Other["module"]
-				userId, ok2 := point.Data["userId"].(string)
+				//userId, ok2 := point.Data["userId"].(string)
 				jobID, ok3 := point.Data["_jobid"].(string)
 				title, ok4 := point.Data["title"].(string)
 				liveStatus, ok5 := point.Data["liveStatus"].(string)
@@ -325,9 +325,18 @@ func ChapterFetchCardsAction(
 					if ok1 {
 						pointObj.Module = module
 					}
-					if ok2 {
-						pointObj.PointLiveDto.UserId = userId
+
+					//这里比较特殊，userid其实是cookie里面的_uid值
+					cookies := cache.GetCookies()
+					for _, cookie := range cookies {
+						if cookie.Name == "_uid" {
+							pointObj.PointLiveDto.UserId = cookie.Value
+							break
+						}
 					}
+					//if ok2 {
+					//	pointObj.PointLiveDto.UserId = userId
+					//}
 					if ok4 {
 						pointObj.PointLiveDto.Title = title
 					}

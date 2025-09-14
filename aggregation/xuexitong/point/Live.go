@@ -13,52 +13,46 @@ import (
 )
 
 // 外链任务点学习
-func ExecuteLive(cache *xuexitong.XueXiTUserCache, p *entity.PointLiveDto, Uparam string, watchMoment float64, isSaveTime bool) (string, error) {
-	report, err := cache.LiveWatchMomentReport(p, Uparam, watchMoment, 3, nil)
-	if err != nil {
+func ExecuteLive(cache *xuexitong.XueXiTUserCache, p *entity.PointLiveDto) (string, error) {
+
+	report1, err1 := cache.LiveSaveTimePcReport(p, 3, nil)
+
+	if err1 != nil {
 		// 触发500
-		if err != nil && strings.Contains(err.Error(), "status code: 500") {
+		if err1 != nil && strings.Contains(err1.Error(), "status code: 500") {
 			xuexitong2.ReLogin(cache) //重登
-			report, err = cache.LiveWatchMomentReport(p, Uparam, watchMoment, 3, nil)
-		} else {
-			report, err = cache.LiveWatchMomentReport(p, Uparam, watchMoment, 3, nil)
+			report1, err1 = cache.LiveSaveTimePcReport(p, 3, nil)
 		}
 	}
-	if err != nil {
-		return "", err
+	if err1 != nil {
+		return "", err1
 	}
-	flag := int(gojsonq.New().JSONString(report).Find("result").(float64))
 
-	if flag == 1 {
+	if strings.Contains(report1, "@success") {
 		log2.Print(log2.DEBUG, "(", p.Title, ")提交成功")
 	} else {
-		log2.Print(log2.DEBUG, "(", p.Title, ")外链任务点无法正常学习：返回：(", gojsonq.New().JSONString(report).Find("msg"), ")")
+		log2.Print(log2.DEBUG, "(", p.Title, ")外链任务点无法正常学习：返回：(", gojsonq.New().JSONString(report1).Find("msg"), ")")
 	}
+	return report1, nil
 
-	if isSaveTime {
-		report1, err1 := cache.LiveSaveTimePcReport(p, 3, nil)
+}
 
-		if err1 != nil {
-			// 触发500
-			if err1 != nil && strings.Contains(err1.Error(), "status code: 500") {
-				xuexitong2.ReLogin(cache) //重登
-				report1, err1 = cache.LiveSaveTimePcReport(p, 3, nil)
-			} else {
-				report1, err1 = cache.LiveSaveTimePcReport(p, 3, nil)
-			}
-		}
-		if err1 != nil {
-			return "", err1
-		}
+// 获取直播信息
+func PullLiveInfoAction(cache *xuexitong.XueXiTUserCache, p *entity.PointLiveDto) {
+	liveData, err1 := cache.PullLiveInfoApi(p)
 
-		if strings.Contains(report1, "@success") {
-			log2.Print(log2.DEBUG, "(", p.Title, ")提交成功")
-		} else {
-			log2.Print(log2.DEBUG, "(", p.Title, ")外链任务点无法正常学习：返回：(", gojsonq.New().JSONString(report).Find("msg"), ")")
-		}
-		return report1, nil
+	if err1 != nil {
+		fmt.Println(err1)
 	}
-	return report, nil
+	//如果获取成功
+	if gojsonq.New().JSONString(liveData).Find("status").(bool) {
+		//获取观看进度
+		percentValue := gojsonq.New().JSONString(liveData).Find("temp.data.percentValue")
+		if percentValue != nil {
+			p.VideoCompletePercent = percentValue.(float64)
+		}
+
+	}
 }
 
 // 测试用的Live直播学时函数
@@ -68,25 +62,18 @@ func ExecuteLiveTest(cache *xuexitong.XueXiTUserCache, p *entity.PointLiveDto) {
 		fmt.Println(err)
 	}
 	fmt.Println(report)
-	param, s := cache.PullLiveUParam(p.LiveId)
-	var playTime float64 = float64(s)
-	submitTotal := 0
-	for {
-		var live string
-		var err error
-		if submitTotal >= 5 {
-			live, err = ExecuteLive(cache, p, param, playTime, true)
-			submitTotal = 0
-		} else {
-			live, err = ExecuteLive(cache, p, param, playTime, false)
-		}
 
-		if err != nil {
-			fmt.Println(err)
+	for {
+		live, err1 := ExecuteLive(cache, p)
+		PullLiveInfoAction(cache, p) //实时更新直播结构体信息
+		if err1 != nil {
+			fmt.Println(err1)
 		}
-		fmt.Println(live)
-		playTime += 10
-		submitTotal++
-		time.Sleep(10 * time.Second)
+		fmt.Println(p.Title, "观看状态："+live, "当前观看进度：", fmt.Sprintf("%.2f", p.VideoCompletePercent), "%")
+		if p.VideoCompletePercent >= 90 {
+			fmt.Println(p.Title, "已完成直播任务点")
+			break
+		}
+		time.Sleep(30 * time.Second)
 	}
 }

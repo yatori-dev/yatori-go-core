@@ -669,11 +669,6 @@ func TestXueXiToFlushCourse(t *testing.T) {
 					liveDTO.AttachmentsDetection(card)
 
 					point.ExecuteLiveTest(&userCache, &liveDTO)
-					//document, err1 := point.ExecuteHyperlink(&userCache, &liveDTO)
-					//if err1 != nil {
-					//	log.Fatal(err1)
-					//}
-					//log2.Print(log2.INFO, "(", hyperlinkDTO.Title, ")", document)
 					time.Sleep(5 * time.Second)
 				}
 			}

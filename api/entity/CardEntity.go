@@ -106,25 +106,26 @@ type PointLiveDto struct {
 	KnowledgeID int
 	Cpi         string
 
-	UserId      string //用户ID
-	Live        bool
-	LiveId      string //直播ID
-	Vdoid       string //不知道是个啥
-	Mid         string
-	Title       string //直播标题
-	JobID       string
-	StreamName  string //直播流名称
-	LiveStatus  string //直播状态
-	Type        ctype.CardType
-	Module      string //类型
-	IsJob       bool   //是否为任务点
-	AuthEnc     string
-	LiveDragEnc string
-	LiveSetEnc  string
-	OtherInfo   string
-	Enc         string
-	LiveSwDsEnc string
-	IsSet       bool
+	UserId               string //用户ID
+	Live                 bool
+	LiveId               string //直播ID
+	Vdoid                string //不知道是个啥
+	Mid                  string
+	Title                string //直播标题
+	JobID                string
+	StreamName           string //直播流名称
+	LiveStatus           string //直播状态
+	Type                 ctype.CardType
+	Module               string //类型
+	IsJob                bool   //是否为任务点
+	AuthEnc              string
+	LiveDragEnc          string
+	LiveSetEnc           string
+	OtherInfo            string
+	Enc                  string
+	LiveSwDsEnc          string
+	VideoCompletePercent float64 //观看进度
+	IsSet                bool
 }
 
 // WorkInputField represents an <input> element in the HTML form.
