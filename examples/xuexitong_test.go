@@ -481,7 +481,7 @@ func TestXueXiToFlushCourse(t *testing.T) {
 		//if course.CourseName != "戏剧鉴赏" {
 		//	continue
 		//}
-		if course.CourseName != "形势与政策（2025年秋）" {
+		if course.CourseName != "法律与社会" {
 			continue
 		}
 		// 6c444b8d5c6203ee2f2aef4b76f5b2ce qrcEnc
@@ -532,7 +532,7 @@ func TestXueXiToFlushCourse(t *testing.T) {
 			log.Printf("ID.%d(%s/%s)正在执行任务点\n",
 				item,
 				pointAction.Knowledge[index].Label, pointAction.Knowledge[index].Name)
-			if pointAction.Knowledge[index].Label != "7.1" {
+			if pointAction.Knowledge[index].Label != "13.2" {
 				//fmt.Println("断点")
 				continue
 			}
@@ -587,7 +587,7 @@ func TestXueXiToFlushCourse(t *testing.T) {
 				}
 			}
 			//作业刷取
-			if workDTOs != nil && false {
+			if workDTOs != nil && true {
 				for _, workDTO := range workDTOs {
 
 					//以手机端拉取章节卡片数据

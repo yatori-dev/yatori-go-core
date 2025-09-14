@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"crypto/tls"
 	"fmt"
+	"sort"
 
 	"github.com/yatori-dev/yatori-go-core/api/entity"
 	"github.com/yatori-dev/yatori-go-core/que-core/qtype"
@@ -87,6 +88,10 @@ func (cache *XueXiTUserCache) WorkNewSubmitAnswer(courseId string, classId strin
 			for _, item := range ch.Answers {
 				answers += qutils.SimilarityArraySelect(item, candidateSelects)
 			}
+			//答案排序
+			r := []rune(answers)                                      // 将字符串转换为字符数组
+			sort.Slice(r, func(i, j int) bool { return r[i] < r[j] }) // 使用 sort 包进行排序
+			answers = string(r)
 			_ = writer.WriteField("answer"+ch.Qid, answers)
 			_ = writer.WriteField("answertype"+ch.Qid, "1")
 		}
