@@ -303,7 +303,6 @@ func ChapterFetchCardsAction(
 				}
 			case string(ctype.Insertlive):
 				module, ok1 := point.Other["module"]
-				//userId, ok2 := point.Data["userId"].(string)
 				jobID, ok3 := point.Data["_jobid"].(string)
 				title, ok4 := point.Data["title"].(string)
 				liveStatus, ok5 := point.Data["liveStatus"].(string)
@@ -334,9 +333,6 @@ func ChapterFetchCardsAction(
 							break
 						}
 					}
-					//if ok2 {
-					//	pointObj.PointLiveDto.UserId = userId
-					//}
 					if ok4 {
 						pointObj.PointLiveDto.Title = title
 					}
