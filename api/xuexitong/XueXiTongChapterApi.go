@@ -202,12 +202,13 @@ func (cache *XueXiTUserCache) FetchChapterCords(nodes []int, index, courseId int
 
 	res, err := client.Do(req)
 
-	if res == nil || res.StatusCode == 500 {
-		return cache.FetchChapterCords(nodes, index, courseId, retry-1, errors.New("status code: 500"))
-	}
 	if err != nil {
-		fmt.Println(err)
-		return "", nil
+		time.Sleep(time.Duration(retry*5) * time.Second)
+		return cache.FetchChapterCords(nodes, index, courseId, retry-1, lastErr)
+	}
+
+	if res.StatusCode != 200 {
+		return cache.FetchChapterCords(nodes, index, courseId, retry-1, errors.New("status code: "+fmt.Sprintf("%d", res.StatusCode)))
 	}
 
 	body, err := ioutil.ReadAll(res.Body)
