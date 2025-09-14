@@ -197,7 +197,7 @@ func TestXueXiToChapterCord(t *testing.T) {
 	//	videoDTO entity.PointVideoDto
 	//)
 	// 处理返回的任务点对象
-	videoDTOs, _, _, _ := entity.ParsePointDto(fetchCards)
+	videoDTOs, _, _, _, _ := entity.ParsePointDto(fetchCards)
 
 	//card3, err := xuexitong.PageMobileChapterCardAction(
 	//	&userCache, key, courseId, videoDTOs[3].KnowledgeID, videoDTOs[3].CardIndex, course[index].Cpi)
@@ -278,7 +278,7 @@ func TestXueXiToChapterCardWork(t *testing.T) {
 	_, fetchCards, err := xuexitong.ChapterFetchCardsAction(&userCache, &action, nodes, 51, courseId,
 		key, course[index].Cpi)
 
-	videoDTOs, workDTOs, documentDTOs, _ := entity.ParsePointDto(fetchCards)
+	videoDTOs, workDTOs, documentDTOs, _, _ := entity.ParsePointDto(fetchCards)
 	fmt.Println(videoDTOs)
 	fmt.Println(workDTOs)
 	fmt.Println(documentDTOs)
@@ -541,8 +541,8 @@ func TestXueXiToFlushCourse(t *testing.T) {
 			if err != nil {
 				log.Fatal(err)
 			}
-			videoDTOs, workDTOs, documentDTOs, hyperlinkDTOs := entity.ParsePointDto(fetchCards)
-			if videoDTOs == nil && workDTOs == nil && documentDTOs == nil && hyperlinkDTOs == nil {
+			videoDTOs, workDTOs, documentDTOs, hyperlinkDTOs, liveDTOs := entity.ParsePointDto(fetchCards)
+			if videoDTOs == nil && workDTOs == nil && documentDTOs == nil && hyperlinkDTOs == nil && liveDTOs == nil {
 				log.Println("没有可学习的内容")
 			}
 
@@ -658,6 +658,25 @@ func TestXueXiToFlushCourse(t *testing.T) {
 					time.Sleep(5 * time.Second)
 				}
 			}
+			//直播任务
+			if liveDTOs != nil && true {
+				for _, liveDTO := range liveDTOs {
+					card, _, err := xuexitong.PageMobileChapterCardAction(
+						&userCache, key, courseId, liveDTO.KnowledgeID, liveDTO.CardIndex, course.Cpi)
+					if err != nil {
+						log.Fatal(err)
+					}
+					liveDTO.AttachmentsDetection(card)
+
+					point.ExecuteLiveTest(&userCache, &liveDTO)
+					//document, err1 := point.ExecuteHyperlink(&userCache, &liveDTO)
+					//if err1 != nil {
+					//	log.Fatal(err1)
+					//}
+					//log2.Print(log2.INFO, "(", hyperlinkDTO.Title, ")", document)
+					time.Sleep(5 * time.Second)
+				}
+			}
 		}
 	}
 }
@@ -755,7 +774,7 @@ func TestFaceQrScanPlan1(t *testing.T) {
 			if err != nil {
 				log.Fatal(err)
 			}
-			videoDTOs, workDTOs, documentDTOs, _ := entity.ParsePointDto(fetchCards)
+			videoDTOs, workDTOs, documentDTOs, _, _ := entity.ParsePointDto(fetchCards)
 			if videoDTOs == nil && workDTOs == nil && documentDTOs == nil {
 				log.Println("没有可学习的内容")
 			}

@@ -7,7 +7,6 @@ import (
 	xuexitong2 "github.com/yatori-dev/yatori-go-core/aggregation/xuexitong"
 	"github.com/yatori-dev/yatori-go-core/api/entity"
 	"github.com/yatori-dev/yatori-go-core/api/xuexitong"
-	"github.com/yatori-dev/yatori-go-core/models/ctype"
 	log2 "github.com/yatori-dev/yatori-go-core/utils/log"
 )
 
@@ -18,11 +17,10 @@ func ExecuteHyperlink(cache *xuexitong.XueXiTUserCache, p *entity.PointHyperlink
 		// 触发500
 		if err != nil && strings.Contains(err.Error(), "status code: 500") {
 			xuexitong2.ReLogin(cache) //重登
-			if p.Type == ctype.InsertBook {
-				report, err = cache.HyperlinkDtoCompleteReport(p, 3, nil)
-			} else {
-				report, err = cache.HyperlinkDtoCompleteReport(p, 3, nil)
-			}
+			report, err = cache.HyperlinkDtoCompleteReport(p, 3, nil)
+		} else {
+			report, err = cache.HyperlinkDtoCompleteReport(p, 3, nil)
+
 		}
 	}
 	if err != nil {

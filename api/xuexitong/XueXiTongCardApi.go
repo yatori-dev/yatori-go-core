@@ -8,6 +8,7 @@ import (
 	"io/ioutil"
 	"net/http"
 	"net/url"
+	"regexp"
 	"strconv"
 	"strings"
 	"time"
@@ -709,6 +710,169 @@ func (cache *XueXiTUserCache) HyperlinkDtoCompleteReport(p *entity.PointHyperlin
 		//fmt.Println(err)
 		time.Sleep(time.Duration(retry*5) * time.Second)
 		return cache.HyperlinkDtoCompleteReport(p, retry-1, lastErr)
+	}
+	defer res.Body.Close()
+
+	body, err := ioutil.ReadAll(res.Body)
+	if err != nil {
+		fmt.Println(err)
+		return "", nil
+	}
+	//fmt.Println(string(body))
+	return string(body), nil
+}
+
+// 拉取u参数
+func (cache *XueXiTUserCache) PullLiveUParam(liveId string) (string, int) {
+
+	url := "https://zhibo.chaoxing.com/" + liveId + "?courseId=251085317&classId=128238814&knowledgeId=967705955&jobId=live-6000256327632944&userId=221172669&rt=0.9&livesetenc=6b70119b3792fc81816f8ca1f4ba54c8&isjob=true&watchingInCourse=1&customPara1=128238814_251085317&customPara2=92401b9a2dce6d2e49c0706a186247c3&jobfs=0&isNotDrag=1&livedragenc=3a828d58949143863af938a250d4026c&sw=0&ds=0&liveswdsenc=b2f601fb4b8e506dd3e823232106918b"
+	method := "GET"
+
+	client := &http.Client{}
+	req, err := http.NewRequest(method, url, nil)
+
+	if err != nil {
+		fmt.Println(err)
+		return "", 0
+	}
+	req.Header.Add("User-Agent", "Apifox/1.0.0 (https://apifox.com)")
+	req.Header.Add("Accept", "*/*")
+	req.Header.Add("Host", "zhibo.chaoxing.com")
+	req.Header.Add("Connection", "keep-alive")
+	for _, cookie := range cache.cookies {
+		req.AddCookie(cookie)
+	}
+
+	res, err := client.Do(req)
+	if err != nil {
+		fmt.Println(err)
+		return "", 0
+	}
+	defer res.Body.Close()
+
+	body, err := ioutil.ReadAll(res.Body)
+	if err != nil {
+		fmt.Println(err)
+		return "", 0
+	}
+	//fmt.Println(string(body))
+	r, _ := regexp.Compile("var uInfo = '([\\w\\W]*?)';")
+	match := r.FindStringSubmatch(string(body))
+	if len(match) <= 0 {
+		return "", 0
+	}
+
+	r1, _ := regexp.Compile("var watchMoment = ([\\d]*?);")
+	match1 := r1.FindStringSubmatch(string(body))
+	if len(match1) <= 0 {
+		return "", 0
+	}
+	atoi, err := strconv.Atoi(match1[1])
+	if err != nil {
+		return "", 0
+	}
+	return match[1], atoi
+}
+
+// 看直播前先建立连接
+func (cache *XueXiTUserCache) LiveRelationReport(p *entity.PointLiveDto) (string, error) {
+
+	url := "https://mooc1.chaoxing.com/mooc-ans/live/relation?courseid=" + p.CourseID + "&knowledgeid=" + fmt.Sprintf("%d", p.KnowledgeID) + "&ut=s&jobid=" + p.JobID + "&aid=1950435061"
+	method := "GET"
+
+	client := &http.Client{}
+	req, err := http.NewRequest(method, url, nil)
+
+	if err != nil {
+		fmt.Println(err)
+		return "", err
+	}
+	//req.Header.Add("Cookie", "fid=4820; k8s=1757744574.206.15009.565346; route=7644025d506561102d55bac4c90cbeeb; videojs_id=3561592; source=\"\"; _uid=221172669; _d=1757790108740; UID=221172669; vc3=eZm2bq53p0dgOI22C0vSevQOTsdowfi9TlUGdD%2FVuBfdLA%2B78hh0YEsNVp3gv8hHe3eqfNkri4FUqRul0yxIdkpw9WY6C84zWC%2Bc4uMVNZtisbVVmq3voy2fIR%2BHgg37xgKh5GujxFDM5Lv2ojqUKG%2BkwFTFMauYOC%2BhoqW3o%2FM%3D59ef86550c04c3acec8a9fc8ff1535b5; uf=d9387224d3a6095b72c9ce902b9eb4f1e704d5da6bddd5ef08f706e8b67fd0f1a200318940e1bae3b3f357c99b6c17df81a6c9ddee30899fd807a544f7930b6aed1e6c11a143bb563b0339d97cdac4baa627cc2a042df933713028f1ec42bf71b1188854805578cc5ff2c836fabcd8534c90cb78110d66081885a8fb5c1238776bba6e6d45316cb1805a8fb00752152a4df7ff280fcb29d10d8a4c92b12beb4b9eb0db4379ef58d2f209ffc13db0dcb66250480410be0c44e7fafd565af53bf2; cx_p_token=f021a3153820b59c148a99ba50d44498; p_auth_token=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1aWQiOiIyMjExNzI2NjkiLCJsb2dpblRpbWUiOjE3NTc3OTAxMDg3NDIsImV4cCI6MTc1ODM5NDkwOH0.R-oYu0rv8iLg6I5aePfy1uINNgdkwaVzX9rFvhEg6F8; xxtenc=1c8c0be2a88205341a0d2683e6621bbb; DSSTASH_LOG=C_38-UN_3943-US_221172669-T_1757790108742; _industry=6; jpsign=1389318582926; jpenc=4cb7ebd77bd150eb409cca9dd39078a6; thirdRegist=0; jrose=C331B066053A5A8F81C82CC5394623A2.mooc-3073330380-hfn36")
+	req.Header.Add("User-Agent", utils.DefaultUserAgent)
+	req.Header.Add("Accept", "*/*")
+	req.Header.Add("Host", "mooc1.chaoxing.com")
+	req.Header.Add("Connection", "keep-alive")
+	for _, cookie := range cache.cookies {
+		req.AddCookie(cookie)
+	}
+	res, err := client.Do(req)
+	if err != nil {
+		fmt.Println(err)
+		return "", err
+	}
+	defer res.Body.Close()
+
+	body, err := ioutil.ReadAll(res.Body)
+	if err != nil {
+		fmt.Println(err)
+		return "", err
+	}
+	//fmt.Println(string(body))
+	return string(body), nil
+}
+
+// 直播上报接口学时存储接口
+func (cache *XueXiTUserCache) LiveWatchMomentReport(p *entity.PointLiveDto, UParam string, watchMoment float64, retry int, lastErr error) (string, error) {
+	urlStr := "https://zhibo.chaoxing.com/apis/live/put/watchMoment?liveId=" + p.LiveId + "&streamName=" + p.StreamName + "&vdoid=" + p.Vdoid + "&watchMoment=" + fmt.Sprintf("%.6f", watchMoment) + "&t=" + strconv.FormatInt(time.Now().UnixMilli(), 10) + "&u=" + UParam
+	method := "GET"
+
+	client := &http.Client{}
+	req, err := http.NewRequest(method, urlStr, nil)
+
+	if err != nil {
+		fmt.Println(err)
+		return "", nil
+	}
+	req.Header.Add("User-Agent", utils.DefaultUserAgent)
+	req.Header.Add("Accept", "*/*")
+	req.Header.Add("Host", "zhibo.chaoxing.com")
+	req.Header.Add("Connection", "keep-alive")
+	for _, cookie := range cache.cookies {
+		req.AddCookie(cookie)
+	}
+
+	res, err := client.Do(req)
+	if err != nil {
+		fmt.Println(err)
+		return "", nil
+	}
+	defer res.Body.Close()
+
+	body, err := ioutil.ReadAll(res.Body)
+	if err != nil {
+		fmt.Println(err)
+		return "", nil
+	}
+	//fmt.Println(string(body))
+	return string(body), nil
+}
+
+// 直播尚博接口学时提交接口
+func (cache *XueXiTUserCache) LiveSaveTimePcReport(p *entity.PointLiveDto, retry int, lastErr error) (string, error) {
+
+	urlStr := "https://zhibo.chaoxing.com/saveTimePc?streamName=" + p.StreamName + "&vdoid=" + p.Vdoid + "&userId=" + p.UserId + "&isStart=1&t=" + strconv.FormatInt(time.Now().UnixMilli(), 10) + "&courseId=" + p.CourseID
+	method := "GET"
+
+	client := &http.Client{}
+	req, err := http.NewRequest(method, urlStr, nil)
+
+	if err != nil {
+		fmt.Println(err)
+		return "", nil
+	}
+	//req.Header.Add("Cookie", "fid=4820; source=\"\"; _uid=221172669; _d=1757790108740; UID=221172669; vc3=eZm2bq53p0dgOI22C0vSevQOTsdowfi9TlUGdD%2FVuBfdLA%2B78hh0YEsNVp3gv8hHe3eqfNkri4FUqRul0yxIdkpw9WY6C84zWC%2Bc4uMVNZtisbVVmq3voy2fIR%2BHgg37xgKh5GujxFDM5Lv2ojqUKG%2BkwFTFMauYOC%2BhoqW3o%2FM%3D59ef86550c04c3acec8a9fc8ff1535b5; uf=d9387224d3a6095b72c9ce902b9eb4f1e704d5da6bddd5ef08f706e8b67fd0f1a200318940e1bae3b3f357c99b6c17df81a6c9ddee30899fd807a544f7930b6aed1e6c11a143bb563b0339d97cdac4baa627cc2a042df933713028f1ec42bf71b1188854805578cc5ff2c836fabcd8534c90cb78110d66081885a8fb5c1238776bba6e6d45316cb1805a8fb00752152a4df7ff280fcb29d10d8a4c92b12beb4b9eb0db4379ef58d2f209ffc13db0dcb66250480410be0c44e7fafd565af53bf2; cx_p_token=f021a3153820b59c148a99ba50d44498; p_auth_token=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1aWQiOiIyMjExNzI2NjkiLCJsb2dpblRpbWUiOjE3NTc3OTAxMDg3NDIsImV4cCI6MTc1ODM5NDkwOH0.R-oYu0rv8iLg6I5aePfy1uINNgdkwaVzX9rFvhEg6F8; xxtenc=1c8c0be2a88205341a0d2683e6621bbb; DSSTASH_LOG=C_38-UN_3943-US_221172669-T_1757790108742; _industry=6; jpsign=1389318582926; jpenc=4cb7ebd77bd150eb409cca9dd39078a6; thirdRegist=0; route=289e7290ee078ba45d5fef24dab6c7e2")
+	req.Header.Add("User-Agent", utils.DefaultUserAgent)
+	req.Header.Add("Accept", "*/*")
+	req.Header.Add("Host", "zhibo.chaoxing.com")
+	req.Header.Add("Connection", "keep-alive")
+	for _, cookie := range cache.cookies {
+		req.AddCookie(cookie)
+	}
+
+	res, err := client.Do(req)
+	if err != nil {
+		fmt.Println(err)
+		return "", nil
 	}
 	defer res.Body.Close()
 

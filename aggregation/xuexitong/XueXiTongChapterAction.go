@@ -302,29 +302,54 @@ func ChapterFetchCardsAction(
 					continue
 				}
 			case string(ctype.Insertlive):
-				//
-				//jobID, ok3 := point.Data["_jobid"].(string)
-				//linkType, ok4 := point.Data["linkType"].(float64)
-				//
-				//if ok3 && jobID != "" {
-				//	pointObj.PointHyperlinkDto = entity.PointHyperlinkDto{
-				//		CardIndex:   cardIndex,
-				//		CourseID:    strconv.Itoa(courseId),
-				//		ClassID:     strconv.Itoa(classId),
-				//		KnowledgeID: card.KnowledgeID,
-				//		Cpi:         strconv.Itoa(cpi),
-				//		ObjectID:    "",
-				//		JobID:       jobID,
-				//		Type:        ctype.Insertlive,
-				//		IsSet:       ok,
-				//	}
-				//	if ok4 {
-				//		pointObj.PointHyperlinkDto.LinkType = int(linkType)
-				//	}
-				//} else {
-				//	log2.Print(log2.DEBUG, "(%d, %d) 任务点 'objectid' 不存在或为空 %+v", cardIndex, pointIndex, point)
-				//	continue
-				//}
+				module, ok1 := point.Other["module"]
+				userId, ok2 := point.Data["userId"].(string)
+				jobID, ok3 := point.Data["_jobid"].(string)
+				title, ok4 := point.Data["title"].(string)
+				liveStatus, ok5 := point.Data["liveStatus"].(string)
+				streamName, ok6 := point.Data["streamName"].(string)
+				liveId, ok7 := point.Data["liveId"].(float64)
+				live, ok8 := point.Data["live"].(bool)
+				vdoid, ok9 := point.Data["vdoid"].(string)
+				if ok3 && jobID != "" {
+					pointObj.PointLiveDto = entity.PointLiveDto{
+						CardIndex:   cardIndex,
+						CourseID:    strconv.Itoa(courseId),
+						ClassID:     strconv.Itoa(classId),
+						KnowledgeID: card.KnowledgeID,
+						Cpi:         strconv.Itoa(cpi),
+						JobID:       jobID,
+						Type:        ctype.Insertlive,
+						IsSet:       ok,
+					}
+					if ok1 {
+						pointObj.Module = module
+					}
+					if ok2 {
+						pointObj.PointLiveDto.UserId = userId
+					}
+					if ok4 {
+						pointObj.PointLiveDto.Title = title
+					}
+					if ok5 {
+						pointObj.PointLiveDto.LiveStatus = liveStatus
+					}
+					if ok6 {
+						pointObj.PointLiveDto.StreamName = streamName
+					}
+					if ok7 {
+						pointObj.PointLiveDto.LiveId = strconv.FormatInt(int64(liveId), 10)
+					}
+					if ok8 {
+						pointObj.PointLiveDto.Live = live
+					}
+					if ok9 {
+						pointObj.PointLiveDto.Vdoid = vdoid
+					}
+				} else {
+					log2.Print(log2.DEBUG, "(%d, %d) 任务点 'objectid' 不存在或为空 %+v", cardIndex, pointIndex, point)
+					continue
+				}
 			default:
 				log2.Print(log2.DEBUG, "未知的任务点类型: %s\n", pointType)
 				log2.Print(log2.DEBUG, "%+v", point)
