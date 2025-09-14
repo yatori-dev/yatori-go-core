@@ -829,7 +829,7 @@ func (cache *XueXiTUserCache) LiveRelationReport(p *entity.PointLiveDto, retry i
 	if retry < 0 {
 		return "", lastErr
 	}
-	urlStr := "https://mooc1.chaoxing.com/mooc-ans/live/relation?courseid=" + p.CourseID + "&knowledgeid=" + fmt.Sprintf("%d", p.KnowledgeID) + "&ut=s&jobid=" + p.JobID + "&aid=1950435061"
+	urlStr := "https://mooc1.chaoxing.com/mooc-ans/live/relation?courseid=" + p.CourseID + "&knowledgeid=" + fmt.Sprintf("%d", p.KnowledgeID) + "&ut=s&jobid=" + p.JobID + "&aid=" + p.Aid
 	method := "GET"
 
 	client := &http.Client{}

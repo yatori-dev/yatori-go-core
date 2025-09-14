@@ -117,6 +117,7 @@ type PointLiveDto struct {
 	LiveStatusStr        string //直播状态文字
 	LiveStatusCode       int    // 直播状态码
 	VideoDuration        int    //视屏时长
+	Aid                  string
 	Type                 ctype.CardType
 	Module               string //类型
 	IsJob                bool   //是否为任务点
@@ -561,6 +562,7 @@ func (p *PointLiveDto) AttachmentsDetection(attachment interface{}) (bool, error
 		enc, ok5 := att["enc"].(string)
 		liveSwDsEnc, ok6 := att["liveSwDsEnc"].(string)
 		isJob, ok7 := att["job"].(bool)
+		aid, ok8 := att["aid"].(float64)
 
 		if ok1 {
 			p.AuthEnc = authEnc
@@ -584,6 +586,9 @@ func (p *PointLiveDto) AttachmentsDetection(attachment interface{}) (bool, error
 			p.IsJob = isJob
 		} else {
 			p.IsJob = false
+		}
+		if ok8 {
+			p.Aid = strconv.FormatInt(int64(aid), 10)
 		}
 		if att["jobid"] != nil {
 			if att["jobid"].(string) == p.JobID {
