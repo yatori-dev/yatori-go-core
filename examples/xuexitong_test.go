@@ -667,7 +667,10 @@ func TestXueXiToFlushCourse(t *testing.T) {
 						log.Fatal(err)
 					}
 					liveDTO.AttachmentsDetection(card)
-
+					if !liveDTO.IsJob {
+						log.Printf("(%s)该直播非任务点或已完成，已自动跳过\n", liveDTO.Title)
+						continue
+					}
 					point.ExecuteLiveTest(&userCache, &liveDTO)
 					time.Sleep(5 * time.Second)
 				}

@@ -558,6 +558,7 @@ func (p *PointLiveDto) AttachmentsDetection(attachment interface{}) (bool, error
 		otherInfo, ok4 := att["otherInfo"].(string)
 		enc, ok5 := att["enc"].(string)
 		liveSwDsEnc, ok6 := att["liveSwDsEnc"].(string)
+		isJob, ok7 := att["job"].(bool)
 
 		if ok1 {
 			p.AuthEnc = authEnc
@@ -576,6 +577,11 @@ func (p *PointLiveDto) AttachmentsDetection(attachment interface{}) (bool, error
 		}
 		if ok6 {
 			p.LiveSwDsEnc = liveSwDsEnc
+		}
+		if ok7 {
+			p.IsJob = isJob
+		} else {
+			p.IsJob = false
 		}
 		if att["jobid"] != nil {
 			if att["jobid"].(string) == p.JobID {
