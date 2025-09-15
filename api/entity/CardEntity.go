@@ -54,6 +54,7 @@ type PointVideoDto struct {
 	Logger              *log.Logger
 	PUID                string
 	Mid                 string
+	IsJob               bool //是否为任务点，如果为任务点则为true，反之亦然
 	Session             *Session
 
 	Type  ctype.CardType
@@ -270,16 +271,7 @@ func (p *PointVideoDto) AttachmentsDetection(attachment interface{}) (bool, erro
 
 		if objectid == p.ObjectID {
 			var otherInfo string
-			jobID, ok := property["jobid"].(string)
-			if !ok {
-				jobID2, ok := property["jobid"].(float64)
-				if !ok {
-					return false, errors.New("invalid jobid structure")
-				}
-				p.JobID = strconv.FormatFloat(jobID2, 'f', -1, 64)
-			} else {
-				p.JobID = jobID
-			}
+
 			parts := strings.SplitN(attachment["otherInfo"].(string), "&", 2)
 			if len(parts) > 0 {
 				otherInfo = parts[0]
@@ -345,8 +337,26 @@ func (p *PointVideoDto) AttachmentsDetection(attachment interface{}) (bool, erro
 			} else {
 				p.VideoFaceCaptureEnc = videoFaceCaptureEnc
 			}
+			//是否为人任务点探测
+			isjob, ok := attachment["job"].(bool)
+			if ok {
+				p.IsJob = isjob
+			} else {
+				p.IsJob = false
+			}
 			p.RT = rt
 			p.Attachment = attachment
+
+			jobID, ok := property["jobid"].(string)
+			if !ok {
+				jobID2, ok := property["jobid"].(float64)
+				if !ok {
+					return false, errors.New("invalid jobid structure")
+				}
+				p.JobID = strconv.FormatFloat(jobID2, 'f', -1, 64)
+			} else {
+				p.JobID = jobID
+			}
 			break
 		}
 	}

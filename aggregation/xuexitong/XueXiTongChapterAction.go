@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+	"net/url"
 	"regexp"
 	"strconv"
 	"strings"
@@ -167,6 +168,19 @@ func ChapterFetchCardsAction(
 						Type:        ctype.Video,
 						IsSet:       ok,
 					}
+					//视屏名称获取
+					name := point.Data["name"]
+					if name != nil {
+						titleStr, turnErr := url.QueryUnescape(name.(string))
+						//转换
+						if turnErr != nil {
+							log2.Print(log2.DEBUG, titleStr, "解码失败")
+							pointObj.PointVideoDto.Title = titleStr
+						} else {
+							pointObj.PointVideoDto.Title = titleStr
+						}
+					}
+
 					cords2, _ := cache.FetchChapterCords2(strconv.Itoa(classId), strconv.Itoa(courseId), strconv.Itoa(card.KnowledgeID), strconv.Itoa(cpi), 3, nil)
 					find := gojsonq.New().JSONString(cords2).Find("attachments")
 					if find != nil {

@@ -6,7 +6,6 @@ import (
 	"errors"
 	"fmt"
 	"log"
-	"net/url"
 	"regexp"
 	"strings"
 
@@ -17,7 +16,6 @@ import (
 	que_core "github.com/yatori-dev/yatori-go-core/que-core/aiq"
 	"github.com/yatori-dev/yatori-go-core/que-core/qtype"
 	"github.com/yatori-dev/yatori-go-core/utils"
-	log2 "github.com/yatori-dev/yatori-go-core/utils/log"
 	"golang.org/x/net/html"
 )
 
@@ -141,14 +139,14 @@ func VideoDtoFetchAction(cache *xuexitong.XueXiTUserCache, p *entity.PointVideoD
 
 	p.DToken = dtoken
 	p.Duration = int(duration)
-	titleStr, turnErr := url.QueryUnescape(gojsonq.New().JSONString(fetch).Find("filename").(string))
-	//转换
-	if turnErr != nil {
-		log2.Print(log2.DEBUG, titleStr, "解码失败")
-		p.Title = gojsonq.New().JSONString(fetch).Find("filename").(string)
-	} else {
-		p.Title = titleStr
-	}
+	//titleStr, turnErr := url.QueryUnescape(gojsonq.New().JSONString(fetch).Find("filename").(string))
+	////转换
+	//if turnErr != nil {
+	//	log2.Print(log2.DEBUG, titleStr, "解码失败")
+	//	p.Title = gojsonq.New().JSONString(fetch).Find("filename").(string)
+	//} else {
+	//	p.Title = titleStr
+	//}
 
 	if gojsonq.New().JSONString(fetch).Find("status").(string) == "success" {
 		return true, nil
