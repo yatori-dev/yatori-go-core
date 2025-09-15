@@ -15,8 +15,16 @@ type KetangxCourse struct {
 	ActivityId string  `json:"activity_id"` //课程ID
 }
 
-func PullCourseAction(cache *ketangx.KetangxUserCache) []KetangxCourse {
-	course, err2 := cache.PullCourse()
+type KetangxNode struct {
+	SectId     string `json:"sectId"`
+	Title      string `json:"title"`
+	EnterNum   string `json:"enterNum"`   //参与人数
+	IsComplete bool   `json:"isComplete"` //该任务点是否完成，true为完成，false为未完成
+	Type       string `json:"type"`
+}
+
+func PullCourseListAction(cache *ketangx.KetangxUserCache) []KetangxCourse {
+	course, err2 := cache.PullCourseListHTMLApi()
 	if err2 != nil {
 		fmt.Println(err2)
 	}
@@ -52,4 +60,51 @@ func PullCourseAction(cache *ketangx.KetangxUserCache) []KetangxCourse {
 		})
 	})
 	return courseList
+}
+
+// 拉取对应课程视屏列表
+func PullNodeListAction(cache *ketangx.KetangxUserCache, course *KetangxCourse) []KetangxNode {
+	html, err := cache.PullVideoListHTMLApi(course.ActivityId)
+	videoList := []KetangxNode{}
+	if err != nil {
+		fmt.Println(err)
+	}
+
+	doc, err := goquery.NewDocumentFromReader(bytes.NewReader([]byte(html)))
+	doc.Find("li.wis-leftNodeItem[sectli]").Each(func(i int, s *goquery.Selection) {
+		text := s.Find("div.wis-iconActive-tit").Text()
+		if text != "视频" && text != "文档" {
+			return //如果该节点不是视频或文档
+		}
+
+		videoData := KetangxNode{}
+		//SectId
+		sectId, ok1 := s.Attr("sectli")
+		if ok1 {
+			videoData.SectId = sectId
+		}
+		//视屏节点标题
+		status, ok2 := s.Find("img.iconNodeStatus").Attr("src")
+		if ok2 {
+			videoData.IsComplete = status == "/Content/ZHYX/images/icon/icon-WanCheng.png"
+		}
+		videoData.Title = s.Find("div.leftNodeItemInfo-tit").Text()
+		videoData.EnterNum = s.Find("span.NodeItemInfo-msgTxt").Text()
+		videoData.Type = text
+		videoList = append(videoList, videoData)
+	})
+	return videoList
+}
+
+// 直接完成视屏
+func CompleteVideoAction(cache *ketangx.KetangxUserCache, video *KetangxNode) (string, error) {
+	_, err2 := cache.SignVideoStatusApi(video.SectId) //学习视屏任务点时先进行标记任务点
+	if err2 != nil {
+		return "", err2
+	}
+	api, err := cache.CompleteVideoApi(video.SectId, cache.Id, 114514, 114514)
+	if err != nil {
+		return "", err
+	}
+	return api, nil
 }
