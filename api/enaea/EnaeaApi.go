@@ -4,13 +4,14 @@ import (
 	"bytes"
 	"crypto/md5"
 	"encoding/hex"
+	"errors"
 	"fmt"
 	"io/ioutil"
 	"net/http"
 	"net/url"
 	"strings"
 	"time"
-	
+
 	"github.com/yatori-dev/yatori-go-core/utils"
 )
 
@@ -58,6 +59,10 @@ func LoginApi(cache *EnaeaUserCache) (string, error) {
 	body, err := ioutil.ReadAll(resp.Body)
 	if err != nil {
 		return "", err
+	}
+
+	if strings.Contains(string(body), `{"sS":"101","iI":false,"success":false,"iP":true}`) {
+		return "", errors.New("账号或密码错误，返回信息：" + string(body))
 	}
 	for _, cookie := range resp.Cookies() {
 		if cookie.Name == "ASUSS" {
