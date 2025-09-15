@@ -4,7 +4,6 @@ import (
 	"bytes"
 	"crypto/md5"
 	"encoding/hex"
-	"errors"
 	"fmt"
 	"io/ioutil"
 	"net/http"
@@ -61,9 +60,6 @@ func LoginApi(cache *EnaeaUserCache) (string, error) {
 		return "", err
 	}
 
-	if strings.Contains(string(body), `{"sS":"101","iI":false,"success":false,"iP":true}`) {
-		return "", errors.New("账号或密码错误，返回信息：" + string(body))
-	}
 	for _, cookie := range resp.Cookies() {
 		if cookie.Name == "ASUSS" {
 			cache.asuss = cookie.Value

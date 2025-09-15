@@ -14,7 +14,7 @@ func EnaeaLoginAction(cache *enaea.EnaeaUserCache) (string, error) {
 	if err != nil {
 		return "", err
 	}
-	if strings.Contains(api, "用户名或密码错误") {
+	if strings.Contains(api, "用户名或密码错误") || strings.Contains(api, `{"sS":"101","iI":false,"success":false,"iP":true}`) {
 		return "", errors.New("用户名或密码错误")
 	}
 	//fmt.Println(api)
