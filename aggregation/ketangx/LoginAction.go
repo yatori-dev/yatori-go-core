@@ -1,7 +1,7 @@
 package ketangx
 
 import (
-	"fmt"
+	"errors"
 
 	"github.com/thedevsaddam/gojsonq"
 	"github.com/yatori-dev/yatori-go-core/api/ketangx"
@@ -12,6 +12,10 @@ func LoginAction(cache *ketangx.KetangxUserCache) error {
 	api, err := cache.LoginApi()
 	if err != nil {
 		return err
+	}
+	//如果登录失败
+	if !gojsonq.New().JSONString(api).Find("Success").(bool) {
+		return errors.New("登录失败：" + api)
 	}
 	infoApi, err := cache.PullPersonInfoApi()
 	if err != nil {
@@ -33,6 +37,6 @@ func LoginAction(cache *ketangx.KetangxUserCache) error {
 	if id != nil {
 		cache.Id = id.(string)
 	}
-	fmt.Println(api)
+	//fmt.Println(api)
 	return nil
 }
