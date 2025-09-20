@@ -4,9 +4,6 @@ import (
 	"bytes"
 	"crypto/tls"
 	"fmt"
-	"github.com/yatori-dev/yatori-go-core/que-core/qentity"
-	"github.com/yatori-dev/yatori-go-core/que-core/qtype"
-	"github.com/yatori-dev/yatori-go-core/utils/qutils"
 	"io"
 	"io/ioutil"
 	"log"
@@ -18,6 +15,10 @@ import (
 	"strconv"
 	"strings"
 	"time"
+
+	"github.com/yatori-dev/yatori-go-core/que-core/qentity"
+	"github.com/yatori-dev/yatori-go-core/que-core/qtype"
+	"github.com/yatori-dev/yatori-go-core/utils/qutils"
 
 	"github.com/yatori-dev/yatori-go-core/utils"
 )
@@ -148,6 +149,7 @@ func (cache *YingHuaUserCache) VerificationCodeApi(retry int) (string, string) {
 	if retry < 0 {
 		return "", ""
 	}
+	//1758349354572
 	rand.Seed(time.Now().UnixNano())
 	r := fmt.Sprintf("%.16f", rand.Float64())
 	urlStr := fmt.Sprintf("%s/service/code?r=%s", cache.PreUrl, r)
@@ -177,8 +179,6 @@ func (cache *YingHuaUserCache) VerificationCodeApi(retry int) (string, string) {
 		return "", ""
 	}
 	req.Header.Add("User-Agent", utils.DefaultUserAgent)
-	//req.Header.Set("Accept", "image/avif,image/webp,image/apng,image/*,*/*;q=0.8")
-	//req.Header.Set("Referer", "https://bwgl.qiankj.com/")
 	req.Header.Set("Connection", "keep-alive")
 	res, err := client.Do(req)
 	if err != nil {
