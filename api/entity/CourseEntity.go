@@ -3,12 +3,14 @@ package entity
 import (
 	"encoding/json"
 	"fmt"
+	log2 "log"
 	"os"
 	"regexp"
 	"strconv"
 
 	"github.com/yatori-dev/yatori-go-core/models/ctype"
 	"github.com/yatori-dev/yatori-go-core/que-core/aiq"
+	"github.com/yatori-dev/yatori-go-core/que-core/external"
 	"github.com/yatori-dev/yatori-go-core/que-core/qentity"
 	"github.com/yatori-dev/yatori-go-core/que-core/qtype"
 	"github.com/yatori-dev/yatori-go-core/utils/log"
@@ -261,10 +263,46 @@ func (q *ChoiceQue) AnswerAIGet(userID,
 	GetAIAnswer(q, userID, url, model, aiType, aiChatMessages, apiKey)
 }
 
+// AnswerExternalGet ChoiceQue的外挂题库回答获取方法
+func (q *ChoiceQue) AnswerExternalGet(exUrl string) {
+	question := qentity.Question{
+		Type:    q.Type.String(),
+		Content: q.Text,
+	}
+	//赋值选项
+	for _, k := range q.Options {
+		question.Options = append(question.Options, k)
+	}
+	request, err := external.ApiQueRequest(question, exUrl, 3, nil)
+	if err != nil {
+		log2.Fatal(err)
+	}
+	//赋值答案
+	q.Answers = request.Question.Answers
+}
+
 // AnswerAIGet JudgeQue的AI回答获取方法
 func (q *JudgeQue) AnswerAIGet(userID,
 	url, model string, aiType ctype.AiType, aiChatMessages aiq.AIChatMessages, apiKey string) {
 	GetAIAnswer(q, userID, url, model, aiType, aiChatMessages, apiKey)
+
+}
+
+func (q *JudgeQue) AnswerExternalGet(exUrl string) {
+	question := qentity.Question{
+		Type:    q.Type.String(),
+		Content: q.Text,
+	}
+	//赋值选项
+	for _, k := range q.Options {
+		question.Options = append(question.Options, k)
+	}
+	request, err := external.ApiQueRequest(question, exUrl, 3, nil)
+	if err != nil {
+		log2.Fatal(err)
+	}
+	//赋值答案
+	q.Answers = request.Question.Answers
 }
 
 // AnswerAIGet FillQue的AI回答获取方法
@@ -273,10 +311,52 @@ func (q *FillQue) AnswerAIGet(userID,
 	GetAIAnswer(q, userID, url, model, aiType, aiChatMessages, apiKey)
 }
 
+func (q *FillQue) AnswerExternalGet(exUrl string) {
+	question := qentity.Question{
+		Type:    q.Type.String(),
+		Content: q.Text,
+	}
+	//赋值选项
+
+	request, err := external.ApiQueRequest(question, exUrl, 3, nil)
+	if err != nil {
+		log2.Fatal(err)
+	}
+	//赋值答案
+	for key := range q.OpFromAnswer {
+		// 提取键中的序号（假设格式为"0第X空"）
+		index := extractIndexFromKey(key)
+		if index >= 0 && index < len(question.Options) {
+			q.OpFromAnswer[key] = []string{request.Answers[index]}
+		} else {
+			if len(request.Answers) > 0 {
+				q.OpFromAnswer[key] = []string{request.Answers[0]}
+			} else {
+				q.OpFromAnswer[key] = []string{}
+			}
+		}
+	}
+
+}
+
 // AnswerAIGet ShortQue的AI回答获取方法
 func (q *ShortQue) AnswerAIGet(userID,
 	url, model string, aiType ctype.AiType, aiChatMessages aiq.AIChatMessages, apiKey string) {
 	GetAIAnswer(q, userID, url, model, aiType, aiChatMessages, apiKey)
+}
+
+func (q *ShortQue) AnswerExternalGet(exUrl string) {
+	question := qentity.Question{
+		Type:    q.Type.String(),
+		Content: q.Text,
+	}
+	//赋值选项
+	request, err := external.ApiQueRequest(question, exUrl, 3, nil)
+	if err != nil {
+		log2.Fatal(err)
+	}
+	//赋值答案
+	q.SetAnswers(request.Question.Answers)
 }
 
 // TurnProblem 转标准题目格式

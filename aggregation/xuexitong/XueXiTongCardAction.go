@@ -450,6 +450,7 @@ var problemStrategies = map[string]problemMessageStrategy{
 	"简答题": handleShortAnswer,
 }
 
+// 构建AI问答消息
 func AIProblemMessage(testPaperTitle, text string, topic entity.ExamTurn) que_core.AIChatMessages {
 
 	context := buildProblemContext(testPaperTitle, text, topic)
