@@ -210,3 +210,111 @@ func WeLearnPullChapterPointAction(cache *welearn.WeLearnUserCache, course WeLea
 	}
 	return pointList, nil
 }
+
+// 完成任务点
+func WeLearnCompletePointAction(cache *welearn.WeLearnUserCache, course WeLearnCourse, point WeLearnPoint) error {
+	api, err := cache.StartStudyApi(course.Cid, point.Id, course.Uid, "100", course.ClassId, true, 3, nil)
+	if err != nil {
+		return err
+	}
+	fmt.Println(api)
+	submitApi1, err1 := cache.SubmitStudyPlan1Api(course.Cid, point.Id, course.Uid, "100", course.ClassId, 3, nil)
+	if err1 != nil {
+		return err1
+	}
+	//第一种答题方式
+	submitStatus := gojsonq.New().JSONString(submitApi1).Find("ret")
+	if submitStatus == nil {
+		return errors.New(submitApi1)
+	}
+
+	//如果第一种提完成任务点方案正常
+	if int(submitStatus.(float64)) == 0 {
+		return nil
+	}
+
+	submitApi2, err2 := cache.SubmitStudyPlan2Api(course.Cid, point.Id, course.Uid, "100", course.ClassId, 100, "completed", 3, nil)
+	if err2 != nil {
+		return err2
+	}
+	submitStatus2 := gojsonq.New().JSONString(submitApi2).Find("ret")
+	if submitStatus2 == nil {
+		return errors.New(submitApi2)
+	}
+
+	if int(submitStatus2.(float64)) != 0 {
+		return errors.New(submitApi2)
+	}
+	return nil
+}
+
+// 提交学时前进行进行调用
+func WeLearnSubmitStudyTimeAction(cache *welearn.WeLearnUserCache, course WeLearnCourse, point WeLearnPoint) (string, int, int, int, string, error) {
+	//第一种提交学时方式
+	submitApi, err := cache.SubmitStudyTimeApi(course.Uid, course.Cid, course.ClassId, point.Id, 3, nil)
+	if err != nil {
+		return "", 0, 0, 0, "", err
+	}
+	submitStatus := gojsonq.New().JSONString(submitApi).Find("ret")
+	if submitStatus == nil {
+		return "", 0, 0, 0, "", errors.New(submitApi)
+	}
+
+	//第二方案，可能是超时原因，所以先进行首次数据拉取再学习
+	_, err1 := cache.StartStudyApi(course.Cid, point.Id, course.Uid, "100", course.ClassId, false, 3, nil)
+	if err1 != nil {
+		return "", 0, 0, 0, "", err1
+	}
+	if int(submitStatus.(float64)) == -1 {
+		submitApi, err = cache.SubmitStudyTimeApi(course.Uid, course.Cid, course.ClassId, point.Id, 3, nil)
+		if err != nil {
+			return "", 0, 0, 0, "", err
+		}
+		submitStatus = gojsonq.New().JSONString(submitApi).Find("ret")
+		if submitStatus == nil {
+			return "", 0, 0, 0, "", errors.New(submitApi)
+		}
+		if int(submitStatus.(float64)) != 0 {
+			return "", 0, 0, 0, "", errors.New(submitApi)
+		}
+	}
+
+	comment := gojsonq.New().JSONString(submitApi).Find("comment")
+	if comment == nil {
+		return "", 0, 0, 0, "", errors.New(submitApi)
+	}
+	completionStatus := ""
+	progressMeasure := 0
+	sessionTime := 0
+	totalTime := 0
+	scaled := ""
+	completionStatusRes, ok1 := gojsonq.New().JSONString(comment.(string)).Find("cmi.completion_status").(string)
+	if ok1 {
+		completionStatus = completionStatusRes
+	}
+	progressMeasureRes, ok2 := gojsonq.New().JSONString(comment.(string)).Find("cmi.progress_measure").(string)
+	if ok2 {
+		if progressMeasureRes != "" {
+			turnProgress, err2 := strconv.Atoi(progressMeasureRes)
+			if err2 == nil {
+				progressMeasure = turnProgress
+			}
+
+		}
+	}
+	sessionTimeRes, ok3 := gojsonq.New().JSONString(comment.(string)).Find("cmi.session_time").(float64)
+	if ok3 {
+		sessionTime = int(sessionTimeRes)
+	}
+	totalTimeRes, ok4 := gojsonq.New().JSONString(comment.(string)).Find("cmi.total_time").(float64)
+	if ok4 {
+		totalTime = int(totalTimeRes)
+	}
+	scaledRes, ok5 := gojsonq.New().JSONString(comment.(string)).Find("cmi.score.scaled").(string)
+	if ok5 {
+		scaled = scaledRes
+	}
+
+	//cache.KeepPointSessionPlan1Api(course.Cid, point.Id, course.Uid, course.ClassId)
+	return completionStatus, progressMeasure, sessionTime, totalTime, scaled, nil
+}
