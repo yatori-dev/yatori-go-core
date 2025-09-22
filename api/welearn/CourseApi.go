@@ -89,6 +89,7 @@ func (cache *WeLearnUserCache) PullCourseInfoApi(cid string, retry int, lastErr 
 		return "", err
 	}
 	//fmt.Println(string(body))
+
 	return string(body), nil
 }
 
@@ -136,6 +137,7 @@ func (cache *WeLearnUserCache) PullCourseChapterApi(cid, stuid, classid string, 
 		return "", err
 	}
 	//fmt.Println(string(body))
+	utils.CookiesAddNoRepetition(&cache.Cookies, res.Cookies())
 	return string(body), nil
 }
 
@@ -184,6 +186,7 @@ func (cache *WeLearnUserCache) PullCoursePointApi(cid, stuid, classid, unitidx s
 		return "", err
 	}
 	//fmt.Println(string(body))
+	utils.CookiesAddNoRepetition(&cache.Cookies, res.Cookies())
 	return string(body), nil
 }
 
@@ -233,7 +236,7 @@ func (cache *WeLearnUserCache) StartStudyApi(cid, scoId, uid, crate, classId str
 		fmt.Println(err)
 		return "", err
 	}
-
+	utils.CookiesAddNoRepetition(&cache.Cookies, resp.Cookies())
 	return string(body), nil
 }
 
@@ -271,7 +274,7 @@ func (cache *WeLearnUserCache) SubmitStudyTimeApi(uid, cid, classId, scoId strin
 		fmt.Println(err)
 		return "", err
 	}
-
+	utils.CookiesAddNoRepetition(&cache.Cookies, resp.Cookies())
 	return string(body), nil
 }
 
@@ -313,7 +316,7 @@ func (cache *WeLearnUserCache) KeepPointSessionPlan1Api(cid, scoId, uid, classId
 		fmt.Println(err)
 		return "", err
 	}
-
+	utils.CookiesAddNoRepetition(&cache.Cookies, req.Cookies())
 	return string(body), nil
 }
 
@@ -353,7 +356,7 @@ func (cache *WeLearnUserCache) SubmitStudyPlan1Api(cid, scoId, uid, crate, class
 		fmt.Println(err)
 		return "", err
 	}
-
+	utils.CookiesAddNoRepetition(&cache.Cookies, req.Cookies())
 	return string(body), nil
 }
 
@@ -396,6 +399,6 @@ func (cache *WeLearnUserCache) SubmitStudyPlan2Api(cid, scoId, uid, crate, class
 		fmt.Println(err)
 		return "", err
 	}
-
+	utils.CookiesAddNoRepetition(&cache.Cookies, req.Cookies())
 	return string(body), nil
 }

@@ -21,6 +21,12 @@ func WeLearnLoginAction(cache *welearn.WeLearnUserCache) error {
 	if msg.(string) != "OK" {
 		return errors.New(loginJson)
 	}
+	//处理登录后SSO回调
+	_, err1 := cache.WeLearnLoginSsoCallApi(3, nil)
+	if err1 != nil {
+		return err1
+	}
+
 	return nil
 }
 

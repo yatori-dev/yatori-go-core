@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"io/ioutil"
 	"net/http"
+	"net/url"
 	"strconv"
 	"strings"
 	"time"
@@ -48,6 +49,10 @@ func GenerateCipherText(password string) (string, int64) {
 	return encrypted, t1
 }
 
+//func (cache *WeLearnUserCache) WeLearnSSOLoginApi(cid string) (string, int64) {
+//
+//}
+
 // 登录接口
 func (cache *WeLearnUserCache) WeLearnLoginApi(retry int, lastErr error) (string, error) {
 	if retry < 0 {
@@ -86,4 +91,125 @@ func (cache *WeLearnUserCache) WeLearnLoginApi(retry int, lastErr error) (string
 	utils.CookiesAddNoRepetition(&cache.Cookies, res.Cookies())
 	//fmt.Println(string(body))
 	return string(body), nil
+}
+
+// 处理登录SSO回调
+func (cache *WeLearnUserCache) WeLearnLoginSsoCallApi(retry int, lastErr error) (string, error) {
+	if retry < 0 {
+		return "", lastErr
+	}
+
+	callbackParams := url.Values{}
+	callbackParams.Set("client_id", "welearn_web")
+	callbackParams.Set("redirect_uri", "https://welearn.sflep.com/signin-sflep")
+	callbackParams.Set("response_type", "code")
+	callbackParams.Set("scope", "openid profile email phone address")
+	callbackParams.Set("code_challenge", "p18_2UckWpdGfknVKQp6Ang64zAYH6__0Z8eQu2uuZE")
+	callbackParams.Set("code_challenge_method", "S256")
+	callbackParams.Set("state", "OpenIdConnect.AuthenticationProperties=Bhc1Qn6lYFZrxO_KhC7UzXZTYACtsAnIVT0PgzDlhtuxIXeSFLwXaNbthEeuwSCbzvhrw2wECCxFTq8tbd7k2OFPfH0_TCnMkuh8oBFmlhEsZ3ZXUYecidfT2h2YpAyAoaBaXfpuQj2SGCIEW3KVRYpnljmx-mso97xCbjz72URywiBJRMqDS9TqY-0vaviUIH1X72u_phfuiBdbR1s-WOyUj21KAPdNPJXi1nQtUd-hRoeI53WBTrv2EC0U4SNFvhivPgE6YseB2fdYbPv4u0NiFeHPD3EBQyqE_iUVI1QrGPG3VvhD5xs8odx21WncybewKIuTQpH3MAfJkTmDeQ")
+	callbackParams.Set("x-client-SKU", "ID_NET472")
+	callbackParams.Set("x-client-ver", "6.32.1.0")
+	urlStr := "https://sso.sflep.com/idsvr/connect/authorize/callback?" + callbackParams.Encode()
+	method := "GET"
+
+	client := &http.Client{
+		CheckRedirect: func(req *http.Request, via []*http.Request) error {
+			return http.ErrUseLastResponse
+		},
+	}
+	req, err := http.NewRequest(method, urlStr, nil)
+
+	if err != nil {
+		fmt.Println(err)
+		return "", err
+	}
+	//req.Header.Add("Referer", "https://welearn.sflep.com/student/index.aspx")
+	req.Header.Add("User-Agent", utils.DefaultUserAgent)
+	req.Header.Add("Accept", "*/*")
+	req.Header.Add("Host", "sso.sflep.com")
+	req.Header.Add("sec-ch-ua-platform", "Windows")
+	req.Header.Add("Referer", "https://sso.sflep.com/idsvr/login.html")
+	req.Header.Add("Content-Type", "application/x-www-form-urlencoded")
+	req.Header.Add("Origin", "https://sso.sflep.com")
+	for _, cookie := range cache.Cookies {
+		req.AddCookie(cookie)
+	}
+
+	res, err := client.Do(req)
+	if err != nil {
+		fmt.Println(err)
+		return "", err
+	}
+	defer res.Body.Close()
+
+	utils.CookiesAddNoRepetition(&cache.Cookies, res.Cookies())
+
+	client1 := &http.Client{
+		CheckRedirect: func(req *http.Request, via []*http.Request) error {
+			return http.ErrUseLastResponse
+		},
+	}
+	req1, err1 := http.NewRequest(method, res.Header.Get("Location"), nil)
+
+	if err1 != nil {
+		fmt.Println(err1)
+		return "", err1
+	}
+	req1.Header.Add("User-Agent", utils.DefaultUserAgent)
+	req1.Header.Add("Accept", "*/*")
+	req1.Header.Add("Host", "sso.sflep.com")
+	req1.Header.Add("sec-ch-ua-platform", "Windows")
+	req1.Header.Add("Referer", "https://sso.sflep.com/idsvr/login.html")
+	req1.Header.Add("Content-Type", "application/x-www-form-urlencoded")
+	req1.Header.Add("Origin", "https://sso.sflep.com")
+	for _, cookie := range cache.Cookies {
+		req1.AddCookie(cookie)
+	}
+
+	res1, err1 := client1.Do(req1)
+	if err1 != nil {
+		fmt.Println(err1)
+		return "", err
+	}
+	defer res1.Body.Close()
+
+	utils.CookiesAddNoRepetition(&cache.Cookies, res1.Cookies())
+
+	client2 := &http.Client{
+		CheckRedirect: func(req *http.Request, via []*http.Request) error {
+			return http.ErrUseLastResponse
+		},
+	}
+	req2, err2 := http.NewRequest(method, "https://welearn.sflep.com/user/loginredirect.aspx", nil)
+
+	if err2 != nil {
+		fmt.Println(err2)
+		return "", err2
+	}
+
+	req.Header.Add("User-Agent", utils.DefaultUserAgent)
+	req.Header.Add("Accept", "*/*")
+	req.Header.Add("Host", "sso.sflep.com")
+	req.Header.Add("sec-ch-ua-platform", "Windows")
+	req.Header.Add("Referer", "https://sso.sflep.com/idsvr/login.html")
+	req.Header.Add("Content-Type", "application/x-www-form-urlencoded")
+	req.Header.Add("Origin", "https://sso.sflep.com")
+	for _, cookie := range cache.Cookies {
+		req2.AddCookie(cookie)
+	}
+
+	res2, err2 := client2.Do(req2)
+	if err2 != nil {
+		fmt.Println(err2)
+		return "", err2
+	}
+	defer res2.Body.Close()
+
+	body2, err2 := ioutil.ReadAll(res2.Body)
+	if err2 != nil {
+		fmt.Println(err2)
+		return "", err2
+	}
+	utils.CookiesAddNoRepetition(&cache.Cookies, res2.Cookies())
+	return string(body2), nil
 }
