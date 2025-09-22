@@ -1,6 +1,9 @@
 package utils
 
-import "net/http"
+import (
+	"net/http"
+	"strings"
+)
 
 // 常用的User-Agent
 const (
@@ -35,4 +38,28 @@ func CookiesFiltration(keys []string, cookies []*http.Cookie) []*http.Cookie {
 		}
 	}
 	return res
+}
+
+// TurnCookiesFromString 将一整串 cookie 字符串解析成*http.Cookie数组并返回
+func TurnCookiesFromString(cookieStr string) []*http.Cookie {
+	var cookies = []*http.Cookie{}
+	parts := strings.Split(cookieStr, ";")
+	for _, part := range parts {
+		part = strings.TrimSpace(part) // 去掉前后空格
+		if part == "" {
+			continue
+		}
+
+		kv := strings.SplitN(part, "=", 2) // 拆成 key=value
+		if len(kv) != 2 {
+			continue
+		}
+
+		cookie := &http.Cookie{
+			Name:  kv[0],
+			Value: kv[1],
+		}
+		cookies = append(cookies, cookie)
+	}
+	return cookies
 }

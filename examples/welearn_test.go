@@ -3,6 +3,7 @@ package examples
 import (
 	"testing"
 
+	action "github.com/yatori-dev/yatori-go-core/aggregation/welearn"
 	"github.com/yatori-dev/yatori-go-core/api/welearn"
 	"github.com/yatori-dev/yatori-go-core/global"
 	"github.com/yatori-dev/yatori-go-core/utils"
@@ -12,12 +13,30 @@ func TestWeLearnLogin(t *testing.T) {
 	utils.YatoriCoreInit()
 	//测试账号
 	setup()
-	user := global.Config.Users[36]
-	cache := &welearn.WeLearnCache{
+	user := global.Config.Users[37]
+	cache := &welearn.WeLearnUserCache{
 		Account:  user.Account,
 		Password: user.Password,
 	}
-
-	cache.WeLearnLoginApi()
-
+	action.WeLearnCookieLoginAction(cache, "ASP.NET_SessionId=vk5s2gayoes3ndnh2h0lgpyr; _ga=GA1.2.954519684.1758557982; _gid=GA1.2.157205280.1758557982; area=dbG; expandable=-1c; acw_tc=ac11000117585658551191538eee27a4f5dbd114bbc6390b05a3a4ee045eef; .AspNet.Cookies=G4S2woexn1YJI8WZHS-1_mhzGGKpWXmZuoLnK5n8kx7xeMpjPGpa92XcqrKg8kOo5zwEgJJpb5VbNjmHJ3sTjtGbUdCXGZv_NmxIEAgbtW3qYLAmregVNzPJtLzv99C-XObxN-rrwN_VhPy_OuHnBPdUlzW8BvuP0NK-Juu7fJHwBUzUWuphk3iLs88FyY4ghQJ6Cl0ELH7QiHTGq4Q3yRbF5D52qPkF6j1Tq_pVDABP4eRnNdW1gpt6B3g4Tmw-OqFxgqVOl_xFufqoHA9WKoRwQCT-EqT0zriMKO99agB8eA8wNkGM6vio1W699zcMTpkuAWJtMX-FE6MZf1T-NDvmROFhUUc8ScR_OzGim5T37htE3A4mYK-R1p8rXAlntZVmcu917TWBfzCmLQrcRsC9fefisqmccX7Xv0dojM2-J32hsmvAAkSQkqeFWd-PdkGfu76I25gfJ3L0frSXztuxzXwLviCvn9wezVs2J-yWjirVufKUFfmyyk5Je5m-9SInX4C2avCoz8TvyfqKr9iiOT8DRLtGqGqwdPP9X-DzQ0tn2gyIGvAuP_ELPp0y7KJtoRzCSVK64XEiMvN09psYIwu1yC7BD0WxEZvaa0MC9A3EkKwFtueANO3qIhed-eODha9nbSuq3tjPm7rQqzt9EN_evNRaEXZKORm-mUPXMzJ2Cye9KLm0cqiyhGeEXRUFgvMjqckzU00dp1ZDR_58YP2D-Ki6dITCtUrVslzRWnGGU3JNLqYDkIcPbmIxLafJFks5_3WvkVYs-BqIVI8cMPZ6t7tz1BzAAovqtW2C7v1ujZvS1yp7TVWAI-tTSg-rPPiyIF_9_V4DY4GiIgCT7-_dJth6vsZbfsWg7NX_kIVoTr0mTO7pEBy_1EUAdfdmq7cd_j_sUtPjz2AnNJ2k8A1L11MrUUDQ9mgwDbp6l0R5rX0AfdwcINcE_cu0fDKTOCKtDvOmRGfqWtNW4AK0aFrQtBfafJFjzdOSICLwR-qhVA5jrQWsX34QBNv02loGSou9rxgMiBlNaiENZy4Qc95WWD0pXB2OhsqiAcg4K5giw6O1NikDzxkRR4UdmobQqWt7G_DeeVKrklN8F2K-9NbdLNdb4fgLeEs3LuuHVdtL1n-SiFs0_dcRHBNH9TGxdYnduyWE953sFwJHUOMRXH2jCv8FUwDeTS6ETxWxD0kKntyVzYrwqPnoGmZn2sHTXywVupFDSjXNJhMLInE7_cXsHjeGe8LucEaAYFA7l26oQWheSXmxqSm3Iajhjjc4XpSnBWAP0X0R1ie_XmMPrXiu_0q09ohk_7mD7P89ZO3HxDcxEBsKRFS_o0GUMNkHQINdMsiirwPg5eA3E63j03DclKPeN7lqsPByovsobhiFNpmc6CH_2imAkPwlBK9QvUEqdIn9IDRVTFflafT78lmhqcMnODCPbr6blZ_fCd_7kVOkChYAhQa1xvI2Khwk7VZOfhwvONy8CMtd06g3bJ-19loDV9aNGs5D2oZrr30gHXzG8iFSdVITney4RjEF9xqiWNk9JiGUYQFPDXCPJ0b9XsOXr5KPEWlNcpndIMHkqxi8kquvHB4uwjXyPV4QByV82uZFEcTL-0963MLMdEiyuMgeYEbBtpjjLPgc7R0XpOGaN4plU_EGFo7zya18OkgX73e0igJdepKxpPuFUfqhdtvhqqJ5gHMca4jXn6dYo4rMZraqdsf64XQeD63GAztKdzMhUttf6E1KxduyQzGZbJ3Jz32UFJ6abiG5LEfLP6fIDEKjBbH7ZCUpuKSLa7kLoMiDq1arwFuGMXHxiyyB9NfHJgEcqpkISzCOub8ZG5b-iPyvde3l-wKtFpmlWg6-ocdSORxsEqhCG-5sho8eNQbnmFkBpnhFB3vOYLlqw0zn-3OS88_dRnB30HhAeov8-87h4YBmAiC_0NsuIOZIi2ZZ6LNyYJyPIWCehXoayumb9fVhCyDkLpg_G3jqulmWyChSn5-hOlVmPraKmXW_M83Q60Ne-Tx7dXML4vZ-DHgUA_IcaGzBYZDneso5_SOklieP3Zraj7GuChEJ9q1Q6vcThfxGo1uvJItAdbJIDaAyNuAc3iUEUcWH06iLe1v9DEhczVEm01ntwBOixTHAa6602ie2mDmF19mZ7JBglCZai2UOxdluRAofrwrF_6N87iANFb-VMG4R3raFzbkRPY--Ye5Xp1r0N5hBvMyNCERuVrk7YBtGPXLnwIKF3_M2F7bOQaOJRg_50iPyBPct4cH9T7VSS56wzePnARnBFjpvSwC4bogOfhnX9eIYVVd647kwyH8RRTdETR9bwzmAE9cC7qhvQwMWxU4BT9OQd5lEv2QQTlFQ4K2uUijqWYwSS7df1MDdQtFW__P43Ns1C8mRXbvRwk29ZLYQ25wSruFsX1B3d0AwcnWOGwGmNYn3WAromYLrFnk4Tv-GV2tQootdGmL5XrSBMvPkxgg1a2FgL-tcQGmEj6Oaw-ho6XA-DkJmafrtpVM7IocLUt9cLcA330a1mwhBAmjquhoVpK5_zdPyxjwmTANQCj6cVS9R5xPaS_8rX4tQwUSCCPDk6PirvZczBXAmFpZEobnR9pVP6boa64Uxz79gwrVqUPDeD0dbtjrAsgkkMTfkOA0JLRy6IAIFjpYOrd7QMDHe_MGyI35rcK9IgNoZRVFYoSA3M9aBjmGasHQEeZdjPAZ3LyOw_rcHM2zsWsj0YUEL0-LyweDIjk0HyNGQWwJt5Lv5CPqb-k397zfC5_cMcEHrRkEL99s6FNHnf6t9SACx5JoeB9AF7dcq1mQPEm9fhbsbJ7pbEVuGlfYpj7tF6TLHsEvkGdceaR-9m5s; _gat=1; _ga_PNJRS2N8S4=GS2.2.s1758563308$o3$g1$t1758565865$j53$l0$h0")
+	//err := action.WeLearnLoginAction(cache)
+	//if err != nil {
+	//	t.Error(err)
+	//}
+	courseList, err := action.WeLearnPullCourseListAction(cache)
+	if err != nil {
+		t.Error(err)
+	}
+	for _, course := range courseList {
+		chapters, err1 := action.WeLearnPullCourseChapterAction(cache, course)
+		if err1 != nil {
+			t.Error(err1)
+		}
+		for _, chapter := range chapters {
+			_, err2 := action.WeLearnPullChapterPointAction(cache, course, chapter)
+			if err2 != nil {
+				t.Error(err2)
+			}
+		}
+	}
 }
