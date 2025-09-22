@@ -463,7 +463,7 @@ func TestXueXiToFlushCourse(t *testing.T) {
 	utils.YatoriCoreInit()
 	//测试账号
 	setup()
-	user := global.Config.Users[14]
+	user := global.Config.Users[37]
 
 	userCache := xuexitongApi.XueXiTUserCache{
 		Name:     user.Account,
@@ -481,7 +481,7 @@ func TestXueXiToFlushCourse(t *testing.T) {
 		//if course.CourseName != "戏剧鉴赏" {
 		//	continue
 		//}
-		if course.CourseName != "马克思主义基本原理" {
+		if course.CourseName != "微生物与人类健康" {
 			continue
 		}
 		// 6c444b8d5c6203ee2f2aef4b76f5b2ce qrcEnc

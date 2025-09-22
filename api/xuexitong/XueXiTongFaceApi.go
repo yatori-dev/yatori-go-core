@@ -704,33 +704,87 @@ func (cache *XueXiTUserCache) GetCourseFaceQrPlan3Api(uuid, clazzId, courseId, q
 	return string(body), nil
 }
 
-// 获取人脸状态（二维码状态）
-//
-//	func (cache *XueXiTUserCache) GetCourseFaceQrStateApi() (string, error) {
-//		method := "GET"
-//
-//		client := &http.Client{}
-//		req, err := http.NewRequest(method, "https://mooc1-api.chaoxing.com/knowledge/uploadInfo", nil)
-//
-//		if err != nil {
-//			return "", err
-//		}
-//		req.Header.Add("Cookie", cache.cookie)
-//		req.Header.Add("User-Agent", "Apifox/1.0.0 (https://apifox.com)")
-//
-//		res, err := client.Do(req)
-//		if err != nil {
-//			return "", err
-//		}
-//		defer res.Body.Close()
-//
-//		body, err := ioutil.ReadAll(res.Body)
-//		if err != nil {
-//			return "", err
-//		}
-//		return string(body), nil
-//	}
-//
+// 不知道是干啥的人脸接口，反正就是手机端如果点击打开课程阶段如果有人脸的话就会弹出来这玩意，这里面有人脸的接口那些玩意
+func (cache *XueXiTUserCache) GetCourseFaceStart(clazzId, courseId, knowledgeId, cpi string) {
+
+	urlStr := "https://mooc1-api.chaoxing.com/mooc-ans/knowledge/startface?clazzid=" + clazzId + "&courseid=" + courseId + "&knowledgeid=" + knowledgeId + "&cpi=" + cpi + "&type=1"
+	method := "GET"
+
+	tr := &http.Transport{
+		TLSClientConfig: &tls.Config{
+			InsecureSkipVerify: true, // 跳过证书验证，仅用于开发环境
+		},
+	}
+
+	//如果开启了IP代理，那么就直接添加代理
+	if cache.IpProxySW {
+		tr.Proxy = func(req *http.Request) (*url.URL, error) {
+			return url.Parse(cache.ProxyIP) // 设置代理
+		}
+	}
+	client := &http.Client{
+		Transport: tr,
+	}
+	req, err := http.NewRequest(method, urlStr, nil)
+
+	if err != nil {
+		fmt.Println(err)
+		return
+	}
+	//req.Header.Add("User-Agent", "Mozilla/5.0 (Linux; Android 12; SM-N9006 Build/V417IR; wv) AppleWebKit/537.36 (KHTML, like Gecko) Version/4.0 Chrome/95.0.4638.74 Mobile Safari/537.36 (schild:e9b05c3f9fb49fef2f516e86ac3c4ff1) (device:SM-N9006) Language/zh_CN com.chaoxing.mobile/ChaoXingStudy_3_6.3.7_android_phone_10822_249 (@Kalimdor)_4627cad9c4b6415cba5dc6cac39e6c96")
+	req.Header.Add("User-Agent", GetUA("mobile"))
+	for _, cookie := range cache.cookies {
+		req.AddCookie(cookie)
+	}
+	req.Header.Add("Accept", "*/*")
+	req.Header.Add("Host", "mooc1-api.chaoxing.com")
+	req.Header.Add("Connection", "keep-alive")
+	req.Header.Add("Content-Type", "application/x-www-form-urlencoded")
+
+	res, err := client.Do(req)
+	if err != nil {
+		fmt.Println(err)
+		return
+	}
+	defer res.Body.Close()
+
+	body, err := ioutil.ReadAll(res.Body)
+	if err != nil {
+		fmt.Println(err)
+		return
+	}
+	fmt.Println(string(body))
+}
+
+// 过人脸（二维码状态）
+// 有时候uuid,qrcEnc参数可能不用填
+func (cache *XueXiTUserCache) GetCourseFaceQrPlan4Api(clazzId, courseId, knowledgeId, uuid, qrcEnc, objectId string) (string, error) {
+	method := "GET"
+
+	payload := strings.NewReader("clazzId=" + clazzId + "&courseId=" + courseId + "&uuid=" + uuid + "&qrcEnc=" + qrcEnc + "&objectId=" + objectId)
+
+	client := &http.Client{}
+	req, err := http.NewRequest(method, "https://mooc1-api.chaoxing.com/mooc-ans/knowledge/uploadInfo", payload)
+
+	if err != nil {
+		return "", err
+	}
+	req.Header.Add("Cookie", cache.cookie)
+	req.Header.Add("User-Agent", GetUA("mobile"))
+
+	res, err := client.Do(req)
+	if err != nil {
+		return "", err
+	}
+	defer res.Body.Close()
+
+	body, err := ioutil.ReadAll(res.Body)
+	if err != nil {
+		return "", err
+	}
+	return string(body), nil
+}
+
 // 获取人脸状态{"code":"0","failCount":"90","videoFaceCaptureSuccessEnc":"2416cd8e0f5949d4b4d66da05aafb15a","compareResult":"0","status":2}
 func (cache *XueXiTUserCache) GetCourseFaceQrStateApi(uuid, enc, clazzid, courseid, cpi, mid, videoObjectId, videoRandomCollectTime, chapterId string) (string, error) {
 	urlStr := "https://mooc1.chaoxing.com/mooc-ans/qr/getqrstatus?uuid=" + uuid + "&enc=" + enc + "&clazzid=" + clazzid + "&courseid=" + courseid + "&cpi=" + cpi + "&collectionTime=0&mid=" + mid + "&videoObjectId=" + videoObjectId + "&videoRandomCollectTime=" + videoRandomCollectTime + "&chapterId=" + chapterId

@@ -68,7 +68,8 @@ func PassFaceAction1(cache *xuexitong.XueXiTUserCache, courseId, classId, cpi, c
 }
 
 // PassFaceAction2 过人脸（一般用于打开课程时触发过人脸）
-func PassFaceAction2(cache *xuexitong.XueXiTUserCache, courseId, classId, cpi, chapterId, enc, videojobid, chaptervideoobjectid, mid, videoRandomCollectTime string, face image.Image) (string, string, string, string /*识别状态*/, error) {
+func PassFaceAction2(cache *xuexitong.XueXiTUserCache, courseId, classId, cpi, chapterId, videojobid, mid, videoRandomCollectTime string, face image.Image) (string, string, string, string /*识别状态*/, error) {
+	//cache.GetCourseFaceStart(classId, courseId, chapterId, cpi) //没事别放开，测试用的
 	uuid, qrEnc, err := cache.GetFaceQrCodeApi2(courseId, classId, cpi)
 	if err != nil {
 		return "", "", "", "", err
@@ -92,14 +93,17 @@ func PassFaceAction2(cache *xuexitong.XueXiTUserCache, courseId, classId, cpi, c
 	if ObjectId == "" {
 		return "", "", "", "", errors.New("ObjectId is empty")
 	}
-	plan3Api, err := cache.GetCourseFaceQrPlan3Api(uuid, classId, courseId, qrEnc, ObjectId)
+	//plan3Api, err := cache.GetCourseFaceQrPlan4Api(classId, courseId, ObjectId, uuid, qrEnc, ObjectId)
+
+	plan3Api, err := cache.GetCourseFaceQrPlan2Api(classId, courseId, chapterId, cpi, ObjectId)
+	//plan3Api, err := cache.GetCourseFaceQrPlan4Api(uuid, classId, courseId, qrEnc, ObjectId)
 	//plan3Api, err := cache.GetCourseFaceQrPlan1Api(courseId, classId, uuid, ObjectId, qrEnc, "0")
 	passMsg := gojsonq.New().JSONString(plan3Api).Find("msg")
 	if err != nil {
 		return "", "", "", "", err
 	}
 	if passMsg != nil {
-		if passMsg != "通过" {
+		if passMsg != "通过" && passMsg != "识别通过" {
 			return "", "", "", "", errors.New(plan3Api)
 		}
 	}

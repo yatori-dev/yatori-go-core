@@ -6,6 +6,7 @@ import (
 	"errors"
 	"fmt"
 	"log"
+	"os"
 	"regexp"
 	"strings"
 
@@ -16,6 +17,7 @@ import (
 	que_core "github.com/yatori-dev/yatori-go-core/que-core/aiq"
 	"github.com/yatori-dev/yatori-go-core/que-core/qtype"
 	"github.com/yatori-dev/yatori-go-core/utils"
+	log2 "github.com/yatori-dev/yatori-go-core/utils/log"
 	"golang.org/x/net/html"
 )
 
@@ -40,6 +42,24 @@ func PageMobileChapterCardAction(
 	cache *xuexitong.XueXiTUserCache,
 	classId, courseId, knowledgeId, cardIndex, cpi int) (interface{}, string, error) {
 	cardHtml, err := cache.PageMobileChapterCard(classId, courseId, knowledgeId, cardIndex, cpi, 3, nil)
+
+	//如果遇到人脸,则进行过人脸
+	if strings.Contains(cardHtml, `title : "人脸识别"`) {
+		//拉取用户照片
+		pullJson, img, err2 := cache.GetHistoryFaceImg("")
+		if err2 != nil {
+			log2.Print(log2.DEBUG, pullJson, err2)
+			os.Exit(0)
+		}
+		disturbImage := utils.ImageRGBDisturb(img)
+		uuid, qrEnc, ObjectId, successEnc, err1 := PassFaceAction2(cache, fmt.Sprintf("%d", courseId), fmt.Sprintf("%d", classId), fmt.Sprintf("%d", cpi), fmt.Sprintf("%d", knowledgeId), "", "", "", disturbImage)
+		if err1 != nil {
+			log.Println(uuid, qrEnc, ObjectId, successEnc, err1.Error())
+		}
+		//过完人脸重新拉取章节信息
+		cardHtml, err = cache.PageMobileChapterCard(classId, courseId, knowledgeId, cardIndex, cpi, 3, nil)
+		//fmt.Println(uuid, qrEnc, ObjectId, successEnc)
+	}
 	var att interface{}
 
 	if err != nil {
