@@ -8,5 +8,6 @@ const (
 	TongYi  AiType = "TONGYI"
 	DouBao  AiType = "DOUBAO"
 	OpenAi  AiType = "OPENAI"
+	MetaAi  AiType = "METAAI"
 	Other   AiType = "OTHER"
 )

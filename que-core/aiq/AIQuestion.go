@@ -50,6 +50,8 @@ func AggregationAIApi(url,
 		return DouBaoChatReplyApi(model, apiKey, aiChatMessages, 3, nil)
 	case ctype.OpenAi:
 		return OpenAiReplyApi(model, apiKey, aiChatMessages, 3, nil)
+	case ctype.MetaAi:
+		return MetaAIReplyApi(model, apiKey, aiChatMessages, 3, nil)
 	case ctype.Other:
 		return OtherChatReplyApi(url, model, apiKey, aiChatMessages, 3, nil)
 	default:
@@ -544,4 +546,59 @@ func OtherChatReplyApi(url,
 	}
 
 	return content, nil
+}
+
+// 秘塔AI搜索
+func MetaAIReplyApi(model, apiKey string, aiChatMessages AIChatMessages, retryNum int, lastErr error) (string, error) {
+	if retryNum < 0 {
+		return "", lastErr
+	}
+	url := "https://metaso.cn/api/v1/chat/completions"
+	method := "POST"
+	//转换并构建秘塔的信息
+	buildString := ""
+	for _, message := range aiChatMessages.Messages {
+		buildString += message.Content + "\n"
+	}
+	//如果model为空则采用默认模型
+	if model == "" {
+		model = "fast"
+	}
+	payload := strings.NewReader(`{"q":"` + buildString + `",model:"` + model + `","format":"simple","scop":"ducument"}`)
+
+	client := &http.Client{}
+	req, err := http.NewRequest(method, url, payload)
+
+	if err != nil {
+		return "", nil
+	}
+	req.Header.Add("Authorization", "Bearer "+apiKey)
+	req.Header.Add("User-Agent", "Apifox/1.0.0 (https://apifox.com)")
+	req.Header.Add("Content-Type", "application/json")
+	req.Header.Add("Accept", "*/*")
+	req.Header.Add("Host", "metaso.cn")
+	req.Header.Add("Connection", "keep-alive")
+
+	res, err := client.Do(req)
+	if err != nil {
+		return MetaAIReplyApi(model, apiKey, aiChatMessages, retryNum-1, lastErr)
+	}
+	defer res.Body.Close()
+
+	body, err := ioutil.ReadAll(res.Body)
+	if err != nil {
+		fmt.Println(err)
+		return "", nil
+	}
+	//fmt.Println(string(body))
+	var responseMap map[string]interface{}
+	if err := json.Unmarshal(body, &responseMap); err != nil {
+		time.Sleep(100 * time.Millisecond)
+		return MetaAIReplyApi(model, apiKey, aiChatMessages, retryNum-1, lastErr)
+	}
+	response, ok := responseMap["answer"].(string)
+	if !ok || len(response) == 0 {
+		return "", fmt.Errorf(responseMap["answer"].(string))
+	}
+	return response, nil
 }
