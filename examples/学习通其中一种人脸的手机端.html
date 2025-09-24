@@ -1,0 +1,481 @@
+<!doctype html>
+<html>
+
+<script>
+    _HOST_ = "//mooc1-api.chaoxing.com";
+    _CP_ = "/mooc-ans";
+    _HOST_CP1_ = "//mooc1-api.chaoxing.com/mooc-ans";
+    // _HOST_CP2_ = _HOST_ + _CP_;
+    _HOST_CP2_ = _CP_;
+</script><head>
+    <meta name="viewport" content="width=device-width, initial-scale=1,maximum-scale=1, user-scalable=no" />
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    <title>人脸识别</title>
+    <link type="text/css" rel="stylesheet" href="//mooc1-api.chaoxing.com/mooc-ans/css/phone/faceCollectionStyle.css?v=2023-1229-1508" />
+    <script src="/ananas/ueditor/third-party/apputils/jquery.min.js?v=2021-0319"></script>
+    <script src="//mooc1-api.chaoxing.com/mooc-ans/js/phone/rem750.js"></script>
+    <script src="/ananas/ueditor/third-party/apputils/CXJSBridge.js?v=2019-1101-2329" type="text/javascript"></script>
+    <script type="text/javascript" src="//mooc1-api.chaoxing.com/mooc-ans/js/ServerHost.js"></script>
+    <script src="//mooc1-api.chaoxing.com/mooc-ans/js/phone/app.utils.js?v=2023-1219-1419"></script>
+</head>
+<body class="whiteBg">
+<div class="wid750">
+    <input type="hidden" value="" id="workExamUploadUrl"/>
+    <input type="hidden" value="" id="workExamUploadCrcUrl"/>
+    <input type="hidden" value="255055116" id="courseId"/>
+    <input type="hidden" value="337003094" id="cpi"/>
+    <input type="hidden" value="127045035" id="clazzId"/>
+    <input type="hidden" value="935289954" id="chapterId"/>
+    <input type="hidden" value="1" id="faceBlockEnter"/>
+    <input type="hidden" value="" id="replacePhotoTime"/>
+    <input type="hidden" value="" id="replacePhotoEnc"/>
+    <input type="hidden" value="https://mooc1-api.chaoxing.com/mooc-ans" id="curMoocDomian"/>
+    <input type="hidden" value="1" id="faceBioassayStatus"/>
+    <input type="hidden" value="" id="compareObejctId"/>
+    <input type="hidden" value="" id="compareErrorLogId"/>
+    <input type="hidden" value="false" id="faceNeedSignature"/>
+    <input type="hidden" value="292067775" id="userId"/>
+    <input type="hidden" value="" id="faceObjectId"/>
+    <input type="hidden" value="" id="liveDetectionStatus"/>
+    <input type="hidden" value="" id="signConfig"/>
+
+
+    <div class="startCollectionPop popClass">
+        <div class="het540">
+            <dl class="faceDl">
+                <dt class="borderBg"><img src="//mooc1-api.chaoxing.com/mooc-ans/images/phone/manface1.png" /></dt>
+                <dd class="pad13">请授权通过人脸识别进行身份验证</dd>
+            </dl>
+            <p class="Remarks">本课教师已开启人脸识别监控，为验证是本人学习，系统将在您学习过程中进行人脸信息采集。本次采集仅用于身份核验与教师后台查看。请确保摄像头已开启，调整好光线与姿势开始识别。</p>
+        </div>
+        <div class="buttonBlue startCollection" id="startCollection">开始</div>
+    </div>
+
+
+
+    <!--对比失败-->
+    <div class="compareFailPop popClass"  style="display: none;">
+
+        <dl class="failDl">
+            <dt><img src="//mooc1-api.chaoxing.com/mooc-ans/images/phone/warn-icon1.png" /></dt>
+            <dd>比对失败，您已累计失败<span class="failCount">5</span>次</dd>
+        </dl>
+
+
+        <ul class="phototUl">
+            <li><img id="comparePhoto" src="" /><span>本次采集</span></li>
+            <li><img id="userFilePhoto" src="" /><span>档案照片</span></li>
+        </ul>
+
+        <div class="Bomfiexd">
+            <div class="buttonBlue startCollection" id="againCollection">重新识别</div>
+            <ul class="BomLink">
+                <li class="updatefilephotobtn">更新档案照片</li>
+                <li class="continuelearnbtn"  style="display:none;" >申请继续学习</li>
+                <li class="lianxikefu" >联系客服</li>
+            </ul>
+        </div>
+    </div>
+
+    <div class="w_check">
+        <div class="cx_check">
+            <input type="checkbox" id="check1" value="" ><label for="check1" class="cx_check-style">我已阅读并同意<a href="javascript:;" class="bluec" id="faceProtocol">《人脸识别授权协议》</a></label>
+        </div>
+    </div>
+
+    <!--对比失败-->
+    <div class="compareFailCommonPop popClass"  style="display: none;">
+        <dl class="failDl">
+            <dt><img src="//mooc1-api.chaoxing.com/mooc-ans/images/phone/warn-icon1.png" /></dt>
+            <dd class="compareFailMainTitle">识别未通过</dd>
+        </dl>
+        <p class="Remarks2 compareFailSubTitle" style="text-align: center;">请确保在光线明亮区域操作，勿遮挡面部</p>
+        <ul class="phototUl comparePhototUl">
+            <li><img class="comparePhoto" src="" /><span>本次采集</span></li>
+            <li><img class="userFilePhoto" src="" /><span>档案照片</span></li>
+        </ul>
+        <div class="Bomfiexd">
+            <div class="buttonBlue startCollection" id="againCollection">重新识别</div>
+            <ul class="BomLink">
+                <li class="updatefilephotobtn">更新档案照片</li>
+                <li class="lianxikefu" >联系客服</li>
+            </ul>
+        </div>
+    </div>
+
+
+    <!--采集失败-->
+    <div class="popClass collectfailpop"  style="display: none;">
+
+        <div class="failpass"><span class="failIcon"><img src="//mooc1-api.chaoxing.com/mooc-ans/images/phone/warn-icon1.png"></span>图像采集失败</div>
+
+        <p class="Remarks2 collectFailSubTitle" style="text-align: center;">请重新采集</p>
+
+
+        <ul class="phototUl2 collectPhototUl">
+            <li><img class="collectFailPhoto" src="" /></li>
+        </ul>
+
+        <div class="collectNoPhotoIcon" style="display: none;"><img  src="//mooc1-api.chaoxing.com/mooc-ans/images/phone/nocollectphoto.png"></div>
+
+        <div class="Bomfiexd">
+            <div class="buttonBlue startCollection" id="againCollection">重新识别</div>
+        </div>
+    </div>
+
+</div>
+
+<script type="text/javascript" src="//mooc-res2.chaoxing.com/mooc-ans/js/common/jquery.min.js"></script>
+<script type="text/javascript" src="//mooc-res2.chaoxing.com/mooc-ans/js/common/jquery-migrate.min.js"></script><script src="//mooc1-api.chaoxing.com/mooc-ans/js/pcFace/face_sign_min.js?v=2024-1112-1731"></script>
+<script>
+    function customLeftBinAction(){
+        jsBridge.postNotification('CLIENT_EXIT_LEVEL', {"level": 2});
+    }
+
+    function exitInfo(v){
+        jsBridge.postNotification('CLIENT_WEB_EXTRAINFO',  {'status':v});
+    }
+    function exit(v){
+        jsBridge.postNotification('CLIENT_EXIT_LEVEL', {"level": v});
+    }
+    function prompt(title,second){
+        $("<article class='cx_alert-bg' style='opacity:1'><span>"+title+"</span></article>").appendTo($(document.body)).delay(1000*second).fadeOut(1000,function(){
+            $(this).remove();
+        });
+    }
+    function _jsBridgeReady(){
+        var icon_src = location.origin + _CP_ + '/images/phone/';
+        jsBridge && jsBridge.postNotification('CLIENT_CUSTOM_LEFTBTN', {show:'1',icon:{ios:{iconHd:icon_src + 'back_icon3x.png',icon:icon_src + 'back_icon3x.png'},android:{iconHd:icon_src + 'backLevel_android_h.png',icon:icon_src + 'backLevel_android_h.png'}},option:"customLeftBinAction()"});
+        jsBridge.postNotification('CLIENT_SWIPE_EXIT', {
+            forbiddenFlag : '1'
+        });
+        $("#faceProtocol").click(function() {
+            var url = "https://homewh.chaoxing.com/html/agree/face.html";
+            url += '#INNER';
+            jsBridge.postNotification('CLIENT_OPEN_URL', {
+                "title" : "",
+                "loadType" : "1",
+                "webUrl" : url
+            });
+        })
+        $(".startCollection").click(function(){
+            if (!$("#check1").is(":checked")) {
+                prompt('请先阅读并勾选《人脸识别授权协议》',3);
+                return;
+            }
+
+            var workExamUploadUrl = $("#workExamUploadUrl").val();
+            var workExamUploadCrcUrl = $("#workExamUploadCrcUrl").val();
+
+            var options = {
+                funTag : 1
+            };
+
+            options.uploadParams = {};
+            options.uploadConfig = {};
+
+
+            if(typeof workExamUploadUrl != "undefined" &&  workExamUploadUrl != ""){
+                options.uploadConfig.uploadUrl = workExamUploadUrl + "?uploadtype=face";
+            }
+
+            options.uploadParams.uploadtype = "face";
+
+            if(typeof workExamUploadCrcUrl != "undefined" &&  workExamUploadCrcUrl != ""){
+                options.uploadConfig.uploadCrcUrl = workExamUploadCrcUrl;
+            }
+
+            jsBridge.postNotification('CLIENT_FACE_RECOGNITION_BLINK', options);
+        })
+
+        jsBridge.bind('CLIENT_FACE_RECOGNITION_BLINK', function(object){
+            var objectId = object.currentFaceId;
+
+            var collectStatus = object.collectStatus;
+
+            if(typeof collectStatus != "undefined"){
+
+                var type = 1;
+                var curFacePhoto = "";
+                if(typeof objectId != "undefined" && objectId != ""){
+                    type = 0;
+                    curFacePhoto =  ServerHost.purl + "/star3/origin/"+objectId+".png";
+                }
+
+                //当前采集失败
+                if(collectStatus == 0){
+                    collectFailCommonPopFun( "人脸采集失败，请重新识别", curFacePhoto, type)
+                    return;
+                }
+            }
+
+            if (typeof(objectId) == "undefined" || objectId == "") {
+                collectFailCommonPopFun( "请重新采集，并保证面部清晰无遮挡", "", 0)
+                return;
+            }
+
+            var liveDetectionStatus = object.LiveDetectionStatus;
+
+            if(typeof liveDetectionStatus != "undefined" && (liveDetectionStatus == 1 || liveDetectionStatus == true)){
+                liveDetectionStatus = 1;
+            }else{
+                liveDetectionStatus = 0;
+            }
+
+
+
+            if(liveDetectionStatus != 1){
+                var faceBioassayStatus = $("#faceBioassayStatus").val();
+                if(faceBioassayStatus == 1){
+                    compareFailCommonPopFun( "活体检测不通过，请重新识别", "", 1);
+                    return;
+                }
+            }
+
+            $("#faceObjectId").val(objectId);
+            $("#liveDetectionStatus").val(liveDetectionStatus);
+
+            var faceNeedSignature = $("#faceNeedSignature").val();
+            if(faceNeedSignature == "true"){
+                startFaceSignature(clientfacecheckstatus,4);
+            }else{
+                clientfacecheckstatus();
+            }
+        });
+
+        jsBridge && jsBridge.unbind('CLIENT_FORM_SIGN');
+        jsBridge && jsBridge.bind('CLIENT_FORM_SIGN', function(object){
+
+            var typeFlagObj = {};
+            try{
+                typeFlagObj = JSON.parse(object.typeFlag);
+            }catch(err){
+
+            }
+
+            if(typeFlagObj.type == 'facecollect'){
+                var cxcid = object.cxcid || '';
+                var cxtime = object.cxtime || '';
+                var signk = object.paramToken || '';
+                var signt = object.signToken || '';
+                window[typeFlagObj.funckey](cxcid,cxtime,signk,signt);
+            }
+        });
+
+    }
+
+
+
+    function clientfacecheckstatus(cxcid,cxtime,signk,signt){
+
+        var courseId = $("#courseId").val();
+        var clazzId = $("#clazzId").val();
+        var cpi = $("#cpi").val();
+        var chapterId = $("#chapterId").val();
+        var objectId = $("#faceObjectId").val();
+        var liveDetectionStatus = $("#liveDetectionStatus").val();
+        $("#compareObejctId").val(objectId);
+        if(typeof cxcid == "undefined" || cxcid === ""){
+            cxcid = "";
+        }
+        if(typeof cxtime == "undefined" || cxtime === ""){
+            cxtime = "";
+        }
+        if(typeof signk == "undefined" || signk === ""){
+            signk = "";
+        }
+        if(typeof signt == "undefined" || signt === ""){
+            signt = "";
+        }
+        $.ajax({
+            url : _HOST_CP2_ + "/facephoto/clientfacecheckstatus?courseId2="+courseId,
+            type : "post",
+            data : {
+                courseId : courseId,
+                clazzId : clazzId,
+                cpi : cpi,
+                chapterId : chapterId,
+                liveDetectionStatus : liveDetectionStatus,
+                objectId : objectId,
+                signt : signt,
+                signk : signk,
+                cxtime : cxtime,
+                cxcid : cxcid,
+                type : 1
+            },
+            dataType : "json",
+            success : function(data){
+                if(!data.status){
+                    compareFailCommonPopFun( data.msg, "", 1);
+                    return;
+                }
+
+                var backdata = data.dataJson;
+
+                var isSync = backdata.isSync;
+                // 异步的不需要知道结果
+                if(isSync == 0){
+                    exitInfo(1);
+                    exit(1);
+                    return;
+                }
+
+
+                var	compareResult = backdata.compareResult;
+                // 对比成功
+                if(compareResult == 0){
+                    exitInfo(1);
+                    exit(1);
+                    return;
+                }
+
+                var code = backdata.code;
+                var userFilePhoto = backdata.userFilePhoto;
+                var comparePhoto = backdata.comparePhoto;
+                var replacePhotoTime = backdata.replacePhotoTime;
+                var replacePhotoEnc = backdata.replacePhotoEnc;
+
+
+
+                if(code == 1001){
+                    var type = 1;
+                    var curFacePhoto = "";
+                    if(typeof objectId != "undefined" && objectId != ""){
+                        type = 0;
+                        curFacePhoto =  ServerHost.purl + "/star3/origin/"+objectId+".png";
+                    }
+                    collectFailCommonPopFun( "请重新采集，未查询到人脸档案", curFacePhoto, type)
+                    return;
+                }
+
+
+                if(code == 1003){
+                    $(".userFilePhoto").attr("src",userFilePhoto);
+                    $(".comparePhoto").attr("src",comparePhoto);
+                    $("#replacePhotoTime").val(replacePhotoTime);
+                    $("#replacePhotoEnc").val(replacePhotoEnc);
+                    compareFailCommonPopFun( "识别未通过", "请确保在光线明亮区域操作，勿遮挡面部", 0);
+                    return;
+                }
+
+                //对比失败
+                var failCount = backdata.failCount;
+                $(".failCount").text(failCount);
+
+
+                var errorLogId = backdata.errorLogId;
+                $("#compareErrorLogId").val(errorLogId);
+
+                if(errorLogId == 0){
+                    $(".continuelearnbtn").hide();
+                    $(".lianxikefu").show();
+                }
+                $("#userFilePhoto").attr("src",userFilePhoto);
+                $("#comparePhoto").attr("src",comparePhoto);
+                $("#replacePhotoTime").val(replacePhotoTime);
+                $("#replacePhotoEnc").val(replacePhotoEnc);
+
+                var faceBlockEnter = $("#faceBlockEnter").val();
+                if(faceBlockEnter == 0){
+                    $(".w_check").hide();
+                }
+                $(".popClass").hide();
+                $(".compareFailPop").show();
+
+            }
+        })
+    }
+
+    //对比失败通用弹窗
+    function compareFailCommonPopFun(compareFailMainTitle,compareFailSubTitle,failPopType){
+        $(".compareFailMainTitle").text(compareFailMainTitle);
+        $(".compareFailSubTitle").text(compareFailSubTitle);
+
+        if(failPopType == 0){
+            $(".compareFailCommonPop").find(".comparePhototUl").show();
+            $(".compareFailCommonPop").find(".BomLink").show();
+        }else if(failPopType == 1){
+            $(".compareFailCommonPop").find(".comparePhototUl").hide();
+            $(".compareFailCommonPop").find(".BomLink").hide();
+        }
+
+        $(".popClass").hide();
+        $(".compareFailCommonPop").show();
+    }
+
+    //采集失败通用弹窗
+    function collectFailCommonPopFun(collectFailSubTitle,collectFailPhoto,type) {
+        $(".collectFailSubTitle").text(collectFailSubTitle);
+        if(type == 0){
+            $(".collectFailPhoto").attr("src",collectFailPhoto);
+            $(".collectNoPhotoIcon").hide();
+            $(".collectPhototUl").show();
+        }else if(type == 1){
+            $(".collectPhototUl").hide();
+            $(".collectNoPhotoIcon").show();
+        }
+        $(".popClass").hide();
+        $(".collectfailpop").show();
+    }
+
+
+
+    $(".intoknowledge").click(function(){
+        var faceBlockEnter = $("#faceBlockEnter").val();
+        if(faceBlockEnter != 0){
+            return;
+        }
+        exitInfo(1);
+        exit(1);
+        return;
+    })
+
+    $(".lianxikefu").click(function(){
+        var url = "//robot.chaoxing.com/chat?unitId=25518&robotId=1bd03287509c4817ba616adeeb7321a2&referUrl=mooc.chaoxing.com";
+        jsBridge.postNotification('CLIENT_OPEN_URL', {
+            title : "智能客服",
+            "loadType": "1",
+            "webUrl": url
+        })
+    })
+
+    $(".updatefilephotobtn").click(function(){
+        var curMoocDomian = $("#curMoocDomian").val();
+        var courseId = $("#courseId").val();
+        var clazzId = $("#clazzId").val();
+        var cpi = $("#cpi").val();
+        var replacePhotoTime = $("#replacePhotoTime").val();
+        var replacePhotoEnc = $("#replacePhotoEnc").val();
+        var url = curMoocDomian + "/facephoto/collectionfilephoto?courseId="+courseId+"&clazzId="+clazzId+"&cpi="+cpi+"&replacePhotoTime="+replacePhotoTime+"&replacePhotoEnc="+replacePhotoEnc+"&type=1";
+        jsBridge.postNotification('CLIENT_OPEN_URL', {
+            "title" : "更新档案照片",
+            "loadType" : "1",
+            "webUrl" : url
+        });
+    })
+
+
+    jsBridge.bind('CLIENT_WEB_EXTRAINFO',  function(data){
+        if(data.status == 1){
+            exitInfo(1);
+        }
+    });
+
+    $(".continuelearnbtn").click(function(){
+        var curMoocDomian = $("#curMoocDomian").val();
+        var courseId = $("#courseId").val();
+        var clazzId = $("#clazzId").val();
+        var cpi = $("#cpi").val();
+        var errorLogId = $("#compareErrorLogId").val();
+        var objectId = $("#compareObejctId").val();
+        var url = curMoocDomian + "/facephoto/continuelearn?courseId="+courseId+"&clazzId="+clazzId+"&cpi="+cpi+"&objectId="+objectId+"&errorLogId="+errorLogId+"&type=1";
+        jsBridge.postNotification('CLIENT_OPEN_URL', {
+            "title" : "学习登记",
+            "loadType" : "1",
+            "webUrl" : url
+        });
+    })
+
+</script>
+</body>
+</html>
