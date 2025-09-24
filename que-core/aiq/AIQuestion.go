@@ -555,7 +555,7 @@ func MetaAIReplyApi(model, apiKey string, aiChatMessages AIChatMessages, retryNu
 	}
 	url := "https://metaso.cn/api/v1/chat/completions"
 	method := "POST"
-	//转换并构建秘塔的信息
+
 	buildString := ""
 	for _, message := range aiChatMessages.Messages {
 		buildString += message.Content + "\n"
@@ -564,7 +564,20 @@ func MetaAIReplyApi(model, apiKey string, aiChatMessages AIChatMessages, retryNu
 	if model == "" {
 		model = "fast"
 	}
-	payload := strings.NewReader(`{"q":"` + buildString + `",model:"` + model + `","format":"simple","scop":"ducument"}`)
+
+	//转换并构建秘塔的信息
+	type MetaEntity struct {
+		Q      string `json:"q"`
+		Model  string `json:"model"`
+		Format string `json:"format"`
+		Scope  string `json:"scope"`
+	}
+	entity := MetaEntity{Q: buildString, Model: model, Format: "simple", Scope: "ducument"}
+	marshal, err1 := json.Marshal(entity)
+	if err1 != nil {
+		return "", fmt.Errorf("failed to marshal JSON data: %v", err1)
+	}
+	payload := strings.NewReader(string(marshal))
 
 	client := &http.Client{}
 	req, err := http.NewRequest(method, url, payload)
