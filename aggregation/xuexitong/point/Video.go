@@ -16,7 +16,17 @@ import (
 
 // 常规刷视屏逻辑
 func ExecuteVideoTest(cache *api.XueXiTUserCache, p *entity.PointVideoDto, key, courseCpi int) {
-
+	////拉取用户照片
+	//pullJson, img, err2 := cache.GetHistoryFaceImg("")
+	//if err2 != nil {
+	//	log2.Print(log2.DEBUG, pullJson, err2)
+	//	os.Exit(0)
+	//}
+	//disturbImage := utils.ImageRGBDisturb(img)
+	//uuid, qrEnc, ObjectId, successEnc, err1 := action.PassFaceAction3(cache, p.CourseID, p.ClassID, fmt.Sprintf("%d", courseCpi), fmt.Sprintf("%d", p.KnowledgeID), p.Enc, p.JobID, p.ObjectID, p.Mid, p.RandomCaptureTime, disturbImage)
+	//if err1 != nil {
+	//	log.Println(uuid, qrEnc, ObjectId, successEnc, err1.Error())
+	//}
 	if state, _ := action.VideoDtoFetchAction(cache, p); state {
 		log.Printf("(%s)开始模拟播放....%d:%d开始\n", p.Title, p.PlayTime, p.Duration)
 		var playingTime = p.PlayTime
@@ -24,7 +34,7 @@ func ExecuteVideoTest(cache *api.XueXiTUserCache, p *entity.PointVideoDto, key, 
 		stopVal := 0
 		for {
 			if flag == 58 {
-				playReport, err := action.VideoSubmitStudyTimeAction(cache, p, playingTime, 1, 0)
+				playReport, err := action.VideoSubmitStudyTimeAction(cache, p, playingTime, 0, 0)
 				log.Println(playReport, err)
 				if err != nil {
 					if strings.Contains(err.Error(), "failed to fetch video, status code: 403") || strings.Contains(err.Error(), "failed to fetch video, status code: 404") { //触发403立即使用人脸检测
@@ -35,7 +45,7 @@ func ExecuteVideoTest(cache *api.XueXiTUserCache, p *entity.PointVideoDto, key, 
 							log2.Print(log2.DEBUG, pullJson, err2)
 
 							disturbImage := utils.ImageRGBDisturb(img)
-							uuid, qrEnc, ObjectId, _, err := action.PassFaceAction1(cache, p.CourseID, p.ClassID, p.Cpi, fmt.Sprintf("%d", p.KnowledgeID), p.Enc, p.JobID, p.ObjectID, p.Mid, p.RandomCaptureTime, disturbImage)
+							uuid, qrEnc, ObjectId, _, err := action.PassFaceAction3(cache, p.CourseID, p.ClassID, p.Cpi, fmt.Sprintf("%d", p.KnowledgeID), p.Enc, p.JobID, p.ObjectID, p.Mid, p.RandomCaptureTime, disturbImage)
 							if err != nil {
 								log.Println(uuid, qrEnc, ObjectId, err.Error())
 							}
@@ -60,7 +70,7 @@ func ExecuteVideoTest(cache *api.XueXiTUserCache, p *entity.PointVideoDto, key, 
 				}
 				log.Printf("播放中....%d:%d\n", playingTime, p.Duration)
 			} else if playingTime >= p.Duration {
-				playReport, err := action.VideoSubmitStudyTimeAction(cache, p, playingTime, 1, 0)
+				playReport, err := action.VideoSubmitStudyTimeAction(cache, p, playingTime, 0, 0)
 				//playReport, err := cache.VideoDtoPlayReport(p, playingTime, 0, 8, nil)
 				playingTime += 1
 				log.Println(playReport, err)

@@ -478,8 +478,19 @@ func (cache *XueXiTUserCache) GetFaceQrCodeApi3(courseId, clazzid, chapterId, cp
 	}
 	uuidFirst := doc.Find("input#uuid").First()
 	uuidVal, _ := uuidFirst.Attr("value")
+
 	qrcEncFirst := doc.Find("input#qrcEnc").First()
 	qrcEncVal, _ := qrcEncFirst.Attr("value")
+	//这种可能是视屏的qrcEnc码
+	if uuidVal == "" {
+		uuidFirst = doc.Find("input#videouuid").First()
+		uuidVal, _ = uuidFirst.Attr("value")
+	}
+	//这种可能是视屏的qrcEnc码
+	if qrcEncVal == "" {
+		qrcEncFirst = doc.Find("input#videoqrcEnc").First()
+		qrcEncVal, _ = qrcEncFirst.Attr("value")
+	}
 
 	//第二步---------------------------
 	url1 := "https://mooc1.chaoxing.com/mooc-ans/qr/produce?uuid=" + uuidVal + "&enc=" + qrcEncVal + "&clazzid=" + clazzid + "&videojobid=" + videojobid + "&chaptervideoobjectid=" + chaptervideoobjectid + "&videoCollectTime=0"
@@ -600,7 +611,7 @@ func (cache *XueXiTUserCache) GetCourseFaceQrPlan1Api(courseId, classId, uuid, o
 	return string(body), nil
 }
 
-// 过人脸（第二版）
+// 扫码过人脸（第二版）
 func (cache *XueXiTUserCache) GetCourseFaceQrPlan2Api(classId, courseId, knowledgeId, cpi, objectId /*人脸上传id*/ string) (string, error) {
 
 	//urlStr := "https://mooc1-api.chaoxing.com/mooc-ans/facephoto/clientfacecheckstatus?" + "courseId=" + courseId + "&clazzId=" + classId + "&cpi=" + cpi + "&chapterId=" + knowledgeId + "&objectId=" + objectId + "&type=1"
