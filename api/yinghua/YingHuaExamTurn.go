@@ -2,11 +2,12 @@ package yinghua
 
 import (
 	"fmt"
+	"regexp"
+	"strings"
+
 	"github.com/yatori-dev/yatori-go-core/api/entity"
 	"github.com/yatori-dev/yatori-go-core/que-core/aiq"
 	"github.com/yatori-dev/yatori-go-core/que-core/qentity"
-	"regexp"
-	"strings"
 )
 
 // 题目转换
@@ -180,15 +181,15 @@ func AIProblemMessage(testPaperTitle string, question qentity.Question) aiq.AICh
 		}
 		return aiq.AIChatMessages{Messages: []aiq.Message{
 			{
-				Role:    "user",
+				Role:    "system",
 				Content: `接下来你只需要回答选项对应内容即可，不能回答任何选项无关的任何内容，包括解释以及标点符也不需要。`,
 			},
 			{
-				Role:    "user",
+				Role:    "system",
 				Content: `就算你不知道选什么也随机选输出其选项内容，回答的格式一定要严格为单个数组格式，比如：["选项1"]，注意回复的时候不要带选项字母，你只需回复答案对应格式内容即可，无需回答任何解释！！！`,
 			},
 			{
-				Role: "user",
+				Role: "system",
 				Content: `比如：` + `
 				试卷名称：考试
 				题目类型：单选
@@ -213,15 +214,15 @@ func AIProblemMessage(testPaperTitle string, question qentity.Question) aiq.AICh
 		}
 		return aiq.AIChatMessages{Messages: []aiq.Message{
 			{
-				Role:    "user",
+				Role:    "system",
 				Content: `接下来你只需要回答选项对应内容即可，不能回答任何选项无关的任何内容，包括解释以及标点符也不需要。`,
 			},
 			{
-				Role:    "user",
+				Role:    "system",
 				Content: `就算你不知道选什么也随机选输出其选项内容，回答的格式一定要严格为单个数组格式，比如：["选项1","选项2"]，注意回复的时候不要带选项字母，你只需回复答案对应格式内容即可，无需回答任何解释！！！`,
 			},
 			{
-				Role: "user",
+				Role: "system",
 				Content: `比如：` + `
 				试卷名称：考试
 				题目类型：多选选
@@ -246,15 +247,15 @@ func AIProblemMessage(testPaperTitle string, question qentity.Question) aiq.AICh
 		}
 		return aiq.AIChatMessages{Messages: []aiq.Message{
 			{
-				Role:    "user",
+				Role:    "system",
 				Content: `接下来你只需要回答“正确”或者“错误”即可，不能回答任何无关的内容，包括解释以及标点符也不需要。`,
 			},
 			{
-				Role:    "user",
+				Role:    "system",
 				Content: `就算你不知道选什么也随机选输出其选项内容，回答的格式一定要严格为单个数组格式，比如：["正确"]，注意回复的时候不要带选项字母，你只需回复答案对应格式内容即可，无需回答任何解释！！！`,
 			},
 			{
-				Role: "user",
+				Role: "system",
 				Content: `比如：` + `
 				试卷名称：考试
 				题目类型：判断
@@ -273,7 +274,7 @@ func AIProblemMessage(testPaperTitle string, question qentity.Question) aiq.AICh
 	} else if topicType == "填空" { //填空题
 		return aiq.AIChatMessages{Messages: []aiq.Message{
 			{
-				Role:    "user",
+				Role:    "system",
 				Content: `其中，“（answer_数字）”相关字样的地方是你需要填写答案的地方，现在你只需要按顺序回复我对应每个填空项的答案即可，回答的格式一定要严格为单个数组格式，比如["答案1","答案2"]其他不符合格式的内容无需回复。你只需回复答案对应格式内容即可，无需回答任何解释！！！`,
 			},
 			{
@@ -284,7 +285,7 @@ func AIProblemMessage(testPaperTitle string, question qentity.Question) aiq.AICh
 	} else if topicType == "简答" { //简答
 		return aiq.AIChatMessages{Messages: []aiq.Message{
 			{
-				Role:    "user",
+				Role:    "system",
 				Content: `这是一个简答题，现在你只需要回复我对应简答题答案即可，回答的格式一定要严格为单个数组格式，比如["答案"]，但是注意你只需要把所有答案填写在一个元素项里面就行，别分开，比如你不能["xxx","zzz"]这样写，你只能["xxxzzz"]这样写，其他不符合格式的内容无需回复。你只需回复答案对应格式内容即可，无需回答任何解释！！！`,
 			},
 			{
