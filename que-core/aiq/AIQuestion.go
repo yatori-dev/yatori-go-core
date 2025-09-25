@@ -61,8 +61,6 @@ func AggregationAIApi(url,
 
 // AICheck AI可用性检测
 func AICheck(url, model, apiKey string, aiType ctype.AiType) error {
-	AiMut.Lock()
-	defer AiMut.Unlock()
 	aiChatMessages := AIChatMessages{
 		Messages: []Message{
 			{
