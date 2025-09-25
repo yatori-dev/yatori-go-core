@@ -448,6 +448,18 @@ func ParseWorkQuestionAction(cache *xuexitong.XueXiTUserCache, workPoint *entity
 			options["简答"] = []string{"简答答案"}
 			shortQue.OpFromAnswer = options
 			shortQuestion = append(shortQuestion, shortQue)
+		case qtype.TermExplanation.String(): //名词解释
+			//options := make(map[string][]string)
+			////shortQue := entity.
+			//shortQue.Type = qtype.ShortAnswer
+			//shortQue.Qid = qs.ID
+			//shortQue.Text = quesText
+			//// 简答暂时未发现有多个textarea标签出现 不做多答案处理
+			//options["简答"] = []string{"简答答案"}
+			//shortQue.OpFromAnswer = options
+			//shortQuestion = append(shortQuestion, shortQue)
+		case qtype.Essay.String(): //论述题
+
 		}
 	}
 
