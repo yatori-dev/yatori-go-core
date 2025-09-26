@@ -197,7 +197,7 @@ func TestXueXiToChapterCord(t *testing.T) {
 	//	videoDTO entity.PointVideoDto
 	//)
 	// 处理返回的任务点对象
-	videoDTOs, _, _, _, _ := entity.ParsePointDto(fetchCards)
+	videoDTOs, _, _, _, _, _ := entity.ParsePointDto(fetchCards)
 
 	//card3, err := xuexitong.PageMobileChapterCardAction(
 	//	&userCache, key, courseId, videoDTOs[3].KnowledgeID, videoDTOs[3].CardIndex, course[index].Cpi)
@@ -278,7 +278,7 @@ func TestXueXiToChapterCardWork(t *testing.T) {
 	_, fetchCards, err := xuexitong.ChapterFetchCardsAction(&userCache, &action, nodes, 51, courseId,
 		key, course[index].Cpi)
 
-	videoDTOs, workDTOs, documentDTOs, _, _ := entity.ParsePointDto(fetchCards)
+	videoDTOs, workDTOs, documentDTOs, _, _, _ := entity.ParsePointDto(fetchCards)
 	fmt.Println(videoDTOs)
 	fmt.Println(workDTOs)
 	fmt.Println(documentDTOs)
@@ -463,7 +463,7 @@ func TestXueXiToFlushCourse(t *testing.T) {
 	utils.YatoriCoreInit()
 	//测试账号
 	setup()
-	user := global.Config.Users[14]
+	user := global.Config.Users[42]
 
 	userCache := xuexitongApi.XueXiTUserCache{
 		Name:     user.Account,
@@ -481,7 +481,7 @@ func TestXueXiToFlushCourse(t *testing.T) {
 		//if course.CourseName != "戏剧鉴赏" {
 		//	continue
 		//}
-		if course.CourseName != "美育教育" {
+		if course.CourseName != "大学生职业素养" {
 			continue
 		}
 		// 6c444b8d5c6203ee2f2aef4b76f5b2ce qrcEnc
@@ -532,7 +532,7 @@ func TestXueXiToFlushCourse(t *testing.T) {
 			log.Printf("ID.%d(%s/%s)正在执行任务点\n",
 				item,
 				pointAction.Knowledge[index].Label, pointAction.Knowledge[index].Name)
-			if pointAction.Knowledge[index].Label != "15.9" {
+			if pointAction.Knowledge[index].Label != "3.2.1" {
 				//fmt.Println("断点")
 				continue
 			}
@@ -541,8 +541,8 @@ func TestXueXiToFlushCourse(t *testing.T) {
 			if err != nil {
 				log.Fatal(err)
 			}
-			videoDTOs, workDTOs, documentDTOs, hyperlinkDTOs, liveDTOs := entity.ParsePointDto(fetchCards)
-			if videoDTOs == nil && workDTOs == nil && documentDTOs == nil && hyperlinkDTOs == nil && liveDTOs == nil {
+			videoDTOs, workDTOs, documentDTOs, hyperlinkDTOs, liveDTOs, bbsDTOs := entity.ParsePointDto(fetchCards)
+			if videoDTOs == nil && workDTOs == nil && documentDTOs == nil && hyperlinkDTOs == nil && liveDTOs == nil && bbsDTOs == nil {
 				log.Println("没有可学习的内容")
 			}
 
@@ -591,7 +591,7 @@ func TestXueXiToFlushCourse(t *testing.T) {
 				}
 			}
 			//作业刷取
-			if workDTOs != nil && true {
+			if workDTOs != nil && false {
 				for _, workDTO := range workDTOs {
 
 					//以手机端拉取章节卡片数据
@@ -605,7 +605,7 @@ func TestXueXiToFlushCourse(t *testing.T) {
 					fmt.Println(questionAction)
 					for i := range questionAction.Choice {
 						q := &questionAction.Choice[i] // 获取对应选项
-						message := xuexitong.AIProblemMessage(q.Type.String(), "", entity.ExamTurn{
+						message := xuexitong.AIProblemMessage(questionAction.Title, q.Type.String(), entity.ExamTurn{
 							XueXChoiceQue: *q,
 						})
 						aiSetting := global.Config.Setting.AiSetting //获取AI设置
@@ -614,7 +614,7 @@ func TestXueXiToFlushCourse(t *testing.T) {
 					//判断题
 					for i := range questionAction.Judge {
 						q := &questionAction.Judge[i] // 获取对应选项
-						message := xuexitong.AIProblemMessage(q.Type.String(), q.Text, entity.ExamTurn{
+						message := xuexitong.AIProblemMessage(questionAction.Title, q.Type.String(), entity.ExamTurn{
 							XueXJudgeQue: *q,
 						})
 
@@ -624,7 +624,7 @@ func TestXueXiToFlushCourse(t *testing.T) {
 					//填空题
 					for i := range questionAction.Fill {
 						q := &questionAction.Fill[i] // 获取对应选项
-						message := xuexitong.AIProblemMessage(q.Type.String(), q.Text, entity.ExamTurn{
+						message := xuexitong.AIProblemMessage(questionAction.Title, q.Type.String(), entity.ExamTurn{
 							XueXFillQue: *q,
 						})
 						aiSetting := global.Config.Setting.AiSetting //获取AI设置
@@ -633,13 +633,30 @@ func TestXueXiToFlushCourse(t *testing.T) {
 					//简答题
 					for i := range questionAction.Short {
 						q := &questionAction.Short[i] // 获取对应选项
-						message := xuexitong.AIProblemMessage(q.Type.String(), q.Text, entity.ExamTurn{
+						message := xuexitong.AIProblemMessage(questionAction.Title, q.Type.String(), entity.ExamTurn{
 							XueXShortQue: *q,
 						})
 						aiSetting := global.Config.Setting.AiSetting //获取AI设置
 						q.AnswerAIGet(userCache.UserID, aiSetting.AiUrl, aiSetting.Model, aiSetting.AiType, message, aiSetting.APIKEY)
 					}
-
+					//名词解释
+					for i := range questionAction.TermExplanation {
+						q := &questionAction.TermExplanation[i] // 获取对应选项
+						message := xuexitong.AIProblemMessage(questionAction.Title, q.Type.String(), entity.ExamTurn{
+							XueXTermExplanationQue: *q,
+						})
+						aiSetting := global.Config.Setting.AiSetting //获取AI设置
+						q.AnswerAIGet(userCache.UserID, aiSetting.AiUrl, aiSetting.Model, aiSetting.AiType, message, aiSetting.APIKEY)
+					}
+					//论述题
+					for i := range questionAction.Essay {
+						q := &questionAction.Essay[i] // 获取对应选项
+						message := xuexitong.AIProblemMessage(questionAction.Title, q.Type.String(), entity.ExamTurn{
+							XueXEssayQue: *q,
+						})
+						aiSetting := global.Config.Setting.AiSetting //获取AI设置
+						q.AnswerAIGet(userCache.UserID, aiSetting.AiUrl, aiSetting.Model, aiSetting.AiType, message, aiSetting.APIKEY)
+					}
 					answerAction := xuexitong.WorkNewSubmitAnswerAction(&userCache, questionAction, true)
 					fmt.Printf("%s答题完成，返回信息：%s\n", questionAction.Title, answerAction)
 				}
@@ -676,6 +693,26 @@ func TestXueXiToFlushCourse(t *testing.T) {
 						continue
 					}
 					point.ExecuteLiveTest(&userCache, &liveDTO)
+					time.Sleep(5 * time.Second)
+				}
+			}
+
+			//直播任务
+			if bbsDTOs != nil && true {
+				for _, bbsDTO := range bbsDTOs {
+					card, _, err := xuexitong.PageMobileChapterCardAction(
+						&userCache, key, courseId, bbsDTO.KnowledgeID, bbsDTO.CardIndex, course.Cpi)
+					if err != nil {
+						log.Fatal(err)
+					}
+					bbsDTO.AttachmentsDetection(card)
+					if !bbsDTO.IsJob {
+						log.Printf("(%s)该讨论非任务点或已完成，已自动跳过\n", bbsDTO.Title)
+						continue
+					}
+					aiSetting := global.Config.Setting.AiSetting //获取AI设置
+					point.ExecuteBbsTest(&userCache, &bbsDTO, aiSetting)
+					//point.ExecuteLiveTest(&userCache, &liveDTO)
 					time.Sleep(5 * time.Second)
 				}
 			}
@@ -776,7 +813,7 @@ func TestFaceQrScanPlan1(t *testing.T) {
 			if err != nil {
 				log.Fatal(err)
 			}
-			videoDTOs, workDTOs, documentDTOs, _, _ := entity.ParsePointDto(fetchCards)
+			videoDTOs, workDTOs, documentDTOs, _, _, _ := entity.ParsePointDto(fetchCards)
 			if videoDTOs == nil && workDTOs == nil && documentDTOs == nil {
 				log.Println("没有可学习的内容")
 			}

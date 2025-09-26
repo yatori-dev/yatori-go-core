@@ -7,7 +7,7 @@ import (
 
 // 常用的User-Agent
 const (
-	DefaultUserAgent = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/136.0.0.0 Safari/537.36 Edg/136.0.0.0"
+	DefaultUserAgent = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/140.0.0.0 Safari/537.36 Edg/140.0.0.0"
 )
 
 // 添加Cookies，并且是无重复添加，意思就是添加到目标Cookies里面时会检测是否有重复Key的Cookie，如果有则直接替换Cookie值

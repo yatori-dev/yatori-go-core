@@ -137,6 +137,7 @@ func PageMobileChapterCardAction(
 	enc := ""
 	if len(matchesEnc) > 1 {
 		enc = matchesEnc[1]
+		(att.(map[string]interface{}))["enc"] = enc
 	}
 	//log.Println("Attachment拉取成功")
 	return att, enc, nil
@@ -291,6 +292,8 @@ func ParseWorkQuestionAction(cache *xuexitong.XueXiTUserCache, workPoint *entity
 	var judgeQuestion []entity.JudgeQue
 	var fillQuestion []entity.FillQue
 	var shortQuestion []entity.ShortQue
+	var termQuestion []entity.TermExplanationQue
+	var essayQuestion []entity.EssayQue
 	question, _ := cache.WorkFetchQuestion(workPoint, 3, nil)
 
 	// 使用 goquery 解析 HTML
@@ -449,17 +452,25 @@ func ParseWorkQuestionAction(cache *xuexitong.XueXiTUserCache, workPoint *entity
 			shortQue.OpFromAnswer = options
 			shortQuestion = append(shortQuestion, shortQue)
 		case qtype.TermExplanation.String(): //名词解释
-			//options := make(map[string][]string)
-			////shortQue := entity.
-			//shortQue.Type = qtype.ShortAnswer
-			//shortQue.Qid = qs.ID
-			//shortQue.Text = quesText
-			//// 简答暂时未发现有多个textarea标签出现 不做多答案处理
-			//options["简答"] = []string{"简答答案"}
-			//shortQue.OpFromAnswer = options
-			//shortQuestion = append(shortQuestion, shortQue)
+			options := make(map[string][]string)
+			termExplanationQue := entity.TermExplanationQue{}
+			termExplanationQue.Type = qtype.TermExplanation
+			termExplanationQue.Qid = qs.ID
+			termExplanationQue.Text = quesText
+			// 简答暂时未发现有多个textarea标签出现 不做多答案处理
+			options["名词解释"] = []string{"名词解释"}
+			termExplanationQue.OpFromAnswer = options
+			termQuestion = append(termQuestion, termExplanationQue)
 		case qtype.Essay.String(): //论述题
-
+			options := make(map[string][]string)
+			essayQue := entity.EssayQue{}
+			essayQue.Type = qtype.Essay
+			essayQue.Qid = qs.ID
+			essayQue.Text = quesText
+			// 简答暂时未发现有多个textarea标签出现 不做多答案处理
+			options["论述"] = []string{"论述"}
+			essayQue.OpFromAnswer = options
+			essayQuestion = append(essayQuestion, essayQue)
 		}
 	}
 
@@ -467,29 +478,33 @@ func ParseWorkQuestionAction(cache *xuexitong.XueXiTUserCache, workPoint *entity
 	questionEntity.Judge = judgeQuestion
 	questionEntity.Fill = fillQuestion
 	questionEntity.Short = shortQuestion
+	questionEntity.TermExplanation = termQuestion
+	questionEntity.Essay = essayQuestion
 	return questionEntity
 }
 
 // 定义题型处理策略函数类型
-type problemMessageStrategy func(context string, topic entity.ExamTurn) que_core.AIChatMessages
+type problemMessageStrategy func(paperTitle, context string, topic entity.ExamTurn) que_core.AIChatMessages
 
 // 策略映射表：题型 -> 处理函数
 var problemStrategies = map[string]problemMessageStrategy{
-	"单选题": handleSingleChoice,
-	"多选题": handleMultipleChoice,
-	"判断题": handleTrueFalse,
-	"填空题": handleFillInTheBlank,
-	"简答题": handleShortAnswer,
+	"单选题":  handleSingleChoice,
+	"多选题":  handleMultipleChoice,
+	"判断题":  handleTrueFalse,
+	"填空题":  handleFillInTheBlank,
+	"简答题":  handleShortAnswer,
+	"名词解释": handleTermExplanationAnswer,
+	"论述题":  handleEssayAnswer,
 }
 
 // 构建AI问答消息
-func AIProblemMessage(testPaperTitle, text string, topic entity.ExamTurn) que_core.AIChatMessages {
+func AIProblemMessage(paperTitle, typeStr string, topic entity.ExamTurn) que_core.AIChatMessages {
 
-	context := buildProblemContext(testPaperTitle, text, topic)
+	context := buildProblemContext(typeStr, topic)
 
 	// 查找对应的处理策略
-	if strategy, exists := problemStrategies[testPaperTitle]; exists {
-		return strategy(context, topic)
+	if strategy, exists := problemStrategies[typeStr]; exists {
+		return strategy(paperTitle, context, topic)
 	}
 
 	// 默认返回空消息
@@ -497,103 +512,112 @@ func AIProblemMessage(testPaperTitle, text string, topic entity.ExamTurn) que_co
 }
 
 // buildProblemContext 构建通用的题目上下文
-func buildProblemContext(testPaperTitle, text string, topic entity.ExamTurn) (context string) {
-	switch testPaperTitle {
+func buildProblemContext(problemTypeStr string, topic entity.ExamTurn) (context string) {
+	switch problemTypeStr {
 	case qtype.SingleChoice.String():
+		context += topic.XueXChoiceQue.Text + "\n"
 		for c, q := range topic.XueXChoiceQue.Options {
-			context += text + "\n"
 			context += fmt.Sprintf("\n%v. %v", c, q)
 		}
-		//for _, v := range topic.Selects {
-		//	context += v.Num + v.Text + "\n"
-		//}
 	case qtype.MultipleChoice.String():
+		context += topic.XueXChoiceQue.Text + "\n"
 		for c, q := range topic.XueXChoiceQue.Options {
-			context += text + "\n"
 			context += fmt.Sprintf("\n%v. %v", c, q)
 		}
-		//for _, v := range topic.Selects {
-		//	context += v.Num + v.Text + "\n"
-		//}
 	case qtype.FillInTheBlank.String():
+		context += topic.XueXFillQue.Text + "\n"
 		for c, q := range topic.XueXFillQue.OpFromAnswer {
-			context += text + "\n"
 			context += fmt.Sprintf("\n%v. %v", c, q)
 		}
-		//for _, v := range topic.Selects {
-		//	context += v.Num + v.Text + "\n"
-		//}
 	case qtype.TrueOrFalse.String():
+		context += topic.XueXJudgeQue.Text + "\n"
 		for c, q := range topic.XueXJudgeQue.Options {
-			context += text + "\n"
 			context += fmt.Sprintf("\n%v. %v", c, q)
 		}
-		//for _, v := range topic.Selects {
-		//	context += v.Num + v.Text + "\n"
-		//}
 	case qtype.ShortAnswer.String():
-		for c, q := range topic.XueXShortQue.OpFromAnswer {
-			context += text + "\n"
-			context += fmt.Sprintf("\n%v. %v", c, q)
-		}
-		//for _, v := range topic.Selects {
-		//	context += v.Num + v.Text + "\n"
+		context += topic.XueXShortQue.Text + "\n"
+		//for c, q := range topic.XueXShortQue.OpFromAnswer {
+		//
+		//	context += fmt.Sprintf("\n%v. %v", c, q)
 		//}
+	case qtype.TermExplanation.String(): //名词解释
+		context += topic.XueXTermExplanationQue.Text + "\n"
+	case qtype.Essay.String(): //论述题
+		context += topic.XueXEssayQue.Text + "\n"
 	}
 	return context
 }
 
 // 单选题处理策略
-func handleSingleChoice(context string, topic entity.ExamTurn) que_core.AIChatMessages {
-	problem := buildProblemHeader(topic.XueXChoiceQue.Type.String(), "单选题", context)
+func handleSingleChoice(paperTitle, content string, topic entity.ExamTurn) que_core.AIChatMessages {
+	problem := buildProblemHeader(paperTitle, topic.XueXChoiceQue.Type.String(), content)
 	return que_core.AIChatMessages{Messages: []que_core.Message{
-		{Role: "user", Content: "接下来你只需要回答选项对应内容即可...格式：[\"选项1\"]"},
-		{Role: "user", Content: "就算你不知道选什么也随机选...无需回答任何解释！！！"},
-		{Role: "user", Content: exampleSingleChoice()},
+		{Role: "system", Content: "接下来你只需要回答选项对应内容即可...格式：[\"选项1\"]"},
+		{Role: "system", Content: "就算你不知道选什么也随机选...无需回答任何解释！！！"},
+		{Role: "system", Content: exampleSingleChoice()},
 		{Role: "user", Content: problem},
 	}}
 }
 
 // 多选题处理策略
-func handleMultipleChoice(context string, topic entity.ExamTurn) que_core.AIChatMessages {
-	problem := buildProblemHeader(topic.XueXChoiceQue.Type.String(), "多选题", context)
+func handleMultipleChoice(paperTitle, context string, topic entity.ExamTurn) que_core.AIChatMessages {
+	problem := buildProblemHeader(paperTitle, topic.XueXChoiceQue.Type.String(), context)
 	return que_core.AIChatMessages{Messages: []que_core.Message{
-		{Role: "user", Content: "接下来你只需要回答选项对应内容即可...格式：[\"选项1\",\"选项2\"]"},
-		{Role: "user", Content: "就算你不知道选什么也随机选...无需回答任何解释！！！"},
-		{Role: "user", Content: exampleMultipleChoice()},
+		{Role: "system", Content: "接下来你只需要回答选项对应内容即可...格式：[\"选项1\",\"选项2\"]"},
+		{Role: "system", Content: "就算你不知道选什么也随机选...无需回答任何解释！！！"},
+		{Role: "system", Content: exampleMultipleChoice()},
 		{Role: "user", Content: problem},
 	}}
 }
 
 // 判断题处理策略
-func handleTrueFalse(context string, topic entity.ExamTurn) que_core.AIChatMessages {
-	problem := buildProblemHeader(topic.XueXJudgeQue.Type.String(), "判断题", context)
+func handleTrueFalse(paperTitle, content string, topic entity.ExamTurn) que_core.AIChatMessages {
+	problem := buildProblemHeader(paperTitle, topic.XueXJudgeQue.Type.String(), content)
 	return que_core.AIChatMessages{Messages: []que_core.Message{
-		{Role: "user", Content: "接下来你只需要回答“正确”或者“错误”即可...格式：[\"正确\"]"},
-		{Role: "user", Content: "就算你不知道选什么也随机选...无需回答任何解释！！！"},
-		{Role: "user", Content: exampleTrueFalse()},
+		{Role: "system", Content: "接下来你只需要回答“正确”或者“错误”即可...格式：[\"正确\"]"},
+		{Role: "system", Content: "就算你不知道选什么也随机选...无需回答任何解释！！！"},
+		{Role: "system", Content: exampleTrueFalse()},
 		{Role: "user", Content: problem},
 	}}
 }
 
 // 填空题处理策略
-func handleFillInTheBlank(context string, topic entity.ExamTurn) que_core.AIChatMessages {
-	problem := buildProblemHeader(topic.XueXFillQue.Type.String(), "填空题", context)
+func handleFillInTheBlank(paperTitle, content string, topic entity.ExamTurn) que_core.AIChatMessages {
+	problem := buildProblemHeader(paperTitle, topic.XueXFillQue.Type.String(), content)
 	return que_core.AIChatMessages{Messages: []que_core.Message{
-		{Role: "user", Content: "其中，“（answer_数字）”相关字样的地方是你需要填写答案的地方...格式：[\"答案1\",\"答案2\"]"},
-		{Role: "user", Content: "就算你不知道选什么也随机选...无需回答任何解释！！！"},
-		{Role: "user", Content: exampleFillInTheBlank()},
+		{Role: "system", Content: "其中，“（answer_数字）”相关字样的地方是你需要填写答案的地方...格式：[\"答案1\",\"答案2\"]"},
+		//{Role: "system", Content: "就算你不知道填什么也随机选...无需回答任何解释！！！"},
+		{Role: "system", Content: exampleFillInTheBlank()},
 		{Role: "user", Content: problem},
 	}}
 }
 
 // 简答题处理策略
-func handleShortAnswer(context string, topic entity.ExamTurn) que_core.AIChatMessages {
-	problem := buildProblemHeader(topic.XueXShortQue.Type.String(), "简答题", context)
+func handleShortAnswer(paperTitle, content string, topic entity.ExamTurn) que_core.AIChatMessages {
+	problem := buildProblemHeader(paperTitle, topic.XueXShortQue.Type.String(), content)
 	return que_core.AIChatMessages{Messages: []que_core.Message{
-		{Role: "user", Content: "这是一个简答题...格式：[\"答案\"]，注意不要拆分答案！！！"},
-		{Role: "user", Content: "就算你不知道选什么也随机选...无需回答任何解释！！！"},
-		{Role: "user", Content: exampleShortAnswer()},
+		{Role: "system", Content: "这是一个简答题...格式：[\"答案\"]，注意不要拆分答案！！！"},
+		{Role: "system", Content: exampleShortAnswer()},
+		{Role: "user", Content: problem},
+	}}
+}
+
+// 名词解释处理策略
+func handleTermExplanationAnswer(paperTitle, content string, topic entity.ExamTurn) que_core.AIChatMessages {
+	problem := buildProblemHeader(paperTitle, topic.XueXTermExplanationQue.Type.String(), content)
+	return que_core.AIChatMessages{Messages: []que_core.Message{
+		{Role: "system", Content: "这是一个名词解释题，回答时请严格遵循json格式：[\"答案\"]，注意不要拆分答案！！！"},
+		{Role: "system", Content: exampleTermExplanationAnswer()},
+		{Role: "user", Content: problem},
+	}}
+}
+
+// 论述题处理策略
+func handleEssayAnswer(paperTitle, content string, topic entity.ExamTurn) que_core.AIChatMessages {
+	problem := buildProblemHeader(paperTitle, topic.XueXEssayQue.Type.String(), content)
+	return que_core.AIChatMessages{Messages: []que_core.Message{
+		{Role: "system", Content: `这是一个论述题，回答时请严格遵循json格式：["答案"]，注意不要拆分答案！！！`},
+		{Role: "system", Content: exampleEssayAnswer()},
 		{Role: "user", Content: problem},
 	}}
 }
@@ -630,7 +654,7 @@ B. 资本有机构成呈现不断降低趋势的根本原因
 C. 社会财富占有两极分化的重要原因
 D. 资本主义社会失业现象产生的根源
 
-那么你应该回答选项A、B、D的内容："["资本主义扩大再生产的源泉","社会财富占有两极分化的重要原因","资本主义社会失业现象产生的根源"]"`
+那么你应该回答选项A、B、D的内容：["资本主义扩大再生产的源泉","社会财富占有两极分化的重要原因","资本主义社会失业现象产生的根源"]`
 }
 
 // 判断题示例
@@ -642,7 +666,7 @@ func exampleTrueFalse() string {
 A. 正确
 B. 错误
 
-那么你应该回答选项A的内容："["正确"]"`
+那么你应该回答选项A的内容：["正确"]`
 }
 
 // 填空题示例
@@ -663,7 +687,29 @@ func exampleShortAnswer() string {
 题目内容：请简述中国和外国的国别 differences
 答案：中国和外国的国别 differences
 
-那么你应该回答： "["中国和外国的国别 differences"]"`
+那么你应该回答： ["中国和外国的国别 differences"]`
+}
+
+// 名词解释
+func exampleTermExplanationAnswer() string {
+	return `比如：
+试卷名称：考试
+题目类型：名词解释
+题目内容：绿色设计
+答案：绿色设计是指在产品、建筑、工程或系统设计的全过程中，将环境保护和可持续发展理念融入其中的一种设计方法。
+
+那么你应该回答： ["绿色设计是指在产品、建筑、工程或系统设计的全过程中，将环境保护和可持续发展理念融入其中的一种设计方法。"]`
+}
+
+// 论述题
+func exampleEssayAnswer() string {
+	return `比如：
+试卷名称：考试
+题目类型：论述题
+题目内容：试述设计艺术的构成元素
+答案：设计艺术的构成元素包括点、线、面、形体、色彩、质感与空间等。它们相互依存、互为补充，通过合理的组织和运用，形成和谐、统一而富有美感的设计作品。
+
+那么你应该回答（回答字数不能少于500字）： ["设计艺术的构成元素包括点、线、面、形体、色彩、质感与空间等。它们相互依存、互为补充，通过合理的组织和运用，形成和谐、统一而富有美感的设计作品。"]`
 }
 
 //func AIProblemMessage(testPaperTitle string, topic entity.ExamTurn) utils.AIChatMessages {

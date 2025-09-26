@@ -27,6 +27,7 @@ type PointDto struct {
 	PointDocumentDto
 	PointHyperlinkDto
 	PointLiveDto
+	PointBBsDto
 }
 
 // PointVideoDto 视频任务点
@@ -132,6 +133,32 @@ type PointLiveDto struct {
 	IsSet                bool
 }
 
+// 讨论任务点对象
+type PointBBsDto struct {
+	CardIndex   int
+	CourseID    string
+	ClassID     string
+	KnowledgeID int
+	Cpi         string
+
+	UserId         string //用户ID
+	Mid            string
+	Title          string //直播标题
+	JobID          string
+	Type           ctype.CardType
+	Module         string //类型
+	IsJob          bool   //是否为任务点
+	AuthEnc        string
+	OtherInfo      string
+	Enc            string
+	AllowViewReply int    //是否同意回复
+	Detail         string //大概的讨论内容
+	ReplyTimes     string //不知道是啥
+	ReplayWordNum  string //不知道是啥
+	EndTime        string //一直为空，不知道是啥
+	IsSet          bool
+}
+
 // WorkInputField represents an <input> element in the HTML form.
 type WorkInputField struct {
 	Name  string
@@ -183,6 +210,9 @@ func (p *PointDto) All() iter.Seq[IPointDto] {
 		if !yield(p.PointLiveDto) {
 			return
 		}
+		if !yield(p.PointBBsDto) {
+			return
+		}
 	}
 }
 
@@ -200,7 +230,7 @@ func GroupPointDtos[T IPointDto](pointDTOs []PointDto, predicate func(T) bool) [
 	return result
 }
 
-func ParsePointDto(pointDTOs []PointDto) (videoDTOs []PointVideoDto, workDTOs []PointWorkDto, documentDTOs []PointDocumentDto, hyperlinkDTOs []PointHyperlinkDto, liveDTOs []PointLiveDto) {
+func ParsePointDto(pointDTOs []PointDto) (videoDTOs []PointVideoDto, workDTOs []PointWorkDto, documentDTOs []PointDocumentDto, hyperlinkDTOs []PointHyperlinkDto, liveDTOs []PointLiveDto, bbsDTOs []PointBBsDto) {
 	for i, card := range pointDTOs {
 		log2.Print(log2.DEBUG, strconv.Itoa(i))
 		for dto := range card.All() {
@@ -225,6 +255,10 @@ func ParsePointDto(pointDTOs []PointDto) (videoDTOs []PointVideoDto, workDTOs []
 				if v.IsSet {
 					liveDTOs = append(liveDTOs, v)
 				}
+			case PointBBsDto:
+				if v.IsSet {
+					bbsDTOs = append(bbsDTOs, v)
+				}
 			}
 		}
 	}
@@ -245,6 +279,9 @@ func (d PointHyperlinkDto) IsSetted() bool          { return d.IsSet }
 
 func (d PointLiveDto) GetType() ctype.CardType { return d.Type }
 func (d PointLiveDto) IsSetted() bool          { return d.IsSet }
+
+func (d PointBBsDto) GetType() ctype.CardType { return d.Type }
+func (d PointBBsDto) IsSetted() bool          { return d.IsSet }
 
 // AttachmentsDetection 使用接口对每种DTO进行检测再次赋值, 以对应后续的刷取请求
 func (p *PointVideoDto) AttachmentsDetection(attachment interface{}) (bool, error) {
@@ -600,6 +637,63 @@ func (p *PointLiveDto) AttachmentsDetection(attachment interface{}) (bool, error
 		if ok8 {
 			p.Aid = strconv.FormatInt(int64(aid), 10)
 		}
+		if att["jobid"] != nil {
+			if att["jobid"].(string) == p.JobID {
+				return true, nil
+			}
+		}
+
+	}
+	return true, nil
+}
+
+// 直播卡片
+func (p *PointBBsDto) AttachmentsDetection(attachment interface{}) (bool, error) {
+	attachmentMap, ok := attachment.(map[string]interface{})
+	if !ok {
+		return false, errors.New("无法将 Attachment 转换为 map[string]interface{}")
+	}
+	attachments, ok := attachmentMap["attachments"].([]interface{})
+	if !ok {
+		return false, errors.New("invalid attachment structure")
+	}
+
+	for _, a := range attachments {
+		att, _ := a.(map[string]interface{})
+
+		authEnc, ok1 := att["authEnc"].(string)
+
+		otherInfo, ok4 := att["otherInfo"].(string)
+		enc, ok5 := attachmentMap["enc"].(string)
+
+		isJob, ok7 := att["job"].(bool)
+
+		if ok1 {
+			p.AuthEnc = authEnc
+		}
+		//if ok2 {
+		//	p.LiveDragEnc = liveDragEnc
+		//}
+		//if ok3 {
+		//	p.LiveSetEnc = liveSetEnc
+		//}
+		if ok4 {
+			p.OtherInfo = otherInfo
+		}
+		if ok5 {
+			p.Enc = enc
+		}
+		//if ok6 {
+		//	p.LiveSwDsEnc = liveSwDsEnc
+		//}
+		if ok7 {
+			p.IsJob = isJob
+		} else {
+			p.IsJob = false
+		}
+		//if ok8 {
+		//	p.Aid = strconv.FormatInt(int64(aid), 10)
+		//}
 		if att["jobid"] != nil {
 			if att["jobid"].(string) == p.JobID {
 				return true, nil

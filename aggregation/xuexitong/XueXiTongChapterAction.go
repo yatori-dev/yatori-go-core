@@ -336,7 +336,7 @@ func ChapterFetchCardsAction(
 						IsSet:       ok,
 					}
 					if ok1 {
-						pointObj.Module = module
+						pointObj.PointLiveDto.Module = module
 					}
 
 					//这里比较特殊，userid其实是cookie里面的_uid值
@@ -364,6 +364,68 @@ func ChapterFetchCardsAction(
 					}
 					if ok9 {
 						pointObj.PointLiveDto.Vdoid = vdoid
+					}
+				} else {
+					log2.Print(log2.DEBUG, "(%d, %d) 任务点 'objectid' 不存在或为空 %+v", cardIndex, pointIndex, point)
+					continue
+				}
+			case string(ctype.Insertbbs):
+				module, ok1 := point.Other["module"]
+				jobID, ok3 := point.Data["_jobid"].(string)
+				title, ok4 := point.Data["title"].(string)
+				detail, ok5 := point.Data["detail"].(string)
+				mid, ok6 := point.Data["mid"].(string)
+				allowViewReply, ok7 := point.Data["allowViewReply"].(float64)
+				replytimes, ok8 := point.Data["replytimes"].(string)
+				replywordnum, ok9 := point.Data["replywordnum"].(string)
+				endtime, ok10 := point.Data["endtime"].(string)
+				isJob, ok11 := point.Data["isJob"].(bool)
+				if ok3 && jobID != "" {
+					pointObj.PointBBsDto = entity.PointBBsDto{
+						CardIndex:   cardIndex,
+						CourseID:    strconv.Itoa(courseId),
+						ClassID:     strconv.Itoa(classId),
+						KnowledgeID: card.KnowledgeID,
+						Cpi:         strconv.Itoa(cpi),
+						JobID:       jobID,
+						Type:        ctype.Insertbbs,
+						IsSet:       ok,
+					}
+					if ok1 {
+						pointObj.PointBBsDto.Module = module
+					}
+
+					//这里比较特殊，userid其实是cookie里面的_uid值
+					cookies := cache.GetCookies()
+					for _, cookie := range cookies {
+						if cookie.Name == "_uid" {
+							pointObj.PointLiveDto.UserId = cookie.Value
+							break
+						}
+					}
+					if ok4 {
+						pointObj.PointBBsDto.Title = title
+					}
+					if ok5 {
+						pointObj.PointBBsDto.Detail = detail
+					}
+					if ok6 {
+						pointObj.PointBBsDto.Mid = mid
+					}
+					if ok7 {
+						pointObj.PointBBsDto.AllowViewReply = int(allowViewReply)
+					}
+					if ok8 {
+						pointObj.PointBBsDto.ReplyTimes = replytimes
+					}
+					if ok9 {
+						pointObj.PointBBsDto.ReplayWordNum = replywordnum
+					}
+					if ok10 {
+						pointObj.PointBBsDto.EndTime = endtime
+					}
+					if ok11 {
+						pointObj.PointBBsDto.IsJob = isJob
 					}
 				} else {
 					log2.Print(log2.DEBUG, "(%d, %d) 任务点 'objectid' 不存在或为空 %+v", cardIndex, pointIndex, point)

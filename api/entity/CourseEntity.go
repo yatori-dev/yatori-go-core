@@ -140,37 +140,55 @@ type ShortQue struct {
 	OpFromAnswer map[string][]string `json:"opFromAnswer"`
 }
 
+// 名词解释类型
+type TermExplanationQue struct {
+	Type         qtype.QueType       `json:"type"`
+	Qid          string              `json:"qid"`
+	Text         string              `json:"text"`
+	OpFromAnswer map[string][]string `json:"opFromAnswer"`
+}
+
+// 论述题
+type EssayQue struct {
+	Type         qtype.QueType       `json:"type"`
+	Qid          string              `json:"qid"`
+	Text         string              `json:"text"`
+	OpFromAnswer map[string][]string `json:"opFromAnswer"`
+}
+
 // Question TODO 这里考虑是否在其中直接将答案做出 直接上报提交 或 保存提交
 type Question struct {
-	Title            string      `json:"title"` //试卷标题
-	Cpi              string      `json:"cpi""`
-	JobId            string      `json:"jobId"`
-	WorkId           string      `json:"workId"`
-	ClassId          string      `json:"classId"`
-	CourseId         string      `json:"courseId"`
-	Ua               string      `json:"ua"`
-	FormType         string      `json:"formType"`
-	SaveStatus       string      `json:"saveStatus"`
-	Version          string      `json:"version"`
-	Tempsave         string      `json:"tempsave"`
-	PyFlag           string      `json:"pyFlag"`
-	UserId           string      `json:"userId"`
-	Knowledgeid      string      `json:"knowledgeId"`
-	OldWorkId        string      `json:"oldWorkId"`   //最原始作业id
-	FullScore        string      `json:"fullScore"`   //满分是多少
-	OldSchoolId      string      `json:"oldSchoolId"` //原始作业单位id
-	Api              string      `json:"api"`         //api值
-	WorkRelationId   string      `json:"workRelationId"`
-	Enc_work         string      `json:"enc_Work"`
-	Isphone          string      `json:"isphone"`
-	RandomOptions    string      `json:"randomOptions"`
-	WorkAnswerId     string      `json:"workAnswerId"`
-	AnswerId         string      `json:"answerId"`
-	TotalQuestionNum string      `json:"totalQuestionNum"`
-	Choice           []ChoiceQue //选择类型
-	Judge            []JudgeQue  //判断类型
-	Fill             []FillQue   //填空类型
-	Short            []ShortQue  //简答类型
+	Title            string               `json:"title"` //试卷标题
+	Cpi              string               `json:"cpi""`
+	JobId            string               `json:"jobId"`
+	WorkId           string               `json:"workId"`
+	ClassId          string               `json:"classId"`
+	CourseId         string               `json:"courseId"`
+	Ua               string               `json:"ua"`
+	FormType         string               `json:"formType"`
+	SaveStatus       string               `json:"saveStatus"`
+	Version          string               `json:"version"`
+	Tempsave         string               `json:"tempsave"`
+	PyFlag           string               `json:"pyFlag"`
+	UserId           string               `json:"userId"`
+	Knowledgeid      string               `json:"knowledgeId"`
+	OldWorkId        string               `json:"oldWorkId"`   //最原始作业id
+	FullScore        string               `json:"fullScore"`   //满分是多少
+	OldSchoolId      string               `json:"oldSchoolId"` //原始作业单位id
+	Api              string               `json:"api"`         //api值
+	WorkRelationId   string               `json:"workRelationId"`
+	Enc_work         string               `json:"enc_Work"`
+	Isphone          string               `json:"isphone"`
+	RandomOptions    string               `json:"randomOptions"`
+	WorkAnswerId     string               `json:"workAnswerId"`
+	AnswerId         string               `json:"answerId"`
+	TotalQuestionNum string               `json:"totalQuestionNum"`
+	Choice           []ChoiceQue          //选择类型
+	Judge            []JudgeQue           //判断类型
+	Fill             []FillQue            //填空类型
+	Short            []ShortQue           //简答类型
+	TermExplanation  []TermExplanationQue //名词解释类型
+	Essay            []EssayQue           //论述题类型
 }
 
 // 序列化输出答题信息
@@ -183,10 +201,12 @@ func (f Question) String() string {
 }
 
 type ExamTurn struct {
-	XueXChoiceQue ChoiceQue
-	XueXJudgeQue  JudgeQue
-	XueXFillQue   FillQue
-	XueXShortQue  ShortQue
+	XueXChoiceQue          ChoiceQue
+	XueXJudgeQue           JudgeQue
+	XueXFillQue            FillQue
+	XueXShortQue           ShortQue
+	XueXTermExplanationQue TermExplanationQue
+	XueXEssayQue           EssayQue
 	YingHuaExamTopic
 }
 
@@ -227,6 +247,13 @@ func (q *ShortQue) SetAnswers(answers []string) {
 	q.OpFromAnswer["简答"] = answers
 }
 
+func (q *TermExplanationQue) SetAnswers(answers []string) {
+	q.OpFromAnswer["名词解释"] = answers
+}
+func (q *EssayQue) SetAnswers(answers []string) {
+	q.OpFromAnswer["论述"] = answers
+}
+
 // 从键中提取序号（例如："0第3空" → 2，注意索引从0开始）
 func extractIndexFromKey(key string) int {
 	// 简单实现，实际可能需要更复杂的字符串处理
@@ -248,12 +275,14 @@ func GetAIAnswer(as AnswerSetter, userID string, url, model string, aiType ctype
 		log.Print(log.INFO, `[`, userID, `] `, log.BoldRed, "Ai异常，返回信息：", err.Error())
 		os.Exit(0)
 	}
+
 	var answers []string
 	err = json.Unmarshal([]byte(aiAnswer), &answers)
 	if err != nil {
 		answers = []string{"A"}
 		fmt.Println("AI回复解析错误:", err)
 	}
+
 	as.SetAnswers(answers)
 }
 
@@ -346,6 +375,46 @@ func (q *ShortQue) AnswerAIGet(userID,
 }
 
 func (q *ShortQue) AnswerExternalGet(exUrl string) {
+	question := qentity.Question{
+		Type:    q.Type.String(),
+		Content: q.Text,
+	}
+	//赋值选项
+	request, err := external.ApiQueRequest(question, exUrl, 3, nil)
+	if err != nil {
+		log2.Fatal(err)
+	}
+	//赋值答案
+	q.SetAnswers(request.Question.Answers)
+}
+
+// AnswerAIGet TermExplanation的AI回答获取方法
+func (q *TermExplanationQue) AnswerAIGet(userID,
+	url, model string, aiType ctype.AiType, aiChatMessages aiq.AIChatMessages, apiKey string) {
+	GetAIAnswer(q, userID, url, model, aiType, aiChatMessages, apiKey)
+}
+
+func (q *TermExplanationQue) AnswerExternalGet(exUrl string) {
+	question := qentity.Question{
+		Type:    q.Type.String(),
+		Content: q.Text,
+	}
+	//赋值选项
+	request, err := external.ApiQueRequest(question, exUrl, 3, nil)
+	if err != nil {
+		log2.Fatal(err)
+	}
+	//赋值答案
+	q.SetAnswers(request.Question.Answers)
+}
+
+// AnswerAIGet Essay的AI回答获取方法
+func (q *EssayQue) AnswerAIGet(userID,
+	url, model string, aiType ctype.AiType, aiChatMessages aiq.AIChatMessages, apiKey string) {
+	GetAIAnswer(q, userID, url, model, aiType, aiChatMessages, apiKey)
+}
+
+func (q *EssayQue) AnswerExternalGet(exUrl string) {
 	question := qentity.Question{
 		Type:    q.Type.String(),
 		Content: q.Text,

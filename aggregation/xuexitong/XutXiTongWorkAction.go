@@ -26,7 +26,7 @@ func StartAIWorkAction(cache *xuexitong.XueXiTUserCache, userId, aiUrl, model, a
 	//选择题
 	for i := range questionAction.Choice {
 		q := &questionAction.Choice[i] // 获取对应选项
-		message := AIProblemMessage(q.Type.String(), q.Text, entity.ExamTurn{
+		message := AIProblemMessage(questionAction.Title, q.Text, entity.ExamTurn{
 			XueXChoiceQue: *q,
 		})
 		q.AnswerAIGet(userId, aiUrl, model, aiTYpe, message, apiKey)

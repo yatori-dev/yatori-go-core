@@ -171,6 +171,8 @@ func XueXiTPullCourseAction(cache *xuexitong.XueXiTUserCache) ([]XueXiTCourse, e
 
 type ChaptersList struct {
 	ChatID    string          `json:"chatid"`
+	IsStart   bool            `json:"isstart"` //是否开始
+	Bbsid     string          `json:"bbsid"`
 	Knowledge []KnowledgeItem `json:"knowledge"`
 }
 
@@ -213,8 +215,16 @@ func PullCourseChapterAction(cache *xuexitong.XueXiTUserCache, cpi, key int) (ch
 		log.Fatalf("Error parsing JSON: %v", err)
 	}
 	var chatid string
-	if v, ok := chapterData[0]["chatid"].(string); ok {
+	if v, ok1 := chapterData[0]["chatid"].(string); ok1 {
 		chatid = v
+	}
+	var isstart bool
+	if v, ok2 := chapterData[0]["isstart"].(bool); ok2 {
+		isstart = v
+	}
+	var bbsid string
+	if v, ok3 := chapterData[0]["bbsid"].(string); ok3 {
+		bbsid = v
 	}
 	//else {//chatid并不是非必要项，所以所以注释掉了
 	//	return ChaptersList{}, false, errors.New("[" + cache.Name + "] " + "[" + chaptersList.ChatID + "] " + " 课程获取失败" + chapter)
@@ -262,6 +272,8 @@ func PullCourseChapterAction(cache *xuexitong.XueXiTUserCache, cpi, key int) (ch
 	}
 	chaptersList = ChaptersList{
 		ChatID:    chatid,
+		IsStart:   isstart,
+		Bbsid:     bbsid,
 		Knowledge: knowledgeItems,
 	}
 	if len(chaptersList.Knowledge) == 0 {

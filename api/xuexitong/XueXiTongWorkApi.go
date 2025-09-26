@@ -59,27 +59,12 @@ func (cache *XueXiTUserCache) WorkNewSubmitAnswer(courseId string, classId strin
 				candidateSelects = append(candidateSelects, option)
 			}
 			for _, item := range ch.Answers {
-				//for k, v := range ch.Options {
-				//	if strings.Contains(v, item) {
-				//		answers += k
-				//	}
-				//
-				//}
 				answers += qutils.SimilarityArraySelect(item, candidateSelects)
 			}
 			_ = writer.WriteField("answer"+ch.Qid, answers)
 			_ = writer.WriteField("answertype"+ch.Qid, "0")
 		}
 		if ch.Type == qtype.MultipleChoice {
-			//answers := ""
-			//for _, item := range ch.Answers {
-			//	for k, v := range ch.Options {
-			//		if strings.Contains(v, item) {
-			//			answers += k
-			//		}
-			//
-			//	}
-			//}
 			answers := ""
 			candidateSelects := []string{} //待选
 			for _, option := range ch.Options {
@@ -137,6 +122,24 @@ func (cache *XueXiTUserCache) WorkNewSubmitAnswer(courseId string, classId strin
 			_ = writer.WriteField("answer"+ch.Qid, v[0])
 		}
 		_ = writer.WriteField("answertype"+ch.Qid, "4")
+	}
+	for _, ch := range question.TermExplanation {
+		if ch.Qid != "" {
+			answerwqbid += ch.Qid + ","
+		}
+		for _, v := range ch.OpFromAnswer {
+			_ = writer.WriteField("answer"+ch.Qid, v[0])
+		}
+		_ = writer.WriteField("answertype"+ch.Qid, "5")
+	}
+	for _, ch := range question.Essay {
+		if ch.Qid != "" {
+			answerwqbid += ch.Qid + ","
+		}
+		for _, v := range ch.OpFromAnswer {
+			_ = writer.WriteField("answer"+ch.Qid, v[0])
+		}
+		_ = writer.WriteField("answertype"+ch.Qid, "6")
 	}
 
 	_ = writer.WriteField("answerwqbid", answerwqbid)
