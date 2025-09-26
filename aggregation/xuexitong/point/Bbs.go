@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+	"log"
 	"regexp"
 
 	"github.com/thedevsaddam/gojsonq"
@@ -65,12 +66,12 @@ func PullBbsInfoAction(cache *xuexitong.XueXiTUserCache, p *entity.PointBBsDto) 
 	if err2 != nil {
 		return nil, err2
 	}
-	fmt.Println(utEnc)
+	//fmt.Println(utEnc)
 	id1, id2, err := cache.PullBbsCircleIdApi(p.Mid, p.JobID, false, fmt.Sprintf("%d", p.KnowledgeID), "s", p.ClassID, p.Enc, utEnc, p.CourseID, p.IsJob)
 	if err != nil {
 		return nil, err
 	}
-	fmt.Println(id1, id2)
+	//fmt.Println(id1, id2)
 	contentHtml, err2 := cache.PullBbsInfoApi(id1, id2, p.CourseID, p.ClassID, 3, nil)
 	if err2 != nil {
 		return nil, err2
@@ -136,5 +137,10 @@ func ExecuteBbsTest(cache *xuexitong.XueXiTUserCache, p *entity.PointBBsDto, set
 		fmt.Println(err)
 	}
 	//AI回复讨论
-	bbsTopic.AIAnswer(cache, p, setting.AiUrl, setting.Model, setting.AiType, setting.APIKEY)
+	answer, err := bbsTopic.AIAnswer(cache, p, setting.AiUrl, setting.Model, setting.AiType, setting.APIKEY)
+	if err != nil {
+		fmt.Println(err)
+	}
+	status := gojsonq.New().JSONString(answer).Find("msg")
+	log.Printf("ID.%d(%s)讨论任务点完成状态：%s\n", p.KnowledgeID, p.Title, status.(string))
 }

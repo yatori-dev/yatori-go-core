@@ -156,8 +156,6 @@ func (cache *XueXiTUserCache) PullBbsInfoApi(id1, id2, courseId, classId string,
 		fmt.Println(err)
 		return "", err
 	}
-	//fmt.Println(string(body))
-	//utils.CookiesAddNoRepetition(&cache.cookies, res.Cookies())
 
 	return string(body), nil
 }
