@@ -552,7 +552,7 @@ func buildProblemContext(problemTypeStr string, topic entity.ExamTurn) (context 
 func handleSingleChoice(paperTitle, content string, topic entity.ExamTurn) que_core.AIChatMessages {
 	problem := buildProblemHeader(paperTitle, topic.XueXChoiceQue.Type.String(), content)
 	return que_core.AIChatMessages{Messages: []que_core.Message{
-		{Role: "system", Content: "接下来你只需要回答选项对应内容即可...格式：[\"选项1\"]"},
+		{Role: "system", Content: "接下来你只需要以json格式回答选项对应内容即可，比如：[\"选项1\"]"},
 		{Role: "system", Content: "就算你不知道选什么也随机选...无需回答任何解释！！！"},
 		{Role: "system", Content: exampleSingleChoice()},
 		{Role: "user", Content: problem},
@@ -563,7 +563,7 @@ func handleSingleChoice(paperTitle, content string, topic entity.ExamTurn) que_c
 func handleMultipleChoice(paperTitle, context string, topic entity.ExamTurn) que_core.AIChatMessages {
 	problem := buildProblemHeader(paperTitle, topic.XueXChoiceQue.Type.String(), context)
 	return que_core.AIChatMessages{Messages: []que_core.Message{
-		{Role: "system", Content: "接下来你只需要回答选项对应内容即可...格式：[\"选项1\",\"选项2\"]"},
+		{Role: "system", Content: "接下来你只需要以json格式回答选项对应内容即可，比如：[\"选项1\",\"选项2\"]"},
 		{Role: "system", Content: "就算你不知道选什么也随机选...无需回答任何解释！！！"},
 		{Role: "system", Content: exampleMultipleChoice()},
 		{Role: "user", Content: problem},
@@ -574,7 +574,7 @@ func handleMultipleChoice(paperTitle, context string, topic entity.ExamTurn) que
 func handleTrueFalse(paperTitle, content string, topic entity.ExamTurn) que_core.AIChatMessages {
 	problem := buildProblemHeader(paperTitle, topic.XueXJudgeQue.Type.String(), content)
 	return que_core.AIChatMessages{Messages: []que_core.Message{
-		{Role: "system", Content: "接下来你只需要回答“正确”或者“错误”即可...格式：[\"正确\"]"},
+		{Role: "system", Content: "接下来你只需要利用json格式回答“正确”或者“错误”即可，比如：[\"正确\"]"},
 		{Role: "system", Content: "就算你不知道选什么也随机选...无需回答任何解释！！！"},
 		{Role: "system", Content: exampleTrueFalse()},
 		{Role: "user", Content: problem},
@@ -596,7 +596,7 @@ func handleFillInTheBlank(paperTitle, content string, topic entity.ExamTurn) que
 func handleShortAnswer(paperTitle, content string, topic entity.ExamTurn) que_core.AIChatMessages {
 	problem := buildProblemHeader(paperTitle, topic.XueXShortQue.Type.String(), content)
 	return que_core.AIChatMessages{Messages: []que_core.Message{
-		{Role: "system", Content: "这是一个简答题...格式：[\"答案\"]，注意不要拆分答案！！！"},
+		{Role: "system", Content: "这是一个简答题，接下来你只需要以json格式回复答案即可，比如：[\"答案\"]，注意不要拆分答案！！！"},
 		{Role: "system", Content: exampleShortAnswer()},
 		{Role: "user", Content: problem},
 	}}
@@ -640,7 +640,7 @@ B. 1949年10月1日
 C. 1949年09月1日
 D. 2002年10月1日
 
-那么你应该回答选项B的内容："["1949年10月1日"]"`
+那么你应该回答选项B的内容：["1949年10月1日"]`
 }
 
 // 多选题示例
@@ -711,135 +711,3 @@ func exampleEssayAnswer() string {
 
 那么你应该回答（回答字数不能少于500字）： ["设计艺术的构成元素包括点、线、面、形体、色彩、质感与空间等。它们相互依存、互为补充，通过合理的组织和运用，形成和谐、统一而富有美感的设计作品。"]`
 }
-
-//func AIProblemMessage(testPaperTitle string, topic entity.ExamTurn) utils.AIChatMessages {
-//	topicType := topic.ChoiceQue.Type.String()
-//	context := topic.ChoiceQue.Text
-//	for c, q := range topic.ChoiceQue.Options {
-//		context += fmt.Sprintf("\n%v. %v", c, q)
-//	}
-//
-//	problem := `试卷名称：` + testPaperTitle + `
-//题目类型：` + topicType + `
-//题目内容：` + context + "\n"
-//
-//	//选择题
-//	if topicType == "单选题" {
-//		for _, v := range topic.Selects {
-//			problem += v.Num + v.Text + "\n"
-//		}
-//		return utils.AIChatMessages{Messages: []utils.Message{
-//			{
-//				Role:    "user",
-//				Content: `接下来你只需要回答选项对应内容即可，不能回答任何选项无关的任何内容，包括解释以及标点符也不需要。`,
-//			},
-//			{
-//				Role:    "user",
-//				Content: `就算你不知道选什么也随机选输出其选项内容，回答的格式一定要严格为单个数组格式，比如：["选项1"]，注意回复的时候不要带选项字母，你只需回复答案对应格式内容即可，无需回答任何解释！！！`,
-//			},
-//			{
-//				Role: "user",
-//				Content: `比如：` + `
-//				试卷名称：考试
-//				题目类型：单选
-//				题目内容：新中国是什么时候成立的
-//				A. 1949年10月5日
-//				B. 1949年10月1日
-//				C. 1949年09月1日
-//				D. 2002年10月1日
-//				` + `
-//				那么你应该回答选项B的内容：“["1949年10月1日"]”
-//				`,
-//			},
-//			{
-//				Role:    "user",
-//				Content: problem,
-//			},
-//		}}
-//	} else if topicType == "多选题" {
-//		for _, v := range topic.Selects {
-//			problem += v.Num + v.Text + "\n"
-//		}
-//		return utils.AIChatMessages{Messages: []utils.Message{
-//			{
-//				Role:    "user",
-//				Content: `接下来你只需要回答选项对应内容即可，不能回答任何选项无关的任何内容，包括解释以及标点符也不需要。`,
-//			},
-//			{
-//				Role:    "user",
-//				Content: `就算你不知道选什么也随机选输出其选项内容，回答的格式一定要严格为单个数组格式，比如：["选项1","选项2"]，注意回复的时候不要带选项字母，你只需回复答案对应格式内容即可，无需回答任何解释！！！`,
-//			},
-//			{
-//				Role: "user",
-//				Content: `比如：` + `
-//				试卷名称：考试
-//				题目类型：多选题
-//				题目内容：马克思关于资本积累的学说是剩余价值理论的重要组成部分。资本积累是
-//				A. 资本主义扩大再生产的源泉
-//				B. 资本有机构成呈现不断降低趋势的根本原因
-//				C. 社会财富占有两极分化的重要原因
-//				D. 资本主义社会失业现象产生的根源
-//				` + `
-//				那么你应该回答选项A、B、D的内容：“["资本主义扩大再生产的源泉","社会财富占有两极分化的重要原因","资本主义社会失业现象产生的根源"]”
-//				`,
-//			},
-//			{
-//				Role:    "user",
-//				Content: problem,
-//			},
-//		}}
-//	} else if topicType == "判断题" {
-//		for _, v := range topic.Selects {
-//			problem += v.Num + v.Text + "\n"
-//		}
-//		return utils.AIChatMessages{Messages: []utils.Message{
-//			{
-//				Role:    "user",
-//				Content: `接下来你只需要回答“正确”或者“错误”即可，不能回答任何无关的内容，包括解释以及标点符也不需要。`,
-//			},
-//			{
-//				Role:    "user",
-//				Content: `就算你不知道选什么也随机选输出其选项内容，回答的格式一定要严格为单个数组格式，比如：["正确"]，注意回复的时候不要带选项字母，你只需回复答案对应格式内容即可，无需回答任何解释！！！`,
-//			},
-//			{
-//				Role: "user",
-//				Content: `比如：` + `
-//				试卷名称：考试
-//				题目类型：判断
-//				题目内容：新中国是什么时候成立是1949年10月1日吗？
-//				A. 正确
-//				B. 错误
-//				` + `
-//				那么你应该回答选项A的内容：“["正确"]”
-//				`,
-//			},
-//			{
-//				Role:    "user",
-//				Content: problem,
-//			},
-//		}}
-//	} else if topicType == "填空题" { //填空题
-//		return utils.AIChatMessages{Messages: []utils.Message{
-//			{
-//				Role:    "user",
-//				Content: `其中，“（answer_数字）”相关字样的地方是你需要填写答案的地方，现在你只需要按顺序回复我对应每个填空项的答案即可，回答的格式一定要严格为单个数组格式，比如["答案1","答案2"]其他不符合格式的内容无需回复。你只需回复答案对应格式内容即可，无需回答任何解释！！！`,
-//			},
-//			{
-//				Role:    "user",
-//				Content: problem,
-//			},
-//		}}
-//	} else if topicType == "简答题" { //简答
-//		return utils.AIChatMessages{Messages: []utils.Message{
-//			{
-//				Role:    "user",
-//				Content: `这是一个简答题，现在你只需要回复我对应简答题答案即可，回答的格式一定要严格为单个数组格式，比如["答案"]，但是注意你只需要把所有答案填写在一个元素项里面就行，别分开，比如你不能["xxx","zzz"]这样写，你只能["xxxzzz"]这样写，其他不符合格式的内容无需回复。你只需回复答案对应格式内容即可，无需回答任何解释！！！`,
-//			},
-//			{
-//				Role:    "user",
-//				Content: problem,
-//			},
-//		}}
-//	}
-//	return utils.AIChatMessages{Messages: []utils.Message{}}
-//}
