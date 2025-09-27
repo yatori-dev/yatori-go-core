@@ -588,7 +588,7 @@ func MetaAIReplyApi(model, apiKey string, aiChatMessages AIChatMessages, retryNu
 	}
 	response, ok := responseMap["answer"].(string)
 	if !ok || len(response) == 0 {
-		return "", fmt.Errorf(responseMap["answer"].(string))
+		return "", fmt.Errorf(string(body))
 	}
 	return response, nil
 }
