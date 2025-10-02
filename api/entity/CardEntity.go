@@ -527,7 +527,7 @@ func (p *PointDocumentDto) AttachmentsDetection(attachment interface{}) (bool, e
 			if (p.ObjectID != "" && objectid == p.ObjectID) || (jobid != nil && p.JobID == jobid) {
 				break
 			}
-		} else if typeStr == "document" {
+		} else if typeStr == "document" || typeStr == "insertdoc" {
 			property, ok := att["property"].(map[string]interface{})
 			//if strings.Contains(p.Title, "二进制的由来.pdf") || p.KnowledgeID == 1008383209 {
 			//	fmt.Println("断点")
@@ -538,13 +538,18 @@ func (p *PointDocumentDto) AttachmentsDetection(attachment interface{}) (bool, e
 			if att["job"] != nil {
 				p.IsJob = att["job"].(bool)
 			}
+			jobid := property["jobid"]
+
 			objectid := property["objectid"]
 			if objectid == p.ObjectID {
 				p.Title = property["name"].(string)
-				if property["jobid"] != nil {
-					p.JobID = property["jobid"].(string)
-				}
+				//if property["jobid"] != nil {
+				//	p.JobID = property["jobid"].(string)
+				//}
 				p.Jtoken = att["jtoken"].(string)
+			}
+			if (p.ObjectID != "" && objectid == p.ObjectID) || (jobid != nil && p.JobID == jobid) {
+				break
 			}
 		}
 	}

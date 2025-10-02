@@ -44,7 +44,6 @@ func (cache *TtcdwUserCache) TtcdwLoginApi() error {
 	req.Header.Add("Host", "www.ttcdw.cn")
 	req.Header.Add("Connection", "keep-alive")
 	req.Header.Add("Content-Type", "application/x-www-form-urlencoded")
-	//req.Header.Add("Cookie", "HWWAFSESID=c92a3799bef8ba22d2; HWWAFSESTIME=1734968345848")
 
 	res, err := client.Do(req)
 	if err != nil {

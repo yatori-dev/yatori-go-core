@@ -463,7 +463,7 @@ func TestXueXiToFlushCourse(t *testing.T) {
 	utils.YatoriCoreInit()
 	//测试账号
 	setup()
-	user := global.Config.Users[42]
+	user := global.Config.Users[43]
 
 	userCache := xuexitongApi.XueXiTUserCache{
 		Name:     user.Account,
@@ -481,7 +481,7 @@ func TestXueXiToFlushCourse(t *testing.T) {
 		//if course.CourseName != "戏剧鉴赏" {
 		//	continue
 		//}
-		if course.CourseName != "大学生职业素养" {
+		if course.CourseName != "数控加工与编程" {
 			continue
 		}
 		// 6c444b8d5c6203ee2f2aef4b76f5b2ce qrcEnc
@@ -532,7 +532,7 @@ func TestXueXiToFlushCourse(t *testing.T) {
 			log.Printf("ID.%d(%s/%s)正在执行任务点\n",
 				item,
 				pointAction.Knowledge[index].Label, pointAction.Knowledge[index].Name)
-			if pointAction.Knowledge[index].Label != "3.3.2" {
+			if pointAction.Knowledge[index].Label != "3.2.2" {
 				//fmt.Println("断点")
 				continue
 			}
@@ -569,7 +569,7 @@ func TestXueXiToFlushCourse(t *testing.T) {
 				}
 			}
 			// 文档刷取
-			if documentDTOs != nil && false {
+			if documentDTOs != nil && true {
 				for _, documentDTO := range documentDTOs {
 					card, _, err := xuexitong.PageMobileChapterCardAction(
 						&userCache, key, courseId, documentDTO.KnowledgeID, documentDTO.CardIndex, course.Cpi)

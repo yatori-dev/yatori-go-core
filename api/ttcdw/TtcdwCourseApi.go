@@ -50,6 +50,7 @@ func (cache *TtcdwUserCache) PullProjectApi(retry int, lastErr error) (string, e
 		fmt.Println(err)
 		return "", err
 	}
+	utils.CookiesAddNoRepetition(&cache.cookies, req.Cookies())
 	return string(body), nil
 }
 
@@ -85,6 +86,7 @@ func (cache *TtcdwUserCache) PullClassRoomApi(courseProjectId string, classId st
 		return "", err
 	}
 	//fmt.Println(string(body))
+	utils.CookiesAddNoRepetition(&cache.cookies, req.Cookies())
 	return string(body), nil
 }
 func (cache *TtcdwUserCache) PullCourseInfoApi(segmentId, courseId string, retry int, lastErr error) (string, error) {
@@ -117,6 +119,7 @@ func (cache *TtcdwUserCache) PullCourseInfoApi(segmentId, courseId string, retry
 	if err != nil {
 		return "", nil
 	}
+	utils.CookiesAddNoRepetition(&cache.cookies, req.Cookies())
 	return string(body), nil
 }
 
@@ -151,6 +154,7 @@ func (cache *TtcdwUserCache) PullCourseApi(segmentId, itemId string, retry int, 
 	if err != nil {
 		return "", err
 	}
+	utils.CookiesAddNoRepetition(&cache.cookies, req.Cookies())
 	return string(body), nil
 }
 
@@ -187,6 +191,7 @@ func (cache *TtcdwUserCache) PullChapterListHtmlApi(cid string, retry int, lastE
 	if err != nil {
 		return "", err
 	}
+	utils.CookiesAddNoRepetition(&cache.cookies, req.Cookies())
 	return string(body), nil
 }
 
@@ -226,6 +231,7 @@ func (cache *TtcdwUserCache) PullGetResApi(sectionId string, retry int, lastErr 
 	if err != nil {
 		return "", err
 	}
+	utils.CookiesAddNoRepetition(&cache.cookies, req.Cookies())
 	return string(body), nil
 }
 
