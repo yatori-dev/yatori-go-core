@@ -5,6 +5,7 @@ import (
 	"os"
 	"strings"
 
+	ddddocr "github.com/Changbaiqi/ddddocr-go/utils"
 	"github.com/thedevsaddam/gojsonq"
 	ort "github.com/yalue/onnxruntime_go"
 	yinghuaApi "github.com/yatori-dev/yatori-go-core/api/yinghua"
@@ -21,11 +22,12 @@ func YingHuaLoginAction(cache *yinghuaApi.YingHuaUserCache) error {
 		if path == "" {                          //如果path为空，那么可能是账号问题
 			return errors.New("无法正常获取对应网站验证码，请检查对应url是否正常")
 		}
-		img, _ := utils.ReadImg(path)                                  //读取验证码图片
-		codeResult := utils.AutoVerification(img, ort.NewShape(1, 18)) //自动识别
-		utils.DeleteFile(path)                                         //删除验证码文件
-		cache.SetVerCode(codeResult)                                   //填写验证码
-		jsonStr, _ := cache.LoginApi(10, nil)                          //执行登录
+		img, _ := utils.ReadImg(path) //读取验证码图片
+		//codeResult := utils.AutoVerification(img, ort.NewShape(1, 18)) //自动识别
+		codeResult := ddddocr.SemiOCRVerification(img, ort.NewShape(1, 18))
+		utils.DeleteFile(path)                //删除验证码文件
+		cache.SetVerCode(codeResult)          //填写验证码
+		jsonStr, _ := cache.LoginApi(10, nil) //执行登录
 		log.Print(log.DEBUG, "["+cache.Account+"] "+"LoginAction---"+jsonStr)
 		if gojsonq.New().JSONString(jsonStr).Find("msg") == "验证码有误！" {
 			continue

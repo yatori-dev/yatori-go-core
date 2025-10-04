@@ -3,6 +3,7 @@ package weiban
 import (
 	"fmt"
 
+	ddddocr "github.com/Changbaiqi/ddddocr-go/utils"
 	"github.com/thedevsaddam/gojsonq"
 	ort "github.com/yalue/onnxruntime_go"
 	"github.com/yatori-dev/yatori-go-core/api/weiban"
@@ -39,7 +40,8 @@ func WeiBanLoginAction(cache *weiban.WeiBanCache) (string, error) {
 		return "", err
 	}
 	img, _ := utils.ReadImg(codePath) //读取验证码图片
-	verification := utils.AutoVerification(img, ort.NewShape(1, 18))
+	//verification := utils.AutoVerification(img, ort.NewShape(1, 18))
+	verification := ddddocr.SemiOCRVerification(img, ort.NewShape(1, 18))
 	cache.VerifyCode = verification
 
 	api, err := cache.LoginApi()

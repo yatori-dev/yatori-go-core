@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"testing"
 
+	ddddocr "github.com/Changbaiqi/ddddocr-go/utils"
 	"github.com/thedevsaddam/gojsonq"
 	ort "github.com/yalue/onnxruntime_go"
 	"github.com/yatori-dev/yatori-go-core/api/cela"
@@ -29,10 +30,10 @@ func Test_MD5(t *testing.T) {
 	if err != nil {
 		t.Error(err)
 	}
-	img, _ := utils.ReadImg(captchaPath)                           //读取验证码图片
-	codeResult := utils.AutoVerification(img, ort.NewShape(1, 25)) //自动识别
-	cache.Code = codeResult                                        //设置验证码
-	checkResult, err := cache.CheckCaptchaApi()                    //检测验证码是否过了
+	img, _ := utils.ReadImg(captchaPath)                                //读取验证码图片
+	codeResult := ddddocr.SemiOCRVerification(img, ort.NewShape(1, 25)) //自动识别
+	cache.Code = codeResult                                             //设置验证码
+	checkResult, err := cache.CheckCaptchaApi()                         //检测验证码是否过了
 	if err != nil {
 		t.Error(err)
 	}

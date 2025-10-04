@@ -10,6 +10,7 @@ import (
 	"strconv"
 	"strings"
 
+	ddddocr "github.com/Changbaiqi/ddddocr-go/utils"
 	"github.com/thedevsaddam/gojsonq"
 	ort "github.com/yalue/onnxruntime_go"
 	"github.com/yatori-dev/yatori-go-core/api/entity"
@@ -85,9 +86,10 @@ func ChapterFetchCardsAction(
 				if codePath == "" { //如果path为空，那么可能是账号问题
 					return nil, nil, errors.New("无法正常获取对应网站验证码，请检查对应url是否正常")
 				}
-				img, _ := utils.ReadImg(codePath)                              //读取验证码图片
-				codeResult := utils.AutoVerification(img, ort.NewShape(1, 23)) //自动识别
-				utils.DeleteFile(codePath)                                     //删除验证码文件
+				img, _ := utils.ReadImg(codePath) //读取验证码图片
+				//codeResult := utils.AutoVerification(img, ort.NewShape(1, 23)) //自动识别
+				codeResult := ddddocr.SemiOCRVerification(img, ort.NewShape(1, 23))
+				utils.DeleteFile(codePath) //删除验证码文件
 				status, err1 := cache.XueXiTPassVerificationCode(codeResult, 5, nil)
 				//fmt.Println(codeResult)
 				//fmt.Println(status)
