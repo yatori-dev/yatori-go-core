@@ -22,6 +22,7 @@ require (
 )
 
 require (
+	github.com/Changbaiqi/ddddocr-go v0.0.1 // indirect
 	github.com/andybalholm/cascadia v1.3.2 // indirect
 	github.com/dlclark/regexp2 v1.11.4 // indirect
 	github.com/fsnotify/fsnotify v1.8.0 // indirect
