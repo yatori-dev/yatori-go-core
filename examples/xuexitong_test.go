@@ -532,7 +532,7 @@ func TestXueXiToFlushCourse(t *testing.T) {
 			log.Printf("ID.%d(%s/%s)正在执行任务点\n",
 				item,
 				pointAction.Knowledge[index].Label, pointAction.Knowledge[index].Name)
-			if pointAction.Knowledge[index].Label != "3.2.2" {
+			if pointAction.Knowledge[index].Label != "3.3.2" {
 				//fmt.Println("断点")
 				continue
 			}
@@ -547,7 +547,7 @@ func TestXueXiToFlushCourse(t *testing.T) {
 			}
 
 			// 视频刷取
-			if videoDTOs != nil && false {
+			if videoDTOs != nil && true {
 				for _, videoDTO := range videoDTOs {
 					card, enc, err := xuexitong.PageMobileChapterCardAction(
 						&userCache, key, courseId, videoDTO.KnowledgeID, videoDTO.CardIndex, course.Cpi)
@@ -555,9 +555,9 @@ func TestXueXiToFlushCourse(t *testing.T) {
 						log.Fatal(err)
 					}
 					videoDTO.AttachmentsDetection(card)
-					if videoDTO.IsPassed == true { //过滤完成的
-						continue
-					}
+					//if videoDTO.IsPassed == true { //过滤完成的
+					//	continue
+					//}
 					if !videoDTO.IsJob {
 						fmt.Println("(", videoDTO.Title, ")", "该视频为非任务点，已自动跳过")
 						continue
@@ -569,7 +569,7 @@ func TestXueXiToFlushCourse(t *testing.T) {
 				}
 			}
 			// 文档刷取
-			if documentDTOs != nil && true {
+			if documentDTOs != nil && false {
 				for _, documentDTO := range documentDTOs {
 					card, _, err := xuexitong.PageMobileChapterCardAction(
 						&userCache, key, courseId, documentDTO.KnowledgeID, documentDTO.CardIndex, course.Cpi)
@@ -698,7 +698,7 @@ func TestXueXiToFlushCourse(t *testing.T) {
 			}
 
 			//直播任务
-			if bbsDTOs != nil && true {
+			if bbsDTOs != nil && false {
 				for _, bbsDTO := range bbsDTOs {
 					card, _, err := xuexitong.PageMobileChapterCardAction(
 						&userCache, key, courseId, bbsDTO.KnowledgeID, bbsDTO.CardIndex, course.Cpi)
