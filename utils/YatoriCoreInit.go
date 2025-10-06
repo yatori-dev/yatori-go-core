@@ -3,23 +3,37 @@ package utils
 import (
 	"embed"
 	_ "embed"
+	"io/fs"
+	"io/ioutil"
 	"log"
 	"os"
+	"path/filepath"
 
-	"github.com/Changbaiqi/ddddocr-go/utils"
+	ddddocr "github.com/Changbaiqi/ddddocr-go/utils"
 )
 
 // 首次调用必须要先进行初始化
+//
+//go:embed assets/tencentCollect.exe
+//go:embed assets/tencentEks.exe
+//go:embed assets/tencentPowSolve.exe
+//go:embed assets/node_modules/jsdom/**/*
 var assets embed.FS
 
 // 数据列表
-var assetsList = []string{}
+var assetsList = []string{
+	"tencentCollect.exe",
+	"tencentEks.exe",
+	"tencentPowSolve.exe",
+}
 
 func YatoriCoreInit() {
 	//加载必要的文件资源
 	loadAssets()
 	//加载AI环境
 	loadAiEnvironment()
+	//加载必要nodejs模块
+	loadNodeModules()
 }
 
 // 加载必要的文件资源
@@ -53,5 +67,43 @@ func writeAssetsToDisk() {
 // 加载AI环境
 func loadAiEnvironment() {
 	//初始化AI库
-	utils.DDDDOcrCoreInit()
+	ddddocr.DDDDOcrCoreInit()
+}
+
+// 加载nodejs必要模块
+func loadNodeModules() {
+	targetRoot := "assets/node_modules"
+
+	// 遍历 embed.FS 中的 node_modules 文件
+	err := fs.WalkDir(assets, "assets/node_modules", func(path string, d fs.DirEntry, err error) error {
+		if err != nil {
+			return err
+		}
+
+		// 计算相对路径
+		relPath, err := filepath.Rel("assets/node_modules", path)
+		if err != nil {
+			return err
+		}
+
+		targetPath := filepath.Join(targetRoot, relPath)
+
+		if d.IsDir() {
+			// 创建目录
+			return os.MkdirAll(targetPath, os.ModePerm)
+		} else {
+			// 写文件
+			data, err := assets.ReadFile(path)
+			if err != nil {
+				return err
+			}
+			return ioutil.WriteFile(targetPath, data, 0644)
+		}
+	})
+
+	if err != nil {
+		log.Fatalf("加载 node_modules 失败: %v", err)
+	}
+
+	log.Println("node_modules 已成功加载到 assets 文件夹")
 }

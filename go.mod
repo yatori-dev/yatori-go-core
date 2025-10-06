@@ -3,9 +3,10 @@ module github.com/yatori-dev/yatori-go-core
 go 1.23.4
 
 require (
-	github.com/Changbaiqi/ddddocr-go v0.0.2
+	github.com/Changbaiqi/ddddocr-go v0.0.3
 	github.com/PuerkitoBio/goquery v1.10.0
 	github.com/dop251/goja v0.0.0-20250630131328-58d95d85e994
+	github.com/fogleman/gg v1.3.0
 	github.com/google/uuid v1.6.0
 	github.com/makiuchi-d/gozxing v0.1.1
 	github.com/nfnt/resize v0.0.0-20180221191011-83c6a9932646
@@ -26,7 +27,6 @@ require (
 	github.com/andybalholm/cascadia v1.3.2 // indirect
 	github.com/disintegration/imaging v1.6.2 // indirect
 	github.com/dlclark/regexp2 v1.11.4 // indirect
-	github.com/fogleman/gg v1.3.0 // indirect
 	github.com/fsnotify/fsnotify v1.8.0 // indirect
 	github.com/go-sourcemap/sourcemap v2.1.3+incompatible // indirect
 	github.com/golang/freetype v0.0.0-20170609003504-e2365dfdc4a0 // indirect
