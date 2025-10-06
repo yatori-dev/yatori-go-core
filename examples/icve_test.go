@@ -2,6 +2,7 @@ package examples
 
 import (
 	"fmt"
+	log2 "log"
 	"testing"
 
 	action "github.com/yatori-dev/yatori-go-core/aggregation/icve"
@@ -51,12 +52,15 @@ func TestIcveCourseList(t *testing.T) {
 			fmt.Println(err1)
 		}
 		for _, node := range nodeList {
+			if node.Speed >= 100 {
+				continue
+			}
 			fmt.Println(node)
-			_, err2 := action.SubmitZYKStudyTimeAction(&cache, node)
+			result, err2 := action.SubmitZYKStudyTimeAction(&cache, node)
 			if err2 != nil {
 				fmt.Println(err2)
 			}
-
+			log2.Printf("(%s)学习状态：%s", node.Name, result)
 		}
 	}
 	//userCache.CourseListApi()

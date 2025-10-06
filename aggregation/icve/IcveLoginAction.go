@@ -5,11 +5,12 @@ import (
 	"fmt"
 	"image"
 	"log"
+	"math/rand"
 	"strconv"
 	"strings"
+	"time"
 
 	ddddocr "github.com/Changbaiqi/ddddocr-go/utils"
-	"github.com/fogleman/gg"
 	"github.com/thedevsaddam/gojsonq"
 	"github.com/yatori-dev/yatori-go-core/api/icve"
 )
@@ -35,15 +36,16 @@ func IcveLoginAction(cache *icve.IcveUserCache) error {
 		if err != nil {
 			return err
 		}
-
+		rand.Seed(time.Now().UnixNano())
+		randNum := rand.Intn(85000) + 5000
 		img, err := icve.PullCapImgApi(data)
-		gg.SavePNG("./assets/code/img.png", img) //保存图片
-		cache.PullVMApi(data, "./assets/tencentVM.js")
+		//gg.SavePNG("./assets/code/img.png", img) //保存图片
+
+		cache.PullVMApi(data, "./assets/tencentVM"+fmt.Sprintf("%d", randNum)+".js")
 
 		posData := getDetectionData(posWords, img)
 		//fmt.Println(posData)
-		//posData := `[{"elem_id":1,"type":"DynAnswerType_POS","data":"216,251"},{"elem_id":2,"type":"DynAnswerType_POS","data":"131,340"},{"elem_id":3,"type":"DynAnswerType_POS","data":"218,125"}]`
-		collect, eks := icve.GetCollectAndEKS(`assets\tencentVM.js`)
+		collect, eks := icve.GetCollectAndEKS(`assets\tencentVM` + fmt.Sprintf("%d", randNum) + `.js`)
 		result, err2 := cache.SubmitVerApi(data, collect, eks, posData)
 		if err2 != nil {
 			return err2

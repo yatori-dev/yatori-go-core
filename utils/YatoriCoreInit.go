@@ -105,5 +105,5 @@ func loadNodeModules() {
 		log.Fatalf("加载 node_modules 失败: %v", err)
 	}
 
-	log.Println("node_modules 已成功加载到 assets 文件夹")
+	//log.Println("node_modules 已成功加载到 assets 文件夹")
 }

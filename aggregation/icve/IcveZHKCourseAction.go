@@ -21,7 +21,7 @@ type IcveCourse struct {
 	CourseType   string //课程类型，是资源库课程，还是职教云课程
 	CourseInfoId string
 	WeekStr      string //是否进行中
-
+	Status       string //课程状态，3代表已结束（一般就不学这课程了，直接跳过）
 }
 
 // 课程任务节点
@@ -83,6 +83,10 @@ func PullZYKCourseAction(cache *icve.IcveUserCache) ([]IcveCourse, error) {
 				weekStr := courseData["weekStr"]
 				if weekStr != nil {
 					course.WeekStr = weekStr.(string)
+				}
+				status := courseData["status"]
+				if status != nil {
+					course.Status = status.(string)
 				}
 				courseList = append(courseList, course)
 			}
@@ -217,15 +221,17 @@ func SubmitZYKStudyTimeAction(cache *icve.IcveUserCache, node IcveCourseNode) (s
 	//参数完善-------------------
 	err2 := GetNodeDurationAction(cache, &node)
 	if err2 != nil {
-		log2.Fatal(err2)
+		//log2.Fatal(err2)
+		return "", err2
 	}
 	//学习
-	api, err := cache.SubmitZYKStudyTimeApi(node.CourseInfoId, "", node.ParentId, int(node.TotalNum), node.Id, cache.UserId, int(node.TotalNum), int(node.TotalNum), int(node.TotalNum))
+	studyResult, err := cache.SubmitZYKStudyTimeApi(node.CourseInfoId, "", node.ParentId, int(node.TotalNum), node.Id, cache.UserId, int(node.TotalNum), int(node.TotalNum), int(node.TotalNum))
 	if err != nil {
-		log2.Fatal(err)
+		//log2.Fatal(err)
+		return "", err
 	}
-	fmt.Println(api)
-	return "", nil
+	//fmt.Println(api)
+	return studyResult, nil
 }
 
 // 获取任务点时长

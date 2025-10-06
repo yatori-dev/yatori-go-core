@@ -292,8 +292,8 @@ func GetCollectAndEKS(fileName string) (string, string) {
 	if err1 != nil {
 		fmt.Println(err1)
 	}
-	fmt.Println(string(output))
-	fmt.Println(string(output1))
+	//fmt.Println(string(output))
+	//fmt.Println(string(output1))
 	//output1 := ""
 	return strings.ReplaceAll(string(output), "\n", ""), strings.ReplaceAll(string(output1), "\n", "")
 }

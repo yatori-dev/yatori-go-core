@@ -92,7 +92,7 @@ func (cache *IcveUserCache) PullZykCourse1Api() (string, error) {
 
 // 资源库课程接口2
 func (cache *IcveUserCache) PullZykCourse2Api() (string, error) {
-	url := "https://zyk.icve.com.cn/prod-api/teacher/courseList/myCourseList?pageSize=100&pageNum=1&flag=2"
+	url := "https://zyk.icve.com.cn/prod-api/teacher/courseList/myCourseList?pageSize=100&pageNum=1&flag=1"
 	method := "GET"
 
 	client := &http.Client{}
