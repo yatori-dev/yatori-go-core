@@ -52,6 +52,11 @@ func TestIcveCourseList(t *testing.T) {
 		}
 		for _, node := range nodeList {
 			fmt.Println(node)
+			_, err2 := action.SubmitZYKStudyTimeAction(&cache, node)
+			if err2 != nil {
+				fmt.Println(err2)
+			}
+
 		}
 	}
 	//userCache.CourseListApi()

@@ -19,7 +19,10 @@ type IcveUserCache struct {
 	Token          string
 	AccessToken    string //智慧职教AccessToken的Token
 	ZYKAccessToken string //资源库AccessToken
-	sign           string //签名
+	UserId         string //用户ID
+	NickName       string //用户名称
+	PhoneNumber    string //电话号码
+	Sex            string //性别
 }
 
 // IcveLoginApi 智慧职教登录后拉取cookie接口
@@ -127,7 +130,7 @@ func (cache *IcveUserCache) IcveAccessTokenApi() (string, error) {
 	return string(body), err
 }
 
-// 拉取Authentication的另一个接口，一般用这个
+// 拉取资源课Authentication的接口
 func (cache *IcveUserCache) IcveZYKAccessTokenApi() (string, error) {
 
 	url := "https://zyk.icve.com.cn/prod-api/auth/passLogin?token=" + cache.Token
@@ -144,6 +147,44 @@ func (cache *IcveUserCache) IcveZYKAccessTokenApi() (string, error) {
 	req.Header.Add("Accept", "*/*")
 	req.Header.Add("Host", "www.icve.com.cn")
 	req.Header.Add("Connection", "keep-alive")
+
+	res, err := client.Do(req)
+	if err != nil {
+		fmt.Println(err)
+		return "", err
+	}
+	defer res.Body.Close()
+
+	body, err := ioutil.ReadAll(res.Body)
+	if err != nil {
+		fmt.Println(err)
+		return "", err
+	}
+	utils.CookiesAddNoRepetition(&cache.Cookies, res.Cookies())
+	return string(body), err
+}
+
+// 拉取用户信息
+func (cache *IcveUserCache) IcveZYKPullUserInfoApi() (string, error) {
+
+	url := "https://zyk.icve.com.cn/prod-api/system/user/getInfo"
+	method := "GET"
+
+	client := &http.Client{}
+	req, err := http.NewRequest(method, url, nil)
+
+	if err != nil {
+		fmt.Println(err)
+		return "", err
+	}
+	req.Header.Add("User-Agent", utils.DefaultUserAgent)
+	req.Header.Add("Accept", "*/*")
+	req.Header.Add("Host", "www.icve.com.cn")
+	req.Header.Add("Connection", "keep-alive")
+	req.Header.Add("Authorization", "Bearer "+cache.ZYKAccessToken)
+	for _, cookie := range cache.Cookies {
+		req.AddCookie(cookie)
+	}
 
 	res, err := client.Do(req)
 	if err != nil {

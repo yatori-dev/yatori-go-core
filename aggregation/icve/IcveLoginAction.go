@@ -85,7 +85,32 @@ func IcveLoginAction(cache *icve.IcveUserCache) error {
 	if err1 != nil {
 		return err1
 	}
-	accessToken, err := cache.IcveAccessTokenApi()
+	//主页的token获取
+	//accessToken, err := cache.IcveAccessTokenApi()
+	//if err != nil {
+	//	return err
+	//}
+	//tokenCode := gojsonq.New().JSONString(accessToken).Find("code")
+	//if tokenCode == nil {
+	//	return errors.New(accessToken)
+	//}
+	////拉取鉴权token失败的话
+	//if int(tokenCode.(float64)) != 200 {
+	//	return errors.New(accessToken)
+	//}
+	//cache.AccessToken = gojsonq.New().JSONString(accessToken).Find("data").(string)
+
+	err2 := icveZYKAction(cache)
+	if err2 != nil {
+		return err2
+	}
+	return nil
+}
+
+// 资源库登录初始化模块
+func icveZYKAction(cache *icve.IcveUserCache) error {
+	//资源库token获取----------------------------
+	accessToken, err := cache.IcveZYKAccessTokenApi()
 	if err != nil {
 		return err
 	}
@@ -97,22 +122,23 @@ func IcveLoginAction(cache *icve.IcveUserCache) error {
 	if int(tokenCode.(float64)) != 200 {
 		return errors.New(accessToken)
 	}
-	cache.AccessToken = gojsonq.New().JSONString(accessToken).Find("data").(string)
-
-	//资源库token获取
-	accessToken, err = cache.IcveZYKAccessTokenApi()
+	cache.ZYKAccessToken = gojsonq.New().JSONString(accessToken).Find("data.access_token").(string)
+	//加载个人信息------------------------------
+	resultInfo, err := cache.IcveZYKPullUserInfoApi()
 	if err != nil {
 		return err
 	}
-	tokenCode = gojsonq.New().JSONString(accessToken).Find("code")
-	if tokenCode == nil {
-		return errors.New(accessToken)
+	statusCode := gojsonq.New().JSONString(accessToken).Find("code")
+	if statusCode == nil {
+		return errors.New(resultInfo)
 	}
-	//拉取鉴权token失败的话
-	if int(tokenCode.(float64)) != 200 {
-		return errors.New(accessToken)
+	if int(statusCode.(float64)) != 200 {
+		return errors.New(resultInfo)
 	}
-	cache.ZYKAccessToken = gojsonq.New().JSONString(accessToken).Find("data.access_token").(string)
+	cache.UserId = gojsonq.New().JSONString(resultInfo).Find("user.userId").(string)
+	cache.NickName = gojsonq.New().JSONString(resultInfo).Find("user.nickName").(string)
+	cache.PhoneNumber = gojsonq.New().JSONString(resultInfo).Find("user.phonenumber").(string)
+	cache.Sex = gojsonq.New().JSONString(resultInfo).Find("user.sex").(string)
 	return nil
 }
 

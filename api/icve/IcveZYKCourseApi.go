@@ -52,8 +52,8 @@ func (cache *IcveUserCache) CourseListApi() {
 	fmt.Println(string(body))
 }
 
-// 资源库课程
-func (cache *IcveUserCache) PullZykCourseApi() (string, error) {
+// 资源库课程接口1
+func (cache *IcveUserCache) PullZykCourse1Api() (string, error) {
 	url := "https://www.icve.com.cn/prod-api/zyk/myLearn?pageSize=100&pageNum=1&queryType=2&selectType=1"
 	method := "GET"
 
@@ -65,6 +65,44 @@ func (cache *IcveUserCache) PullZykCourseApi() (string, error) {
 		return "", err
 	}
 	req.Header.Add("Authorization", "Bearer "+cache.AccessToken)
+
+	for _, cookie := range cache.Cookies {
+		req.AddCookie(cookie)
+	}
+	req.Header.Add("User-Agent", utils.DefaultUserAgent)
+	req.Header.Add("Accept", "*/*")
+	req.Header.Add("Host", "www.icve.com.cn")
+	req.Header.Add("Connection", "keep-alive")
+
+	res, err := client.Do(req)
+	if err != nil {
+		fmt.Println(err)
+		return "", err
+	}
+	defer res.Body.Close()
+
+	body, err := ioutil.ReadAll(res.Body)
+	if err != nil {
+		fmt.Println(err)
+		return "", err
+	}
+	//fmt.Println(string(body))
+	return string(body), nil
+}
+
+// 资源库课程接口2
+func (cache *IcveUserCache) PullZykCourse2Api() (string, error) {
+	url := "https://zyk.icve.com.cn/prod-api/teacher/courseList/myCourseList?pageSize=100&pageNum=1&flag=2"
+	method := "GET"
+
+	client := &http.Client{}
+	req, err := http.NewRequest(method, url, nil)
+
+	if err != nil {
+		fmt.Println(err)
+		return "", err
+	}
+	req.Header.Add("Authorization", "Bearer "+cache.ZYKAccessToken)
 
 	for _, cookie := range cache.Cookies {
 		req.AddCookie(cookie)
@@ -129,7 +167,7 @@ func (cache *IcveUserCache) PullRootNodeListApi(courseInfo string) (string, erro
 }
 
 // 拉取课程根节点列表
-func (cache *IcveUserCache) PullNodeListApi(level int, parentId, courseInfo string) (string, error) {
+func (cache *IcveUserCache) PullZykNodeListApi(level int, parentId, courseInfo string) (string, error) {
 
 	url := "https://zyk.icve.com.cn/prod-api/teacher/courseContent/studyList?level=" + fmt.Sprintf("%d", level) + "&parentId=" + parentId + "&courseInfoId=" + courseInfo
 	method := "GET"
@@ -165,8 +203,81 @@ func (cache *IcveUserCache) PullNodeListApi(level int, parentId, courseInfo stri
 	return string(body), nil
 }
 
+// 拉取任务点详细信息
+func (cache *IcveUserCache) PullZykNodeInfoApi(sourceId string) (string, error) {
+
+	url := "https://zyk.icve.com.cn/prod-api/teacher/courseContent/" + sourceId
+	method := "GET"
+
+	client := &http.Client{}
+	req, err := http.NewRequest(method, url, nil)
+
+	if err != nil {
+		fmt.Println(err)
+		return "", err
+	}
+	req.Header.Add("User-Agent", utils.DefaultUserAgent)
+	req.Header.Add("Accept", "*/*")
+	req.Header.Add("Host", "zyk.icve.com.cn")
+	req.Header.Add("Connection", "keep-alive")
+	req.Header.Add("Authorization", "Bearer "+cache.ZYKAccessToken)
+	for _, cookie := range cache.Cookies {
+		req.AddCookie(cookie)
+	}
+
+	res, err := client.Do(req)
+	if err != nil {
+		fmt.Println(err)
+		return "", err
+	}
+	defer res.Body.Close()
+
+	body, err := ioutil.ReadAll(res.Body)
+	if err != nil {
+		fmt.Println(err)
+		return "", err
+	}
+	return string(body), nil
+
+}
+
+// 获取时长Api
+func (cache *IcveUserCache) PullZykNodeDurationApi(fileUrl string) (string, error) {
+
+	url := "https://upload.icve.com.cn/" + fileUrl + "/status"
+	method := "POST"
+
+	client := &http.Client{}
+	req, err := http.NewRequest(method, url, nil)
+
+	if err != nil {
+		fmt.Println(err)
+		return "", err
+	}
+	req.Header.Add("User-Agent", "Apifox/1.0.0 (https://apifox.com)")
+	req.Header.Add("Accept", "*/*")
+	req.Header.Add("Host", "upload.icve.com.cn")
+	req.Header.Add("Connection", "keep-alive")
+	req.Header.Add("Cookie", "acw_tc=1a0c380717597778746754908e0d86367b753f74c585e515faa32ee572a5e1; SERVERID=27b9eb8d6e551a69b5bfbbc79124ceca|1759777888|1759777874")
+
+	res, err := client.Do(req)
+	if err != nil {
+		fmt.Println(err)
+		return "", err
+	}
+	defer res.Body.Close()
+
+	body, err := ioutil.ReadAll(res.Body)
+	if err != nil {
+		fmt.Println(err)
+		return "", err
+	}
+	//fmt.Println(string(body))
+	return string(body), nil
+}
+
 // 资源库提交学习
-func (cache *IcveUserCache) ZYKSubmitStudyTime(courseInfo string, id string, parentId string, studyTime int, sourceId string, studentId string, actualNum int, lastNum int, totalNum int) (string, error) {
+func (cache *IcveUserCache) SubmitZYKStudyTimeApi(courseInfo string, id string, parentId string, studyTime int, sourceId string, studentId string, actualNum int, lastNum int, totalNum int) (string, error) {
 
 	url := "https://zyk.icve.com.cn/prod-api/teacher/studyRecord"
 	method := "PUT"
