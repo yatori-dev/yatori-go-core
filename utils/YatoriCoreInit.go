@@ -15,7 +15,6 @@ import (
 // 首次调用必须要先进行初始化
 //
 //go:embed assets/tencentCollect.exe
-//go:embed assets/tencentEks.exe
 //go:embed assets/tencentPowSolve.exe
 //go:embed assets/node_modules/jsdom/**/*
 var assets embed.FS
@@ -23,7 +22,6 @@ var assets embed.FS
 // 数据列表
 var assetsList = []string{
 	"tencentCollect.exe",
-	"tencentEks.exe",
 	"tencentPowSolve.exe",
 }
 

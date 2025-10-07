@@ -32,7 +32,7 @@ func TestIcveLogin(t *testing.T) {
 func TestIcveCourseList(t *testing.T) {
 	utils.YatoriCoreInit()
 	setup()
-	user := global.Config.Users[44]
+	user := global.Config.Users[45]
 	cache := icve.IcveUserCache{
 		Account:  user.Account,
 		Password: user.Password,

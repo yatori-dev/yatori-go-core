@@ -216,9 +216,8 @@ func (cache *IcveUserCache) PullVMApi(data CapUnionData, path string) (string, e
 		return "", err
 	}
 	//fmt.Println(string(body))
-	utils.SaveTextToFile(path, string(body), false, 0644)
 	utils.CookiesAddNoRepetition(&cache.Cookies, res.Cookies())
-	return "", nil
+	return string(body), nil
 }
 
 func (cache *IcveUserCache) SubmitVerApi(data CapUnionData, collect string, eks string, posData string) (string, error) {
@@ -281,19 +280,13 @@ func powSolve(data CapUnionData, timeout int64) (string, string) {
 }
 
 // 拉取Collect和eks参数
-func GetCollectAndEKS(fileName string) (string, string) {
+func GetCollect(fileName string) string {
 	cmd := exec.Command(`assets\tencentCollect.exe`, fileName)
 	output, err := cmd.Output()
 	if err != nil {
 		fmt.Println(err)
 	}
-	cmd1 := exec.Command(`assets\tencentEks.exe`, fileName)
-	output1, err1 := cmd1.Output()
-	if err1 != nil {
-		fmt.Println(err1)
-	}
 	//fmt.Println(string(output))
-	//fmt.Println(string(output1))
 	//output1 := ""
-	return strings.ReplaceAll(string(output), "\n", ""), strings.ReplaceAll(string(output1), "\n", "")
+	return strings.ReplaceAll(string(output), "\n", "")
 }
