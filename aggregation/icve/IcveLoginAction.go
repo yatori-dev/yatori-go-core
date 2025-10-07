@@ -37,7 +37,8 @@ func IcveLoginAction(cache *icve.IcveUserCache) error {
 			return err
 		}
 		rand.Seed(time.Now().UnixNano())
-		randNum := rand.Intn(85000) + 5000
+		//randNum := rand.Intn(85000) + 5000
+		randNum := 1
 		img, err := icve.PullCapImgApi(data)
 		//gg.SavePNG("./assets/code/img.png", img) //保存图片
 
@@ -137,10 +138,24 @@ func icveZYKAction(cache *icve.IcveUserCache) error {
 	if int(statusCode.(float64)) != 200 {
 		return errors.New(resultInfo)
 	}
-	cache.UserId = gojsonq.New().JSONString(resultInfo).Find("user.userId").(string)
-	cache.NickName = gojsonq.New().JSONString(resultInfo).Find("user.nickName").(string)
-	cache.PhoneNumber = gojsonq.New().JSONString(resultInfo).Find("user.phonenumber").(string)
-	cache.Sex = gojsonq.New().JSONString(resultInfo).Find("user.sex").(string)
+	userId := gojsonq.New().JSONString(resultInfo).Find("user.userId")
+	if userId != nil {
+		cache.UserId = userId.(string)
+	}
+	nickName := gojsonq.New().JSONString(resultInfo).Find("user.nickName")
+	if nickName != nil {
+		cache.NickName = nickName.(string)
+	}
+
+	phoneNumber := gojsonq.New().JSONString(resultInfo).Find("user.phonenumber")
+	if phoneNumber != nil {
+		cache.PhoneNumber = phoneNumber.(string)
+	}
+
+	sex := gojsonq.New().JSONString(resultInfo).Find("user.sex")
+	if sex != nil {
+		cache.Sex = sex.(string)
+	}
 	return nil
 }
 
