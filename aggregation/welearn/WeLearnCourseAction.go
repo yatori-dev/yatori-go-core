@@ -216,11 +216,12 @@ func WeLearnPullChapterPointAction(cache *welearn.WeLearnUserCache, course WeLea
 
 // 完成任务点
 func WeLearnCompletePointAction(cache *welearn.WeLearnUserCache, course WeLearnCourse, point WeLearnPoint) error {
-	api, err := cache.StartStudyApi(course.Cid, point.Id, course.Uid, "100", course.ClassId, true, 3, nil)
+	_, err := cache.StartStudyApi(course.Cid, point.Id, course.Uid, "100", course.ClassId, true, 3, nil)
 	if err != nil {
 		return err
 	}
-	fmt.Println(api)
+
+	//fmt.Println(api)
 	submitApi1, err1 := cache.SubmitStudyPlan1Api(course.Cid, point.Id, course.Uid, "100", course.ClassId, 3, nil)
 	if err1 != nil {
 		return err1
