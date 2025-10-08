@@ -156,7 +156,7 @@ func WeLearnPullCourseChapterAction(cache *welearn.WeLearnUserCache, course WeLe
 // 拉取对应课程章节的小任务点
 func WeLearnPullChapterPointAction(cache *welearn.WeLearnUserCache, course WeLearnCourse, chapter WeLearnChapter) ([]WeLearnPoint, error) {
 	pointList := make([]WeLearnPoint, 0)
-	fmt.Println(course.Cid, course.Uid, course.ClassId, chapter.Id)
+	//fmt.Println(course.Cid, course.Uid, course.ClassId, chapter.Id)
 	pointsJson, err := cache.PullCoursePointApi(course.Cid, course.Uid, course.ClassId, fmt.Sprintf("%d", chapter.UnitIdx), 3, nil)
 	if err != nil {
 		return pointList, err
