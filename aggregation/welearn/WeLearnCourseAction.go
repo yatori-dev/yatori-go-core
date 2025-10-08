@@ -28,6 +28,7 @@ type WeLearnCourse struct {
 type WeLearnChapter struct {
 	Unitname string `json:"unitname"`
 	Id       string `json:"id"`
+	UnitIdx  int    `json:"unitidx"`
 	Visible  bool   `json:"visible"`
 	Name     string `json:"name"`
 }
@@ -132,11 +133,12 @@ func WeLearnPullCourseChapterAction(cache *welearn.WeLearnUserCache, course WeLe
 	chapterObj := gojsonq.New().JSONString(chapterListJson).Find("info")
 
 	if chapters, ok1 := chapterObj.([]interface{}); ok1 {
-		for _, item := range chapters {
+		for unitIndx, item := range chapters {
 			if obj, ok2 := item.(map[string]interface{}); ok2 {
 				chapter := WeLearnChapter{
 					Unitname: obj["unitname"].(string),
 					Id:       obj["id"].(string),
+					UnitIdx:  unitIndx,
 					Name:     obj["name"].(string),
 				}
 				parseBool, err2 := strconv.ParseBool(obj["visible"].(string))
@@ -154,7 +156,8 @@ func WeLearnPullCourseChapterAction(cache *welearn.WeLearnUserCache, course WeLe
 // 拉取对应课程章节的小任务点
 func WeLearnPullChapterPointAction(cache *welearn.WeLearnUserCache, course WeLearnCourse, chapter WeLearnChapter) ([]WeLearnPoint, error) {
 	pointList := make([]WeLearnPoint, 0)
-	pointsJson, err := cache.PullCoursePointApi(course.Cid, course.Uid, course.ClassId, chapter.Id, 3, nil)
+	fmt.Println(course.Cid, course.Uid, course.ClassId, chapter.Id)
+	pointsJson, err := cache.PullCoursePointApi(course.Cid, course.Uid, course.ClassId, fmt.Sprintf("%d", chapter.UnitIdx), 3, nil)
 	if err != nil {
 		return pointList, err
 	}

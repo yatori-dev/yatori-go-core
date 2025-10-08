@@ -142,7 +142,7 @@ func (cache *WeLearnUserCache) PullCourseChapterApi(cid, stuid, classid string, 
 }
 
 // 拉取大章节点对应的任务点
-func (cache *WeLearnUserCache) PullCoursePointApi(cid, stuid, classid, unitidx string, retry int, lastErr error) (string, error) {
+func (cache *WeLearnUserCache) PullCoursePointApi(cid, stuid, classid, unitidx string /*BYD，这玩意就是个位置索引，不需要上id值引入，踏马的居然演我*/, retry int, lastErr error) (string, error) {
 	if retry < 0 {
 		return "", lastErr
 	}
