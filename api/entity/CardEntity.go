@@ -305,87 +305,101 @@ func (p *PointVideoDto) AttachmentsDetection(attachment interface{}) (bool, erro
 		if objectid == nil {
 			continue
 		}
-		jobID, ok1 := property["jobid"].(string)
-		//if !ok {
-		//	p.JobID = jobID
-		//}
-		if objectid != p.ObjectID {
-			continue
-		}
 
-		var otherInfo string
+		if objectid == p.ObjectID {
+			var otherInfo string
 
-		parts := strings.SplitN(attachment["otherInfo"].(string), "&", 2)
-		if len(parts) > 0 {
-			otherInfo = parts[0]
-		}
-		p.OtherInfo = otherInfo
-		if isPassed, ok := attachment["isPassed"].(bool); ok {
-			p.IsPassed = isPassed
-		} else {
-			p.IsPassed = false
-		}
-
-		// 获取 "rt" 的值
-		rtObj, ok2 := property["rt"]
-		rt := 0.0
-		if ok2 {
-			isNum, ok3 := rtObj.(float64)
-			if ok3 {
-				rt = isNum
+			parts := strings.SplitN(attachment["otherInfo"].(string), "&", 2)
+			if len(parts) > 0 {
+				otherInfo = parts[0]
 			}
-			isStr, ok4 := rtObj.(string)
-			if ok4 {
-				resRT, err := strconv.ParseFloat(isStr, 64)
-				if err != nil {
-					resRT = 0.9
-				} else {
-					rt = resRT
+			p.OtherInfo = otherInfo
+			if isPassed, ok := attachment["isPassed"].(bool); ok {
+				p.IsPassed = isPassed
+			} else {
+				p.IsPassed = false
+			}
+
+			// 获取 "rt" 的值
+			rtObj, ok1 := property["rt"]
+			rt := 0.0
+			if ok1 {
+				isNum, ok2 := rtObj.(float64)
+				if ok2 {
+					rt = isNum
 				}
+				isStr, ok3 := rtObj.(string)
+				if ok3 {
+					resRT, err := strconv.ParseFloat(isStr, 64)
+					if err != nil {
+						resRT = 0.9
+					} else {
+						rt = resRT
+					}
 
+				}
+			} else {
+				rt = 0.9 //RT默认0.9
 			}
-		} else {
-			rt = 0.9 //RT默认0.9
-		}
 
-		mid, ok := attachment["mid"].(string)
-		if !ok {
-			p.Mid = ""
-		} else {
-			p.Mid = mid
-		}
+			//playTime, ok := attachment["playTime"].(float64)
+			//if !ok {
+			//	p.PlayTime = 0
+			//} else {
+			//	p.PlayTime = int(playTime) / 1000
+			//}
+			mid, ok := attachment["mid"].(string)
+			if !ok {
+				p.Mid = ""
+			} else {
+				p.Mid = mid
+			}
 
-		randomCaptureTime, ok := attachment["randomCaptureTime"].(string)
-		if !ok {
-			p.RandomCaptureTime = "0"
-		} else {
-			p.RandomCaptureTime = randomCaptureTime
-		}
+			randomCaptureTime, ok := attachment["randomCaptureTime"].(string)
+			if !ok {
+				p.RandomCaptureTime = "0"
+			} else {
+				p.RandomCaptureTime = randomCaptureTime
+			}
 
-		attDurationEnc, ok := attachment["attDurationEnc"].(string)
-		if !ok {
-			p.AttDurationEnc = ""
-		} else {
-			p.AttDurationEnc = attDurationEnc
+			attDurationEnc, ok := attachment["attDurationEnc"].(string)
+			if !ok {
+				p.AttDurationEnc = ""
+			} else {
+				p.AttDurationEnc = attDurationEnc
+			}
+			videoFaceCaptureEnc, ok := attachment["videoFaceCaptureEnc"].(string)
+			if !ok {
+				p.VideoFaceCaptureEnc = ""
+			} else {
+				p.VideoFaceCaptureEnc = videoFaceCaptureEnc
+			}
+			//是否为人任务点探测
+			isjob, ok := attachment["job"].(bool)
+			if ok {
+				p.IsJob = isjob
+			} else {
+				p.IsJob = false
+			}
+			p.RT = rt
+			p.Attachment = attachment
+
+			jobID, ok := property["jobid"].(string)
+			if !ok {
+				jobID2, ok := property["jobid"].(float64)
+				if !ok {
+					return false, errors.New("invalid jobid structure")
+				}
+				p.JobID = strconv.FormatFloat(jobID2, 'f', -1, 64)
+			} else {
+				p.JobID = jobID
+			}
+			break
 		}
-		videoFaceCaptureEnc, ok := attachment["videoFaceCaptureEnc"].(string)
-		if !ok {
-			p.VideoFaceCaptureEnc = ""
-		} else {
-			p.VideoFaceCaptureEnc = videoFaceCaptureEnc
-		}
-		//是否为人任务点探测
-		isjob, ok1 := attachment["job"].(bool)
-		if ok1 {
-			p.IsJob = isjob
-		} else {
-			p.IsJob = false
-		}
-		p.RT = rt
-		p.Attachment = attachment
-		if ok1 && (jobID == p.JobID) { // 再检测一次jobid
-			return true, nil
-		}
+	}
+	if p.Attachment == nil {
+		p.Logger.Println("Failed to locate resource")
+		return false, nil
 	}
 	defaults, ok := attachmentMap["defaults"].(map[string]interface{})
 	if !ok {
