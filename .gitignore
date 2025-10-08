@@ -10,3 +10,4 @@ face/*
 /node_modules/
 /package.json
 /package-lock.json
+/examples/assets/
