@@ -108,7 +108,7 @@ type YingHuaExamTopic struct {
 
 // ChoiceQue 选择类型
 type ChoiceQue struct {
-	Type    qtype.QueType     `json:"type"`
+	Type    qtype.QType       `json:"type"`
 	Qid     string            `json:"qid"` //题目ID
 	Text    string            `json:"text"`
 	Options map[string]string `json:"options"`
@@ -117,7 +117,7 @@ type ChoiceQue struct {
 
 // JudgeQue 判断类型
 type JudgeQue struct {
-	Type    qtype.QueType     `json:"type"`
+	Type    qtype.QType       `json:"type"`
 	Qid     string            `json:"qid"` //题目ID
 	Text    string            `json:"text"`
 	Options map[string]string `json:"options"`
@@ -126,7 +126,7 @@ type JudgeQue struct {
 
 // FillQue 填空类型
 type FillQue struct {
-	Type         qtype.QueType       `json:"type"`
+	Type         qtype.QType         `json:"type"`
 	Qid          string              `json:"qid"`
 	Text         string              `json:"text"`
 	OpFromAnswer map[string][]string `json:"opFromAnswer"` // 位置与答案
@@ -134,7 +134,7 @@ type FillQue struct {
 
 // 简答类型
 type ShortQue struct {
-	Type         qtype.QueType       `json:"type"`
+	Type         qtype.QType         `json:"type"`
 	Qid          string              `json:"qid"`
 	Text         string              `json:"text"`
 	OpFromAnswer map[string][]string `json:"opFromAnswer"`
@@ -142,7 +142,7 @@ type ShortQue struct {
 
 // 名词解释类型
 type TermExplanationQue struct {
-	Type         qtype.QueType       `json:"type"`
+	Type         qtype.QType         `json:"type"`
 	Qid          string              `json:"qid"`
 	Text         string              `json:"text"`
 	OpFromAnswer map[string][]string `json:"opFromAnswer"`
@@ -150,7 +150,7 @@ type TermExplanationQue struct {
 
 // 论述题
 type EssayQue struct {
-	Type         qtype.QueType       `json:"type"`
+	Type         qtype.QType         `json:"type"`
 	Qid          string              `json:"qid"`
 	Text         string              `json:"text"`
 	OpFromAnswer map[string][]string `json:"opFromAnswer"`

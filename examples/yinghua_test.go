@@ -242,7 +242,7 @@ func TestWorkDetail(t *testing.T) {
 	utils.YatoriCoreInit()
 	//测试账号
 	setup()
-	user := global.Config.Users[2]
+	user := global.Config.Users[47]
 	cache := yinghuaApi.YingHuaUserCache{
 		PreUrl:   user.URL,
 		Account:  user.Account,
@@ -255,12 +255,12 @@ func TestWorkDetail(t *testing.T) {
 	}
 	list, _ := yinghua.CourseListAction(&cache) //拉取课程列表
 	//list[0]
-	action, err := yinghua.VideosListAction(&cache, list[1])
+	action, err := yinghua.VideosListAction(&cache, list[0])
 	if err != nil {
 		log.Fatal(err)
 	}
 	for _, node := range action {
-		if node.Name != "第五次作业" {
+		if node.Name != "第一章 " {
 			continue
 		}
 		fmt.Println(node)
@@ -268,7 +268,7 @@ func TestWorkDetail(t *testing.T) {
 		detailAction, _ := yinghua.WorkDetailAction(&cache, node.Id)
 		////{"_code":9,"status":false,"msg":"考试测试时间还未开始","result":{}}
 		//开始写作业
-		yinghua.StartWorkAction(&cache, detailAction[0], global.Config.Setting.AiSetting.AiUrl, global.Config.Setting.AiSetting.Model, global.Config.Setting.AiSetting.APIKEY, global.Config.Setting.AiSetting.AiType, 1)
+		yinghua.StartWorkAction(&cache, detailAction[0], global.Config.Setting.AiSetting.AiUrl, global.Config.Setting.AiSetting.Model, global.Config.Setting.AiSetting.APIKEY, global.Config.Setting.AiSetting.AiType, 0)
 		fmt.Println(detailAction)
 		//打印最终分数
 		s, error := yinghua.WorkedFinallyScoreAction(&cache, detailAction[0])

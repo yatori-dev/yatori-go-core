@@ -1289,11 +1289,13 @@ func SubmitWorkApi(cache YingHuaUserCache, workId, answerId string, answers qent
 
 	//单选，判断
 	if answers.Type == qtype.SingleChoice.String() || answers.Type == qtype.TrueOrFalse.String() {
-
+		writer.WriteField("answer", answers.Answers[0])
 	}
 	//多选题
 	if answers.Type == qtype.MultipleChoice.String() {
-
+		for _, v := range answers.Answers {
+			writer.WriteField("answer[]", v)
+		}
 	}
 	//填空题
 	if answers.Type == qtype.SingleChoice.String() {

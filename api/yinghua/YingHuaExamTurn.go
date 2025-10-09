@@ -81,7 +81,7 @@ func TurnExamTopic(examHtml string) []entity.YingHuaExamTopic {
 			selectRegexp := regexp.MustCompile(selectPattern)
 			selectMatches := selectRegexp.FindAllStringSubmatch(topicHtml, -1)
 			for _, selectMatch := range selectMatches {
-				selectValue := selectMatch[2]
+				//selectValue := selectMatch[2]
 				//selectNum := selectMatch[3]
 				selectText := selectMatch[4]
 				//selects = append(selects, entity.TopicSelect{
@@ -89,7 +89,7 @@ func TurnExamTopic(examHtml string) []entity.YingHuaExamTopic {
 				//	Num:   selectNum,
 				//	Text:  selectText,
 				//})
-				selects = append(selects, selectValue+selectText)
+				selects = append(selects, selectText)
 			}
 			// Clean up content (strip illegal strings)
 			content = strings.ReplaceAll(content, "<p>", "")
@@ -149,9 +149,9 @@ func TurnExamTopic(examHtml string) []entity.YingHuaExamTopic {
 			Index:    num,
 			Source:   source,
 			Question: qentity.Question{
-				Type:    tag,
+				Type:    turnTypeStr(tag),
 				Content: content,
-				//Options: selects,
+				Options: selects,
 			},
 			//Content:  content,
 			//Type:    tag,
@@ -164,6 +164,23 @@ func TurnExamTopic(examHtml string) []entity.YingHuaExamTopic {
 	}
 
 	return topics
+}
+
+// 转标准类型
+func turnTypeStr(origin string) string {
+	switch origin {
+	case "单选":
+		return "单选题"
+	case "多选":
+		return "多选题"
+	case "判断":
+		return "判断题"
+	case "填空":
+		return "填空题"
+	case "简答":
+		return "简答题"
+	}
+	return "其他"
 }
 
 // 组装AI问题消息
