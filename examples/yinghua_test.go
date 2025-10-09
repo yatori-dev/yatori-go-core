@@ -180,22 +180,22 @@ func TestCourseDetail(t *testing.T) {
 	utils.YatoriCoreInit()
 	//测试账号
 	setup()
-	user := global.Config.Users[0]
+	user := global.Config.Users[47]
 	cache := yinghuaApi.YingHuaUserCache{
 		PreUrl:   user.URL,
 		Account:  user.Account,
 		Password: user.Password,
 	}
 
-	error := yinghua.YingHuaLoginAction(&cache) // 登录
-	if error != nil {
-		log.Fatal(error) //登录失败则直接退出
+	err := yinghua.YingHuaLoginAction(&cache) // 登录
+	if err != nil {
+		log.Fatal(err) //登录失败则直接退出
 	}
 	fmt.Println(cache.GetToken())
 	action, _ := yinghua.CourseDetailAction(&cache, "1012027")
 	fmt.Println(action)
-	if error != nil {
-		log.Fatal(error)
+	if err != nil {
+		log.Fatal(err)
 	}
 
 }
@@ -205,7 +205,7 @@ func TestExamDetail(t *testing.T) {
 	utils.YatoriCoreInit()
 	//测试账号
 	setup()
-	user := global.Config.Users[0]
+	user := global.Config.Users[47]
 	cache := yinghuaApi.YingHuaUserCache{
 		PreUrl:   user.URL,
 		Account:  user.Account,
@@ -213,23 +213,24 @@ func TestExamDetail(t *testing.T) {
 	}
 	fmt.Println(cache)
 
-	error := yinghua.YingHuaLoginAction(&cache) // 登录
-	if error != nil {
-		log.Fatal(error) //登录失败则直接退出
+	err := yinghua.YingHuaLoginAction(&cache) // 登录
+	if err != nil {
+		log.Fatal(err) //登录失败则直接退出
 	}
 	list, _ := yinghua.CourseListAction(&cache) //拉取课程列表
 	//list[0]
-	action, error := yinghua.VideosListAction(&cache, list[2])
-	if error != nil {
-		log.Fatal(error)
+	action, err := yinghua.VideosListAction(&cache, list[0])
+	if err != nil {
+		log.Fatal(err)
 	}
 	for _, node := range action {
-		if node.Name != "第一单元 章节测试" {
+		if node.Name != "期末考试（补考）" {
 			continue
 		}
 		fmt.Println(node)
 		//api := yinghuaApi.ExamDetailApi(cache, node.Id)
 		detailAction, _ := yinghua.ExamDetailAction(&cache, node.Id)
+		yinghua.StartExamAction(&cache, detailAction[0], global.Config.Setting.AiSetting.AiUrl, global.Config.Setting.AiSetting.Model, global.Config.Setting.AiSetting.APIKEY, global.Config.Setting.AiSetting.AiType, 0)
 		//{"_code":9,"status":false,"msg":"考试测试时间还未开始","result":{}}
 		exam, _ := yinghuaApi.StartExam(cache, node.CourseId, node.Id, detailAction[0].ExamId, 3, nil)
 		fmt.Println(detailAction)

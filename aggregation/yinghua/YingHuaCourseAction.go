@@ -385,9 +385,6 @@ func StartExamAction(
 	//html转结构体
 	topics := yinghuaApi.TurnExamTopic(topicHtml)
 	//fmt.Println(topic)
-	//遍历题目map,并回答问题
-	//var lastAnswer utils.Answers
-	//var lastProblem string
 	var lastProblem entity.YingHuaExamTopic
 	for _, v := range topics {
 		aiAnswer, err1 := aiq.AggregationAIApi(url, model, aiType, aiq.BuildAiQuestionMessage(v.Question), apiKey)
@@ -402,9 +399,9 @@ func StartExamAction(
 			os.Exit(0)
 		}
 		//fmt.Println(aiAnswer)
-		subWorkApi, err := yinghuaApi.SubmitExamApi(*userCache, exam.ExamId, v.AnswerId, v.Question, "0", 8, nil)
-		if err != nil {
-			log.Print(log.INFO, `[`, userCache.Account, `] `, log.BoldRed, "Ai异常，返回信息：", err.Error())
+		subWorkApi, err1 := yinghuaApi.SubmitExamApi(*userCache, exam.ExamId, v.AnswerId, v.Question, "0", 8, nil)
+		if err1 != nil {
+			log.Print(log.INFO, `[`, userCache.Account, `] `, log.BoldRed, "Ai异常，返回信息：", err1.Error())
 		}
 		//如果提交答案服务器端返回信息异常
 		if gojsonq.New().JSONString(subWorkApi).Find("msg") != "答题保存成功" {
@@ -609,14 +606,10 @@ func StartWorkAction(userCache *yinghuaApi.YingHuaUserCache,
 		}
 
 		v.Question.Answers = aiTurnYingHuaAnswer(userCache, aiAnswer, v)
-		if err != nil {
-			log.Print(log.INFO, `[`, userCache.Account, `] `, log.BoldRed, "Ai异常，返回信息：", err.Error())
-			os.Exit(0)
-		}
 		//fmt.Println(aiAnswer)
 		subWorkApi, err1 := yinghuaApi.SubmitWorkApi(*userCache, work.WorkId, v.AnswerId, v.Question, "0", 10, nil)
 		if err1 != nil {
-			log.Print(log.INFO, `[`, userCache.Account, `] `, log.BoldRed, "Ai异常，返回信息：", err.Error())
+			log.Print(log.INFO, `[`, userCache.Account, `] `, log.BoldRed, "Ai异常，返回信息：", err1.Error())
 		}
 		//如果提交答案服务器端返回信息异常
 		if gojsonq.New().JSONString(subWorkApi).Find("msg") != "答题保存成功" {
@@ -628,10 +621,10 @@ func StartWorkAction(userCache *yinghuaApi.YingHuaUserCache,
 	}
 	//结束考试
 	if isAutoSubExam == 1 {
-		subWorkApi, err := yinghuaApi.SubmitWorkApi(*userCache, work.WorkId, lastProblem.AnswerId, lastProblem.Question, "1", 10, nil)
+		subWorkApi, err1 := yinghuaApi.SubmitWorkApi(*userCache, work.WorkId, lastProblem.AnswerId, lastProblem.Question, "1", 10, nil)
 		//如果结束做题服务器端返回信息异常
-		if err != nil {
-			log.Print(log.INFO, log.BoldRed, `[`, userCache.Account, `] `, log.BoldRed, "提交试卷异常，返回信息：", subWorkApi, fmt.Sprintf("%+v", err.Error()))
+		if err1 != nil {
+			log.Print(log.INFO, log.BoldRed, `[`, userCache.Account, `] `, log.BoldRed, "提交试卷异常，返回信息：", subWorkApi, fmt.Sprintf("%+v", err1.Error()))
 		}
 		if gojsonq.New().JSONString(subWorkApi).Find("msg") != nil {
 			if gojsonq.New().JSONString(subWorkApi).Find("msg") != "提交作业成功" {

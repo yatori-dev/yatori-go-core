@@ -18,8 +18,6 @@ import (
 
 	"github.com/yatori-dev/yatori-go-core/que-core/qentity"
 	"github.com/yatori-dev/yatori-go-core/que-core/qtype"
-	"github.com/yatori-dev/yatori-go-core/utils/qutils"
-
 	"github.com/yatori-dev/yatori-go-core/utils"
 )
 
@@ -1005,19 +1003,35 @@ func SubmitExamApi(cache YingHuaUserCache, examId, answerId string, answers qent
 	writer.WriteField("finish", finish)
 	writer.WriteField("token", cache.token)
 
-	// Add the answer fields
-	if answers.Type == "单选" || answers.Type == "判断" || answers.Type == "简答" {
-		//writer.WriteField("answer", answers.Answers[0])
-		writer.WriteField("answer", qutils.SimilarityArraySelect(answers.Answers[0], answers.Answers))
-	} else if answers.Type == "多选" {
+	//单选，判断
+	if answers.Type == qtype.SingleChoice.String() || answers.Type == qtype.TrueOrFalse.String() {
+		writer.WriteField("answer", answers.Answers[0])
+	}
+	//多选题
+	if answers.Type == qtype.MultipleChoice.String() {
 		for _, v := range answers.Answers {
 			writer.WriteField("answer[]", v)
 		}
-	} else if answers.Type == "填空" {
+	}
+	//填空题
+	if answers.Type == qtype.SingleChoice.String() {
 		for i, v := range answers.Answers {
 			writer.WriteField("answer_"+strconv.Itoa(i+1), v)
 		}
 	}
+	// Add the answer fields
+	//if answers.Type == "单选" || answers.Type == "判断" || answers.Type == "简答" {
+	//	//writer.WriteField("answer", answers.Answers[0])
+	//	writer.WriteField("answer", qutils.SimilarityArraySelect(answers.Answers[0], answers.Answers))
+	//} else if answers.Type == "多选" {
+	//	for _, v := range answers.Answers {
+	//		writer.WriteField("answer[]", v)
+	//	}
+	//} else if answers.Type == "填空" {
+	//	for i, v := range answers.Answers {
+	//		writer.WriteField("answer_"+strconv.Itoa(i+1), v)
+	//	}
+	//}
 
 	// Close the writer to finalize the multipart form data
 	writer.Close()
