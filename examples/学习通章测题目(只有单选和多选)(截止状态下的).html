@@ -1,0 +1,531 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+
+<script>
+    _HOST_ = "//mooc1-api.chaoxing.com";
+    _CP_ = "/mooc-ans";
+    _HOST_CP1_ = "//mooc1-api.chaoxing.com/mooc-ans";
+    // _HOST_CP2_ = _HOST_ + _CP_;
+    _HOST_CP2_ = _CP_;
+</script><head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    <meta name="viewport" content="width=device-width, target-densitydpi=medium-dpi, initial-scale=1, user-scalable=no"/>
+    <meta name="format-detection" content="telephone=no"/>
+    <title>已批阅</title>
+    <link href="//mooc1-api.chaoxing.com/mooc-ans/css/work/phone/basic-s.css?v=2023-0619-1500" rel="stylesheet" type="text/css" />
+    <link href="//mooc1-api.chaoxing.com/mooc-ans/css/work/phone/css-s.css?v=2019-1025-1645" type="text/css" rel="stylesheet"/>
+    <link rel="stylesheet" href="//mooc1-api.chaoxing.com/mooc-ans/css/work/phone/s/css/style-normal.css?v=2023-0828-1645" />
+    <link rel="stylesheet" href="//mooc1-api.chaoxing.com/mooc-ans/css/work/phone/s/connLine-ceyan.css" />
+    <link href="//mooc1-api.chaoxing.com/mooc-ans/css/work/viewer.min.css" rel="stylesheet" type="text/css" />
+    <link rel="stylesheet" type="text/css" href="//mooc1-api.chaoxing.com/mooc-ans/css/work/phone/s/css/edit.css?v=2024-0104-1736" />
+    <link href="//mooc1-api.chaoxing.com/mooc-ans/css/questionBank/questionBankUsual.css?v=2019-1120-1400" type="text/css" rel="stylesheet"/><style>
+    img { height: auto; width:auto; max-width:80%;max-height:80%;}
+</style>
+    <script type="text/javascript" src="//mooc-res2.chaoxing.com/mooc-ans/js/common/jquery.min.js"></script>
+    <script type="text/javascript" src="//mooc-res2.chaoxing.com/mooc-ans/js/common/jquery-migrate.min.js"></script><script src="//mooc1-api.chaoxing.com/mooc-ans/static/js/domain.js"></script>
+    <script src="//mooc-res2.chaoxing.com/mooc-ans/js/phone/zepto-1.1.6.min.js"></script>
+    <script src="//mooc-res2.chaoxing.com/mooc-ans/js/phone/touch-1.1.6.js"></script>
+    <script src="//mooc1-api.chaoxing.com/mooc-ans/js/phone/fx_methods-1.1.6.js"></script>
+    <script src="//mooc1-api.chaoxing.com/mooc-ans/js/phone/fx-1.1.6.js"></script>
+    <script src="//mooc1-api.chaoxing.com/mooc-ans/js/phone/radialindicator.js"></script>
+    <script>window.UEDITOR_HOME_URL= '/ananas/ueditor/';</script>
+    <script src="/ananas/ext/ed_complete.js"></script>
+    <script src="//mooc1-api.chaoxing.com/mooc-ans/js/phone/rem750.js"></script>
+    <script src="//mooc-res2.chaoxing.com/mooc-ans/js/work/phone/fix-svg-path.js"></script>
+    <script type="text/javascript" src="//mooc1-api.chaoxing.com/mooc-ans/js/common/viewer.js"></script>
+    <script type="text/javascript" src="//mooc1-api.chaoxing.com/mooc-ans/js/common/jquery-viewer.min.js"></script>
+    <script src="//mooc1-api.chaoxing.com/mooc-ans/js/work/phone/work-attach.js?v=2025-0527-1100"></script><script src="//mooc1-api.chaoxing.com/mooc-ans/js/work/phone/attach-mark.js?v=2024-0506-1600"></script><script>
+    $(function(){
+        window.setInterval(function(){
+            try{
+                parent.dynIframeSize(parent.document.getElementById("frame_content"));
+            }catch(e){}
+        }, 200);
+
+        $(".viewAttach").find("span:first").each(function(){
+            $(this).attr("onclick", "viewMark(this);");
+        });
+    });
+</script>
+    <style>
+        html, body,h1, h2, h3, h4, h5, h6{font:14px/1.5 PingFangSC,微软雅黑, 黑体, Arial, Helvetica, sans-serif}
+        .Py-m1-title{background:#fafafa;}
+        pre{white-space: pre-wrap;}
+        .answerList li{padding:0.16rem 0 0;}
+        pre{white-space: pre-wrap;}
+        .answerList li p{width:100%!important;font-size:0.32rem;line-height:0.56rem;padding: 0;}
+        .numberDiv em{color:#7b9e31;}
+
+        .pad30{padding:0rem;}
+        .Ic_span{display:inline-block;width:.8rem;height:.8rem;border-radius:.08rem;overflow:hidden}
+        .Ic_span img{width:100%;height:100%;max-width:100%;max-height:100%;}
+        .wid400{width:100%;display: flex;align-items: center;height: .92rem;}
+        .wid400 p{display:block;width:6rem;display: -webkit-box;-webkit-box-orient: vertical;-webkit-line-clamp: 2;overflow: hidden;line-height:.46rem;color:#000;font-size:.34rem}
+        .hetNumber{font-size:.26rem;color:#999;}
+        .finish{font-size:.24rem;color:#00B86E;display:block;width:0.8rem;line-height:0.33rem;text-align:center;}
+        .hetNumber i{display:block;width:.44rem;height:.44rem;margin-left: 0.18rem;background:url(//mooc1-api.chaoxing.com/mooc-ans/images/work/phone/green_right.png) no-repeat;background-size:100%;margin-bottom:0.1rem;}
+        .hetNumber3{font-size:.26rem;color:#999;}
+        .finish3{font-size:.24rem;color:#E88C17;display:block;width:0.8rem;line-height:0.33rem;text-align:center;}
+        .hetNumber3 i{display:block;width:.44rem;height:.44rem;margin-left: 0.18rem;background:url(//mooc1-api.chaoxing.com/mooc-ans/images/work/phone/work-pend-icon.png) no-repeat;background-size:100%;margin-bottom:0.1rem;}
+        .redoBtn{display:inline-block;width:0.24rem;height:.24rem;margin-top:1px;background: url("//mooc1-api.chaoxing.com/mooc-ans/css/work/phone/s/images/redo.png") no-repeat left center;background-size: 100%;margin-right:0.16rem;}
+        .borderBom{border-bottom:1px solid #EBEBEB;}
+        .nowNmber{font-size:.3rem;color:#999;padding:.24rem 0 .3rem .3rem}
+        .padCon{padding: 0.4rem 0.3rem 0.36rem;box-shadow:0px -1px 0px 0px #f2f2f2;}
+        .answer{ border-top:0;border-bottom: none;padding:0;line-height:0.42rem;font-size:0.3rem;padding-top:0.2rem}
+        .Py-mian1{box-shadow:inset 0px -0.5px 0px #EBEBEB;padding: 0.5rem 0.3rem;}
+        .afterTj{background:none; padding:0;border:none;}
+        .Py-m1-title{background:none;font-size: 0.32rem;line-height: 0.56rem;color: #333;padding:0;}
+        .bgColor{background:none}
+        .answerList{padding:0 0 0.4rem;}
+        .b1{border: 0.02rem solid #F2F2F2;border-radius: 0.12rem;background:#fff}
+        .cyTag{height:0.6rem;width:100%;background:#F8F8F8;line-height:0.6rem;border-radius:0.12rem 0.12rem 0 0;font-size:0.26rem}
+        .c1{margin-left:0.3rem;font-size:0.26rem;color:#999}
+        .answer em{display:block;font-size:0.3rem;line-height:0.42rem;font-weight:600;color:#333;}
+        .padRight{padding:0 0 0.2rem;}
+        .pd,.cuo,.halfRight{width:0.44rem;height:0.44rem;margin-top:0;}
+        .quesType{color:#999}
+        .answer em i{font-weight:600;}
+        .answer em p{font-weight:400;}
+        .answerItem{font-weight:400;font-size:0.3rem;line-height:0.52rem;padding-top: 0.1rem;}
+        .answerItem p{display:inline}
+        .myAnswer{font-weight:600;font-size:0.3rem;line-height:0.42rem;}
+        .pdt40{padding-top:0.4rem}
+        .pdt20{padding-top:0.2rem;}
+        .answerDetail{line-height:0.52rem;font-size:0.3rem;padding-top:0.1rem}
+        .fw400{font-weight:400;}
+        .afterAnswer .lh56{line-height:0.56rem;font-weight: 600;padding-bottom:0.04rem;}
+        .afterAnswer{padding:0;font-size:0.3rem;}
+        .afterAnswer p{line-height:0.52rem;color:#333;}
+        .scoreNum span{line-height:0.37rem;font-size:0.26rem;color:#999;padding-right:0.28rem;}
+        .redo{padding: 0.46rem 0.3rem 0.5rem;}
+        .answerpla{border-top:none;}
+        .cyTips{padding-top:.1rem;color: #FF8800;margin-bottom:.36rem;display:block}
+        .time-icon{display:inline-block;width:.26rem;height:.26rem;background:url("//mooc1-api.chaoxing.com/mooc-ans/images/work/phone/time-icon.png") no-repeat;background-size:100%;vertical-align: middle;margin-right: .1rem;}
+        .answerList li p {display: inline; float: none;}
+        .wrIcon {display: inline-block;width: .42rem;height: .3rem;margin-top: .06rem;margin-right: .2rem;}
+        .spanYellow{color:#F28B24;padding:0 5px;}
+        .viewer-button {right: 15px;background: url(//mooc1-api.chaoxing.com/mooc-ans/images/work/icon.png) no-repeat -255px -3px;width: 50px;}
+    </style>
+    <link rel="stylesheet" type="text/css" href="//mooc1-api.chaoxing.com/mooc-ans/css/phone/pad/chapterPadStyle.css?v=2024-0122-1801" />
+</head>
+<body>
+<div class="pad30 b1 main-box">
+    <input type="hidden" id="openChapterVideo" value="1"/>
+    <div class="box-top">章节测验</div>
+    <div class="chapter-content">
+        <div class="left-content" style="margin-right: unset;">
+            <h3 class="chapter-title">&#31532;&#20108;&#31456;&#21333;&#20803;&#27979;&#35797;</h3>
+            <p class="end-time">
+                <i class="icon-clock"></i>
+                已截止，不能作答									<span class="gray-txt">(截止时间：2024-01-31 23:59)</span>
+            </p>
+        </div>
+    </div>
+
+
+
+
+    <div class="Py-mian1" style="margin-top:0;border:none;">
+        <div>
+            <div class="Py-m1-title fs16">
+                1.<span class="quesType">[多选题]</span><br/><span style="font-family:宋体"><span style="font-family:宋体">理想的特征有</span>（</span><span style="font-family:&#39;Calibri&#39;,&#39;sans-serif&#39;">&nbsp; </span><span style="font-family:宋体">）</span>
+            </div>
+            <ul class="answerList bgColor answerListAfter">
+                <li class="clearfix" tabindex="0"  role="text" ><div>A.<p>超越性<br/></p></div></li>
+                <li class="clearfix" tabindex="0"  role="text" ><div>B.<p>时代性</p></div></li>
+                <li class="clearfix" tabindex="0"  role="text" ><div>C.<p>实践性</p></div></li>
+                <li class="clearfix" tabindex="0"  role="text" ><div>D.<p>执着性</p></div></li>
+            </ul>
+            <div class="answer">
+
+            </div>
+        </div>
+    </div>
+
+
+
+    <div class="Py-mian1" style="margin-top:0;border:none;">
+        <div>
+            <div class="Py-m1-title fs16">
+                2.<span class="quesType">[多选题]</span><span style="font-family:宋体">信念的特征有（</span><span style="font-family:&#39;Calibri&#39;,&#39;sans-serif&#39;">&nbsp; </span><span style="font-family:宋体">）</span>
+            </div>
+            <ul class="answerList bgColor answerListAfter">
+                <li class="clearfix" tabindex="0"  role="text" ><div>A.<p>执着性</p></div></li>
+                <li class="clearfix" tabindex="0"  role="text" ><div>B.<p>超越性</p></div></li>
+                <li class="clearfix" tabindex="0"  role="text" ><div>C.<p>多样性</p></div></li>
+                <li class="clearfix" tabindex="0"  role="text" ><div>D.<p>建设性</p></div></li>
+            </ul>
+            <div class="answer">
+
+            </div>
+        </div>
+    </div>
+
+
+
+    <div class="Py-mian1" style="margin-top:0;border:none;">
+        <div>
+            <div class="Py-m1-title fs16">
+                3.<span class="quesType">[多选题]</span><br/><span style="font-family:宋体">信念是（</span><span style="font-family:&#39;Calibri&#39;,&#39;sans-serif&#39;">&nbsp; </span><span style="font-family:宋体">）的有机统一体，为人们矢志不渝、百折不挠地追求理想目标提供强大的精神动力。</span>
+            </div>
+            <ul class="answerList bgColor answerListAfter">
+                <li class="clearfix" tabindex="0"  role="text" ><div>A.<p>认知</p></div></li>
+                <li class="clearfix" tabindex="0"  role="text" ><div>B.<p>意识</p></div></li>
+                <li class="clearfix" tabindex="0"  role="text" ><div>C.<p>情感</p></div></li>
+                <li class="clearfix" tabindex="0"  role="text" ><div>D.<p>意志</p></div></li>
+            </ul>
+            <div class="answer">
+
+            </div>
+        </div>
+    </div>
+
+
+
+    <div class="Py-mian1" style="margin-top:0;border:none;">
+        <div>
+            <div class="Py-m1-title fs16">
+                4.<span class="quesType">[多选题]</span><br/><span style="font-family:宋体">理想信念对人生的作用包括（</span><span style="font-family:&#39;Calibri&#39;,&#39;sans-serif&#39;">&nbsp;&nbsp;</span><span style="font-family:宋体">）</span>
+            </div>
+            <ul class="answerList bgColor answerListAfter">
+                <li class="clearfix" tabindex="0"  role="text" ><div>A.<p><span style="font-family:宋体">昭示奋斗目标</span><span style="font-family:&#39;Calibri&#39;,&#39;sans-serif&#39;">&nbsp;</span></p></div></li>
+                <li class="clearfix" tabindex="0"  role="text" ><div>B.<p>提供前进动力</p></div></li>
+                <li class="clearfix" tabindex="0"  role="text" ><div>C.<p><font face="宋体"><span style="">创造辉煌成就</span></font></p></div></li>
+                <li class="clearfix" tabindex="0"  role="text" ><div>D.<p>提高精神境界</p></div></li>
+            </ul>
+            <div class="answer">
+
+            </div>
+        </div>
+    </div>
+
+
+
+    <div class="Py-mian1" style="margin-top:0;border:none;">
+        <div>
+            <div class="Py-m1-title fs16">
+                5.<span class="quesType">[多选题]</span><br/><span style="font-family:宋体">个人理想和社会理想是辨证统一的，其主要表现在（</span><span style="font-family:&#39;Calibri&#39;,&#39;sans-serif&#39;">&nbsp;&nbsp;</span><span style="font-family:宋体">）</span>
+            </div>
+            <ul class="answerList bgColor answerListAfter">
+                <li class="clearfix" tabindex="0"  role="text" ><div>A.<p>社会理想是对社会成员个人理想的凝练和升华</p></div></li>
+                <li class="clearfix" tabindex="0"  role="text" ><div>B.<p>个人理想决定、制约着社会理想</p></div></li>
+                <li class="clearfix" tabindex="0"  role="text" ><div>C.<p>社会理想规定、指引着个人理想</p></div></li>
+                <li class="clearfix" tabindex="0"  role="text" ><div>D.<p>个人理想从属于社会理想</p></div></li>
+            </ul>
+            <div class="answer">
+
+            </div>
+        </div>
+    </div>
+
+
+
+    <div class="Py-mian1" style="margin-top:0;border:none;">
+        <div>
+            <div class="Py-m1-title fs16">
+                6.<span class="quesType">[多选题]</span><span style=";font-family:宋体;"><span style="font-family:宋体">关于理想信念，下列说法正确的是（&nbsp; ）</span></span></p><p><br/>
+            </div>
+            <ul class="answerList bgColor answerListAfter">
+                <li class="clearfix" tabindex="0"  role="text" ><div>A.<p><span style=";font-family:宋体;"><span style="font-family:宋体">理想是对信念坚信不疑的追求</span></span></p><p><br/></p></div></li>
+                <li class="clearfix" tabindex="0"  role="text" ><div>B.<p><span style=";font-family:宋体;"><span style="font-family:宋体">信念是追求理想的强大动力</span></span></p><p><br/></p></div></li>
+                <li class="clearfix" tabindex="0"  role="text" ><div>C.<p><span style=";font-family:宋体;"><span style="font-family:宋体">理想是信念的根据和前提</span></span></p><p><br/></p></div></li>
+                <li class="clearfix" tabindex="0"  role="text" ><div>D.<p><span style=";font-family:宋体;"><span style="font-family:宋体">理想和信念既区别又联系</span></span></p><p><br/></p></div></li>
+            </ul>
+            <div class="answer">
+
+            </div>
+        </div>
+    </div>
+
+
+
+    <div class="Py-mian1" style="margin-top:0;border:none;">
+        <div>
+            <div class="Py-m1-title fs16">
+                7.<span class="quesType">[多选题]</span><span style=";font-family:宋体;"><span style="font-family:宋体">有人喜欢感叹</span>“理想很丰满，现实很骨感”，大学生在追求理想的过程中也往往容易对思想与现实的矛盾产生困惑。正确理解理想与现实的关系，应认识到（&nbsp; ）</span></p><p><br/>
+            </div>
+            <ul class="answerList bgColor answerListAfter">
+                <li class="clearfix" tabindex="0"  role="text" ><div>A.<p><span style=";font-family:宋体;"><span style="font-family:宋体">理想受现实的规定和制约</span></span></p><p><br/></p></div></li>
+                <li class="clearfix" tabindex="0"  role="text" ><div>B.<p><span style=";font-family:宋体;"><span style="font-family:宋体">理想是未来的现实</span></span></p><p><br/></p></div></li>
+                <li class="clearfix" tabindex="0"  role="text" ><div>C.<p><span style=";font-family:宋体;"><span style="font-family:宋体">理想与现实的冲突属于</span>“应然”与“实然”的矛盾</span></p><p><br/></p></div></li>
+                <li class="clearfix" tabindex="0"  role="text" ><div>D.<p><span style=";font-family:宋体;"><span style="font-family:宋体">现实是理想的基础</span></span></p><p><br/></p></div></li>
+            </ul>
+            <div class="answer">
+
+            </div>
+        </div>
+    </div>
+
+
+
+    <div class="Py-mian1" style="margin-top:0;border:none;">
+        <div>
+            <div class="Py-m1-title fs16">
+                8.<span class="quesType">[单选题]</span><span style="font-family:宋体">人的精神世界的核心是（）</span>
+            </div>
+            <ul class="answerList bgColor answerListAfter">
+                <li class="clearfix" tabindex="0"  role="text" ><div>A.<p>道德</p></div></li>
+                <li class="clearfix" tabindex="0"  role="text" ><div>B.<p>理想信念</p></div></li>
+                <li class="clearfix" tabindex="0"  role="text" ><div>C.<p>信仰</p></div></li>
+                <li class="clearfix" tabindex="0"  role="text" ><div>D.<p>梦想</p></div></li>
+            </ul>
+            <div class="answer">
+
+            </div>
+        </div>
+    </div>
+
+
+
+    <div class="Py-mian1" style="margin-top:0;border:none;">
+        <div>
+            <div class="Py-m1-title fs16">
+                9.<span class="quesType">[单选题]</span><br/>（&nbsp; ）<span style="font-family:宋体">是人们的世界观、人生观和价值观在奋斗目标上的集中体现。</span>
+            </div>
+            <ul class="answerList bgColor answerListAfter">
+                <li class="clearfix" tabindex="0"  role="text" ><div>A.<p>理想</p></div></li>
+                <li class="clearfix" tabindex="0"  role="text" ><div>B.<p>信念</p></div></li>
+                <li class="clearfix" tabindex="0"  role="text" ><div>C.<p>信仰</p></div></li>
+                <li class="clearfix" tabindex="0"  role="text" ><div>D.<p>梦想</p></div></li>
+            </ul>
+            <div class="answer">
+
+            </div>
+        </div>
+    </div>
+
+
+
+    <div class="Py-mian1" style="margin-top:0;border:none;">
+        <div>
+            <div class="Py-m1-title fs16">
+                10.<span class="quesType">[单选题]</span><br/><span style="font-family:宋体">（ ）是衡量一个人精神境界高下的重要标尺。</span>
+            </div>
+            <ul class="answerList bgColor answerListAfter">
+                <li class="clearfix" tabindex="0"  role="text" ><div>A.<p>人生观</p></div></li>
+                <li class="clearfix" tabindex="0"  role="text" ><div>B.<p>价值观</p></div></li>
+                <li class="clearfix" tabindex="0"  role="text" ><div>C.<p>理想信念</p></div></li>
+                <li class="clearfix" tabindex="0"  role="text" ><div>D.<p>信仰</p></div></li>
+            </ul>
+            <div class="answer">
+
+            </div>
+        </div>
+    </div>
+</div>
+<link rel="stylesheet" href="//mooc1-api.chaoxing.com/mooc-ans/css/phone/hint.css?v=2024-0104-1800" />
+<div id="msg" class="rescan_main">
+    <div class="msg-title">title</div>
+    <div class="msg-content">
+        <div class="msg-content-middle"></div>
+        <div class="msg-content-b">
+            <span class="msg-content-left msg-content-ok">确定</span>
+            <span class="msg-content-right msg-content-cancel">取消</span>
+        </div>
+    </div>
+</div>
+<div id="hint" class="rescan_main">
+    <div class="msg-title">title</div>
+    <div class="msg-content">
+        <div class="msg-content-middle"></div>
+        <div class="msg-content-b">
+            <p class="msg-content-cancel">确定</p>
+        </div>
+    </div>
+</div>
+<div id="time" class="rescan_main">
+    <div class="msg-title">title</div>
+    <div class="msg-content">
+        <div class="msg-content-middle"></div>
+    </div>
+</div>
+<div id="confirm" class="rescan_main">
+    <div class="msg-title"></div>
+    <div class="msg-content">
+        <div class="msg-content-middle"></div>
+        <div class="msg-content-b">
+            <span class="msg-content-left msg-content-ok"></span>
+            <span class="msg-content-right msg-content-cancel"></span>
+        </div>
+    </div>
+</div>
+
+<div id="noticeConfirm" class="rescan_mainNew">
+    <div class="notice-title"></div>
+    <div class="msg-contentNew">
+        <div class="notice-content-middle"></div>
+        <div class="msg-content-bNew">
+            <span class="msg-content-leftNew msg-content-okNew" style="width:100%;"></span>
+        </div>
+    </div>
+</div>
+
+<div id="mask" class="black_overlay"></div>
+<script src="//mooc-res2.chaoxing.com/mooc-ans/js/phone/hint.js?v=2023-0803-0030"></script><link rel="stylesheet" href="//mooc1-api.chaoxing.com/mooc-ans/css/statistic/phone/circle.css?v=1" />
+<div class="Wrappadding" id="Wrappadding">
+    <div class="ui-loader ui-corner-all ui-body-a ui-loader-default"><span class="ui-icon ui-icon-loading"></span></div>
+</div></body>
+<script>
+    $(".Py-mian1 img").each(function(){
+        var imgSrc = $(this).attr('src');
+        if(top.jsBridge && top.jsBridge.postNotification) {
+            $(this).click(function(){
+                var data=fixImageData(imgSrc);
+                top.jsBridge.postNotification("CLIENT_PREVIEW_IMAGES", {
+                    imageUrls : [{
+                        imageUrl: data.url,
+                        originUrl: data.originUrl,
+                        getOriginSize : 1
+                    }],
+                    showIndex : 0
+                });
+            })
+        }else {
+            $(this).attr("onclick", "top.zoomImageClick('" + imgSrc + "')");
+        }
+    })
+</script>
+<!--处理audio 播放 -->
+<link type="text/css" rel="stylesheet" href="/ananas/modules/audio/AudioPlayer2/audioplayer.css?t=20151210" />
+<style>
+    .audioReader{width: 100%;height: 70px;} .audioplayer {height: 60px;width: 95%;left: 4%;top: 10px; }
+</style>
+<script type="text/javascript" src="//mooc-res2.chaoxing.com/mooc-ans/js/common/jquery.min.js"></script>
+<script type="text/javascript" src="//mooc-res2.chaoxing.com/mooc-ans/js/common/jquery-migrate.min.js"></script><script type="text/javascript">
+    jQuery.noConflict();
+</script>
+<script type="text/javascript" src="/ananas/modules/audio/AudioPlayer2/audioplayer.js?t=20151210"></script>
+<script type="text/javascript">
+    function formatTime(duration) {
+        if (!duration) {
+            return '00:00';
+        }
+        var m = Math.floor(duration / 60);
+        var s = Math.ceil(duration % 60);
+        return (m < 10 ? '0' + m : m) + ':' + (s < 10 ? '0' + s : s);
+    }
+
+    function renderAudio(object,data,index) {
+        var showName = data.name;
+        var http=data.http;
+        duration  = data.duration;
+        var html = [
+            '<audio preload="none" controls>',
+            '<source src="'+http+'" />',
+            '</audio>'
+        ].join('');
+
+        var audioId="audio_"+index;
+        var audioDiv='<div class="audioReader" id="'+audioId+'"></div>';
+        jQuery(object).parent().html(audioDiv);
+
+        jQuery("#"+audioId).html(html);
+        jQuery("#"+ audioId +" audio").audioPlayer({
+            title: showName,
+            duration: data.duration
+        });
+    }
+
+    jQuery(document).ready(function() {
+        try{
+            var audios=jQuery("object[type='application/x-shockwave-flash']");
+            audios.each(function(index){
+                if(jQuery(this).attr("data").indexOf('audioplayer') < 0) {
+                    return true;
+                }
+                var url=jQuery(this).find("param[name='flashvars']").val();
+                var offset=url.indexOf("http");
+                var http=url.substring(offset);
+                var audioName=jQuery(this).prev().text();
+                var data={"name":audioName,"http":http};
+                renderAudio(this,data,index);
+            });
+        }catch(e){ }
+    });
+</script>
+
+
+<!--处理video 播放 -->
+<script>
+    function videoPlay(object,data,index){
+        var playOuterDiv=[ '<div class="zcenter">',
+            '<div class="zbanner">',
+            '<div id="zvideo_'+index+'" style="width:733;height:434;" width="733" height="434">',
+            '<div id="moocplayer_'+index+'"></div>',
+            ' </div>',
+            '</div>',
+            ' </div>'].join('');
+        jQuery(object).parent().html(playOuterDiv);
+        jQuery('#moocplayer_'+index).html([
+            '<video width="100%" height="100%"  poster="' + data.coverUrl+ '" preload="none"  controls="controls" webkit-playsinline>',
+            '<source type="video/mp4" src="' +data.http+ '"></source>',
+            '</video>'
+        ].join(''));
+        var zplay=document.getElementById("zvideo_"+index);
+        zplay.style.display="block";
+        jQuery("#moocplayer_"+index+" div").css("width","87.5%");
+    }
+
+
+    function checkAppVersion(versonControl_android,versonControl_ios){
+        var versonControl ="";
+        var userAgent = navigator.userAgent;
+        var offset = userAgent.indexOf("ChaoXingStudy_");
+        var stop = 0;
+        if(userAgent.indexOf("_ios_phone") > -1){
+            stop = userAgent.indexOf("_ios_phone");
+            versonControl = versonControl_ios;
+        }else if(userAgent.indexOf("_android_phone") > -1){
+            stop = userAgent.indexOf("_android_phone");
+            versonControl = versonControl_android;
+        }
+        var versionStr = userAgent.substring(offset+14,stop);
+        versionStr = versionStr.split('_')[1];
+        if(versionStr == undefined){
+            return false;
+        }
+        versionStr = versionStr.replace(/_|\./g,"");
+        return versionStr+'' >= versonControl;
+    }
+
+    jQuery(document).ready(function(){
+        try{
+            var maybeVideos=jQuery("a[href^='/ueditorupload/read?objectId']");
+            maybeVideos.each(function(index){
+                var videoName=jQuery(this).text();
+                if(!videoName.endsWith(".mp4")){
+                    return true;
+                }
+                if(!checkAppVersion("3039","1000")){
+                    jQuery(this).attr("href","javascript:void(0);");
+                    jQuery(this).on('tap',function(){
+                        openWindowHint && openWindowHint(HINT_TYPE_TIME,'',"暂不支持打开",null, 1000);
+                    });
+                    return true;
+                }
+
+                var me=this;
+                var objectId=jQuery(this).attr("href").replace('/ueditorupload/read?objectId=','');
+                // 获取objectId出错
+                if (objectId.indexOf('&') > 0) {
+                    objectId = objectId.substring(0, objectId.indexOf('&'))
+                }
+                jQuery.ajax({
+                    type : 'get',
+                    url : '/ananas/status/'+objectId,
+                    dataType:'json',
+                    success : function(data){
+                        var status=data.status;
+                        if(status == 'success'){
+                            var coverUrl=data.screenshot;
+                            var http=data.http;
+                            var data={"coverUrl":coverUrl,"http":http};
+                            videoPlay(me,data,index);
+                        }
+                    }
+                });
+            });
+        }catch(e){ }
+
+    });
+</script></html>
