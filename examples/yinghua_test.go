@@ -243,7 +243,7 @@ func TestWorkDetail(t *testing.T) {
 	utils.YatoriCoreInit()
 	//测试账号
 	setup()
-	user := global.Config.Users[47]
+	user := global.Config.Users[48]
 	cache := yinghuaApi.YingHuaUserCache{
 		PreUrl:   user.URL,
 		Account:  user.Account,
@@ -261,7 +261,7 @@ func TestWorkDetail(t *testing.T) {
 		log.Fatal(err)
 	}
 	for _, node := range action {
-		if node.Name != "第一章 " {
+		if node.Name != "JAVA程序设计A-作业" {
 			continue
 		}
 		fmt.Println(node)
