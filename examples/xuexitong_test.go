@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"log"
 	"strconv"
+	"strings"
 	"testing"
 	"time"
 
@@ -306,7 +307,11 @@ func TestXueXiToChapterCardWork(t *testing.T) {
 			fmt.Printf("Name: %s, Value: %s, Type: %s, ID: %s\n", input.Name, input.Value, input.Type, input.ID)
 		}
 
-		questionAction := xuexitong.ParseWorkQuestionAction(&userCache, &workDTOs[0])
+		questionAction, err1 := xuexitong.ParseWorkQuestionAction(&userCache, &workDTOs[0])
+		if err1 != nil && strings.Contains(err1.Error(), "已截止，不能作答") {
+			fmt.Println("该试卷已截止，已自动跳过")
+			return
+		}
 		for i := range questionAction.Choice {
 			q := &questionAction.Choice[i] // 获取指向切片元素的指针
 
@@ -481,7 +486,7 @@ func TestXueXiToFlushCourse(t *testing.T) {
 		//if course.CourseName != "戏剧鉴赏" {
 		//	continue
 		//}
-		if course.CourseName != "教学管理规范-新生入学必读" {
+		if course.CourseName != "思想道德与法治（25-26学年秋）" {
 			continue
 		}
 		// 6c444b8d5c6203ee2f2aef4b76f5b2ce qrcEnc
@@ -532,10 +537,10 @@ func TestXueXiToFlushCourse(t *testing.T) {
 			log.Printf("ID.%d(%s/%s)正在执行任务点\n",
 				item,
 				pointAction.Knowledge[index].Label, pointAction.Knowledge[index].Name)
-			//if pointAction.Knowledge[index].Label != "3.3.2" {
-			//	//fmt.Println("断点")
-			//	continue
-			//}
+			if pointAction.Knowledge[index].Label != "3.4" {
+				//fmt.Println("断点")
+				continue
+			}
 			_, fetchCards, err := xuexitong.ChapterFetchCardsAction(&userCache, &action, nodes, index, courseId, key, course.Cpi)
 
 			if err != nil {
@@ -601,7 +606,11 @@ func TestXueXiToFlushCourse(t *testing.T) {
 					//for _, input := range fromAction {
 					//	fmt.Printf("Name: %s, Value: %s, Type: %s, ID: %s\n", input.Name, input.Value, input.Type, input.ID)
 					//}
-					questionAction := xuexitong.ParseWorkQuestionAction(&userCache, &workDTO)
+					questionAction, err1 := xuexitong.ParseWorkQuestionAction(&userCache, &workDTO)
+					if err1 != nil && strings.Contains(err1.Error(), "已截止，不能作答") {
+						fmt.Println("该试卷已截止，已自动跳过")
+						continue
+					}
 					fmt.Println(questionAction)
 					for i := range questionAction.Choice {
 						q := &questionAction.Choice[i] // 获取对应选项

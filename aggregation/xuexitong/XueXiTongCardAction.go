@@ -286,7 +286,7 @@ func WorkInformInputWorkDTO(informMap map[string]interface{}, question *entity.Q
 
 // ParseWorkQuestionAction 用于解析作业题目，包括题目类型和题目文本
 // TODO 同Question结构体问题 暂时返回未做 全部题目初始化
-func ParseWorkQuestionAction(cache *xuexitong.XueXiTUserCache, workPoint *entity.PointWorkDto) entity.Question {
+func ParseWorkQuestionAction(cache *xuexitong.XueXiTUserCache, workPoint *entity.PointWorkDto) (entity.Question, error) {
 	var questionEntity entity.Question
 	var workQuestion []entity.ChoiceQue
 	var judgeQuestion []entity.JudgeQue
@@ -300,6 +300,12 @@ func ParseWorkQuestionAction(cache *xuexitong.XueXiTUserCache, workPoint *entity
 	doc, err := goquery.NewDocumentFromReader(bytes.NewReader([]byte(question)))
 	if err != nil {
 		log.Fatal(err)
+	}
+
+	//用于判断是否已经截止
+	textStatus := doc.Find("div.chapter-content").Text()
+	if strings.Contains(textStatus, "已截止，不能作答") {
+		return questionEntity, errors.New("已截止，不能作答")
 	}
 
 	//用于拉取并完善workPointDto信息
@@ -380,6 +386,7 @@ func ParseWorkQuestionAction(cache *xuexitong.XueXiTUserCache, workPoint *entity
 			choiceQue.Qid = qs.ID
 			choiceQue.Text = quesText
 			// 提取选项
+			//qdoc.Find(".answerList li").Each(func(i int, s *goquery.Selection) {
 			qdoc.Find(".answerList.multiChoice li").Each(func(i int, s *goquery.Selection) {
 				optionLetter := s.Find("em.choose-opt").Text()
 
@@ -387,6 +394,11 @@ func ParseWorkQuestionAction(cache *xuexitong.XueXiTUserCache, workPoint *entity
 				ccContent := s.Find("cc").Contents().First()
 				text := ccContent.Text()
 
+				////如果cc没有则另外的查找
+				//if text == "" {
+				//	ccContent = s.Find("div").First()
+				//	text = ccContent.Text()
+				//}
 				// 如果没有文本，则尝试获取 img 标签的 src 属性
 				if text == "" {
 					img, exists := s.Find("cc img").Attr("src")
@@ -480,7 +492,7 @@ func ParseWorkQuestionAction(cache *xuexitong.XueXiTUserCache, workPoint *entity
 	questionEntity.Short = shortQuestion
 	questionEntity.TermExplanation = termQuestion
 	questionEntity.Essay = essayQuestion
-	return questionEntity
+	return questionEntity, nil
 }
 
 // 定义题型处理策略函数类型
