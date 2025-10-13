@@ -37,7 +37,8 @@ func TestIcveCourseList(t *testing.T) {
 		Account:  user.Account,
 		Password: user.Password,
 	}
-	err := action.IcveLoginAction(&cache)
+	//err := action.IcveLoginAction(&cache)
+	err := action.IcveCookieLogin(&cache)
 	if err != nil {
 		fmt.Println(err)
 	}

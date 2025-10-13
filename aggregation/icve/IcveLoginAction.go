@@ -17,7 +17,7 @@ import (
 	"github.com/yatori-dev/yatori-go-core/utils"
 )
 
-// 登录模块
+// 账号密码登录模块
 func IcveLoginAction(cache *icve.IcveUserCache) error {
 	for {
 		data, err := cache.PullVerDataApi()
@@ -116,6 +116,24 @@ func IcveLoginAction(cache *icve.IcveUserCache) error {
 	//}
 	//cache.AccessToken = gojsonq.New().JSONString(accessToken).Find("data").(string)
 
+	err2 := icveZYKAction(cache)
+	if err2 != nil {
+		return err2
+	}
+	return nil
+}
+
+// Cookie登录模块
+func IcveCookieLogin(cache *icve.IcveUserCache) error {
+	cache.Cookies = utils.TurnCookiesFromString(cache.Password)
+	for _, cookie := range cache.Cookies {
+		if cookie.Name == "token" {
+			cache.Token = cookie.Value
+		}
+		if cookie.Name == "zhzj-Token" {
+			cache.AccessToken = cookie.Value
+		}
+	}
 	err2 := icveZYKAction(cache)
 	if err2 != nil {
 		return err2
