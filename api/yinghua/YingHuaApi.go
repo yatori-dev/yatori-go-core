@@ -1004,7 +1004,7 @@ func SubmitExamApi(cache YingHuaUserCache, examId, answerId string, answers qent
 	writer.WriteField("token", cache.token)
 
 	//单选，判断
-	if answers.Type == qtype.SingleChoice.String() || answers.Type == qtype.TrueOrFalse.String() {
+	if answers.Type == qtype.SingleChoice.String() || answers.Type == qtype.TrueOrFalse.String() || answers.Type == qtype.ShortAnswer.String() {
 		writer.WriteField("answer", answers.Answers[0])
 	}
 	//多选题
@@ -1014,7 +1014,7 @@ func SubmitExamApi(cache YingHuaUserCache, examId, answerId string, answers qent
 		}
 	}
 	//填空题
-	if answers.Type == qtype.SingleChoice.String() {
+	if answers.Type == qtype.FillInTheBlank.String() {
 		for i, v := range answers.Answers {
 			writer.WriteField("answer_"+strconv.Itoa(i+1), v)
 		}

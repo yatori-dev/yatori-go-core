@@ -561,7 +561,7 @@ func aiTurnYingHuaAnswer(cache *yinghuaApi.YingHuaUserCache, aiAnswer string, v 
 		}
 	}
 	if len(answer) == 0 || answer == nil {
-		if v.Type == qtype.SingleChoice.String() || v.Type == qtype.MultipleChoice.String() {
+		if v.Type == qtype.SingleChoice.String() || v.Type == qtype.MultipleChoice.String() || v.Type == qtype.TrueOrFalse.String() {
 			answer = []string{"A"}
 		} else if v.Type == "多选" {
 			answer = []string{"B", "C"}
