@@ -130,8 +130,20 @@ func (cache *XueXiTUserCache) PullBbsInfoApi(id1, id2, courseId, classId string,
 
 	urlStr := "https://groupweb.chaoxing.com/course/topic/v3/bbs/" + id1 + "/" + id2 + "/replysList?courseId=" + courseId + "&classId=" + classId
 	method := "GET"
-
-	client := &http.Client{}
+	tr := &http.Transport{
+		TLSClientConfig: &tls.Config{
+			InsecureSkipVerify: true,
+		},
+	}
+	//如果开启了IP代理，那么就直接添加代理
+	if cache.IpProxySW {
+		tr.Proxy = func(req *http.Request) (*url.URL, error) {
+			return url.Parse(cache.ProxyIP) // 设置代理
+		}
+	}
+	client := &http.Client{
+		Transport: tr,
+	}
 	req, err := http.NewRequest(method, urlStr, nil)
 
 	if err != nil {
@@ -171,7 +183,20 @@ func (cache *XueXiTUserCache) AnswerBbsApi(topicUUid, courseId, classId, topic_c
 
 	payload := strings.NewReader("courseId=" + courseId + "&classId=" + classId + "&replyId=-1&uuid=" + newUUID.String() + "&topic_content=" + url.QueryEscape(topic_content) + "&anonymous=&urlToken=" + urlToken + "&bbsid=" + bbsid)
 
-	client := &http.Client{}
+	tr := &http.Transport{
+		TLSClientConfig: &tls.Config{
+			InsecureSkipVerify: true,
+		},
+	}
+	//如果开启了IP代理，那么就直接添加代理
+	if cache.IpProxySW {
+		tr.Proxy = func(req *http.Request) (*url.URL, error) {
+			return url.Parse(cache.ProxyIP) // 设置代理
+		}
+	}
+	client := &http.Client{
+		Transport: tr,
+	}
 	req, err := http.NewRequest(method, urlStr, payload)
 
 	if err != nil {

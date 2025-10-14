@@ -146,9 +146,23 @@ func (cache *XueXiTUserCache) LoginApi() (string, error) {
 	mode = cipher.NewCBCEncrypter(block, key)
 	mode.CryptBlocks(passwdCipherText, passwdPadded)
 	passwdEncrypted := base64.StdEncoding.EncodeToString(passwdCipherText)
-
+	//设置代理
+	tr := &http.Transport{
+		TLSClientConfig: &tls.Config{
+			InsecureSkipVerify: true,
+		},
+	}
+	//如果开启了IP代理，那么就直接添加代理
+	if cache.IpProxySW {
+		tr.Proxy = func(req *http.Request) (*url.URL, error) {
+			return url.Parse(cache.ProxyIP) // 设置代理
+		}
+	}
+	client := &http.Client{
+		Transport: tr,
+	}
 	// 发送请求
-	resp, err := http.PostForm(ApiLoginWeb, url.Values{
+	resp, err := client.PostForm(ApiLoginWeb, url.Values{
 		"fid":               {"-1"},
 		"uname":             {phoneEncrypted},
 		"password":          {passwdEncrypted},

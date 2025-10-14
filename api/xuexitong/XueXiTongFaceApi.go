@@ -504,7 +504,7 @@ func (cache *XueXiTUserCache) GetFaceQrCodeApi3(courseId, clazzid, chapterId, cp
 
 	//如果开启了IP代理，那么就直接添加代理
 	if cache.IpProxySW {
-		tr.Proxy = func(req *http.Request) (*url.URL, error) {
+		tr1.Proxy = func(req *http.Request) (*url.URL, error) {
 			return url.Parse(cache.ProxyIP) // 设置代理
 		}
 	}
@@ -774,7 +774,20 @@ func (cache *XueXiTUserCache) GetCourseFaceQrPlan4Api(clazzId, courseId, knowled
 
 	payload := strings.NewReader("clazzId=" + clazzId + "&courseId=" + courseId + "&uuid=" + uuid + "&qrcEnc=" + qrcEnc + "&objectId=" + objectId)
 
-	client := &http.Client{}
+	tr := &http.Transport{
+		TLSClientConfig: &tls.Config{
+			InsecureSkipVerify: true,
+		},
+	}
+	//如果开启了IP代理，那么就直接添加代理
+	if cache.IpProxySW {
+		tr.Proxy = func(req *http.Request) (*url.URL, error) {
+			return url.Parse(cache.ProxyIP) // 设置代理
+		}
+	}
+	client := &http.Client{
+		Transport: tr,
+	}
 	req, err := http.NewRequest(method, "https://mooc1-api.chaoxing.com/mooc-ans/knowledge/uploadInfo", payload)
 
 	if err != nil {
