@@ -7,8 +7,6 @@ import (
 	"crypto/md5"
 	"crypto/tls"
 	"encoding/base64"
-	"encoding/json"
-	"errors"
 	"fmt"
 	"io/ioutil"
 	"math/rand"
@@ -57,7 +55,7 @@ const (
 	APP_VERSION     = "6.4.5"
 	DEVICE_VENDOR   = "MI10"
 	BUILD           = "10831_263"
-	ANDROID_VERSION = "Android 9"
+	ANDROID_VERSION = "Android 10"
 )
 
 var IMEI = utils.TokenHex(16)
@@ -125,7 +123,7 @@ func pad(src []byte, blockSize int) []byte {
 }
 
 // LoginApi 登录Api
-func (cache *XueXiTUserCache) LoginApi() (string, error) {
+func (cache *XueXiTUserCache) LoginApi(retry int) (string, error) {
 	key := []byte(KEY)
 	block, err := aes.NewCipher(key)
 	if err != nil {
@@ -181,17 +179,22 @@ func (cache *XueXiTUserCache) LoginApi() (string, error) {
 	defer resp.Body.Close()
 
 	body, _ := ioutil.ReadAll(resp.Body)
-
-	var jsonContent map[string]interface{}
-	err = json.Unmarshal(body, &jsonContent)
-	if err != nil {
-		fmt.Println("Error parsing JSON:", err)
-		return "", err
+	//触发风控直接重新登录
+	if strings.Contains(string(body), "很抱歉，您所浏览的页面暂时不能访问！") {
+		time.Sleep(time.Duration(retry*5) * time.Second)
+		return cache.LoginApi(retry - 1)
 	}
 
-	if status, ok := jsonContent["status"].(bool); !ok || !status {
-		return "", errors.New(string(body))
-	}
+	//var jsonContent map[string]interface{}
+	//err = json.Unmarshal(body, &jsonContent)
+	//if err != nil {
+	//	fmt.Println("Error parsing JSON:", err)
+	//	return "", err
+	//}
+
+	//if status, ok := jsonContent["status"].(bool); !ok || !status {
+	//	return "", errors.New(string(body))
+	//}
 	values := resp.Header.Values("Set-Cookie")
 	for _, v := range values {
 		cache.cookie += strings.ReplaceAll(strings.ReplaceAll(v, "HttpOnly", ""), "Path=/", "")
@@ -201,7 +204,7 @@ func (cache *XueXiTUserCache) LoginApi() (string, error) {
 	}
 	utils.CookiesAddNoRepetition(&cache.cookies, resp.Cookies()) //赋值cookie
 
-	cache.JsonContent = jsonContent
+	//cache.JsonContent = jsonContent
 	return string(body), nil
 }
 

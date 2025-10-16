@@ -185,7 +185,7 @@ func ReLogin(cache *xuexitong.XueXiTUserCache) {
 	//重新登录逻辑
 	log2.Print(log2.DEBUG, "触发验证码或者202，正在绕过...")
 	cache.SetCookies([]*http.Cookie{})
-	loginResult, _ := cache.LoginApi() //重新登录设置cookie
+	loginResult, _ := cache.LoginApi(5) //重新登录设置cookie
 	if gojsonq.New().JSONString(loginResult).Find("msg2") != nil {
 		log2.Print(log2.INFO, gojsonq.New().JSONString(loginResult).Find("msg2").(string))
 		//errors.New(gojsonq.New().JSONString(loginResult).Find("msg2").(string))
