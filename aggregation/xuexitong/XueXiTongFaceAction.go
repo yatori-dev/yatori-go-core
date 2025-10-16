@@ -186,13 +186,15 @@ func ReLogin(cache *xuexitong.XueXiTUserCache) {
 	log2.Print(log2.DEBUG, "触发验证码或者202，正在绕过...")
 	cache.SetCookies([]*http.Cookie{})
 	loginResult, _ := cache.LoginApi(5) //重新登录设置cookie
-	if gojsonq.New().JSONString(loginResult).Find("msg2") != nil {
-		log2.Print(log2.INFO, gojsonq.New().JSONString(loginResult).Find("msg2").(string))
-		//errors.New(gojsonq.New().JSONString(loginResult).Find("msg2").(string))
-	} else {
-		log2.Print(log2.INFO, loginResult)
-		//errors.New(loginResult)
+	//如果登录成功
+	if gojsonq.New().JSONString(loginResult).Find("status") == nil {
+		//如果失败
+		if gojsonq.New().JSONString(loginResult).Find("msg2") != nil {
+			log2.Print(log2.INFO, gojsonq.New().JSONString(loginResult).Find("msg2").(string))
+		} else {
+			log2.Print(log2.INFO, loginResult)
+		}
 	}
-	cache.CourseListApi(3, nil) //重新设置k8s值
+	cache.CourseListApi(5, nil) //重新设置k8s值
 	log2.Print(log2.DEBUG, "重新登录后cookie值>>", fmt.Sprintf("%+v", cache.GetCookies()))
 }
