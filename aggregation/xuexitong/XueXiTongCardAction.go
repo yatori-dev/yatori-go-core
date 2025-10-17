@@ -6,7 +6,6 @@ import (
 	"errors"
 	"fmt"
 	"log"
-	"os"
 	"regexp"
 	"strings"
 
@@ -48,8 +47,9 @@ func PageMobileChapterCardAction(
 		//拉取用户照片
 		pullJson, img, err2 := cache.GetHistoryFaceImg("")
 		if err2 != nil {
-			log2.Print(log2.DEBUG, pullJson, err2)
-			os.Exit(0)
+			log2.Print(log2.INFO, pullJson, err2)
+			//os.Exit(0)
+			return nil, "", err2
 		}
 		disturbImage := utils.ImageRGBDisturb(img)
 		uuid, qrEnc, ObjectId, successEnc, err1 := PassFaceAction2(cache, fmt.Sprintf("%d", courseId), fmt.Sprintf("%d", classId), fmt.Sprintf("%d", cpi), fmt.Sprintf("%d", knowledgeId), "", "", "", disturbImage)
