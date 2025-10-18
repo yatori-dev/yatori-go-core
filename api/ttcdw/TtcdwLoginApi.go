@@ -2,13 +2,11 @@ package ttcdw
 
 import (
 	"crypto/md5"
-	"errors"
 	"fmt"
 	"io/ioutil"
 	"net/http"
 	"strings"
 
-	"github.com/thedevsaddam/gojsonq"
 	"github.com/yatori-dev/yatori-go-core/utils"
 )
 
@@ -17,7 +15,7 @@ type TtcdwUserCache struct {
 	Account   string         //账号
 	Password  string         //用户密码
 	verCode   string         //验证码
-	cookies   []*http.Cookie //验证码用的session
+	Cookies   []*http.Cookie //验证码用的session
 	token     string         //保持会话的Token
 	sign      string         //签名
 	IpProxySW bool           // 是否开启代理
@@ -25,7 +23,7 @@ type TtcdwUserCache struct {
 }
 
 // TtcdwLoginApi TTCDW学习公社登录
-func (cache *TtcdwUserCache) TtcdwLoginApi() error {
+func (cache *TtcdwUserCache) TtcdwLoginApi() (string, error) {
 
 	url := "https://www.ttcdw.cn/p/uc/userLogin?type=0&pageType=login&service=https%253A%252F%252Fwww.ttcdw.cn"
 	method := "POST"
@@ -37,7 +35,7 @@ func (cache *TtcdwUserCache) TtcdwLoginApi() error {
 
 	if err != nil {
 		fmt.Println(err)
-		return err
+		return "", err
 	}
 	req.Header.Add("User-Agent", utils.DefaultUserAgent)
 	req.Header.Add("Accept", "*/*")
@@ -48,18 +46,15 @@ func (cache *TtcdwUserCache) TtcdwLoginApi() error {
 	res, err := client.Do(req)
 	if err != nil {
 		fmt.Println(err)
-		return err
+		return "", err
 	}
 	defer res.Body.Close()
 
 	body, err := ioutil.ReadAll(res.Body)
 	if err != nil {
 		fmt.Println(err)
-		return err
+		return "", err
 	}
-	cache.cookies = res.Cookies()
-	if gojsonq.New().JSONString(string(body)).Find("success").(bool) != true {
-		return errors.New(string(body))
-	}
-	return nil
+	cache.Cookies = res.Cookies()
+	return string(body), nil
 }

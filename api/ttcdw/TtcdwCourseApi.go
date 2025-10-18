@@ -30,7 +30,7 @@ func (cache *TtcdwUserCache) PullProjectApi(retry int, lastErr error) (string, e
 		return "", err
 	}
 	//设置Cookie
-	for _, v := range cache.cookies {
+	for _, v := range cache.Cookies {
 		req.AddCookie(v)
 	}
 	req.Header.Add("User-Agent", utils.DefaultUserAgent)
@@ -50,7 +50,7 @@ func (cache *TtcdwUserCache) PullProjectApi(retry int, lastErr error) (string, e
 		fmt.Println(err)
 		return "", err
 	}
-	utils.CookiesAddNoRepetition(&cache.cookies, req.Cookies())
+	utils.CookiesAddNoRepetition(&cache.Cookies, req.Cookies())
 	return string(body), nil
 }
 
@@ -86,7 +86,7 @@ func (cache *TtcdwUserCache) PullClassRoomApi(courseProjectId string, classId st
 		return "", err
 	}
 	//fmt.Println(string(body))
-	utils.CookiesAddNoRepetition(&cache.cookies, req.Cookies())
+	utils.CookiesAddNoRepetition(&cache.Cookies, req.Cookies())
 	return string(body), nil
 }
 func (cache *TtcdwUserCache) PullCourseInfoApi(segmentId, courseId string, retry int, lastErr error) (string, error) {
@@ -106,7 +106,7 @@ func (cache *TtcdwUserCache) PullCourseInfoApi(segmentId, courseId string, retry
 	req.Header.Add("Connection", "keep-alive")
 	//req.Header.Add("Cookie", "HWWAFSESID=c92a3799bef8ba22d2; HWWAFSESTIME=1734968345848; passport=https://www.ttcdw.cn/p/passport; u-lastLoginTime=1734968374078; u-activeState=1; u-mobileState=0; u-mobile=18837922277; u-preLoginTime=1734964883966; u-token=eyJhbGciOiJIUzI1NiJ9.eyJqdGkiOiI0Mjk0ZmUzOC0zMTBiLTRlMmQtOWQwMS0xN2EyYzZjNjA2ZmYiLCJpYXQiOjE3MzQ5NjgzNzQsInN1YiI6IjUyNzI4Mzc0NTk0NTcwMjQwMCIsImlzcyI6Imd1b3JlbnQiLCJhdHRlc3RTdGF0ZSI6MCwic3JjIjoid2ViIiwiYWN0aXZlU3RhdGUiOjEsIm1vYmlsZSI6IjE4ODM3OTIyMjc3IiwicGxhdGZvcm1JZCI6IjEzMTQ1ODU0OTgzMzExIiwiYWNjb3VudCI6IjE4ODM3OTIyMjc3IiwiZXhwIjoxNzM1MDA0Mzc0fQ.sln7IZEkCDgZNqVSOXHvZXj-EklcTkEoRHMgVinPFh4; u-token-legacy=eyJhbGciOiJIUzI1NiJ9.eyJqdGkiOiI0Mjk0ZmUzOC0zMTBiLTRlMmQtOWQwMS0xN2EyYzZjNjA2ZmYiLCJpYXQiOjE3MzQ5NjgzNzQsInN1YiI6IjUyNzI4Mzc0NTk0NTcwMjQwMCIsImlzcyI6Imd1b3JlbnQiLCJhdHRlc3RTdGF0ZSI6MCwic3JjIjoid2ViIiwiYWN0aXZlU3RhdGUiOjEsIm1vYmlsZSI6IjE4ODM3OTIyMjc3IiwicGxhdGZvcm1JZCI6IjEzMTQ1ODU0OTgzMzExIiwiYWNjb3VudCI6IjE4ODM3OTIyMjc3IiwiZXhwIjoxNzM1MDA0Mzc0fQ.sln7IZEkCDgZNqVSOXHvZXj-EklcTkEoRHMgVinPFh4; u-id=527283745945702400; u-account=18837922277; ufo-urn=MTg4Mzc5MjIyNzc=; ufo-un=5LqO5pif5qKF; ufo-id=527283745945702400; u-name=yx_user_tjAvr5JL")
 	//设置Cookie
-	for _, v := range cache.cookies {
+	for _, v := range cache.Cookies {
 		req.AddCookie(v)
 	}
 	res, err := client.Do(req)
@@ -119,7 +119,7 @@ func (cache *TtcdwUserCache) PullCourseInfoApi(segmentId, courseId string, retry
 	if err != nil {
 		return "", nil
 	}
-	utils.CookiesAddNoRepetition(&cache.cookies, req.Cookies())
+	utils.CookiesAddNoRepetition(&cache.Cookies, req.Cookies())
 	return string(body), nil
 }
 
@@ -136,7 +136,7 @@ func (cache *TtcdwUserCache) PullCourseApi(segmentId, itemId string, retry int, 
 		return "", err
 	}
 	//设置Cookie
-	for _, v := range cache.cookies {
+	for _, v := range cache.Cookies {
 		req.AddCookie(v)
 	}
 	req.Header.Add("User-Agent", utils.DefaultUserAgent)
@@ -154,7 +154,7 @@ func (cache *TtcdwUserCache) PullCourseApi(segmentId, itemId string, retry int, 
 	if err != nil {
 		return "", err
 	}
-	utils.CookiesAddNoRepetition(&cache.cookies, req.Cookies())
+	utils.CookiesAddNoRepetition(&cache.Cookies, req.Cookies())
 	return string(body), nil
 }
 
@@ -173,7 +173,7 @@ func (cache *TtcdwUserCache) PullChapterListHtmlApi(cid string, retry int, lastE
 		return "", err
 	}
 	//设置Cookie
-	for _, v := range cache.cookies {
+	for _, v := range cache.Cookies {
 		req.AddCookie(v)
 	}
 	req.Header.Add("User-Agent", utils.DefaultUserAgent)
@@ -191,7 +191,7 @@ func (cache *TtcdwUserCache) PullChapterListHtmlApi(cid string, retry int, lastE
 	if err != nil {
 		return "", err
 	}
-	utils.CookiesAddNoRepetition(&cache.cookies, req.Cookies())
+	utils.CookiesAddNoRepetition(&cache.Cookies, req.Cookies())
 	return string(body), nil
 }
 
@@ -217,7 +217,7 @@ func (cache *TtcdwUserCache) PullGetResApi(sectionId string, retry int, lastErr 
 	req.Header.Add("Connection", "keep-alive")
 	req.Header.Add("Content-Type", "application/x-www-form-urlencoded")
 	//设置Cookie
-	for _, v := range cache.cookies {
+	for _, v := range cache.Cookies {
 		req.AddCookie(v)
 	}
 
@@ -231,7 +231,7 @@ func (cache *TtcdwUserCache) PullGetResApi(sectionId string, retry int, lastErr 
 	if err != nil {
 		return "", err
 	}
-	utils.CookiesAddNoRepetition(&cache.cookies, req.Cookies())
+	utils.CookiesAddNoRepetition(&cache.Cookies, req.Cookies())
 	return string(body), nil
 }
 
