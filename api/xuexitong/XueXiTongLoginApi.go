@@ -55,7 +55,7 @@ const (
 	APP_VERSION     = "6.4.5"
 	DEVICE_VENDOR   = "MI10"
 	BUILD           = "10831_263"
-	ANDROID_VERSION = "Android 10"
+	ANDROID_VERSION = "Android 9"
 )
 
 var IMEI = utils.TokenHex(16)

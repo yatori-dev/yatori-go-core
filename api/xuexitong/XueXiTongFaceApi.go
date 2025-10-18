@@ -616,7 +616,7 @@ func (cache *XueXiTUserCache) GetCourseFaceQrPlan2Api(classId, courseId, knowled
 
 	//urlStr := "https://mooc1-api.chaoxing.com/mooc-ans/facephoto/clientfacecheckstatus?" + "courseId=" + courseId + "&clazzId=" + classId + "&cpi=" + cpi + "&chapterId=" + knowledgeId + "&objectId=" + objectId + "&type=1"
 	urlStr := "https://mooc1-api.chaoxing.com/mooc-ans/facephoto/clientfacecheckstatus?" + "courseId=" + courseId + "&clazzId=" + classId + "&cpi=" + cpi + "&chapterId=" + knowledgeId + "&objectId=" + objectId + "&liveDetectionStatus=1" + "&signt=" + "&signk=" + "&cxtime=" + "&cxcid=" + "&type=1"
-	method := "GET"
+
 	tr := &http.Transport{
 		TLSClientConfig: &tls.Config{
 			InsecureSkipVerify: true, // 跳过证书验证，仅用于开发环境
@@ -632,7 +632,7 @@ func (cache *XueXiTUserCache) GetCourseFaceQrPlan2Api(classId, courseId, knowled
 	client := &http.Client{
 		Transport: tr,
 	}
-	req, err := http.NewRequest(method, urlStr, nil)
+	req, err := http.NewRequest("GET", urlStr, nil)
 
 	if err != nil {
 		fmt.Println(err)
@@ -664,12 +664,80 @@ func (cache *XueXiTUserCache) GetCourseFaceQrPlan2Api(classId, courseId, knowled
 	return string(body), nil
 }
 
-// 过人脸（第三版）
-func (cache *XueXiTUserCache) GetCourseFaceQrPlan3Api(uuid, clazzId, courseId, qrcEnc, objectId /*人脸的objectId*/ string) (string, error) {
+// 扫码过人脸（第二版）
+func (cache *XueXiTUserCache) GetCourseFaceQrPlan5Api(classId, courseId, knowledgeId, cpi, objectId /*人脸上传id*/ string) (string, error) {
+
+	//urlStr := "https://mooc1-api.chaoxing.com/mooc-ans/facephoto/clientfacecheckstatus?" + "courseId=" + courseId + "&clazzId=" + classId + "&cpi=" + cpi + "&chapterId=" + knowledgeId + "&objectId=" + objectId + "&type=1"
+	//urlStr := "https://mooc1-api.chaoxing.com/mooc-ans/facephoto/clientfacecheckstatus?" + "courseId=" + courseId + "&clazzId=" + classId + "&cpi=" + cpi + "&chapterId=" + knowledgeId + "&objectId=" + objectId + "&liveDetectionStatus=1" + "&signt=" + "&signk=" + "&cxtime=" + "&cxcid=" + "&type=1"
+	urlStr := "https://mooc1-api.chaoxing.com/mooc-ans/facephoto/clientfacecheckstatus?" + "courseId2=" + courseId
+	// 构造 POST 表单数据
+	form := url.Values{}
+	form.Set("courseId", courseId)
+	form.Set("clazzId", classId)
+	form.Set("cpi", cpi)
+	form.Set("chapterId", knowledgeId)
+	form.Set("liveDetectionStatus", "1")
+	form.Set("objectId", objectId)
+	form.Set("signt", "")
+	form.Set("signk", "")
+	form.Set("cxtime", "")
+	form.Set("cxcid", "")
+	form.Set("type", "1")
+
+	tr := &http.Transport{
+		TLSClientConfig: &tls.Config{
+			InsecureSkipVerify: true, // 跳过证书验证，仅用于开发环境
+		},
+	}
+
+	//如果开启了IP代理，那么就直接添加代理
+	if cache.IpProxySW {
+		tr.Proxy = func(req *http.Request) (*url.URL, error) {
+			return url.Parse(cache.ProxyIP) // 设置代理
+		}
+	}
+	client := &http.Client{
+		Transport: tr,
+	}
+	//req, err := http.NewRequest("GET", urlStr, nil)
+	req, err := http.NewRequest("POST", urlStr, bytes.NewBufferString(form.Encode()))
+
+	if err != nil {
+		fmt.Println(err)
+		return "", nil
+	}
+	//req.Header.Add("User-Agent", "Mozilla/5.0 (Linux; Android 12; SM-N9006 Build/V417IR; wv) AppleWebKit/537.36 (KHTML, like Gecko) Version/4.0 Chrome/95.0.4638.74 Mobile Safari/537.36 (schild:e9b05c3f9fb49fef2f516e86ac3c4ff1) (device:SM-N9006) Language/zh_CN com.chaoxing.mobile/ChaoXingStudy_3_6.3.7_android_phone_10822_249 (@Kalimdor)_4627cad9c4b6415cba5dc6cac39e6c96")
+	req.Header.Add("User-Agent", GetUA("mobile"))
+	for _, cookie := range cache.cookies {
+		req.AddCookie(cookie)
+	}
+	req.Header.Add("Accept", "*/*")
+	req.Header.Add("Host", "mooc1-api.chaoxing.com")
+	req.Header.Add("Connection", "keep-alive")
+	//req.Header.Add("Content-Type", "application/x-www-form-urlencoded")
+
+	res, err := client.Do(req)
+	if err != nil {
+		fmt.Println(err)
+		return "", nil
+	}
+	defer res.Body.Close()
+
+	body, err := ioutil.ReadAll(res.Body)
+	if err != nil {
+		fmt.Println(err)
+		return "", nil
+	}
+	utils.CookiesAddNoRepetition(&cache.cookies, res.Cookies()) //赋值cookie
+	return string(body), nil
+}
+
+// 过人脸(进入课程的时候调用的扫描)
+func (cache *XueXiTUserCache) GetCourseFaceQrPlan3Api(clazzId, courseId, uuid, qrcEnc, cpi, objectId /*人脸的objectId*/ string) (string, error) {
 	urlStr := "https://mooc1-api.chaoxing.com/qr/updateqrstatus?uuid2=" + uuid + "&clazzId2=" + clazzId
 	method := "POST"
 
-	payload := strings.NewReader("clazzId=" + clazzId + "&courseId=" + courseId + "&uuid=" + uuid + "&qrcEnc=" + qrcEnc + "&objectId=" + objectId)
+	payload := strings.NewReader("clazzId=" + clazzId + "&courseId=" + courseId + "&uuid=" + uuid + "&qrcEnc=" + qrcEnc + "&cpi=" + cpi + "&liveDetectionStatus=0&signt=&signk=&cxtime=&cxcid=&knowledgeid=0" + "&objectId=" + objectId + "&videojobid=&videoCollectTime=0&chaptervideoobjectid=")
 
 	tr := &http.Transport{
 		TLSClientConfig: &tls.Config{
@@ -766,13 +834,63 @@ func (cache *XueXiTUserCache) GetCourseFaceStart(clazzId, courseId, knowledgeId,
 	}
 	fmt.Println(string(body))
 }
+func (cache *XueXiTUserCache) ContinueStudy(clazzId, courseId, cpi, objectId, errorLogId string) {
+	//	/facephoto/continuelearn?courseId="+courseId+"&clazzId="+clazzId+"&cpi="+cpi+"&objectId="+objectId+"&errorLogId="+errorLogId+"&type=1"
+	urlStr := "https://mooc1-api.chaoxing.com/mooc-ans/facephoto/continuelearn?courseId=" + courseId + "&clazzId=" + clazzId + "&cpi=" + cpi + "&objectId=" + objectId + "&errorLogId=" + errorLogId + "&type=1"
+	method := "GET"
+
+	tr := &http.Transport{
+		TLSClientConfig: &tls.Config{
+			InsecureSkipVerify: true, // 跳过证书验证，仅用于开发环境
+		},
+	}
+
+	//如果开启了IP代理，那么就直接添加代理
+	if cache.IpProxySW {
+		tr.Proxy = func(req *http.Request) (*url.URL, error) {
+			return url.Parse(cache.ProxyIP) // 设置代理
+		}
+	}
+	client := &http.Client{
+		Transport: tr,
+	}
+	req, err := http.NewRequest(method, urlStr, nil)
+
+	if err != nil {
+		fmt.Println(err)
+		return
+	}
+	//req.Header.Add("User-Agent", "Mozilla/5.0 (Linux; Android 12; SM-N9006 Build/V417IR; wv) AppleWebKit/537.36 (KHTML, like Gecko) Version/4.0 Chrome/95.0.4638.74 Mobile Safari/537.36 (schild:e9b05c3f9fb49fef2f516e86ac3c4ff1) (device:SM-N9006) Language/zh_CN com.chaoxing.mobile/ChaoXingStudy_3_6.3.7_android_phone_10822_249 (@Kalimdor)_4627cad9c4b6415cba5dc6cac39e6c96")
+	req.Header.Add("User-Agent", GetUA("mobile"))
+	for _, cookie := range cache.cookies {
+		req.AddCookie(cookie)
+	}
+	req.Header.Add("Accept", "*/*")
+	req.Header.Add("Host", "mooc1-api.chaoxing.com")
+	req.Header.Add("Connection", "keep-alive")
+	req.Header.Add("Content-Type", "application/x-www-form-urlencoded")
+
+	res, err := client.Do(req)
+	if err != nil {
+		fmt.Println(err)
+		return
+	}
+	defer res.Body.Close()
+
+	body, err := ioutil.ReadAll(res.Body)
+	if err != nil {
+		fmt.Println(err)
+		return
+	}
+	fmt.Println(string(body))
+}
 
 // 过人脸（二维码状态）
 // 有时候uuid,qrcEnc参数可能不用填
 func (cache *XueXiTUserCache) GetCourseFaceQrPlan4Api(clazzId, courseId, knowledgeId, uuid, qrcEnc, objectId string) (string, error) {
 	method := "GET"
 
-	payload := strings.NewReader("clazzId=" + clazzId + "&courseId=" + courseId + "&uuid=" + uuid + "&qrcEnc=" + qrcEnc + "&objectId=" + objectId)
+	payload := strings.NewReader("clazzId=" + clazzId + "&courseId=" + courseId + "&knowledgeId=" + knowledgeId + "&uuid=" + uuid + "&qrcEnc=" + qrcEnc + "&objectId=" + objectId)
 
 	tr := &http.Transport{
 		TLSClientConfig: &tls.Config{
@@ -793,9 +911,11 @@ func (cache *XueXiTUserCache) GetCourseFaceQrPlan4Api(clazzId, courseId, knowled
 	if err != nil {
 		return "", err
 	}
-	req.Header.Add("Cookie", cache.cookie)
-	req.Header.Add("User-Agent", GetUA("mobile"))
-
+	for _, cookie := range cache.cookies {
+		req.AddCookie(cookie)
+	}
+	//req.Header.Add("User-Agent", GetUA("mobile"))
+	req.Header.Add("User-Agent", utils.DefaultUserAgent)
 	res, err := client.Do(req)
 	if err != nil {
 		return "", err

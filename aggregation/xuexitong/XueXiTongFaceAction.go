@@ -71,6 +71,9 @@ func PassFaceAction1(cache *xuexitong.XueXiTUserCache, courseId, classId, cpi, c
 func PassFaceAction2(cache *xuexitong.XueXiTUserCache, courseId, classId, cpi, chapterId, videojobid, mid, videoRandomCollectTime string, face image.Image) (string, string, string, string /*识别状态*/, error) {
 	//cache.GetCourseFaceStart(classId, courseId, chapterId, cpi) //没事别放开，测试用的
 	uuid, qrEnc, err := cache.GetFaceQrCodeApi2(courseId, classId, cpi)
+	if qrEnc == "" {
+		uuid, qrEnc, err = cache.GetFaceQrCodeApi1(courseId, classId, chapterId, cpi)
+	}
 	if err != nil {
 		return "", "", "", "", err
 	}
@@ -93,11 +96,9 @@ func PassFaceAction2(cache *xuexitong.XueXiTUserCache, courseId, classId, cpi, c
 	if ObjectId == "" {
 		return "", "", "", "", errors.New("ObjectId is empty")
 	}
-	//plan3Api, err := cache.GetCourseFaceQrPlan4Api(classId, courseId, ObjectId, uuid, qrEnc, ObjectId)
-
-	plan3Api, err := cache.GetCourseFaceQrPlan2Api(classId, courseId, chapterId, cpi, ObjectId)
-	//plan3Api, err := cache.GetCourseFaceQrPlan4Api(uuid, classId, courseId, qrEnc, ObjectId)
-	//plan3Api, err := cache.GetCourseFaceQrPlan1Api(courseId, classId, uuid, ObjectId, qrEnc, "0")
+	//plan3Api, err := cache.GetCourseFaceQrPlan4Api(classId, courseId, chapterId, uuid, qrEnc, ObjectId)
+	//暂时先用plan3的过人脸（进入课程扫通过的）
+	plan3Api, err := cache.GetCourseFaceQrPlan3Api(classId, courseId, uuid, qrEnc, cpi, ObjectId)
 	passMsg := gojsonq.New().JSONString(plan3Api).Find("msg")
 	if err != nil {
 		return "", "", "", "", err
@@ -151,9 +152,10 @@ func PassFaceAction3(cache *xuexitong.XueXiTUserCache, courseId, classId, cpi, c
 	if ObjectId == "" {
 		return "", "", "", "", errors.New("ObjectId is empty")
 	}
-	plan3Api, err := cache.GetCourseFaceQrPlan2Api(classId, courseId, chapterId, cpi, ObjectId)
+	//plan3Api, err := cache.GetCourseFaceQrPlan2Api(classId, courseId, chapterId, cpi, ObjectId)
+	//暂时先用plan3的过人脸（进入课程扫通过的）
+	plan3Api, err := cache.GetCourseFaceQrPlan3Api(classId, courseId, uuid, qrEnc, cpi, ObjectId)
 	//plan3Api, err := cache.GetCourseFaceQrPlan3Api(uuid, classId, courseId, qrEnc, ObjectId)
-	//plan3Api, err := cache.GetCourseFaceQrPlan1Api(courseId, classId, uuid, ObjectId, qrEnc, "0")
 	passMsg := gojsonq.New().JSONString(plan3Api).Find("msg")
 	if err != nil {
 		return "", "", "", "", err
