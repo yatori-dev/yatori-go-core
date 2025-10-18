@@ -746,7 +746,7 @@ func TestPullFaceImg(t *testing.T) {
 	}
 	//拉取用户照片
 	_, img, _ := userCache.GetHistoryFaceImg("")
-	utils.SaveImageAsJPEG(img, ".assets/face.jpg")
+	utils.SaveImageAsJPEG(img, "./assets/face.jpg")
 }
 
 // 测试扫人脸
@@ -773,6 +773,6 @@ func TestFaceQrScan(t *testing.T) {
 	ObjectId, err := userCache.UploadFaceImageApi(token, disturbImage)
 
 	//plan3是点击进入课程时候的人脸识别
-	planApi, err := userCache.GetCourseFaceQrPlan3Api("124829702", "254088263", "55ad5daa-1fd0-4963-abaa-845e7e827d45", "cbea4be26c846e763b87aa9c7ab9903f", "406376661", ObjectId)
+	planApi, err := userCache.GetCourseFaceQrPlan3Api("124829702", "254088263", "6f103ec4-c8df-4dfe-b77e-085f82ed1101", "f9326cd8dbe76f63b8c8b90f2545a52c", "406376661", ObjectId)
 	log.Println(planApi, err)
 }

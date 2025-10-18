@@ -51,11 +51,13 @@ const (
 	PageMobileWork  = "https://mooc1-api.chaoxing.com/android/mworkspecial"           // 这是个cxkitty中的
 	PageMobileWorkY = "https://mooc1-api.chaoxing.com/mooc-ans/work/phone/doHomeWork" // 这个是自己爬的
 
-	KEY             = "u2oh6Vu^HWe4_AES" // 注意 Go 语言中字符串默认就是 UTF-8 编码
-	APP_VERSION     = "6.4.5"
-	DEVICE_VENDOR   = "MI10"
-	BUILD           = "10831_263"
-	ANDROID_VERSION = "Android 9"
+	KEY = "u2oh6Vu^HWe4_AES" // 注意 Go 语言中字符串默认就是 UTF-8 编码
+	//APP_VERSION = "6.4.5"
+	APP_VERSION   = "6.6.4"
+	DEVICE_VENDOR = "MI10"
+	BUILD         = "10831_263"
+	//BUILD           = "10903_285"
+	ANDROID_VERSION = "Android 11"
 )
 
 var IMEI = utils.TokenHex(16)
@@ -82,13 +84,23 @@ func (cache *XueXiTUserCache) SetCookies(cookies []*http.Cookie) { cache.cookies
 func GetUA(uaType string) string {
 	switch uaType {
 	case "mobile":
+		//return strings.Join([]string{
+		//	fmt.Sprintf("Dalvik/2.1.0 (Linux; U; %s; %s Build/SKQ1.210216.001)", ANDROID_VERSION, DEVICE_VENDOR),
+		//	fmt.Sprintf("(schild:%s)", MobileUASign(DEVICE_VENDOR, "zh_CN", APP_VERSION, BUILD, IMEI)),
+		//	fmt.Sprintf("(device:%s)", DEVICE_VENDOR),
+		//	"Language/zh_CN",
+		//	fmt.Sprintf("com.chaoxing.mobile/ChaoXingStudy_3_%s_android_phone_%s", APP_VERSION, BUILD),
+		//	//APP_VERSION,
+		//	fmt.Sprintf("(@Kalimdor)_%s", IMEI),
+		//}, " ")
+
 		return strings.Join([]string{
-			fmt.Sprintf("Dalvik/2.1.0 (Linux; U; %s; %s Build/SKQ1.210216.001)", ANDROID_VERSION, DEVICE_VENDOR),
+			fmt.Sprintf("Mozilla/5.0 (Linux; %s; %s Build/OPM1.171019.019; wv)", ANDROID_VERSION, DEVICE_VENDOR),
+			fmt.Sprintf("AppleWebKit/537.36 (KHTML, like Gecko) Version/4.0 Chrome/71.0.3578.99 Mobile Safari/537.36"),
 			fmt.Sprintf("(schild:%s)", MobileUASign(DEVICE_VENDOR, "zh_CN", APP_VERSION, BUILD, IMEI)),
 			fmt.Sprintf("(device:%s)", DEVICE_VENDOR),
 			"Language/zh_CN",
 			fmt.Sprintf("com.chaoxing.mobile/ChaoXingStudy_3_%s_android_phone_%s", APP_VERSION, BUILD),
-			//APP_VERSION,
 			fmt.Sprintf("(@Kalimdor)_%s", IMEI),
 		}, " ")
 	case "web":
