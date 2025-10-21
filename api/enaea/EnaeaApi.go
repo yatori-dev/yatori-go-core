@@ -17,8 +17,8 @@ import (
 type EnaeaUserCache struct {
 	Account  string //账号
 	Password string //密码
-	cookie   string //cookie
-	asuss    string //token
+	Cookie   string //cookie
+	Asuss    string //token
 }
 
 // LoginApi 学习公社登录
@@ -62,7 +62,7 @@ func LoginApi(cache *EnaeaUserCache) (string, error) {
 
 	for _, cookie := range resp.Cookies() {
 		if cookie.Name == "ASUSS" {
-			cache.asuss = cookie.Value
+			cache.Asuss = cookie.Value
 			break
 		}
 	}
@@ -86,7 +86,7 @@ func PullProjectsApi(cache *EnaeaUserCache) (string, error) {
 	}
 
 	// Add headers
-	req.Header.Add("Cookie", "ASUSS="+cache.asuss+";")
+	req.Header.Add("Cookie", "ASUSS="+cache.Asuss+";")
 	req.Header.Add("User-Agent", utils.DefaultUserAgent)
 	req.Header.Add("Accept", "*/*")
 	req.Header.Add("Host", "study.enaea.edu.cn")
@@ -118,7 +118,7 @@ func PullStudyCourseHTMLApi(cache *EnaeaUserCache, circleId string) (string, err
 	}
 
 	// Set the headers
-	req.Header.Add("Cookie", "ASUSS="+cache.asuss+";")
+	req.Header.Add("Cookie", "ASUSS="+cache.Asuss+";")
 	req.Header.Add("User-Agent", utils.DefaultUserAgent)
 	req.Header.Add("Accept", "*/*")
 	req.Header.Add("Host", "study.enaea.edu.cn")
@@ -158,7 +158,7 @@ func PullStudyCourseListApi(cache *EnaeaUserCache, circleId, syllabusId, moudle 
 	}
 
 	// Set headers
-	req.Header.Add("Cookie", "ASUSS="+cache.asuss+";")
+	req.Header.Add("Cookie", "ASUSS="+cache.Asuss+";")
 	req.Header.Add("User-Agent", utils.DefaultUserAgent)
 	req.Header.Add("Accept", "*/*")
 	req.Header.Add("Host", "study.enaea.edu.cn")
@@ -192,7 +192,42 @@ func PullCourseVideoListApi(cache *EnaeaUserCache, circleId, courseId string) (s
 	}
 
 	// Add headers
-	req.Header.Add("Cookie", "ASUSS="+cache.asuss+";")
+	req.Header.Add("Cookie", "ASUSS="+cache.Asuss+";")
+	req.Header.Add("User-Agent", utils.DefaultUserAgent)
+	req.Header.Add("Accept", "*/*")
+	req.Header.Add("Host", "study.enaea.edu.cn")
+	req.Header.Add("Connection", "keep-alive")
+
+	// Make the HTTP request
+	resp, err := client.Do(req)
+	if err != nil {
+		return "", err
+	}
+	defer resp.Body.Close()
+
+	// Read the response body
+	body, err := ioutil.ReadAll(resp.Body)
+	if err != nil {
+		return "", err
+	}
+
+	return string(body), nil
+}
+
+// 拉取icourse的vr课程数据
+func PullICourseWorkHTMLApi(cache *EnaeaUserCache, circleId, courseId string) (string, error) {
+	// Construct the URL with courseId, circleId, and timestamp
+	urlStr := fmt.Sprintf("https://study.enaea.edu.cn/viewerforicourse.do?courseId=%s&circleId=%s",
+		courseId, circleId)
+
+	client := &http.Client{}
+	req, err := http.NewRequest("GET", urlStr, nil)
+	if err != nil {
+		return "", err
+	}
+
+	// Add headers
+	req.Header.Add("Cookie", "ASUSS="+cache.Asuss+";")
 	req.Header.Add("User-Agent", utils.DefaultUserAgent)
 	req.Header.Add("Accept", "*/*")
 	req.Header.Add("Host", "study.enaea.edu.cn")
@@ -217,17 +252,17 @@ func PullCourseVideoListApi(cache *EnaeaUserCache, circleId, courseId string) (s
 // StatisticTicForCCVideApi 在观看视屏前一定要先调用这个函数，相当于告诉后端，我要看这个视屏了，请对这个视屏开始计时
 func StatisticTicForCCVideApi(cache *EnaeaUserCache, courseId, courseContentId, circleId string) (string /*json*/, string /*key*/, string /*value*/, error) {
 	// Construct the URL
-	url := fmt.Sprintf("https://study.enaea.edu.cn/course.do?action=statisticForCCVideo&courseId=%s&coursecontentId=%s&circleId=%s&_=%d",
+	urlStr := fmt.Sprintf("https://study.enaea.edu.cn/course.do?action=statisticForCCVideo&courseId=%s&coursecontentId=%s&circleId=%s&_=%d",
 		courseId, courseContentId, circleId, time.Now().UnixMilli())
 
 	client := &http.Client{}
-	req, err := http.NewRequest("GET", url, nil)
+	req, err := http.NewRequest("GET", urlStr, nil)
 	if err != nil {
 		return "", "", "", err
 	}
 
 	// Add headers
-	req.Header.Add("Cookie", "ASUSS="+cache.asuss+";")
+	req.Header.Add("Cookie", "ASUSS="+cache.Asuss+";")
 	req.Header.Add("User-Agent", utils.DefaultUserAgent)
 	req.Header.Add("Accept", "*/*")
 	req.Header.Add("Host", "study.enaea.edu.cn")
@@ -277,7 +312,7 @@ func SubmitStudyTimeApi(cache *EnaeaUserCache, circleId, SCFUCKPKey, SCFUCKPValu
 	}
 
 	// Add headers
-	cookie := fmt.Sprintf("ASUSS=%s;%s=%s", cache.asuss, SCFUCKPKey, SCFUCKPValue)
+	cookie := fmt.Sprintf("ASUSS=%s;%s=%s", cache.Asuss, SCFUCKPKey, SCFUCKPValue)
 	req.Header.Add("Cookie", cookie)
 	req.Header.Add("User-Agent", utils.DefaultUserAgent)
 	req.Header.Add("Accept", "*/*")
@@ -325,7 +360,7 @@ func SubmitStudyTimeFastApi(cache *EnaeaUserCache, circleId, SCFUCKPKey, SCFUCKP
 	}
 
 	// Add headers
-	cookie := fmt.Sprintf("ASUSS=%s;%s=%s", cache.asuss, SCFUCKPKey, SCFUCKPValue)
+	cookie := fmt.Sprintf("ASUSS=%s;%s=%s", cache.Asuss, SCFUCKPKey, SCFUCKPValue)
 	req.Header.Add("Cookie", cookie)
 	req.Header.Add("User-Agent", utils.DefaultUserAgent)
 	req.Header.Add("Accept", "*/*")
@@ -372,7 +407,7 @@ func PullExamListApi(cache *EnaeaUserCache, circleId, syllabusId, moudle string)
 	}
 
 	// Set headers
-	req.Header.Add("Cookie", "ASUSS="+cache.asuss+";")
+	req.Header.Add("Cookie", "ASUSS="+cache.Asuss+";")
 	req.Header.Add("User-Agent", utils.DefaultUserAgent)
 	req.Header.Add("Accept", "*/*")
 	req.Header.Add("Host", "study.enaea.edu.cn")

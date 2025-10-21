@@ -5,6 +5,7 @@ import (
 	"strings"
 
 	"github.com/yatori-dev/yatori-go-core/api/enaea"
+	"github.com/yatori-dev/yatori-go-core/utils"
 	"github.com/yatori-dev/yatori-go-core/utils/log"
 )
 
@@ -20,6 +21,19 @@ func EnaeaLoginAction(cache *enaea.EnaeaUserCache) (string, error) {
 	//fmt.Println(api)
 
 	return api, nil
+}
+
+// Cookie登录
+func EnaeaCookieLoginAction(cache *enaea.EnaeaUserCache, cookies string) error {
+	cache.Cookie = cookies
+	resCookie := utils.TurnCookiesFromString(cookies)
+	for _, cookie := range resCookie {
+		if cookie.Name == "ASUSS" {
+			cache.Asuss = cookie.Value
+			break
+		}
+	}
+	return nil
 }
 
 // LoginTimeoutAfreshAction 超时重登

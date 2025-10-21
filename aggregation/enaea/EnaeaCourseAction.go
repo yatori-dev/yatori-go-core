@@ -25,14 +25,16 @@ type EnaeaProject struct {
 	CircleCardNumber string    //卡片数字编号
 }
 type EnaeaCourse struct {
-	TitleTag          string  //课程对应侧边栏标签
-	CourseTitle       string  //课程名称
-	Remark            string  //课程节点名称
-	CourseContentType string  //课程内容类型
-	StudyProgress     float32 //学习进度
-	CourseId          string  //课程ID
-	CircleId          string
-	SyllabusId        string
+	TitleTag           string  //课程对应侧边栏标签
+	CourseTitle        string  //课程名称
+	Remark             string  //课程节点名称
+	CourseContentLink  string  //外部课程链接
+	CourseExternalType string  //外部课程对应的平台,像icourse
+	CourseContentType  string  //课程内容类型，video为视屏，external_link为外部链接
+	StudyProgress      float32 //学习进度
+	CourseId           string  //课程ID
+	CircleId           string
+	SyllabusId         string
 }
 type EnaeaVideo struct {
 	TitleTag         string  //侧边栏标签，选修还是必修
@@ -128,15 +130,19 @@ func CourseListAction(cache *enaea.EnaeaUserCache, circleId string) ([]EnaeaCour
 					remark := obj["remark"].(string)
 					centerDTO := obj["studyCenterDTO"].(map[string]interface{})
 					studyProgress, _ := strconv.ParseFloat(centerDTO["studyProgress"].(string), 64)
+					courseContentLink, _ := centerDTO["courseContentLink"].(string)
+					courseExternalType, _ := centerDTO["courseExternalType"].(string)
 					courses = append(courses, EnaeaCourse{
-						TitleTag:          v[1],
-						CircleId:          circleId,
-						SyllabusId:        v[3],
-						Remark:            remark,
-						StudyProgress:     float32(studyProgress),
-						CourseId:          strconv.Itoa(int(centerDTO["courseId"].(float64))),
-						CourseTitle:       centerDTO["courseTitle"].(string),
-						CourseContentType: centerDTO["coursecontentType"].(string),
+						TitleTag:           v[1],
+						CircleId:           circleId,
+						SyllabusId:         v[3],
+						Remark:             remark,
+						StudyProgress:      float32(studyProgress),
+						CourseId:           strconv.Itoa(int(centerDTO["courseId"].(float64))),
+						CourseTitle:        centerDTO["courseTitle"].(string),
+						CourseContentLink:  courseContentLink,
+						CourseExternalType: courseExternalType,
+						CourseContentType:  centerDTO["coursecontentType"].(string),
 					},
 					)
 				}
@@ -150,55 +156,87 @@ func CourseListAction(cache *enaea.EnaeaUserCache, circleId string) ([]EnaeaCour
 // 拉取对应课程的视频
 func VideoListAction(cache *enaea.EnaeaUserCache, course *EnaeaCourse) ([]EnaeaVideo, error) {
 	var videos []EnaeaVideo
-	api, err := enaea.PullCourseVideoListApi(cache, course.CircleId, course.CourseId)
-	if err != nil {
-		return nil, err
-	}
-	jsonList := gojsonq.New().JSONString(api).Find("result.list")
-	if items, ok := jsonList.([]interface{}); ok {
-		for _, item := range items {
-			if obj, ok := item.(map[string]interface{}); ok {
+	switch course.CourseContentType {
+	case "video":
+		api, err := enaea.PullCourseVideoListApi(cache, course.CircleId, course.CourseId)
+		if err != nil {
+			return nil, err
+		}
+		jsonList := gojsonq.New().JSONString(api).Find("result.list")
+		if items, ok := jsonList.([]interface{}); ok {
+			for _, item := range items {
+				if obj, ok := item.(map[string]interface{}); ok {
 
-				studyProgress, _ := strconv.ParseFloat(obj["studyProgress"].(string), 64)
-				if obj["filename"] == nil {
-					fmt.Println("空")
+					studyProgress, _ := strconv.ParseFloat(obj["studyProgress"].(string), 64)
+					if obj["filename"] == nil {
+						fmt.Println("空")
+					}
+					courseContentStr, _ := url.QueryUnescape(obj["courseContentStr"].(string))
+					//统计视屏时长
+					videoTime := 0
+					if obj["length"] != nil {
+						length := strings.Split(obj["length"].(string), ":")
+						hours, hoursErr := strconv.Atoi(length[0])
+						if hoursErr == nil {
+							videoTime += hours * 60 * 60
+						}
+
+						minus, minusErr := strconv.Atoi(length[1])
+						if minusErr == nil {
+							videoTime += minus * 60
+						}
+
+						seconds, secondsErr := strconv.Atoi(length[2])
+						if secondsErr == nil {
+							videoTime += seconds
+						}
+					}
+
+					videos = append(videos, EnaeaVideo{
+						TitleTag:         course.TitleTag,
+						CourseName:       course.Remark,
+						TccId:            obj["tccId"].(string),
+						FileName:         obj["filename"].(string),
+						CourseContentStr: courseContentStr,
+						StudyProgress:    float32(studyProgress),
+						VideoLength:      videoTime,
+						Id:               strconv.Itoa(int(obj["id"].(float64))),
+						CourseId:         course.CourseId,
+						CircleId:         course.CircleId,
+					})
 				}
-				courseContentStr, _ := url.QueryUnescape(obj["courseContentStr"].(string))
-				//统计视屏时长
-				videoTime := 0
-				if obj["length"] != nil {
-					length := strings.Split(obj["length"].(string), ":")
-					hours, hoursErr := strconv.Atoi(length[0])
-					if hoursErr == nil {
-						videoTime += hours * 60 * 60
-					}
-
-					minus, minusErr := strconv.Atoi(length[1])
-					if minusErr == nil {
-						videoTime += minus * 60
-					}
-
-					seconds, secondsErr := strconv.Atoi(length[2])
-					if secondsErr == nil {
-						videoTime += seconds
-					}
-				}
-
-				videos = append(videos, EnaeaVideo{
-					TitleTag:         course.TitleTag,
-					CourseName:       course.Remark,
-					TccId:            obj["tccId"].(string),
-					FileName:         obj["filename"].(string),
-					CourseContentStr: courseContentStr,
-					StudyProgress:    float32(studyProgress),
-					VideoLength:      videoTime,
-					Id:               strconv.Itoa(int(obj["id"].(float64))),
-					CourseId:         course.CourseId,
-					CircleId:         course.CircleId,
-				})
 			}
 		}
+	case "external_link":
+		if course.CourseExternalType == "icourse" {
+			htmlApi, err := enaea.PullICourseWorkHTMLApi(cache, course.CircleId, course.CourseId)
+			if err != nil {
+				return nil, err
+			}
+			// 定义一个 map 存储结果
+			results := make(map[string]string)
+
+			// 定义需要提取的字段
+			fields := []string{"courseId", "currPlayCoursecontentId", "jsp_circleId", "accountId"}
+			for _, field := range fields {
+				// 构造匹配模式，例如 var courseId = 308349;
+				re := regexp.MustCompile(fmt.Sprintf(`var\s+%s\s*=\s*(\d+);`, field))
+				match := re.FindStringSubmatch(htmlApi)
+				if len(match) > 1 {
+					results[field] = match[1]
+				}
+			}
+			videos = append(videos, EnaeaVideo{
+				TitleTag:      course.TitleTag,
+				CourseName:    course.Remark,
+				Id:            results["currPlayCoursecontentId"],
+				StudyProgress: 0,
+				CourseId:      results["courseId"],
+				CircleId:      results["jsp_circleId"],
+			})
+		}
 	}
+
 	return videos, nil
 }
 
