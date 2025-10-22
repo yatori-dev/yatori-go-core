@@ -32,6 +32,8 @@ func YatoriCoreInit() {
 	loadAiEnvironment()
 	//加载必要nodejs模块
 	loadNodeModules()
+	//创建faces文件夹
+	PathExistForCreate("./assets/faces")
 }
 
 // 加载必要的文件资源

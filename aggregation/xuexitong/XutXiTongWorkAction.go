@@ -1,24 +1,57 @@
 package xuexitong
 
 import (
+	"errors"
+
+	ddddocr "github.com/Changbaiqi/ddddocr-go/utils"
+	ort "github.com/yalue/onnxruntime_go"
 	"github.com/yatori-dev/yatori-go-core/api/entity"
 	"github.com/yatori-dev/yatori-go-core/api/xuexitong"
 	"github.com/yatori-dev/yatori-go-core/models/ctype"
+	"github.com/yatori-dev/yatori-go-core/utils"
+	log2 "github.com/yatori-dev/yatori-go-core/utils/log"
 	"github.com/yatori-dev/yatori-go-core/utils/qutils"
 )
 
 // WorkNewSubmitAnswerAction 提交答题
-func WorkNewSubmitAnswerAction(userCache *xuexitong.XueXiTUserCache, question entity.Question, isSubmit bool) string {
+func WorkNewSubmitAnswerAction(userCache *xuexitong.XueXiTUserCache, question entity.Question, isSubmit bool) (string, error) {
 	submitState := "1"
 	if isSubmit {
 		submitState = ""
 	}
-	answer, _ := userCache.WorkNewSubmitAnswer(question.CourseId, question.ClassId, question.Knowledgeid, question.Cpi,
+	answer, err := userCache.WorkNewSubmitAnswer(question.CourseId, question.ClassId, question.Knowledgeid, question.Cpi,
 		question.JobId, question.TotalQuestionNum, question.AnswerId, question.WorkAnswerId, question.Api,
 		question.FullScore, question.OldSchoolId, question.OldWorkId, question.WorkRelationId, question.Enc_work,
 		question, submitState)
+	if err.Error() == "触发验证码" {
+		log2.Print(log2.DEBUG, utils.RunFuncName(), "触发验证码，正在进行AI智能识别绕过.....")
+		for {
+			codePath, err1 := userCache.XueXiTVerificationCodeApi(5, nil)
+			if err1 != nil {
+				return "", err1
+			}
+			if codePath == "" { //如果path为空，那么可能是账号问题
+				return "", errors.New("无法正常获取对应网站验证码，请检查对应url是否正常")
+			}
+			img, _ := utils.ReadImg(codePath) //读取验证码图片
+			//codeResult := utils.AutoVerification(img, ort.NewShape(1, 23)) //自动识别
+			codeResult := ddddocr.SemiOCRVerification(img, ort.NewShape(1, 23))
+			utils.DeleteFile(codePath) //删除验证码文件
+			status, err1 := userCache.XueXiTPassVerificationCode(codeResult, 5, nil)
+			//fmt.Println(codeResult)
+			//fmt.Println(status)
+			if status {
+				break
+			}
+		}
+		answer, err = userCache.WorkNewSubmitAnswer(question.CourseId, question.ClassId, question.Knowledgeid, question.Cpi,
+			question.JobId, question.TotalQuestionNum, question.AnswerId, question.WorkAnswerId, question.Api,
+			question.FullScore, question.OldSchoolId, question.OldWorkId, question.WorkRelationId, question.Enc_work,
+			question, submitState) //尝试重新拉取卡片信息
+		log2.Print(log2.DEBUG, utils.RunFuncName(), "绕过成功")
+	}
 	//fmt.Println(answer)
-	return answer
+	return answer, nil
 }
 
 // 开始做题
@@ -60,9 +93,9 @@ func StartAIWorkAction(cache *xuexitong.XueXiTUserCache, userId, aiUrl, model, a
 	}
 	var resultStr string
 	if isSubmit == 0 {
-		resultStr = WorkNewSubmitAnswerAction(cache, questionAction, false)
+		resultStr, _ = WorkNewSubmitAnswerAction(cache, questionAction, false)
 	} else if isSubmit == 1 {
-		resultStr = WorkNewSubmitAnswerAction(cache, questionAction, true)
+		resultStr, _ = WorkNewSubmitAnswerAction(cache, questionAction, true)
 	}
 	return resultStr
 }
@@ -92,9 +125,9 @@ func StartExternalWorkAction(cache *xuexitong.XueXiTUserCache, exUrl string, que
 	}
 	var resultStr string
 	if isSubmit == 0 {
-		resultStr = WorkNewSubmitAnswerAction(cache, questionAction, false)
+		resultStr, _ = WorkNewSubmitAnswerAction(cache, questionAction, false)
 	} else if isSubmit == 1 {
-		resultStr = WorkNewSubmitAnswerAction(cache, questionAction, true)
+		resultStr, _ = WorkNewSubmitAnswerAction(cache, questionAction, true)
 	}
 
 	return resultStr

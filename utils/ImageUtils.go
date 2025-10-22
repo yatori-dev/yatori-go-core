@@ -6,7 +6,6 @@ import (
 	"encoding/base64"
 	"encoding/hex"
 	"fmt"
-	"github.com/nfnt/resize"
 	"image"
 	"image/color"
 	"image/draw"
@@ -18,6 +17,8 @@ import (
 	"os"
 	"strings"
 	"time"
+
+	"github.com/nfnt/resize"
 )
 
 // LoadImage 读取指定路径的图片并返回 image.Image 对象。
@@ -151,6 +152,111 @@ func ImageRGBDisturb(img image.Image) image.Image {
 		}
 	}
 	return newImg
+}
+
+// ImageRGBDisturb 对图像像素颜色进行随机扰动，强度范围 [0,255]
+func ImageRGBDisturbAdjust(img image.Image, strength int) image.Image {
+	if strength < 0 {
+		strength = 0
+	} else if strength > 255 {
+		strength = 255
+	}
+
+	bounds := img.Bounds()
+	rand.Seed(time.Now().UnixNano())
+	newImg := image.NewRGBA(bounds)
+
+	for y := bounds.Min.Y; y < bounds.Max.Y; y++ {
+		for x := bounds.Min.X; x < bounds.Max.X; x++ {
+			r, g, b, a := img.At(x, y).RGBA()
+
+			// 转换为 8-bit
+			r8 := uint8(r >> 8)
+			g8 := uint8(g >> 8)
+			b8 := uint8(b >> 8)
+
+			// 生成扰动值（正负随机）
+			dr := rand.Intn(strength*2+1) - strength
+			dg := rand.Intn(strength*2+1) - strength
+			db := rand.Intn(strength*2+1) - strength
+
+			// 应用扰动并截断在 0~255 范围
+			r8 = clampUint8(int(r8) + dr)
+			g8 = clampUint8(int(g8) + dg)
+			b8 = clampUint8(int(b8) + db)
+
+			newImg.Set(x, y, color.RGBA{r8, g8, b8, uint8(a >> 8)})
+		}
+	}
+	return newImg
+}
+
+// clampUint8 限制数值在 0~255
+func clampUint8(v int) uint8 {
+	if v < 0 {
+		return 0
+	}
+	if v > 255 {
+		return 255
+	}
+	return uint8(v)
+}
+
+// clamp 限制像素值在 [0,255]
+func clamp(v int) int {
+	if v < 0 {
+		return 0
+	}
+	if v > 255 {
+		return 255
+	}
+	return v
+}
+
+// ProcessImageDisturb 对输入图像进行轻度像素扰动并返回新的 image.Image
+func ProcessImageDisturb(img image.Image) image.Image {
+	bounds := img.Bounds()
+	width, height := bounds.Dx(), bounds.Dy()
+
+	// 转换为 RGBA 图像以便修改像素
+	rgba := image.NewRGBA(bounds)
+	draw.Draw(rgba, bounds, img, bounds.Min, draw.Src)
+
+	rand.Seed(time.Now().UnixNano())
+
+	// 扰动次数：最多 15 次 或者像素总数的 1/100
+	pixelCount := width * height
+	iterations := 15
+	if pixelCount/100 < iterations {
+		iterations = pixelCount / 100
+	}
+
+	for i := 0; i < iterations; i++ {
+		y := rand.Intn(height)
+		x := rand.Intn(width)
+		c := rand.Intn(3)       // 随机选择 R/G/B 通道
+		val := rand.Intn(5) - 2 // [-2, +2] 随机扰动
+
+		offset := rgba.PixOffset(x, y)
+		r := int(rgba.Pix[offset+0])
+		g := int(rgba.Pix[offset+1])
+		b := int(rgba.Pix[offset+2])
+
+		switch c {
+		case 0:
+			r = clamp(r + val)
+		case 1:
+			g = clamp(g + val)
+		case 2:
+			b = clamp(b + val)
+		}
+
+		rgba.Pix[offset+0] = uint8(r)
+		rgba.Pix[offset+1] = uint8(g)
+		rgba.Pix[offset+2] = uint8(b)
+	}
+
+	return rgba
 }
 
 // saveImageAsJPEG 将图像保存为 JPEG 到指定路径

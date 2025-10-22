@@ -3,8 +3,10 @@ package xuexitong
 import (
 	"bytes"
 	"crypto/tls"
+	"errors"
 	"fmt"
 	"sort"
+	"strings"
 
 	"github.com/yatori-dev/yatori-go-core/api/entity"
 	"github.com/yatori-dev/yatori-go-core/que-core/qtype"
@@ -194,6 +196,9 @@ func (cache *XueXiTUserCache) WorkNewSubmitAnswer(courseId string, classId strin
 	defer resp.Body.Close()
 
 	body, _ := ioutil.ReadAll(resp.Body)
+	if strings.Contains(string(body), "请输入验证码") {
+		return "", errors.New("触发验证码")
+	}
 	utils.CookiesAddNoRepetition(&cache.cookies, resp.Cookies()) //赋值cookie
 	return string(body), nil
 }

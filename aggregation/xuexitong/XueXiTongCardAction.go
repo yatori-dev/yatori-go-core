@@ -5,9 +5,11 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+	"image"
 	"log"
 	"regexp"
 	"strings"
+	"time"
 
 	"github.com/PuerkitoBio/goquery"
 	"github.com/thedevsaddam/gojsonq"
@@ -45,17 +47,37 @@ func PageMobileChapterCardAction(
 	//如果遇到人脸,则进行过人脸
 	if strings.Contains(cardHtml, `title : "人脸识别"`) {
 		//拉取用户照片
-		pullJson, img, err2 := cache.GetHistoryFaceImg("")
-		if err2 != nil {
-			log2.Print(log2.INFO, pullJson, err2)
-			//os.Exit(0)
-			return nil, "", err2
+		localFaceExists, _ := utils.PathExists("./assets/faces/" + cache.Name + ".jpg")
+		var faceImg image.Image
+		if localFaceExists {
+			img, err2 := utils.LoadImage("./assets/faces/" + cache.Name + ".jpg")
+			if err2 != nil {
+				log2.Print(log2.INFO, err2)
+				//os.Exit(0)
+				return nil, "", err2
+			}
+			faceImg = img
+		} else {
+			pullJson, img, err2 := cache.GetHistoryFaceImg("")
+			if err2 != nil {
+				log2.Print(log2.INFO, pullJson, err2)
+				//os.Exit(0)
+				return nil, "", err2
+			}
+			faceImg = img
 		}
-		disturbImage := utils.ImageRGBDisturb(img)
+
+		disturbImage := utils.ImageRGBDisturb(faceImg)
+		//disturbImage := utils.ProcessImageDisturb(img)
+		//disturbImage := utils.ImageRGBDisturbAdjust(img, 5)
+		//utils.SaveImageAsJPEG(disturbImage, "./assets/18106919661.jpg")
 		uuid, qrEnc, ObjectId, successEnc, err1 := PassFaceAction2(cache, fmt.Sprintf("%d", courseId), fmt.Sprintf("%d", classId), fmt.Sprintf("%d", cpi), fmt.Sprintf("%d", knowledgeId), "", "", "", disturbImage)
+
 		if err1 != nil {
 			log.Println(uuid, qrEnc, ObjectId, successEnc, err1.Error())
+			return nil, "", err1
 		}
+		time.Sleep(3 * time.Second)
 		//过完人脸重新拉取章节信息
 		cardHtml, err = cache.PageMobileChapterCard(classId, courseId, knowledgeId, cardIndex, cpi, 3, nil)
 		//fmt.Println(uuid, qrEnc, ObjectId, successEnc)

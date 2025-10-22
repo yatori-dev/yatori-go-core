@@ -368,7 +368,7 @@ func TestXueXiToChapterCardWork(t *testing.T) {
 				fmt.Println(fmt.Sprintf("%d%v. %v", i, j, que.OpFromAnswer[j]))
 			}
 		}
-		answerAction := xuexitong.WorkNewSubmitAnswerAction(&userCache, questionAction, true)
+		answerAction, _ := xuexitong.WorkNewSubmitAnswerAction(&userCache, questionAction, true)
 		println(answerAction)
 	} else {
 		log.Fatal("任务点对象错误")
@@ -469,7 +469,7 @@ func TestXueXiToFlushCourse(t *testing.T) {
 	utils.YatoriCoreInit()
 	//测试账号
 	setup()
-	user := global.Config.Users[24]
+	user := global.Config.Users[55]
 
 	userCache := xuexitongApi.XueXiTUserCache{
 		Name:     user.Account,
@@ -484,7 +484,7 @@ func TestXueXiToFlushCourse(t *testing.T) {
 	courseList, err := xuexitong.XueXiTPullCourseAction(&userCache) //拉取所有课程
 	for _, course := range courseList {                             //遍历课程
 
-		if course.CourseName != "中国传统玉文化与美玉鉴赏" {
+		if course.CourseName != "动手学AI：人工智能通识与实践（人文艺术版）" {
 			continue
 		}
 		//if course.CourseName != "思想道德与法治（25-26学年秋）" {
@@ -667,7 +667,7 @@ func TestXueXiToFlushCourse(t *testing.T) {
 						aiSetting := global.Config.Setting.AiSetting //获取AI设置
 						q.AnswerAIGet(userCache.UserID, aiSetting.AiUrl, aiSetting.Model, aiSetting.AiType, message, aiSetting.APIKEY)
 					}
-					answerAction := xuexitong.WorkNewSubmitAnswerAction(&userCache, questionAction, true)
+					answerAction, _ := xuexitong.WorkNewSubmitAnswerAction(&userCache, questionAction, true)
 					fmt.Printf("%s答题完成，返回信息：%s\n", questionAction.Title, answerAction)
 				}
 			}
@@ -735,7 +735,7 @@ func TestPullFaceImg(t *testing.T) {
 	utils.YatoriCoreInit()
 	//测试账号
 	setup()
-	user := global.Config.Users[24]
+	user := global.Config.Users[55]
 	userCache := xuexitongApi.XueXiTUserCache{
 		Name:     user.Account,
 		Password: user.Password,
@@ -746,7 +746,7 @@ func TestPullFaceImg(t *testing.T) {
 	}
 	//拉取用户照片
 	_, img, _ := userCache.GetHistoryFaceImg("")
-	utils.SaveImageAsJPEG(img, "./assets/face.jpg")
+	utils.SaveImageAsJPEG(img, "./assets/18106919661.jpg")
 }
 
 // 测试扫人脸
@@ -754,7 +754,7 @@ func TestFaceQrScan(t *testing.T) {
 	utils.YatoriCoreInit()
 	//测试账号
 	setup()
-	user := global.Config.Users[24]
+	user := global.Config.Users[55]
 	userCache := xuexitongApi.XueXiTUserCache{
 		Name:     user.Account,
 		Password: user.Password,
@@ -773,6 +773,6 @@ func TestFaceQrScan(t *testing.T) {
 	ObjectId, err := userCache.UploadFaceImageApi(token, disturbImage)
 
 	//plan3是点击进入课程时候的人脸识别
-	planApi, err := userCache.GetCourseFaceQrPlan3Api("124829702", "254088263", "6f103ec4-c8df-4dfe-b77e-085f82ed1101", "f9326cd8dbe76f63b8c8b90f2545a52c", "406376661", ObjectId)
+	planApi, err := userCache.GetCourseFaceQrPlan3Api("128609334", "255665643", "0bccb2c7-9d4f-4e0b-83f4-2ba369514076", "e9bf57a5cfb013a4baa57858d321f1b0", "492936718", ObjectId)
 	log.Println(planApi, err)
 }

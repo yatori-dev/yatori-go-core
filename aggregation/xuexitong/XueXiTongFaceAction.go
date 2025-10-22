@@ -6,6 +6,7 @@ import (
 	"image"
 	"net/http"
 	"strconv"
+	"strings"
 
 	"github.com/thedevsaddam/gojsonq"
 	"github.com/yatori-dev/yatori-go-core/api/xuexitong"
@@ -104,6 +105,10 @@ func PassFaceAction2(cache *xuexitong.XueXiTUserCache, courseId, classId, cpi, c
 	passMsg := gojsonq.New().JSONString(plan3Api).Find("msg")
 	if err != nil {
 		return "", "", "", "", err
+	}
+
+	if strings.Contains(plan3Api, "活体检测不通过") {
+		return "", "", "", "", errors.New(plan3Api)
 	}
 	if passMsg != nil {
 		if passMsg != "通过" && passMsg != "识别通过" {
