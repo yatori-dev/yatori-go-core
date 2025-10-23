@@ -23,33 +23,36 @@ func WorkNewSubmitAnswerAction(userCache *xuexitong.XueXiTUserCache, question en
 		question.JobId, question.TotalQuestionNum, question.AnswerId, question.WorkAnswerId, question.Api,
 		question.FullScore, question.OldSchoolId, question.OldWorkId, question.WorkRelationId, question.Enc_work,
 		question, submitState)
-	if err.Error() == "触发验证码" {
-		log2.Print(log2.DEBUG, utils.RunFuncName(), "触发验证码，正在进行AI智能识别绕过.....")
-		for {
-			codePath, err1 := userCache.XueXiTVerificationCodeApi(5, nil)
-			if err1 != nil {
-				return "", err1
+	if err != nil {
+		if err.Error() == "触发验证码" {
+			log2.Print(log2.DEBUG, utils.RunFuncName(), "触发验证码，正在进行AI智能识别绕过.....")
+			for {
+				codePath, err1 := userCache.XueXiTVerificationCodeApi(5, nil)
+				if err1 != nil {
+					return "", err1
+				}
+				if codePath == "" { //如果path为空，那么可能是账号问题
+					return "", errors.New("无法正常获取对应网站验证码，请检查对应url是否正常")
+				}
+				img, _ := utils.ReadImg(codePath) //读取验证码图片
+				//codeResult := utils.AutoVerification(img, ort.NewShape(1, 23)) //自动识别
+				codeResult := ddddocr.SemiOCRVerification(img, ort.NewShape(1, 23))
+				utils.DeleteFile(codePath) //删除验证码文件
+				status, err1 := userCache.XueXiTPassVerificationCode(codeResult, 5, nil)
+				//fmt.Println(codeResult)
+				//fmt.Println(status)
+				if status {
+					break
+				}
 			}
-			if codePath == "" { //如果path为空，那么可能是账号问题
-				return "", errors.New("无法正常获取对应网站验证码，请检查对应url是否正常")
-			}
-			img, _ := utils.ReadImg(codePath) //读取验证码图片
-			//codeResult := utils.AutoVerification(img, ort.NewShape(1, 23)) //自动识别
-			codeResult := ddddocr.SemiOCRVerification(img, ort.NewShape(1, 23))
-			utils.DeleteFile(codePath) //删除验证码文件
-			status, err1 := userCache.XueXiTPassVerificationCode(codeResult, 5, nil)
-			//fmt.Println(codeResult)
-			//fmt.Println(status)
-			if status {
-				break
-			}
+			answer, err = userCache.WorkNewSubmitAnswer(question.CourseId, question.ClassId, question.Knowledgeid, question.Cpi,
+				question.JobId, question.TotalQuestionNum, question.AnswerId, question.WorkAnswerId, question.Api,
+				question.FullScore, question.OldSchoolId, question.OldWorkId, question.WorkRelationId, question.Enc_work,
+				question, submitState) //尝试重新拉取卡片信息
+			log2.Print(log2.DEBUG, utils.RunFuncName(), "绕过成功")
 		}
-		answer, err = userCache.WorkNewSubmitAnswer(question.CourseId, question.ClassId, question.Knowledgeid, question.Cpi,
-			question.JobId, question.TotalQuestionNum, question.AnswerId, question.WorkAnswerId, question.Api,
-			question.FullScore, question.OldSchoolId, question.OldWorkId, question.WorkRelationId, question.Enc_work,
-			question, submitState) //尝试重新拉取卡片信息
-		log2.Print(log2.DEBUG, utils.RunFuncName(), "绕过成功")
 	}
+
 	//fmt.Println(answer)
 	return answer, nil
 }
