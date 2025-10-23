@@ -111,6 +111,9 @@ func PassFaceAction2(cache *xuexitong.XueXiTUserCache, courseId, classId, cpi, c
 	if strings.Contains(plan3Api, "活体检测不通过") {
 		return "", "", "", "", errors.New(plan3Api)
 	}
+	if strings.Contains(plan3Api, "用户图片信息出错") {
+		return "", "", "", "", errors.New(plan3Api)
+	}
 	if passMsg != nil {
 		if passMsg != "通过" && passMsg != "识别通过" {
 			return "", "", "", "", errors.New(plan3Api)
