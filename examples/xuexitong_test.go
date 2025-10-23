@@ -766,13 +766,16 @@ func TestFaceQrScan(t *testing.T) {
 	//拉取用户照片
 	_, img, _ := userCache.GetHistoryFaceImg("")
 	//上传人脸
-	disturbImage := utils.ImageRGBDisturb(img)
+	//disturbImage := utils.ImageRGBDisturb(img)
+	disturbImage := utils.ImageRGBDisturbAdjust(img, 15)
+	//disturbImage := utils.ProcessImageDisturb(img)
 	//获取token
 	tokenJson, err := userCache.GetFaceUpLoadToken()
 	token := gojsonq.New().JSONString(tokenJson).Find("_token").(string)
 	ObjectId, err := userCache.UploadFaceImageApi(token, disturbImage)
 
 	//plan3是点击进入课程时候的人脸识别
-	planApi, err := userCache.GetCourseFaceQrPlan3Api("128609334", "255665643", "0bccb2c7-9d4f-4e0b-83f4-2ba369514076", "e9bf57a5cfb013a4baa57858d321f1b0", "492936718", ObjectId)
+	//planApi, err := userCache.GetCourseFaceQrPlan3Api("128609334", "255665643", "88f6ba21-1447-4656-96f0-312127327760", "44736e4b27f8981de19e222bf29c969d", "492936718", ObjectId)
+	planApi, err := userCache.GetCourseFaceQrPlan2Api("128609334", "255665643", "44736e4b27f8981de19e222bf29c969d", "492936718", ObjectId)
 	log.Println(planApi, err)
 }

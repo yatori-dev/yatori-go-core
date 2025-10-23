@@ -67,9 +67,9 @@ func PageMobileChapterCardAction(
 			faceImg = img
 		}
 
-		disturbImage := utils.ImageRGBDisturb(faceImg)
-		//disturbImage := utils.ProcessImageDisturb(img)
-		//disturbImage := utils.ImageRGBDisturbAdjust(img, 5)
+		//disturbImage := utils.ImageRGBDisturb(faceImg)
+		disturbImage := utils.ProcessImageDisturb(faceImg)
+		//disturbImage := utils.ImageRGBDisturbAdjust(faceImg, 10)
 		//utils.SaveImageAsJPEG(disturbImage, "./assets/18106919661.jpg")
 		uuid, qrEnc, ObjectId, successEnc, err1 := PassFaceAction2(cache, fmt.Sprintf("%d", courseId), fmt.Sprintf("%d", classId), fmt.Sprintf("%d", cpi), fmt.Sprintf("%d", knowledgeId), "", "", "", disturbImage)
 
