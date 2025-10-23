@@ -73,7 +73,6 @@ func PageMobileChapterCardAction(
 		//disturbImage := utils.ImageRGBDisturbAdjust(faceImg, 10)
 		//utils.SaveImageAsJPEG(disturbImage, "./assets/18106919661.jpg")
 		uuid, qrEnc, ObjectId, successEnc, err1 := PassFaceAction2(cache, fmt.Sprintf("%d", courseId), fmt.Sprintf("%d", classId), fmt.Sprintf("%d", cpi), fmt.Sprintf("%d", knowledgeId), "", "", "", disturbImage)
-
 		if err1 != nil {
 			log.Println(uuid, qrEnc, ObjectId, successEnc, err1.Error())
 			return nil, "", err1
