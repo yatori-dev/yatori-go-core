@@ -1,0 +1,1069 @@
+<html xmlns="http://www.w3.org/1999/xhtml">
+
+<script>
+    _HOST_ = "//mooc1-api.chaoxing.com";
+    _CP_ = "/mooc-ans";
+    _HOST_CP1_ = "//mooc1-api.chaoxing.com/mooc-ans";
+    // _HOST_CP2_ = _HOST_ + _CP_;
+    _HOST_CP2_ = _CP_;
+</script><head>
+    <!--<base href="http://fanya.chaoxing.com/"/>-->
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
+    <meta name="viewport" content="width=device-width,user-scalable=no"/>
+    <meta content="telephone=no" name="format-detection" />
+    <style type="text/css">
+        .writeNotes{position:fixed;right:14px;top:65%;width:60px;height:60px;-webkit-appearance:none;-webkit-tap-highlight-color:transparent;z-index:1000;}
+        .writeNotes-zh{background:url(//mooc1-api.chaoxing.com/mooc-ans/images/phone/writeNotes.png) no-repeat left center;background-size:100%;}
+        .writeNotes-en{background:url(//mooc1-api.chaoxing.com/mooc-ans/images/phone/writeNotes_En.png) no-repeat left center;background-size:100%;}
+        a{ -webkit-touch-callout: none;-webkit-user-select: none;-khtml-user-select: none;-moz-user-select: none; -ms-user-select: none;user-select: none;}
+        .ans-cc img {height: auto !important;}
+        .msg-content-ok{width: 100%;display: inline-block;}
+        .tipInfo {color: #3A5664;padding: 8px 15px;background: #EEF9FF;border-radius: .06rem;font-size: 13px;display: inline-block;width:100%;box-sizing:border-box}
+        *{margin:0; padding:0;}
+        .hiddenConfigClass{display: none}
+        @charset "utf-8";
+        /* CSS Document */
+        *{margin:0;padding:0;-moz-box-sizing:border-box;-webkit-box-sizing:border-box;-webkit-appearance:none;-webkit-tap-highlight-color:rgba(0,0,0,0);}
+        h1,h2,h3,h4,h5,h6{ font-weight:normal; font-size:100%;}
+        body{font:14px/1.5 微软雅黑;color:#333;}
+        ul{list-style-type:none;}
+        input,select,textarea{vertical-align:middle; font:14px 微软雅黑; color:#333; outline:none;-webkit-tap-highlight-color:rgba(0,0,0,0);-webkit-appearance:none; border-radius:0;}
+        a:link,a:hover,a:active,a:visited{text-decoration:none;color:#333;-webkit-tap-highlight-color:rgba(0,0,0,0);}
+        table{border-spacing:0px; border-collapse:collapse;width:100%; border:0px;margin:0;padding:0;}
+        img{border:0px;}
+        .clearfix{overflow:hidden;zoom:1;}
+        .clear{clear:both; height:0px; font-size:0px; line-height:0px; overflow:hidden;}
+        .fl{float:left;}
+        .fr{float:right;}
+        ::-webkit-input-placeholder{color:#CCC;}
+        .wid750{width:7.5rem;margin:0 auto}
+
+        /*如果引用了conmmon.css 只用拿以下部分*/
+        .maskDiv{width:100%;height:100%;background:rgba(0,0,0,0.6);position:fixed;left:0;top:0;z-index:1001}
+        .annotPop{width:303px;position:fixed;left:50%;top:35%;transform: translate(-50%, -50%);background:#fff;border-radius: 8px;box-sizing:border-box;}
+        .annot_tit{color: #999;font-size: 14px;line-height: 22px;position:relative;padding-left:9px;margin-bottom:5px;}
+        .annot_tit:after{content:'';width: 2px;height: 80%;background: #33ADFF;border-radius: 50px;position:absolute;left:0;top:5px}
+        .annot_p{color: #333;font-size: 16px;line-height: 26px;margin-bottom:10px}
+        .annotimg{width:100%;margin-bottom:10px;text-align:center}
+        .annotimg img {display:block;max-width:100%;margin:0 auto}
+
+        .overHidden2 {display: -webkit-box;-webkit-box-orient: vertical;-webkit-line-clamp: 2;overflow: hidden;
+        }
+        .closeImg{width:100%;height:40px;box-sizing:border-box;position:relative}
+        .closeImg img {display:block;width:28px;height:28px;position:absolute;right:5px;top:6px;}
+        .het_auto{max-height:400px;overflow-y:auto;padding:0 25px 40px;}
+        .changeChapter{width:100%;height:30px;margin-top:25px;margin-bottom:11px;}
+        .chapterBtn{width:72px;float:right;font-size:14px;text-align:center;margin-right:15px;}
+        .previousChapter{height:28px;border:1px solid #0099FF;border-radius: 99px;color:#0099FF;line-height:28px;}
+        .nextChapter{height:30px;border-radius: 99px;color:#fff;background: #0099FF;line-height:30px}
+        .ans-container{min-height: calc(100% - 166px);position:relative;}
+        #tip{text-align:center;font-size:16px;color:#B3B3B3;position:absolute;top:50%;left:0;width:100%;}
+        .ans-cc pre code td {border: none;background: none;}
+        .ans-cc pre code td,.ans-cc pre code td span,.ans-cc pre code td div,.ans-cc .code-lang{font-family: CXHackSafariFont, CXEmojiFont, CXChineseQuote, -apple-system, BlinkMacSystemFont, Helvetica Neue, Helvetica, Tahoma, Arial, Segoe UI, PingFang SC, Hiragino Sans GB, Microsoft YaHei, sans-serif, Apple Color Emoji, Segoe UI Emoji, Segoe UI Symbol, Noto Color emoji;}
+        .ans-cc pre code table{font-size: 14px;}
+
+        .phoneTipsContent{width:calc(100%);height:40px;top:0;left:0;background:#83CAF9;color:#fff;font-size:13px;line-height:16px;padding:0 40px;display:flex;align-items:center;text-align:center;justify-content: space-around;}
+        .autoNumberCls {
+            display: flex;          /* 使用 Flexbox 布局 */
+            align-items: center;    /* 垂直居中 */
+            justify-content: center;/* 水平居中 */
+            gap: 10px;              /* 子元素之间的间距 */
+            line-height: 28px;      /* 行高 */
+        }
+
+        .autoNumberClsSpan {
+            color: #8a8b99;           /* 字体颜色 */
+            font-size: 16px;          /* 字体大小 */
+            padding: 0px 1px;         /* 内边距 */
+            height: 21px;             /* 固定高度 */
+            line-height: 21px;        /* 行高与高度匹配，确保垂直居中 */
+            display: inline-block;    /* 确保内联块特性 */
+            text-align: center;       /* 水平居中 */
+        }
+    </style>
+    <title></title>
+    <link href="/ananas/ueditor/themes/iframe_wap.css?v=2025-1009-1506" type="text/css" rel="stylesheet"/>
+    <link type="text/css" href="/ananas/ueditor/themes/default.min.css?v=2025-1009-1506" rel="stylesheet" />
+    <link type="text/css" href="//mooc1-api.chaoxing.com/mooc-ans/css/cardH5.css" rel="stylesheet" />
+    <script src="//mooc-res2.chaoxing.com/mooc-ans/js/phone/zepto-1.1.6.min.js"></script>
+    <script src="//mooc-res2.chaoxing.com/mooc-ans/js/phone/touch-1.1.6.js"></script>
+    <script src="/ananas/ext-4.2.0.663/ext.js?v=2025-1009-1506"></script>
+    <script type="text/javascript">
+        window.requestSatusResourceDownGrade = "0";
+        window.AttachmentSetting ={"hiddenConfig":false,"isMirror":false,"attachments":[{"headOffset":870000,"otherInfo":"nodeId_1026884511-cpi_492936718-rt_d-ds_0-ff_1-be_0_0-vt_1-v_6-enc_a3aa674e9e129b271da571740f0fb056&courseId=255665643","isPassed":true,"mid":"16156055042001756474100189","jumpTimePointList":[],"type":"video","begins":0,"jobid":"1756474100488340","customType":0,"attDurationEnc":"5d14d045747d76d45f2bdcb98b1169be","videoFaceCaptureEnc":"3844c03341fffc935c651e88659fe4fc","ends":0,"randomCaptureTime":487,"property":{"jobid":"1756474100488340","switchwindow":"true","size":678401958,"fastforward":"true","hsize":"647.0MB","module":"insertvideo","name":"1.2人工智能是如何发展的？.mp4","mid":"16156055042001756474100189","type":".mp4","doublespeed":0,"objectid":"e17095f4eb8d5b40c2b11e025687dbc5","_jobid":"1756474100488340"},"playTime":870000,"attDuration":984,"headOffsetVersion":0,"aid":2048096722,"objectId":"e17095f4eb8d5b40c2b11e025687dbc5"}],"coursename":"动手学AI：人工智能通识与实践（人文艺术版）","cutUseNewVeision":true,"mooc2":0,"control":true,"chapterVideoTranslate":0,"defaults":{"fid":"43266","ktoken":"875a88bf58091c8432a687c2dfaa3a6a","mtEnc":"31e4f5867df4b34bfa2032ad2e08706b","appInfo":"5,18","playingCapture":1,"videoAutoPlay":0,"userid":"173596433","belongschoolid":"43266","reportTimeInterval":60,"showVideoWaterMark":0,"schooldoublespeed":0,"endCapture":1,"defenc":"d9dc5d0dd22dc8b3bfae40815f068c70","cardid":1000302623,"imageUrl":"https://p.ananas.chaoxing.com/star3/origin/c48e0818d1a8c09399b979df3f8c2025.png","state":0,"cpi":492936718,"captureInterval":10,"playAginCapture":1,"startCapture":1,"isFiled":0,"ignoreVideoCtrl":0,"reportUrl":"https://mooc1-api.chaoxing.com/mooc-ans/multimedia/log/a/492936718","chapterCapture":1,"initdataUrl":"https://mooc1-api.chaoxing.com/mooc-ans/richvideo/initdatawithviewer","cFid":"9637","knowledgeid":1026884511,"videoTopicCloud":0,"qnenc":"e51805a684961dea40651d50770176fd","clazzId":128609334,"chapterCollectionType":0,"lastmodifytime":1757932607000,"aiVideoInterpret":0,"courseid":255665643,"subtitleUrl":"https://mooc1-api.chaoxing.com/mooc-ans/richvideo/subtitle","playingLoopCapture":0},"knowledgename":"人工智能是如何发展的？","openShowHotMap":false,"isErya":1};
+
+        window.stuVideoUpgradeClient = "0"
+
+        var _from = '255665643_128609334_173596433_092e5914cb269024cda280116ff2f26c';
+        function windowOnload(){
+            var userAgent = navigator.userAgent;
+            if(userAgent.indexOf("ChaoXingStudy") > -1 && userAgent.indexOf("phone") > -1){
+                location.href="nativeapi:onload";
+            }
+        }
+        window.VERSION="2025-1009-1506";
+        var forbidImgClick = "false";
+        window.showAiAssistantTch="false";
+        window.showAiAssistantStu="false";
+        window.isAccessibleCustomFid="0";
+    </script>
+    <script type="text/javascript" src="//mooc1-api.chaoxing.com/mooc-ans/static/js/domain.js"></script>
+    <script type="text/javascript" src="//mooc1-api.chaoxing.com/mooc-ans/js/ServerHost.js"></script>
+    <script src="/ananas/ueditor/ueditor.parse_wap.js?v=2025-1009-1506"></script>
+    <script src="/ananas/ueditor/third-party/apputils/jquery.min.js?v=2025-1009-1506"></script>
+    <script type="text/javascript" src="//mooc-res2.chaoxing.com/mooc-ans/js/highlight.min.js" charset="utf-8"></script>
+    <script type="text/javascript" src="//mooc-res2.chaoxing.com/mooc-ans/js/highlightjs-line-numbers.js" charset="utf-8"></script>
+</head>
+<body onload="windowOnload();">
+<input type="hidden" id="jobfinishTips" value="当前章节还有任务点未完成，是否去完成？"/>
+<input type="hidden" id="from" value="255665643_128609334_173596433_092e5914cb269024cda280116ff2f26c"/>
+
+
+
+<div class="tipInfo">
+    本课已开启学习进度控制，今日还可完成<span style="margin-left: 2px;margin-right: 2px">1/5</span>个视频任务点
+    ,已观看视频时长<span style="margin-left: 2px;margin-right: 2px">48/45</span>分钟
+</div>
+
+<div id="markDiv"></div>
+
+<div class="ans-cc" ><p class="editor-iframe" draggable="true"><iframe class="taskIframe ans-module frame-spread ans-attach-online ans-insertvideo-retract" module="insertvideo" type="online" ywbf="1" data="{&quot;objectid&quot;:&quot;e17095f4eb8d5b40c2b11e025687dbc5&quot;,&quot;name&quot;:&quot;1.2\u4eba\u5de5\u667a\u80fd\u662f\u5982\u4f55\u53d1\u5c55\u7684\uff1f.mp4&quot;,&quot;hsize&quot;:&quot;647.0MB&quot;,&quot;size&quot;:678401958,&quot;type&quot;:&quot;.mp4&quot;,&quot;mid&quot;:&quot;16156055042001756474100189&quot;,&quot;_jobid&quot;:&quot;1756474100488340&quot;,&quot;jobid&quot;:&quot;1756474100488340&quot;,&quot;fastforward&quot;:&quot;true&quot;,&quot;doublespeed&quot;:1,&quot;switchwindow&quot;:&quot;true&quot;}"></iframe></p><p style="" id="pkgzwr2cd" data-editor="true"><br/></p><p style="" id="avjo5xuzp" data-editor="true"><br/></p></div>
+<div class="changeChapter">
+    <div class="chapterBtn nextChapter" id="nextChapter">下一节</div>
+    <div class="chapterBtn previousChapter" id="previousChapter">上一节</div>
+</div>
+<div class="writeNotes" id="writeNotes" style="display:none"></div>
+<link rel="stylesheet" href="//mooc1-api.chaoxing.com/mooc-ans/css/phone/zt_hint.css?v=2021-0508-1157" />
+<div id="msg" class="rescan_main">
+    <div class="msg-title">title</div>
+    <div class="msg-content">
+        <div class="msg-content-middle"></div>
+        <div class="msg-content-b">
+            <span class="msg-content-left msg-content-ok">确定</span>
+            <span class="msg-content-right msg-content-cancel">取消</span>
+        </div>
+    </div>
+</div>
+<div id="hint" class="rescan_main">
+    <div class="msg-title">title</div>
+    <div class="msg-content">
+        <div class="msg-content-middle"></div>
+        <div class="msg-content-b">
+            <span class="hint-content-left msg-content-cancel">确定</span>
+        </div>
+    </div>
+</div>
+<div id="ok" class="rescan_main">
+    <div class="msg-title">title</div>
+    <div class="msg-content">
+        <div class="msg-content-middle"></div>
+        <div class="msg-content-b">
+            <span class="msg-content-ok">确定</span>
+        </div>
+    </div>
+</div>
+<div id="time" class="rescan_main">
+    <div class="msg-title">title</div>
+    <div class="msg-content">
+        <div class="msg-content-middle"></div>
+    </div>
+</div>
+<div id="confirmOk" class="rescan_main">
+    <div class="msg-title">title</div>
+    <div class="msg-content">
+        <div class="msg-content-middle"></div>
+        <div class="agreement"><span class="check"></span><p>请先阅读并勾选<b id="faceProtocol"> 《人脸识别授权协议》</b></p></div>
+        <div class="msg-content-b">
+            <span class="msg-content-left msg-content-ok">好</span>
+            <span class="msg-content-right msg-content-cancel">取消</span>
+        </div>
+    </div>
+</div>
+<div id="mask" class="black_overlay"></div>
+<script src="//mooc-res2.chaoxing.com/mooc-ans/js/phone/hint.js?v=2023-0803-0030"></script>
+<style>
+    .verify-box {position: fixed;left: 50%;top: 30%;width: 66%;margin-left: -33%;height: auto;display: none;z-index: 1001;border-radius: 0.1rem;}
+    .verify-content {padding: 15px;border-radius: 4px 4px 0 0;background: #fff;text-align: center;color: #333;font-size: 14px;}
+    .verify-btn {border-top: 1px #ebebeb solid;border-radius: 0 0 4px 4px;overflow: hidden; }
+    .verify-btn ul {display: -webkit-box;}
+    .verify-blue, .verify-black {-webkit-box-flex: 1;box-flex: 1;height: 40px;background: #fff;line-height: 40px;text-align: center;font-size: 14px;color: #09f;}
+    .verify-black {color: #333;}
+    .verify-blue:not(:last-child), .verify-black:not(:last-child) { border-right: 1px #ebebeb solid;}
+    .verify-inp{width: 88px;line-height: 20px;padding: 5px;border: 1px solid #ebebeb;border-radius: 4px;font-size: 13px;color: #333;box-sizing: border-box;}
+    .verify-img{display: inline-block;width: 83px;height: 32px;background: #ccc;margin-left: 10px;border: 1px solid #ebebeb;box-sizing: border-box;}
+    .verify-img img{max-width:100%;height:100%}
+    .tit-verify{width: 100%;font-size: 16px;color: #333;text-align: center;margin-bottom: 15px;}
+    .verify-ct{overflow:hidden;}
+    .maskDiv {width: 100%;height: 100%;background: rgba(0,0,0,0.6);position: fixed;left: 0;top: 0;z-index: 1001;}
+</style>
+<div class="maskDiv verify-mask" style="display: none;">
+    <article class="verify-box">
+        <div class="verify-content">
+            <p class="tit-verify">输入验证码</p>
+            <div class="verify-ct">
+                <input type="text" class="verify-inp fl" id="inputCode" />
+                <span class="verify-img fl">
+				<img class="work-verify" id="workVerifyImg" src="" onclick="workVerifyCode();"/>
+			</span>
+            </div>
+        </div>
+        <div class="verify-btn">
+            <ul>
+                <li class="verify-black" id="verify-cancel" onclick="hideWorkVerify();">取消</li>
+                <li class="verify-blue" id="verify-ok">确定</li>
+            </ul>
+        </div>
+    </article>
+</div>
+<script>
+    var callBack = undefined;
+
+    function clearInputCode() {
+        $("#inputCode").val("");
+    }
+
+    function getInputCode() {
+        return $("#inputCode").val() || "";
+    }
+
+    function showWorkVerify(verifyCodeCallBack) {
+        callBack = verifyCodeCallBack;
+        $("#inputCode").val("");
+        workVerifyCode();
+        $(".verify-box").css("display", "block");
+        $(".verify-mask").css("display", "block");
+    }
+
+    $("#verify-ok").on("click", function() {
+        if(callBack){
+            callBack();
+        }
+    });
+
+    function hideWorkVerify() {
+        $(".verify-box").css("display", "none");
+        $(".verify-mask").css("display", "none");
+    }
+
+    function workVerifyCode() {
+        $("#workVerifyImg").attr("src", _HOST_CP2_ + "/verifyCode/stuWork?" + new Date().getTime());
+    }
+
+</script><div class="maskDiv annotMaskDiv forbidedit" style="display:none;">
+    <div class="annotPop ">
+        <div class="closeImg closeImgAnnotMask "><img src="//mooc1-api.chaoxing.com/mooc-ans/images/phone/close.png" /></div>
+        <div class="het_auto ">
+            <h2 class="annot_tit overHidden2 "></h2>
+            <p class="annot_p annot_context "></p>
+            <span class="annot_imgs ">
+            </span>
+        </div>
+    </div>
+</div>
+<script>
+    var cxStudy = true;
+    var isCouSqu = "false";
+    var isTeacher = "false";
+
+    var ut_value = "s"
+    var stu_clazzId = "128609334";
+    var stu_knowledgeId = "1026884511";
+    var stu_CourseId = "255665643";
+    var stu_cpi = "492936718";
+    var videoTimeLimit = 'true' === 'true';
+    var hasSettingVideoLimit = 'true' === 'true';
+    var hasJobLimit = 'false' === 'true';
+    var hasSettingLimit = 'true' === 'true';
+    var jobfinishTips = $("#jobfinishTips").val();
+    var courseEnded = '' === 'true';
+    var doWorkList = [];
+    var scroll2JobId = ""
+
+    function linkCard(cardId) {
+        if(cardId == "1000302623") {
+            return;
+        }
+
+        window.location.href = _HOST_CP2_ + "" + cardId;
+    }
+
+    function scroll2JobIdFunc(_jobIdStr) {
+        try {
+            $('iframe').each(function () {
+                var data = $(this).attr("data");
+                if(typeof data == "undefined") {
+                    return
+                }
+
+                var dataJson = JSON.parse(data);
+                if(typeof dataJson == "undefined" || dataJson == null) {
+                    return;
+                }
+
+                var _jobId = dataJson._jobid;
+                if(_jobId == _jobIdStr) {
+                    $("html,body").animate({scrollTop: $(this).offset().top}, 500);
+                    return false;
+                }
+            })
+        } catch (ex) {
+            console.log(ex);
+        }
+    }
+
+    try {
+        if(scroll2JobId != ""){
+            setTimeout(scroll2JobIdFunc, 500, scroll2JobId);
+        }
+    } catch (ex) {
+        console.log(ex)
+    }
+
+    function scroll2Job() {
+        var jobDiv = $(".ans-job-icon");
+        var scrolling = false;
+        jobDiv.each(function (index,model) {
+            if(!$(model).parent().hasClass("ans-job-finished")) {
+                if(!scrolling) {
+                    scrolling = true;
+                    $("html,body").animate({scrollTop: $(model).offset().top}, 500);
+                }
+            }
+        })
+    }
+
+    function checkUnJobFinish () {
+        var jobDiv = $(".ans-job-icon");
+        var unFinish = false;
+        jobDiv.each(function (index,model) {
+            if(!$(model).parent().hasClass("ans-job-finished")) {
+                unFinish = true;
+            }
+        })
+
+        return unFinish;
+    }
+
+    function refreshScroll () {
+        if(!courseEnded) {
+            // 校验是否章节测验未保存
+            if (doWorkList.length > 0) {
+                try {
+                    var workName = doWorkList[0].value;
+                    top.jsBridge.postNotification('CLIENT_CHAPTER_OPTION', {
+                        "optionType": 1,
+                        "data": {"scroll": false, "msg": workName + '测验还未提交，请先保存或提交'}
+                    });
+                } catch (e) {
+                }
+            } else if (isCouSqu != "true" && isTeacher != "true" && !checkUnJobFinish()) {
+                try {
+                    jsBridge.postNotification('CLIENT_CHAPTER_OPTION', {
+                        "optionType": 2,
+                        "data": {"scroll": true, "msg": jobfinishTips}
+                    });
+                } catch (ex) {
+                    console.log(ex)
+                }
+            }
+        }
+    }
+
+    function initTip() {
+        try {
+            if(hasSettingLimit || hasSettingVideoLimit) {
+                var showTip = false;
+                var job = document.getElementsByClassName("ansInsertVideoOnline");
+                for(var i =0;i<job.length;i++){
+                    var jobDiv = job[i];
+                    if(!$(jobDiv).hasClass("ans-job-finished") && $(jobDiv).find(".ans-job-icon").length > 0) {
+                        showTip = true;
+                    }
+                }
+
+                if(showTip === true) {
+                    $(".tipInfo").show();
+                }else {
+                    $(".tipInfo").hide();
+                }
+            }
+        }catch (ex) {
+            console.log(ex)
+        }
+    }
+
+    var clickArray = [];
+    var faceBlockEnter = 1;
+    var mArg = "";
+    var courseid = "";
+    var knowledgeid = "";
+    var cardid = "";
+    var clazzId = "";
+    var needFace = "";
+    var chapterVideoTranslate = "0";
+    try{
+        mArg = {"hiddenConfig":false,"isMirror":false,"attachments":[{"headOffset":870000,"otherInfo":"nodeId_1026884511-cpi_492936718-rt_d-ds_0-ff_1-be_0_0-vt_1-v_6-enc_a3aa674e9e129b271da571740f0fb056&courseId=255665643","isPassed":true,"mid":"16156055042001756474100189","jumpTimePointList":[],"type":"video","begins":0,"jobid":"1756474100488340","customType":0,"attDurationEnc":"5d14d045747d76d45f2bdcb98b1169be","videoFaceCaptureEnc":"3844c03341fffc935c651e88659fe4fc","ends":0,"randomCaptureTime":487,"property":{"jobid":"1756474100488340","switchwindow":"true","size":678401958,"fastforward":"true","hsize":"647.0MB","module":"insertvideo","name":"1.2人工智能是如何发展的？.mp4","mid":"16156055042001756474100189","type":".mp4","doublespeed":0,"objectid":"e17095f4eb8d5b40c2b11e025687dbc5","_jobid":"1756474100488340"},"playTime":870000,"attDuration":984,"headOffsetVersion":0,"aid":2048096722,"objectId":"e17095f4eb8d5b40c2b11e025687dbc5"}],"coursename":"动手学AI：人工智能通识与实践（人文艺术版）","cutUseNewVeision":true,"mooc2":0,"control":true,"chapterVideoTranslate":0,"defaults":{"fid":"43266","ktoken":"875a88bf58091c8432a687c2dfaa3a6a","mtEnc":"31e4f5867df4b34bfa2032ad2e08706b","appInfo":"5,18","playingCapture":1,"videoAutoPlay":0,"userid":"173596433","belongschoolid":"43266","reportTimeInterval":60,"showVideoWaterMark":0,"schooldoublespeed":0,"endCapture":1,"defenc":"d9dc5d0dd22dc8b3bfae40815f068c70","cardid":1000302623,"imageUrl":"https://p.ananas.chaoxing.com/star3/origin/c48e0818d1a8c09399b979df3f8c2025.png","state":0,"cpi":492936718,"captureInterval":10,"playAginCapture":1,"startCapture":1,"isFiled":0,"ignoreVideoCtrl":0,"reportUrl":"https://mooc1-api.chaoxing.com/mooc-ans/multimedia/log/a/492936718","chapterCapture":1,"initdataUrl":"https://mooc1-api.chaoxing.com/mooc-ans/richvideo/initdatawithviewer","cFid":"9637","knowledgeid":1026884511,"videoTopicCloud":0,"qnenc":"e51805a684961dea40651d50770176fd","clazzId":128609334,"chapterCollectionType":0,"lastmodifytime":1757932607000,"aiVideoInterpret":0,"courseid":255665643,"subtitleUrl":"https://mooc1-api.chaoxing.com/mooc-ans/richvideo/subtitle","playingLoopCapture":0},"knowledgename":"人工智能是如何发展的？","openShowHotMap":false,"isErya":1};
+        courseid = 255665643;
+        knowledgeid = 1026884511;
+        cardid = 1000302623;
+        clazzId = 128609334;
+    }catch(e){
+    }
+    uParse(".ans-cc");
+    var language = 'chinese';
+    var writeNotes = document.getElementById("writeNotes");
+    if (writeNotes) {
+        if(language == 'chinese'){
+            writeNotes.setAttribute("class", "writeNotes writeNotes-zh");
+        }else{
+            writeNotes.setAttribute("class", "writeNotes writeNotes-en");
+        }
+        var flag = 0; //标记是拖曳还是点击
+        var disX,moveX,L,T,starX,starY,starXEnd,starYEnd;
+        writeNotes.addEventListener('touchstart',function(e){
+            flag = 0;
+            e.preventDefault();//阻止触摸时页面的滚动，缩放
+            disX = e.touches[0].clientX - this.offsetLeft;
+            disY = e.touches[0].clientY - this.offsetTop;
+            //手指按下时的坐标
+            starX = e.touches[0].clientX;
+            starY = e.touches[0].clientY;
+        });
+        writeNotes.addEventListener('touchmove',function(e){
+            L = e.touches[0].clientX - disX ;
+            T = e.touches[0].clientY - disY ;
+            //移动时 当前位置与起始位置之间的差值
+            starXEnd = e.touches[0].clientX - starX;
+            starYEnd = e.touches[0].clientY - starY;
+            if (Math.abs(starXEnd) > 10 || Math.abs(starYEnd) > 10) {
+                flag = 1;
+            }
+            if(L<0){//限制拖拽的X范围，不能拖出屏幕
+                L = 0;
+            }else if(L > document.documentElement.clientWidth - this.offsetWidth){
+                L=document.documentElement.clientWidth - this.offsetWidth;
+            }
+            if(T<0){//限制拖拽的Y范围，不能拖出屏幕
+                T=0;
+            }else if(T>document.documentElement.clientHeight - this.offsetHeight){
+                T = document.documentElement.clientHeight - this.offsetHeight;
+            }
+            moveX = L + 'px';
+            moveY = T + 'px';
+            this.style.left = moveX;
+            this.style.top = moveY;
+        });
+        writeNotes.addEventListener('touchend',function(e){
+            //判断滑动方向
+            if(flag === 0) {//点击
+                jsBridge.postNotification('CLIENT_WRITE_NOTE_COMMON', {
+                    type : 13, //课堂笔记传13，
+                    changeFile : 0, //0,可以切换文件夹，1，不可切换
+                    saveDarft : 0, //是否保存草稿，0，保存，1，不保存
+                    showSaveDraftPmt : 1, //是否提示保存草稿，0，提示，1，不提示
+                    readNoteDraft : 1, //0,点击进入不考虑是否有相应草稿，1，读取对应草稿
+                    showNoteDetail : 1, //0,不跳转详情，1，跳转详情
+                    releateId : clazzId, //唯一标识id，若需要读取草稿，要传
+                    quoteInfo : "", //附件信息
+                    other : "", //备用字段
+                    resourcesType : 6,
+                    resourcesId : courseid + "_" + knowledgeid + "_" + clazzId
+                })
+            }
+        });
+    }
+    function isNewVersionNew(appVersionNumber) {
+        var userAgent = navigator.userAgent;
+        var pattern = ".*ChaoXingStudy_(\\d+)_(\\d+[^_]*)_([^_]*)_([^_]*)_([^ ]*)?( \\([^)]*\\))?.*_.*([-]?\\d+).*";
+        var versionArray = userAgent.match(pattern);
+        if (versionArray && versionArray != "undefined" && versionArray.length > 6) {
+            var ApiVersion = versionArray[5].split("_")[1];
+            if (ApiVersion >= appVersionNumber) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    var versionControl = isNewVersionNew(30);
+    if (!versionControl && writeNotes) {
+        writeNotes.style.display = "block";
+    }
+
+    function isNewVersion(versonControl_android,versonControl_ios){
+        var versonControl ="";
+        var userAgent = navigator.userAgent;
+        var offset = userAgent.indexOf("ChaoXingStudy_");
+        var stop = 0;
+        if(userAgent.indexOf("_ios_phone") > -1){
+            stop = userAgent.indexOf("_ios_phone");
+            versonControl = versonControl_ios;
+        }else if(userAgent.indexOf("_android_phone") > -1){
+            stop = userAgent.indexOf("_android_phone");
+            versonControl = versonControl_android;
+        }
+        var versionStr = userAgent.substring(offset+14,stop);
+        versionStr = versionStr.split('_')[1];
+        if(versionStr == undefined){
+            return false;
+        }
+        versionStr = versionStr.replace(/_|\./g,"");
+        return versionStr+'' >= versonControl;
+    }
+
+    var lastEditTime = 0;
+    Zepto(function($) {
+        var isSupport = isNewVersion('3254', '3254');
+        if(isSupport){
+            $('#tip').show();
+        }
+        var clientHeight = document.body.clientHeight;
+        var timer;
+        window.onscroll = function () {
+            clearTimeout(timer);
+            timer = setTimeout(function() {
+                var iframes = $("iframe.ans-insertwork-online");
+                var iframesTopObj = {};
+                for (var i = 0; i < iframes.length; i++) {
+                    if (iframes[i].getAttribute("src").indexOf("work") > -1) {
+                        var iframeOffsetTop = iframes[i].offsetTop;
+                        if (iframesTopObj[iframeOffsetTop] === undefined) {
+                            iframesTopObj[iframeOffsetTop] = iframes[i];
+                        }
+                    }
+                }
+                var scrollTopHeight = document.documentElement.scrollTop || document.body.scrollTop;
+                var keys = Object.keys(iframesTopObj);
+                for (var j = 0; j < keys.length; j++) {
+                    var iTop = keys[j];
+                    var item = iframesTopObj[iTop];
+                    var itemEndHeight = parseInt($(item).height()) + parseInt(iTop);
+                    if ((iTop > scrollTopHeight && iTop < scrollTopHeight + clientHeight) || (iTop < scrollTopHeight && itemEndHeight > scrollTopHeight + clientHeight) || (itemEndHeight > scrollTopHeight && itemEndHeight < scrollTopHeight + clientHeight)) {
+                        // 上述判断三种情况，测验的顶部在可视区域内，测验的中间部位在可视区域内，测验的尾部在可视区域内，调用当前测验内部的lazyload.
+
+                        var workIframeWin = $(item)[0].contentWindow.document.getElementsByTagName("iframe")[0].contentWindow;
+                        workIframeWin.lazyload && workIframeWin.lazyload(iTop);
+                    }
+                }
+            },50);
+        }
+
+        initTip();
+    });
+    function postStudyLog(log, monitorEnc) {
+        var url = '/keeper/api/receive-studylog';
+        $.ajax({
+            type : 'post',
+            dataType : 'json',
+            url : url,
+            data : {"log":JSON.stringify(log), "enc":monitorEnc},
+            success : function(data) {
+            },
+            error : function(result){
+                console.log(result);
+            }
+        });
+    }
+
+    function showjobCountLimitTip(callback,paramStr,type) {
+        openWindowHint(HINT_TYPE_OK,'', I18N.jobFinishLimitTip,function(){
+            cancelWindowHint($("#ok"));
+            if(typeof callback != "undefined") {
+                callback(paramStr,type);
+            }
+        });
+    }
+
+    function showVideoTimeLimitTip(callback,paramStr,type) {
+        openWindowHint(HINT_TYPE_OK,'', I18N.videoLimitTip,function(){
+            cancelWindowHint($("#ok"));
+            if(typeof callback != "undefined") {
+                callback(paramStr,type);
+            }
+        });
+    }
+
+    function checkJobLimit() {
+        // 播放完成弹窗提示
+        if((hasSettingLimit && !hasJobLimit) || (hasSettingVideoLimit && !videoTimeLimit)) {
+            $.ajax({
+                type : 'get',
+                dataType : 'json',
+                url : _HOST_CP2_ + "/stu-progress/job-finish-limit",
+                data : {
+                    cpi: 492936718,
+                    courseId: 255665643,
+                    clazzId: 128609334
+                },
+                success : function(data) {
+                    if(data.status) {
+                        if(typeof data.hasLimit != "undefined" && data.hasLimit === true) {
+                            hasJobLimit = true;
+                            showjobCountLimitTip();
+                        }else if(typeof data.videoTimeLimit != "undefined" && data.videoTimeLimit === true) {
+                            videoTimeLimit = true;
+                            showVideoTimeLimitTip();
+                        }
+                    }
+                },
+                error : function(result){
+                    console.log(result);
+                }
+            });
+        }
+    }
+
+    function addTopicNew(topidId) {
+        var quoteCon =  $('.markContent span', parent.document).html();
+        if ($(".topicMarkContent").length > 0) {
+            quoteCon = $(".topicMarkContent").val();
+        }
+        if(quoteCon && quoteCon.length>0){
+            domark('note','#FAE291',quoteCon);
+        }
+        var topicId = topidId;
+        //新增标记笔记
+        var url = _HOST_CP2_ + "/chapter-document/savemark";
+        $.ajax({
+            type : "post",
+            url : url,
+            dataType : "json",
+            data : {
+                courseid: courseid,
+                knowledgeid: knowledgeid,
+                clazzid: clazzId,
+                cpi: 492936718,
+                cardid: cardid,
+                type: 1,
+                ut: ut,
+                property: page.echo,
+                topicid: topicId
+            },
+            success : function(data) {
+                if (data.result == 1) {
+                    var recordid = data.mark_id;
+                    var topicid = data.topicid;
+                    var markid = mark.opt.currLabelData.id;
+                    $(".selectText[markid='" + markid+"']").attr('topicid', topicid).attr('recordid', recordid);
+                    for(var i=0;i<echo.length;i++) {
+                        if (echo[i].id == markid) {
+                            echo[i].recordid = recordid;
+                            echo[i].topicid = topicid;
+                            break;
+                        }
+                    }
+                    mark.clearEcho();
+                    mark.showmark();
+                } else {
+                    alert(markTips);
+                }
+            },error : function(result){
+                console.log(result);
+            }
+        });
+    }
+    function _jsBridgeReady() {
+        // 校验是否章节测验未保存
+        if(!courseEnded) {
+            if (doWorkList.length > 0) {
+                try {
+                    var workName = doWorkList[0].value;
+                    top.jsBridge.postNotification('CLIENT_CHAPTER_OPTION', {
+                        "optionType": 1,
+                        "data": {"scroll": false, "msg": workName + '测验还未提交，请先保存或提交'}
+                    });
+                } catch (e) {
+                }
+            } else if (isCouSqu != "true" && isTeacher != "true" && checkUnJobFinish()) {
+                try {
+                    jsBridge.postNotification('CLIENT_CHAPTER_OPTION', {
+                        "optionType": 2,
+                        "data": {"scroll": false, "msg": jobfinishTips}
+                    });
+                } catch (ex) {
+                    console.log(ex)
+                }
+            }
+        }
+
+        jsBridge.bind('CLIENT_CHAPTER_OPTION', function(object){
+            if(checkUnJobFinish()) {
+                scroll2Job();
+            }
+        });
+
+        //刷新任务点
+        jsBridge.bind('CLIENT_REFRESH_EVENT', function(object) {
+            var iframe = jQuery.find('iframe[jobstatus="refreshJob"]');
+            jQuery(iframe).each(function() {
+                $(this).removeAttr('jobstatus');
+                this.contentWindow.greenligth && this.contentWindow.greenligth();
+            });
+        });
+        jsBridge.bind('CLIENT_APP_CONFIG', function(object){
+            var writeNotes = document.getElementById("writeNotes");
+            if (writeNotes) {
+                if (object.hiddenNote && object.hiddenNote == 1) {
+                    writeNotes.style.display = "none";
+                } else {
+                    writeNotes.style.display = "block";
+                }
+            }
+        });
+        jsBridge.bind('CLIENT_FACE_COLLECTION', function(object) {
+            if (!object) {
+                return;
+            }
+            var objectId = "";
+            var funconfig = {};
+            if (isNewVersionNew(77)) {
+                if (object.data) {
+                    objectId = object.data.frontObjectId;
+                    funconfig = JSON.parse(object.data.funconfig || object.data.funConfig);
+                }
+            } else {
+                funconfig = JSON.parse(object.funconfig || object.funConfig);
+                objectId = object.objectId;
+            }
+            if (!objectId) {
+                return;
+            }
+            try{
+                var url = '/keeper/api/receive-studylog';
+                var eventTime = new Date().getTime();
+                var courseId = funconfig.courseId;
+                var clazzId = funconfig.clazzId;
+                var personId = funconfig.cpi;
+                var jobId = funconfig.jobId;
+                var knowledgeId = funconfig.knowledgeId;
+                var videoObjectId = funconfig.videoObjectId;
+                var data = {
+                    "relationId" : knowledgeId,
+                    "objectId" : objectId,
+                    "videoJobId": jobId,
+                    "chapterVideoObjectId": videoObjectId
+                }
+                var log = {
+                    "courseId":courseId,
+                    "clazzId": clazzId,
+                    "personId":personId,
+                    "eventType":2,
+                    "eventTime": eventTime,
+                    "data":data
+                };
+                var monitorEnc = funconfig.mtEnc;
+                postStudyLog(log, monitorEnc);
+            }catch(err){
+                console.log(err.toString())
+            }
+        });
+        jsBridge.postNotification('CLIENT_APP_CONFIG', {}) ;
+
+    }
+    var  resourceScanParam = {"fid":"43266","noterya":false,"looktime":1761229924610,"courseid":255665643};
+    var  attachments = mArg.attachments;
+    var isAndroid = navigator.userAgent.indexOf("Android") > 0;
+    var I18N = {
+        'hintOk': '好',
+        'chapterCapture': '本课教师已开启学习监控，系统将在您观看视频时开启摄像头进行抓拍。',
+        'watchPlayingLive': '观看直播至结束可完成任务点',
+        'jobFinishLimitTip': '今日视频任务点完成数已达上限，您可以观看视频，但无法完成任务点',
+        'videoLimitTip': '今日视频观看时长已达上限，您可继续观看视频，但无法完成任务点'
+    }
+    var audioMode = 'false';
+    var captureInterval = '10';
+    if (captureInterval != "") {
+        captureInterval = parseInt(captureInterval);
+        if (captureInterval > 60 || captureInterval < 10) {
+            captureInterval = 10;
+        }
+        captureInterval = captureInterval * 60 * 1000;
+    }
+
+    function prompt(title, second) {
+        $("<article class='cx_alert-bg' style='opacity:1'><span>" + title + "</span></article>").appendTo($(document.body)).delay(1000 * second).fadeOut(1000, function () {
+            $(this).remove();
+        });
+    }
+    $(".agreement .check").click(function(){
+        if($(this).hasClass("checked")){
+            $(this).removeClass("checked")
+        }else{
+            $(this).addClass("checked")
+        }
+    })
+    $("#faceProtocol").click(function() {
+        var url = "https://homewh.chaoxing.com/html/agree/face.html";
+        url += '#INNER';
+        jsBridge.postNotification('CLIENT_OPEN_URL', {
+            "title" : "",
+            "loadType" : "1",
+            "webUrl" : url
+        });
+    })
+    var clickFlag = false;
+    var startCapture = '1';
+    var endCapture = '1';
+    var playAgainCapture = '1';
+    var playingCapture = '1';
+    var disableLoopMode = '0';
+    function openDialog(obj) {
+        if (obj && obj.captureConfig && obj.captureConfig.data) {
+            obj.captureConfig.data.internalTime = captureInterval;
+            if (isNewVersionNew(75)) {
+                obj.captureConfig.data.startCapture = parseInt(startCapture);
+                obj.captureConfig.data.endCapture = parseInt(endCapture);
+                obj.captureConfig.data.playAgainCapture = parseInt(playAgainCapture);
+                if (parseInt(playingCapture) == 1) {
+                    if (parseInt(disableLoopMode) == 1) {
+                        var videoTime = parseInt(obj.duration);
+                        var playTime = parseInt(obj.playTime) + 1;
+                        var intervalTime = Math.floor(Math.random() * (videoTime - playTime) + playTime);
+                        var loopCaptureInterval = intervalTime * 1000;
+                        obj.captureConfig.data.internalTime = loopCaptureInterval;
+                        obj.captureConfig.data.disableLoopMode = 1;
+                    } else {
+                        obj.captureConfig.data.internalTime = captureInterval;
+                        obj.captureConfig.data.disableLoopMode = 0;
+                    }
+                }
+            }
+        }
+        if (faceBlockEnter != 0 && isNewVersionNew(64)) {
+            var videoJobId = obj.jobid;
+            var chapterVideoObjectId = obj.objectId || obj.objectid;
+            if (obj && obj.captureConfig) {
+                delete obj.captureConfig;
+            }
+
+            var faceCollectUrlStr = "https://mooc1-api.chaoxing.com/knowledge/clientvideofacecollect?clazzid=128609334&courseid=255665643&knowledgeid=1026884511&cpi=492936718&videojobid=" + videoJobId + "&chaptervideoobjectid=" + chapterVideoObjectId;
+
+            var faceRecConfig;
+            if (isNewVersionNew(73)) {
+                faceRecConfig = {
+                    "ignoreFlag": obj && obj.ignoreFlag ? obj.ignoreFlag : 0
+                }
+
+                var playAgainCaptureValue = playAgainCapture;
+                if("false" == "true") {
+                    playAgainCaptureValue = 0;
+                }
+
+                if (isNewVersionNew(75)) {
+                    faceRecConfig.enable = 1;
+                    faceRecConfig.playAgainCapture = playAgainCaptureValue;
+                    faceRecConfig.faceCollectUrl = faceCollectUrlStr;
+                }
+            } else {
+                var playAgainCaptureValue = obj && obj.ignoreFlag ? obj.ignoreFlag : 0;
+                if("false" == "true") {
+                    playAgainCaptureValue = 0;
+                }
+
+                faceRecConfig = {
+                    "enable": 1, // 开启活体检测
+                    "internalTime": captureInterval,
+                    "ignoreFlag": playAgainCaptureValue,
+                    "faceCollectUrl": faceCollectUrlStr
+                }
+            }
+            obj.faceRecConfig = faceRecConfig;
+        }
+        if (faceBlockEnter == 0 && obj.chapterCapture == 1 && isNewVersionNew(73)) {
+            var faceRecConfig = {
+                "ignoreFlag": 1
+            }
+            obj.faceRecConfig = faceRecConfig;
+        }
+        if (language == "chinese") {
+            $("#confirmOk.rescan_main").css("height", "17rem");
+            $("#confirmOk .agreement").css("top", "8.67rem");
+        } else {
+            $("#confirmOk.rescan_main").css("height", "21rem");
+            $("#confirmOk .agreement").css("top", "12.8rem");
+        }
+        if ($(".agreement .check").hasClass("checked")) {
+            $(".agreement .check").removeClass("checked");
+        }
+        openWindowHint(HINT_TYPE_CONFIRM_OK, '', I18N.chapterCapture, function () {
+            if (clickFlag) {
+                return;
+            }
+            clickFlag = true;
+            if (!$(".agreement .check").hasClass("checked")) {
+                prompt('请先阅读并勾选《人脸识别授权协议》', 3);
+                clickFlag = false;
+                return;
+            }
+            var paramStr = Ext.encode(obj).replace(/\%/g, "%25");
+            if (isAndroid) {
+                document.location = "nativeapi:" + paramStr;
+                if (typeof Native != "undefined") {
+                    Native.play(paramStr); //兼容老版本
+                }
+            } else {
+                document.location = "nativeapi:" + paramStr;
+            }
+            cancelWindowHint($("#confirmOk"));
+            event.preventDefault();
+            $(".agreement .check").removeClass("checked");
+            clickFlag = false;
+        });
+    }
+    function openPlayingLive(isYunShi, content, courseLiveInfo, liveUrl, title, liveType) {
+        if (liveType == 2){
+            AppUtils.openUrl({title: title,webUrl:liveUrl,postData:courseLiveInfo});
+            return ;
+        } else {
+            $("#ok .msg-content-ok").text(I18N.iknow);
+            $("#ok").css("height", "9rem");
+            $("#ok").css("padding-top", "0");
+            $("#hint span").css("color","#0299FF");
+            $(".hint-content-left").css("background-color","#FFFFFF");
+            if (isYunShi == 1) {
+                AppUtils.openUrl({title: title,webUrl:liveUrl,postData:courseLiveInfo});
+                return ;
+            }
+            jsBridge.postNotification('CLIENT_OPEN_LIVE', content);
+        }
+    }
+
+    $(".closeImgAnnotMask").click(function(){
+        $(".annotMaskDiv").hide();
+    })
+
+    //展示注释的弹窗
+    function showAnnotationPop(annotTitle,annotContext,annotImgs){
+        $(".annot_imgs").empty();
+        $(".annot_tit").text(annotTitle);
+        $(".annot_context").text(annotContext);
+        if(typeof(annotImgs) == "undefined" || annotImgs == ""){
+            $(".annotMaskDiv").show();
+            return;
+        }
+        var imgSplit = annotImgs.split(",");
+        for(var i = imgSplit.length-1; i >= 0; i --){
+            var imgStr = imgSplit[i];
+            if(imgStr != ""){
+                var imgUrlSrc = imgStr;
+                var imgUrlSpan = '<div class="annotimg"><img src="'+imgUrlSrc+'" /></div>';
+                $(".annot_imgs").append(imgUrlSpan);
+            }
+        }
+        $(".annot_imgs").find("img").on('click', function () {
+            var url = $(this).attr("src");
+            var data = fixImageData(url);
+            jsBridge.postNotification("CLIENT_PREVIEW_IMAGES", {
+                imageUrls : [{
+                    imageUrl: data.url,
+                    originUrl: data.originUrl
+                }],
+                showIndex : 0
+            });
+        })
+        $(".annotMaskDiv").show();
+    }
+
+    if ($("#previousChapter").length > 0) {
+        $("#previousChapter").click(function() {
+            jsBridge && jsBridge.postNotification && jsBridge.postNotification('CLIENT_CHAPTER_CHANGE_PAGE', {"optionType": 1, "cardNum":"0"});
+        })
+    }
+    if ($("#nextChapter").length > 0) {
+        $("#nextChapter").click(function() {
+            jsBridge && jsBridge.postNotification && jsBridge.postNotification('CLIENT_CHAPTER_CHANGE_PAGE', {"optionType": 2, "cardNum":"0"});
+        })
+    }
+</script>
+<script type="text/javascript" src="//mooc1-api.chaoxing.com/mooc-ans/js/resource_scan.js?v=2024-0422-1346" defer></script>
+<script src="//mooc-res2.chaoxing.com/mooc-ans/js/work/phone/fix-svg-path.js"></script>
+<script>
+    $(function() {
+        if("0" == "1"){
+            $(".ans-cc").children().each(function() {
+                try {
+                    if ($(this).has('br').length && ($(this).html().trim() == "<br>" || $(this).html().trim() == "<br/>")
+                        && !$(this).has('iframe').length){
+                        $(this).attr("tabindex","-1");
+                        $(this).attr("aria-hidden",true);
+                    } else if (this.nodeName == "P") {
+                    } else {
+                        $(this).attr("tabindex","0")
+                        $(this).attr("role","")
+                    }
+
+                    // 无障碍特殊处理
+                    if ($(this).hasClass("draghandle") && $(this).attr("title") == "拖动可排序") {
+                        $(this).attr("tabindex", "-1");
+                        $(this).attr("aria-hidden",true);
+                    }
+
+                    // 空标签情况
+                    if ($(this).html().trim() == "" && !$(this).has('iframe').length) {
+                        $(this).attr("tabindex", "-1");
+                        $(this).attr("aria-hidden",true);
+                    }
+
+                    // 图片读取处理
+                    if ($(this).has('img').length){
+                        $(this).find('img').each(function() {
+                            var title = $(this).attr("title");
+                            if (title) {
+                                var arr = title.split('.');
+                                if (arr.length > 1){
+                                    $(this).attr("aria-label", arr[0]);
+                                }
+                            }
+                        });
+                    }
+                } catch (e) {
+
+                }
+            });
+        }
+
+        setTimeout(function () {
+            // 设置图、表自动编号
+            setAutoNumText();
+        }, 300);
+    });
+
+    function setAutoNumText() {
+        try {
+        }catch (e) {
+            console.log(e)
+        }
+    }
+</script>
+<script >
+    var pre = $(".ans-cc").find('pre')
+    if(pre){
+        pre.each(
+            function () {
+                var me = this;
+                var lang = me.firstChild && me.firstChild.lang;
+                me.innerHTML = '<div class="code-tool-wrap clearfix"><div class="code-lang fl">' + lang + '</div><div class="copy fr"><i></i><span></span></div></div>' + me.innerHTML;
+                me.innerHTML = me.innerHTML.replace(/<br\s*\/?>/g, "\n");
+            }
+        )
+    }
+    hljs.initHighlightingOnLoad();
+    hljs.initLineNumbersOnLoad ({ singleLine:true });
+
+    setTimeout(function(){
+        try {
+            if (typeof forbidImgClick !== "undefined" && forbidImgClick === "true" && window.parent && window.parent.location.pathname.indexOf("/mobile/teacherpreview") > -1) {
+                var imgList = $(".ans-cc img");
+                for (var i =0; i < imgList.length; i++) {
+                    var item = imgList[i];
+                    $(item).attr("oncontextmenu", "return false");
+                    $(item).attr("onselectstart", "return false");
+                }
+            }
+        } catch (e) {
+        }
+    }, 100);
+
+</script>
+</body>
+</html>

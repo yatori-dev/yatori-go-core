@@ -775,7 +775,7 @@ func TestFaceQrScan(t *testing.T) {
 	ObjectId, err := userCache.UploadFaceImageApi(token, disturbImage)
 
 	//plan3是点击进入课程时候的人脸识别
-	//planApi, err := userCache.GetCourseFaceQrPlan3Api("128609334", "255665643", "88f6ba21-1447-4656-96f0-312127327760", "44736e4b27f8981de19e222bf29c969d", "492936718", ObjectId)
-	planApi, err := userCache.GetCourseFaceQrPlan2Api("128609334", "255665643", "44736e4b27f8981de19e222bf29c969d", "492936718", ObjectId)
+	planApi, err := userCache.GetCourseFaceQrPlan3Api("128609334", "255665643", "c3ece4f5-e61b-454e-931a-e52a5124cc57", "18120f93a46ed8a614c6923c834b5e18", "492936718", ObjectId)
+	//planApi, err := userCache.PassFaceQrPlanPhoneApi("128609334", "255665643", "44736e4b27f8981de19e222bf29c969d", "492936718", ObjectId)
 	log.Println(planApi, err)
 }

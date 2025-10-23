@@ -8,6 +8,7 @@ import (
 	"image"
 	"log"
 	"regexp"
+	"strconv"
 	"strings"
 	"time"
 
@@ -81,6 +82,24 @@ func PageMobileChapterCardAction(
 		//过完人脸重新拉取章节信息
 		cardHtml, err = cache.PageMobileChapterCard(classId, courseId, knowledgeId, cardIndex, cpi, 3, nil)
 		//fmt.Println(uuid, qrEnc, ObjectId, successEnc)
+	}
+
+	//探测又进度控制的
+	docQuery, err := goquery.NewDocumentFromReader(bytes.NewReader([]byte(cardHtml)))
+	topInfo := docQuery.Find("div.tipInfo").Text()
+	if strings.Contains(topInfo, "本课已开启学习进度控制") {
+		// 定义正则，匹配“>数字/数字<”
+		re := regexp.MustCompile(`(\d+)/(\d+)`)
+		matches := re.FindAllStringSubmatch(topInfo, -1)
+		if len(matches) >= 2 {
+			taskNum, _ := strconv.Atoi(matches[0][1])
+			taskDenom, _ := strconv.Atoi(matches[0][2])
+			timeNum, _ := strconv.Atoi(matches[1][1])
+			timeDenom, _ := strconv.Atoi(matches[1][2])
+			if taskNum == 0 || timeDenom-timeNum <= 0 {
+				return nil, "", fmt.Errorf("本课已开启学习进度控制，今日还可完成%d/%d个视频任务点,已观看视频时长%d/%d分钟", taskNum, taskDenom, timeNum, timeDenom)
+			}
+		}
 	}
 	var att interface{}
 

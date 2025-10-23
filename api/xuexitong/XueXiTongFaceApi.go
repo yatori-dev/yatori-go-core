@@ -611,8 +611,8 @@ func (cache *XueXiTUserCache) GetCourseFaceQrPlan1Api(courseId, classId, uuid, o
 	return string(body), nil
 }
 
-// 扫码过人脸（第二版）
-func (cache *XueXiTUserCache) GetCourseFaceQrPlan2Api(classId, courseId, knowledgeId, cpi, objectId /*人脸上传id*/ string) (string, error) {
+// 手机端过人脸接口
+func (cache *XueXiTUserCache) PassFaceQrPlanPhoneApi(classId, courseId, knowledgeId, cpi, objectId /*人脸上传id*/ string) (string, error) {
 
 	//urlStr := "https://mooc1-api.chaoxing.com/mooc-ans/facephoto/clientfacecheckstatus?" + "courseId=" + courseId + "&clazzId=" + classId + "&cpi=" + cpi + "&chapterId=" + knowledgeId + "&objectId=" + objectId + "&type=1"
 	urlStr := "https://mooc1-api.chaoxing.com/mooc-ans/facephoto/clientfacecheckstatus?" + "courseId=" + courseId + "&clazzId=" + classId + "&cpi=" + cpi + "&chapterId=" + knowledgeId + "&objectId=" + objectId + "&liveDetectionStatus=1" + "&signt=" + "&signk=" + "&cxtime=" + "&cxcid=" + "&type=1"
@@ -732,7 +732,7 @@ func (cache *XueXiTUserCache) GetCourseFaceQrPlan5Api(classId, courseId, knowled
 	return string(body), nil
 }
 
-// 过人脸(进入课程的时候调用的扫描)
+// PC端过人脸(进入课程的时候调用的扫描)
 func (cache *XueXiTUserCache) GetCourseFaceQrPlan3Api(clazzId, courseId, uuid, qrcEnc, cpi, objectId /*人脸的objectId*/ string) (string, error) {
 	urlStr := "https://mooc1-api.chaoxing.com/qr/updateqrstatus?uuid2=" + uuid + "&clazzId2=" + clazzId
 	method := "POST"

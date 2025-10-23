@@ -41,7 +41,7 @@ func PassFaceAction1(cache *xuexitong.XueXiTUserCache, courseId, classId, cpi, c
 	}
 	//暂时先用plan3的过人脸（进入课程扫通过的）
 	//plan2Api, err := cache.GetCourseFaceQrPlan3Api(classId, courseId, uuid, qrEnc, cpi, ObjectId)
-	plan2Api, err := cache.GetCourseFaceQrPlan2Api(classId, courseId, chapterId, cpi, ObjectId)
+	plan2Api, err := cache.PassFaceQrPlanPhoneApi(classId, courseId, chapterId, cpi, ObjectId)
 	//plan3Api, err := cache.GetCourseFaceQrPlan1Api(courseId, classId, uuid, ObjectId, qrEnc, "0")
 	log2.Print(log2.DEBUG, plan2Api)
 	passMsg := gojsonq.New().JSONString(plan2Api).Find("msg")
@@ -100,7 +100,7 @@ func PassFaceAction2(cache *xuexitong.XueXiTUserCache, courseId, classId, cpi, c
 		return "", "", "", "", errors.New("ObjectId is empty")
 	}
 	//plan3Api, err := cache.GetCourseFaceQrPlan4Api(classId, courseId, chapterId, uuid, qrEnc, ObjectId)
-	plan3Api, err := cache.GetCourseFaceQrPlan2Api(classId, courseId, chapterId, cpi, ObjectId)
+	plan3Api, err := cache.PassFaceQrPlanPhoneApi(classId, courseId, chapterId, cpi, ObjectId)
 	//暂时先用plan3的过人脸（进入课程扫通过的）
 	//plan3Api, err := cache.GetCourseFaceQrPlan3Api(classId, courseId, uuid, qrEnc, cpi, ObjectId)
 	passMsg := gojsonq.New().JSONString(plan3Api).Find("msg")
@@ -160,7 +160,7 @@ func PassFaceAction3(cache *xuexitong.XueXiTUserCache, courseId, classId, cpi, c
 	if ObjectId == "" {
 		return "", "", "", "", errors.New("ObjectId is empty")
 	}
-	plan3Api, err := cache.GetCourseFaceQrPlan2Api(classId, courseId, chapterId, cpi, ObjectId)
+	plan3Api, err := cache.PassFaceQrPlanPhoneApi(classId, courseId, chapterId, cpi, ObjectId)
 	//暂时先用plan3的过人脸（进入课程扫通过的）
 	//plan3Api, err := cache.GetCourseFaceQrPlan3Api(classId, courseId, uuid, qrEnc, cpi, ObjectId)
 
