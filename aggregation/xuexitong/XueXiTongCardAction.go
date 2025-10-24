@@ -5,7 +5,6 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
-	"image"
 	"log"
 	"regexp"
 	"strconv"
@@ -19,7 +18,6 @@ import (
 	que_core "github.com/yatori-dev/yatori-go-core/que-core/aiq"
 	"github.com/yatori-dev/yatori-go-core/que-core/qtype"
 	"github.com/yatori-dev/yatori-go-core/utils"
-	log2 "github.com/yatori-dev/yatori-go-core/utils/log"
 	"golang.org/x/net/html"
 )
 
@@ -47,40 +45,26 @@ func PageMobileChapterCardAction(
 
 	//如果遇到人脸,则进行过人脸
 	if strings.Contains(cardHtml, `title : "人脸识别"`) {
-		//拉取用户照片
-		localFaceExists, _ := utils.PathExists("./assets/faces/" + cache.Name + ".jpg")
-		var faceImg image.Image
-		if localFaceExists {
-			img, err2 := utils.LoadImage("./assets/faces/" + cache.Name + ".jpg")
-			if err2 != nil {
-				log2.Print(log2.INFO, err2)
-				//os.Exit(0)
-				return nil, "", err2
+		ObjectId, err1 := PassFacePhoneAction(cache, fmt.Sprintf("%d", courseId), fmt.Sprintf("%d", classId), fmt.Sprintf("%d", cpi), fmt.Sprintf("%d", knowledgeId), "", "", "")
+		//人脸重试机制
+		for i := 0; i <= 8; i++ {
+			if err1 != nil && strings.Contains(err1.Error(), "用户图片信息出错") {
+				time.Sleep(1 * time.Second) //隔一下
+				ObjectId, err1 = PassFacePhoneAction(cache, fmt.Sprintf("%d", courseId), fmt.Sprintf("%d", classId), fmt.Sprintf("%d", cpi), fmt.Sprintf("%d", knowledgeId), "", "", "")
+			} else {
+				break
 			}
-			faceImg = img
-		} else {
-			pullJson, img, err2 := cache.GetHistoryFaceImg("")
-			if err2 != nil {
-				log2.Print(log2.INFO, pullJson, err2)
-				//os.Exit(0)
-				return nil, "", err2
-			}
-			faceImg = img
 		}
-
-		//disturbImage := utils.ImageRGBDisturb(faceImg)
-		disturbImage := utils.ProcessImageDisturb(faceImg)
-		//disturbImage := utils.ImageRGBDisturbAdjust(faceImg, 10)
-		//utils.SaveImageAsJPEG(disturbImage, "./assets/18106919661.jpg")
-		uuid, qrEnc, ObjectId, successEnc, err1 := PassFaceAction2(cache, fmt.Sprintf("%d", courseId), fmt.Sprintf("%d", classId), fmt.Sprintf("%d", cpi), fmt.Sprintf("%d", knowledgeId), "", "", "", disturbImage)
 		if err1 != nil {
-			log.Println(uuid, qrEnc, ObjectId, successEnc, err1.Error())
+			log.Println(ObjectId, err1.Error())
 			return nil, "", err1
 		}
-		time.Sleep(3 * time.Second)
 		//过完人脸重新拉取章节信息
 		cardHtml, err = cache.PageMobileChapterCard(classId, courseId, knowledgeId, cardIndex, cpi, 3, nil)
-		//fmt.Println(uuid, qrEnc, ObjectId, successEnc)
+		if strings.Contains(cardHtml, `title : "人脸识别"`) {
+			return nil, "", errors.New("通过人脸识别失败")
+		}
+
 	}
 
 	//探测又进度控制的

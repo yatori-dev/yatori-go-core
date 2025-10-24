@@ -34,7 +34,7 @@ func ExecuteVideoTest(cache *api.XueXiTUserCache, p *entity.PointVideoDto, key, 
 		stopVal := 0
 		for {
 			if flag == 58 {
-				playReport, err := action.VideoSubmitStudyTimeAction(cache, p, playingTime, 0, 0)
+				playReport, err := action.VideoSubmitStudyTimeAction(cache, p, playingTime, 1, 0)
 				log.Println(playReport, err)
 				if err != nil {
 					if strings.Contains(err.Error(), "failed to fetch video, status code: 403") || strings.Contains(err.Error(), "failed to fetch video, status code: 404") { //触发403立即使用人脸检测
@@ -45,7 +45,7 @@ func ExecuteVideoTest(cache *api.XueXiTUserCache, p *entity.PointVideoDto, key, 
 							log2.Print(log2.DEBUG, pullJson, err2)
 
 							disturbImage := utils.ImageRGBDisturb(img)
-							uuid, qrEnc, ObjectId, _, err := action.PassFaceAction3(cache, p.CourseID, p.ClassID, p.Cpi, fmt.Sprintf("%d", p.KnowledgeID), p.Enc, p.JobID, p.ObjectID, p.Mid, p.RandomCaptureTime, disturbImage)
+							uuid, qrEnc, ObjectId, _, err := action.PassFacePCAction(cache, p.CourseID, p.ClassID, p.Cpi, fmt.Sprintf("%d", p.KnowledgeID), p.Enc, p.JobID, p.ObjectID, p.Mid, p.RandomCaptureTime, disturbImage)
 							if err != nil {
 								log.Println(uuid, qrEnc, ObjectId, err.Error())
 							}
@@ -70,7 +70,7 @@ func ExecuteVideoTest(cache *api.XueXiTUserCache, p *entity.PointVideoDto, key, 
 				}
 				log.Printf("播放中....%d:%d\n", playingTime, p.Duration)
 			} else if playingTime >= p.Duration {
-				playReport, err := action.VideoSubmitStudyTimeAction(cache, p, playingTime, 0, 0)
+				playReport, err := action.VideoSubmitStudyTimeAction(cache, p, playingTime, 1, 0)
 				//playReport, err := cache.VideoDtoPlayReport(p, playingTime, 0, 8, nil)
 				playingTime += 1
 				log.Println(playReport, err)

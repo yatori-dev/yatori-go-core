@@ -487,7 +487,7 @@ func TestXueXiToFlushCourse(t *testing.T) {
 		if course.CourseName != "解读中国经济发展的密码" {
 			continue
 		}
-		//if course.CourseName != "思想道德与法治（25-26学年秋）" {
+		//if course.CourseName != "动手学AI：人工智能通识与实践（人文艺术版）" {
 		//	continue
 		//}
 		// 6c444b8d5c6203ee2f2aef4b76f5b2ce qrcEnc
@@ -557,16 +557,7 @@ func TestXueXiToFlushCourse(t *testing.T) {
 				for _, videoDTO := range videoDTOs {
 					card, enc, err := xuexitong.PageMobileChapterCardAction(
 						&userCache, key, courseId, videoDTO.KnowledgeID, videoDTO.CardIndex, course.Cpi)
-					if err != nil {
-						for i := 0; i <= 5; i++ {
-							if err != nil && strings.Contains(err.Error(), "用户图片信息出错") {
-								card, enc, err = xuexitong.PageMobileChapterCardAction(
-									&userCache, key, courseId, videoDTO.KnowledgeID, videoDTO.CardIndex, course.Cpi)
-							} else {
-								break
-							}
-						}
-					}
+
 					if err != nil {
 						log.Fatal(err)
 					}
