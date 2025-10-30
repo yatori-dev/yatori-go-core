@@ -174,8 +174,9 @@ func ChatGLMChatReplyApi(
 
 	url := "https://open.bigmodel.cn/api/paas/v4/chat/completions"
 	requestBody := map[string]interface{}{
-		"model":    model,
-		"messages": aiChatMessages.Messages,
+		"model":       model,
+		"temperature": 0.2,
+		"messages":    aiChatMessages.Messages,
 	}
 
 	jsonData, err := json.Marshal(requestBody)
@@ -247,8 +248,9 @@ func XingHuoChatReplyApi(model,
 
 	url := "https://spark-api-open.xf-yun.com/v1/chat/completions"
 	requestBody := map[string]interface{}{
-		"model":    model,
-		"messages": aiChatMessages.Messages,
+		"model":       model,
+		"temperature": 0.2,
+		"messages":    aiChatMessages.Messages,
 	}
 
 	jsonData, err := json.Marshal(requestBody)
@@ -327,8 +329,9 @@ func DouBaoChatReplyApi(model,
 
 	url := "https://ark.cn-beijing.volces.com/api/v3/chat/completions"
 	requestBody := map[string]interface{}{
-		"model":    model,
-		"messages": aiChatMessages.Messages,
+		"model":       model,
+		"temperature": 0.2,
+		"messages":    aiChatMessages.Messages,
 	}
 
 	jsonData, err := json.Marshal(requestBody)
@@ -400,8 +403,9 @@ func OpenAiReplyApi(model,
 
 	url := "https://api.openai.com/v1/responses"
 	requestBody := map[string]interface{}{
-		"model": model,
-		"input": aiChatMessages.Messages,
+		"model":       model,
+		"temperature": 0.2,
+		"input":       aiChatMessages.Messages,
 	}
 
 	jsonData, err := json.Marshal(requestBody)
@@ -471,8 +475,9 @@ func OtherChatReplyApi(url,
 		Timeout: 40 * time.Second, // Set connection and read timeout
 	}
 	requestBody := map[string]interface{}{
-		"model":    model,
-		"messages": aiChatMessages.Messages,
+		"model":       model,
+		"temperature": 0.2,
+		"messages":    aiChatMessages.Messages,
 	}
 
 	jsonData, err := json.Marshal(requestBody)

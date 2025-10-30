@@ -141,13 +141,15 @@ func AnswerFixedPattern(choices []entity.ChoiceQue, judges []entity.JudgeQue, fi
 	//选择题修正
 	for i, choice := range choices {
 		if choice.Answers != nil {
-			candidateSelects := []string{} //待选
-			selectAnswers := []string{}
+			candidateSelects := []string{} //题目的选项文字字符串数组
+			selectAnswers := []string{}    // 用于存储匹配后的选项答案
 			for _, option := range choice.Options {
 				candidateSelects = append(candidateSelects, option)
 			}
 			if len(candidateSelects) > 0 {
+				//查询返回的答案进行遍历
 				for _, answer := range choice.Answers {
+					//根据返回大答案匹配当前题目的选项，并返回匹配度最大的最想的选项文字
 					selectAnswers = append(selectAnswers, qutils.SimilarityArrayAnswer(answer, candidateSelects))
 				}
 			}

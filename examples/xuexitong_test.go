@@ -469,7 +469,7 @@ func TestXueXiToFlushCourse(t *testing.T) {
 	utils.YatoriCoreInit()
 	//测试账号
 	setup()
-	user := global.Config.Users[56]
+	user := global.Config.Users[57]
 
 	userCache := xuexitongApi.XueXiTUserCache{
 		Name:     user.Account,
@@ -484,12 +484,12 @@ func TestXueXiToFlushCourse(t *testing.T) {
 	courseList, err := xuexitong.XueXiTPullCourseAction(&userCache) //拉取所有课程
 	for _, course := range courseList {                             //遍历课程
 
-		if course.CourseName != "解读中国经济发展的密码" {
-			continue
-		}
-		//if course.CourseName != "动手学AI：人工智能通识与实践（人文艺术版）" {
+		//if course.CourseName != "解读中国经济发展的密码" {
 		//	continue
 		//}
+		if course.CourseName != "设计与人文：当代公共艺术" {
+			continue
+		}
 		// 6c444b8d5c6203ee2f2aef4b76f5b2ce qrcEnc
 
 		key, _ := strconv.Atoi(course.Key)
@@ -603,6 +603,7 @@ func TestXueXiToFlushCourse(t *testing.T) {
 
 					//以手机端拉取章节卡片数据
 					mobileCard, _, _ := xuexitong.PageMobileChapterCardAction(&userCache, key, courseId, workDTO.KnowledgeID, workDTO.CardIndex, course.Cpi)
+
 					workDTO.AttachmentsDetection(mobileCard)
 					//fromAction, _ := xuexitong.WorkPageFromAction(&userCache, &workDTO)
 					//for _, input := range fromAction {
