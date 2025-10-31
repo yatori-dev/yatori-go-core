@@ -318,6 +318,7 @@ func ParseWorkQuestionAction(cache *xuexitong.XueXiTUserCache, workPoint *entity
 	var shortQuestion []entity.ShortQue
 	var termQuestion []entity.TermExplanationQue
 	var essayQuestion []entity.EssayQue
+	var matchingQuestion []entity.MatchingQue
 	question, _ := cache.WorkFetchQuestion(workPoint, 3, nil)
 
 	// 使用 goquery 解析 HTML
@@ -507,6 +508,31 @@ func ParseWorkQuestionAction(cache *xuexitong.XueXiTUserCache, workPoint *entity
 			options["论述"] = []string{"论述"}
 			essayQue.OpFromAnswer = options
 			essayQuestion = append(essayQuestion, essayQue)
+		case qtype.Matching.String():
+
+			matchingQue := entity.MatchingQue{}
+			matchingQue.Qid = qs.ID
+			matchingQue.Type = qtype.Matching
+			matchingQue.Text = quesText
+			//连线题截取链接项
+			options := []string{}
+			selects := []string{}
+			fmt.Println(qdoc.Html())
+			doc.Find("ul.answerList-line").Each(func(i int, s *goquery.Selection) {
+				fmt.Printf("第 %d 组内容：\n", i+1)
+				if i%2 == 0 {
+					s.Find("li").Each(func(_ int, li *goquery.Selection) {
+						options = append(options, li.Text())
+					})
+				} else {
+					s.Find("li").Each(func(_ int, li *goquery.Selection) {
+						selects = append(selects, li.Text())
+					})
+				}
+			})
+			matchingQue.Options = options
+			matchingQue.Selects = selects
+			matchingQuestion = append(matchingQuestion, matchingQue)
 		}
 	}
 
@@ -516,6 +542,7 @@ func ParseWorkQuestionAction(cache *xuexitong.XueXiTUserCache, workPoint *entity
 	questionEntity.Short = shortQuestion
 	questionEntity.TermExplanation = termQuestion
 	questionEntity.Essay = essayQuestion
+	questionEntity.Matching = matchingQuestion
 	return questionEntity, nil
 }
 
@@ -531,6 +558,7 @@ var problemStrategies = map[string]problemMessageStrategy{
 	"简答题":  handleShortAnswer,
 	"名词解释": handleTermExplanationAnswer,
 	"论述题":  handleEssayAnswer,
+	"连线题":  handleMatchingAnswer,
 }
 
 // 构建AI问答消息
@@ -553,22 +581,22 @@ func buildProblemContext(problemTypeStr string, topic entity.ExamTurn) (context 
 	case qtype.SingleChoice.String():
 		context += topic.XueXChoiceQue.Text + "\n"
 		for c, q := range topic.XueXChoiceQue.Options {
-			context += fmt.Sprintf("\n%v. %v", c, q)
+			context += fmt.Sprintf("%v. %v\n", c, q)
 		}
 	case qtype.MultipleChoice.String():
 		context += topic.XueXChoiceQue.Text + "\n"
 		for c, q := range topic.XueXChoiceQue.Options {
-			context += fmt.Sprintf("\n%v. %v", c, q)
+			context += fmt.Sprintf("%v. %v\n", c, q)
 		}
 	case qtype.FillInTheBlank.String():
 		context += topic.XueXFillQue.Text + "\n"
 		for c, q := range topic.XueXFillQue.OpFromAnswer {
-			context += fmt.Sprintf("\n%v. %v", c, q)
+			context += fmt.Sprintf("\n%v. %v\n", c, q)
 		}
 	case qtype.TrueOrFalse.String():
 		context += topic.XueXJudgeQue.Text + "\n"
 		for c, q := range topic.XueXJudgeQue.Options {
-			context += fmt.Sprintf("\n%v. %v", c, q)
+			context += fmt.Sprintf("%v. %v\n", c, q)
 		}
 	case qtype.ShortAnswer.String():
 		context += topic.XueXShortQue.Text + "\n"
@@ -580,6 +608,15 @@ func buildProblemContext(problemTypeStr string, topic entity.ExamTurn) (context 
 		context += topic.XueXTermExplanationQue.Text + "\n"
 	case qtype.Essay.String(): //论述题
 		context += topic.XueXEssayQue.Text + "\n"
+	case qtype.Matching.String():
+		context += topic.XueXMatchingQue.Text + "\n"
+		for _, option := range topic.XueXMatchingQue.Options {
+			context += fmt.Sprintf("%s\n", option)
+		}
+		for _, sel := range topic.XueXMatchingQue.Selects {
+			context += fmt.Sprintf("%s\n", sel)
+		}
+		context += "\n"
 	}
 	return context
 }
@@ -610,8 +647,7 @@ func handleMultipleChoice(paperTitle, context string, topic entity.ExamTurn) que
 func handleTrueFalse(paperTitle, content string, topic entity.ExamTurn) que_core.AIChatMessages {
 	problem := buildProblemHeader(paperTitle, topic.XueXJudgeQue.Type.String(), content)
 	return que_core.AIChatMessages{Messages: []que_core.Message{
-		{Role: "system", Content: "接下来你只需要利用json格式回答“正确”或者“错误”即可，比如：[\"正确\"]"},
-		{Role: "system", Content: "就算你不知道选什么也随机选...无需回答任何解释！！！"},
+		{Role: "system", Content: "接下来你只能利用json格式回答“正确”或者“错误”这两个选项，比如：[\"正确\"]，不要回答A、B选项字母！！！"},
 		{Role: "system", Content: exampleTrueFalse()},
 		{Role: "user", Content: problem},
 	}}
@@ -654,6 +690,17 @@ func handleEssayAnswer(paperTitle, content string, topic entity.ExamTurn) que_co
 	return que_core.AIChatMessages{Messages: []que_core.Message{
 		{Role: "system", Content: `这是一个论述题，回答时请严格遵循json格式：["答案"]，注意不要拆分答案！！！`},
 		{Role: "system", Content: exampleEssayAnswer()},
+		{Role: "user", Content: problem},
+	}}
+}
+
+// 连线题处理策略
+func handleMatchingAnswer(paperTitle, context string, topic entity.ExamTurn) que_core.AIChatMessages {
+	problem := buildProblemHeader(paperTitle, topic.XueXChoiceQue.Type.String(), context)
+	return que_core.AIChatMessages{Messages: []que_core.Message{
+		{Role: "system", Content: "接下来你只需要以json格式回答选项对应内容即可，比如：[\"xxx->xxx\",\"xxx->xxx\"]"},
+		{Role: "system", Content: "就算你不知道选什么也随机按指定要求格式回答...无需回答任何解释！！！"},
+		{Role: "system", Content: exampleMatchingAnswer()},
 		{Role: "user", Content: problem},
 	}}
 }
@@ -716,6 +763,7 @@ func exampleFillInTheBlank() string {
 那么你应该回答："["1949"]"`
 }
 
+// 简答题
 func exampleShortAnswer() string {
 	return `比如：
 试卷名称：考试
@@ -746,4 +794,28 @@ func exampleEssayAnswer() string {
 答案：设计艺术的构成元素包括点、线、面、形体、色彩、质感与空间等。它们相互依存、互为补充，通过合理的组织和运用，形成和谐、统一而富有美感的设计作品。
 
 那么你应该回答（回答字数不能少于500字）： ["设计艺术的构成元素包括点、线、面、形体、色彩、质感与空间等。它们相互依存、互为补充，通过合理的组织和运用，形成和谐、统一而富有美感的设计作品。"]`
+}
+
+// 连线题
+func exampleMatchingAnswer() string {
+	return `比如：
+试卷名称：考试
+题目类型：连线题
+题目内容：
+5.[连线题] 下列认知心理学家与其所做的经典研究之间的关系：
+
+1、桑代克 ()
+2、威特金 ()
+3、凯利 ()
+4、卡特尔 ()
+
+A、迷箱实验
+B、角色建构测验
+C、16PF
+D、棒框实验
+
+答案：第一空：桑代克->迷箱实验、威特金->棒框实验、凯利->角色建构测验、卡特尔->16PF
+
+那么你应该回答： ["桑代克->迷箱实验","威特金->棒框实验","凯利->角色建构测验","卡特尔->16PF"]`
+
 }

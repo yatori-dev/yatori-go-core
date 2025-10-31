@@ -2,10 +2,11 @@ package ttcdw
 
 import (
 	"errors"
-	"github.com/thedevsaddam/gojsonq"
-	"github.com/yatori-dev/yatori-go-core/api/ttcdw"
 	"strconv"
 	"strings"
+
+	"github.com/thedevsaddam/gojsonq"
+	"github.com/yatori-dev/yatori-go-core/api/ttcdw"
 )
 
 type TtcdwProject struct {
@@ -35,6 +36,22 @@ type TtcdwCourse struct {
 	UserId             string  //用户ID
 }
 type TtcdwVideo struct {
+	Id                 string
+	ParentId           string
+	Tag                string
+	Name               string
+	DurationText       string
+	Duration           int
+	FreeTime           int
+	OpenCourseFreeTime int
+	Type               int
+	StudyProgress      int
+	VideoId            string
+	Progress           float32
+	CourseWareType     int
+	TransState         string
+	VideoType          int
+	Token              string
 }
 
 // 拉取项目
@@ -161,9 +178,50 @@ func PullCourseAction(cache *ttcdw.TtcdwUserCache, class TtcdwClassRoom) ([]Ttcd
 	}
 	return courses, nil
 }
-func PullVideoAction(cache *ttcdw.TtcdwUserCache) ([]TtcdwVideo, error) {
-	var videos []TtcdwVideo
 
+// 拉取视频列表
+func PullVideoListAction(cache *ttcdw.TtcdwUserCache, project TtcdwProject, classRoom TtcdwClassRoom, course TtcdwCourse) ([]TtcdwVideo, error) {
+	var videos []TtcdwVideo
+	videoListResultJson, err := cache.PullVideoListApi(course.CourseId, classRoom.ItemId, classRoom.SegmentId, project.CourseProjectId, project.OrgId, 3, nil)
+	if err != nil {
+		return nil, err
+	}
+	resultStatus := gojsonq.New().JSONString(videoListResultJson).Find("resultCode")
+	if resultStatus == nil {
+		return nil, errors.New(videoListResultJson)
+	}
+	if int(resultStatus.(float64)) != 0 {
+		return nil, errors.New(videoListResultJson)
+	}
+
+	videoListJson := gojsonq.New().JSONString(videoListResultJson).Find("data")
+	if items, ok := videoListJson.([]interface{}); ok {
+		for _, item := range items {
+			if obj, ok := item.(map[string]interface{}); ok {
+				video := TtcdwVideo{
+					Id:             obj["id"].(string),
+					ParentId:       obj["parentId"].(string),
+					Tag:            obj["tag"].(string),
+					Name:           obj["name"].(string),
+					DurationText:   obj["durationText"].(string),
+					FreeTime:       int(obj["freetime"].(float64)),
+					StudyProgress:  int(obj["studyProgress"].(float64)),
+					VideoId:        obj["videoId"].(string),
+					Progress:       float32(obj["progress"].(float64)),
+					CourseWareType: int(obj["coursewareType"].(float64)),
+					VideoType:      int(obj["videoType"].(float64)),
+					Token:          obj["token"].(string),
+					Duration:       0,
+				}
+				duration, err1 := strconv.Atoi(obj["duration"].(string))
+				if err1 == nil {
+					video.Duration = duration
+				}
+				videos = append(videos, video)
+			}
+		}
+		return videos, nil
+	}
 	//chapterHtml, err := cache.PullChapterListHtmlApi(5, nil)
 	//if err != nil {
 	//	return nil, err
@@ -176,4 +234,9 @@ func PullVideoAction(cache *ttcdw.TtcdwUserCache) ([]TtcdwVideo, error) {
 	//
 	//}
 	return videos, nil
+}
+
+// 提交学时
+func SubmitStudyTime(cache *ttcdw.TtcdwUserCache) {
+
 }

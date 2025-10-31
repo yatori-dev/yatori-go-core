@@ -2,6 +2,7 @@ package xuexitong
 
 import (
 	"errors"
+	"strings"
 
 	ddddocr "github.com/Changbaiqi/ddddocr-go/utils"
 	ort "github.com/yalue/onnxruntime_go"
@@ -23,6 +24,10 @@ func WorkNewSubmitAnswerAction(userCache *xuexitong.XueXiTUserCache, question en
 		question.JobId, question.TotalQuestionNum, question.AnswerId, question.WorkAnswerId, question.Api,
 		question.FullScore, question.OldSchoolId, question.OldWorkId, question.WorkRelationId, question.Enc_work,
 		question, submitState)
+	//answer, err := userCache.WorkNewSubmitAnswerNew(question.CourseId, question.ClassId, question.Knowledgeid, question.Cpi,
+	//	question.JobId, question.TotalQuestionNum, question.AnswerId, question.WorkAnswerId, question.Api,
+	//	question.FullScore, question.OldSchoolId, question.OldWorkId, question.WorkRelationId, question.Enc_work,
+	//	question, submitState)
 	if err != nil {
 		if err.Error() == "触发验证码" {
 			log2.Print(log2.DEBUG, utils.RunFuncName(), "触发验证码，正在进行AI智能识别绕过.....")
@@ -126,6 +131,11 @@ func StartExternalWorkAction(cache *xuexitong.XueXiTUserCache, exUrl string, que
 		q := &questionAction.Short[i]
 		q.AnswerExternalGet(exUrl)
 	}
+	//连线题
+	for i := range questionAction.Matching {
+		q := &questionAction.Matching[i]
+		q.AnswerExternalGet(exUrl)
+	}
 	var resultStr string
 	if isSubmit == 0 {
 		resultStr, _ = WorkNewSubmitAnswerAction(cache, questionAction, false)
@@ -137,19 +147,17 @@ func StartExternalWorkAction(cache *xuexitong.XueXiTUserCache, exUrl string, que
 }
 
 // 答案修正匹配
-func AnswerFixedPattern(choices []entity.ChoiceQue, judges []entity.JudgeQue, fills []entity.FillQue, shorts []entity.ShortQue) {
+func AnswerFixedPattern(choices []entity.ChoiceQue, judges []entity.JudgeQue) {
 	//选择题修正
 	for i, choice := range choices {
 		if choice.Answers != nil {
-			candidateSelects := []string{} //题目的选项文字字符串数组
-			selectAnswers := []string{}    // 用于存储匹配后的选项答案
+			candidateSelects := []string{} //待选
+			selectAnswers := []string{}
 			for _, option := range choice.Options {
 				candidateSelects = append(candidateSelects, option)
 			}
 			if len(candidateSelects) > 0 {
-				//查询返回的答案进行遍历
 				for _, answer := range choice.Answers {
-					//根据返回大答案匹配当前题目的选项，并返回匹配度最大的最想的选项文字
 					selectAnswers = append(selectAnswers, qutils.SimilarityArrayAnswer(answer, candidateSelects))
 				}
 			}
@@ -162,6 +170,7 @@ func AnswerFixedPattern(choices []entity.ChoiceQue, judges []entity.JudgeQue, fi
 		if judge.Answers != nil {
 			selectAnswer := []string{}
 			for _, answer := range judge.Answers {
+				answer = strings.ReplaceAll(answer, "对", "正确")
 				selectAnswer = append(selectAnswer, qutils.SimilarityArrayAnswer(answer, []string{"正确", "错误"}))
 			}
 			judges[i].Answers = selectAnswer

@@ -469,7 +469,7 @@ func TestXueXiToFlushCourse(t *testing.T) {
 	utils.YatoriCoreInit()
 	//测试账号
 	setup()
-	user := global.Config.Users[57]
+	user := global.Config.Users[59]
 
 	userCache := xuexitongApi.XueXiTUserCache{
 		Name:     user.Account,
@@ -487,7 +487,7 @@ func TestXueXiToFlushCourse(t *testing.T) {
 		//if course.CourseName != "解读中国经济发展的密码" {
 		//	continue
 		//}
-		if course.CourseName != "设计与人文：当代公共艺术" {
+		if course.CourseName != "人格与心理健康" {
 			continue
 		}
 		// 6c444b8d5c6203ee2f2aef4b76f5b2ce qrcEnc
@@ -538,10 +538,10 @@ func TestXueXiToFlushCourse(t *testing.T) {
 			log.Printf("ID.%d(%s/%s)正在执行任务点\n",
 				item,
 				pointAction.Knowledge[index].Label, pointAction.Knowledge[index].Name)
-			//if pointAction.Knowledge[index].Label != "3.4" {
-			//	//fmt.Println("断点")
-			//	continue
-			//}
+			if pointAction.Knowledge[index].Label != "5.5" {
+				//fmt.Println("断点")
+				continue
+			}
 			_, fetchCards, err := xuexitong.ChapterFetchCardsAction(&userCache, &action, nodes, index, courseId, key, course.Cpi)
 
 			if err != nil {
@@ -553,7 +553,7 @@ func TestXueXiToFlushCourse(t *testing.T) {
 			}
 
 			// 视频刷取
-			if videoDTOs != nil && true {
+			if videoDTOs != nil && false {
 				for _, videoDTO := range videoDTOs {
 					card, enc, err := xuexitong.PageMobileChapterCardAction(
 						&userCache, key, courseId, videoDTO.KnowledgeID, videoDTO.CardIndex, course.Cpi)
@@ -598,7 +598,7 @@ func TestXueXiToFlushCourse(t *testing.T) {
 				}
 			}
 			//作业刷取
-			if workDTOs != nil && false {
+			if workDTOs != nil && true {
 				for _, workDTO := range workDTOs {
 
 					//以手机端拉取章节卡片数据
@@ -669,7 +669,18 @@ func TestXueXiToFlushCourse(t *testing.T) {
 						aiSetting := global.Config.Setting.AiSetting //获取AI设置
 						q.AnswerAIGet(userCache.UserID, aiSetting.AiUrl, aiSetting.Model, aiSetting.AiType, message, aiSetting.APIKEY)
 					}
-					answerAction, _ := xuexitong.WorkNewSubmitAnswerAction(&userCache, questionAction, true)
+
+					//连线题题
+					for i := range questionAction.Matching {
+						q := &questionAction.Matching[i] // 获取对应选项
+						message := xuexitong.AIProblemMessage(questionAction.Title, q.Type.String(), entity.ExamTurn{
+							XueXMatchingQue: *q,
+						})
+						aiSetting := global.Config.Setting.AiSetting //获取AI设置
+						q.AnswerAIGet(userCache.UserID, aiSetting.AiUrl, aiSetting.Model, aiSetting.AiType, message, aiSetting.APIKEY)
+					}
+					xuexitong.AnswerFixedPattern(questionAction.Choice, questionAction.Judge)
+					answerAction, _ := xuexitong.WorkNewSubmitAnswerAction(&userCache, questionAction, false)
 					fmt.Printf("%s答题完成，返回信息：%s\n", questionAction.Title, answerAction)
 				}
 			}

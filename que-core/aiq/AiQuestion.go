@@ -462,7 +462,7 @@ func OpenAiReplyApi(model,
 	return content, nil
 }
 
-// DouBaoChatReplyApi 豆包API
+// DeepSeekChatReplyApi DeepSeek API
 func DeepSeekChatReplyApi(model,
 	apiKey string,
 	aiChatMessages AIChatMessages,

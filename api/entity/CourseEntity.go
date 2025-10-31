@@ -156,6 +156,16 @@ type EssayQue struct {
 	OpFromAnswer map[string][]string `json:"opFromAnswer"`
 }
 
+// 连线题
+type MatchingQue struct {
+	Type    qtype.QType `json:"type"`
+	Qid     string      `json:"qid"` //题目ID
+	Text    string      `json:"text"`
+	Options []string    `json:"options1"`
+	Selects []string    `json:"options2"`
+	Answers []string    `json:"answers"` // 答案
+}
+
 // Question TODO 这里考虑是否在其中直接将答案做出 直接上报提交 或 保存提交
 type Question struct {
 	Title            string               `json:"title"` //试卷标题
@@ -189,6 +199,7 @@ type Question struct {
 	Short            []ShortQue           //简答类型
 	TermExplanation  []TermExplanationQue //名词解释类型
 	Essay            []EssayQue           //论述题类型
+	Matching         []MatchingQue        //连线题
 }
 
 // 序列化输出答题信息
@@ -207,6 +218,7 @@ type ExamTurn struct {
 	XueXShortQue           ShortQue
 	XueXTermExplanationQue TermExplanationQue
 	XueXEssayQue           EssayQue
+	XueXMatchingQue        MatchingQue
 	YingHuaExamTopic
 }
 
@@ -252,6 +264,9 @@ func (q *TermExplanationQue) SetAnswers(answers []string) {
 }
 func (q *EssayQue) SetAnswers(answers []string) {
 	q.OpFromAnswer["论述"] = answers
+}
+func (q *MatchingQue) SetAnswers(answers []string) {
+	q.Answers = answers
 }
 
 // 从键中提取序号（例如："0第3空" → 2，注意索引从0开始）
@@ -415,6 +430,25 @@ func (q *EssayQue) AnswerAIGet(userID,
 }
 
 func (q *EssayQue) AnswerExternalGet(exUrl string) {
+	question := qentity.Question{
+		Type:    q.Type.String(),
+		Content: q.Text,
+	}
+	//赋值选项
+	request, err := external.ApiQueRequest(question, exUrl, 3, nil)
+	if err != nil {
+		log2.Fatal(err)
+	}
+	//赋值答案
+	q.SetAnswers(request.Question.Answers)
+}
+
+func (q *MatchingQue) AnswerAIGet(userID,
+	url, model string, aiType ctype.AiType, aiChatMessages aiq.AIChatMessages, apiKey string) {
+	GetAIAnswer(q, userID, url, model, aiType, aiChatMessages, apiKey)
+}
+
+func (q *MatchingQue) AnswerExternalGet(exUrl string) {
 	question := qentity.Question{
 		Type:    q.Type.String(),
 		Content: q.Text,
