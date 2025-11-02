@@ -2,12 +2,13 @@ package external
 
 import (
 	"encoding/json"
-	"github.com/thedevsaddam/gojsonq"
-	"github.com/yatori-dev/yatori-go-core/que-core/qentity"
 	"io"
 	"net/http"
 	"strings"
 	"time"
+
+	"github.com/thedevsaddam/gojsonq"
+	"github.com/yatori-dev/yatori-go-core/que-core/qentity"
 )
 
 // 用于请求外部题库接口使用
