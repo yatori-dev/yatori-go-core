@@ -573,6 +573,8 @@ func AIProblemMessage(paperTitle, typeStr string, topic entity.ExamTurn) que_cor
 
 	// 默认返回空消息
 	return que_core.AIChatMessages{Messages: []que_core.Message{}}
+
+	//return que_core.BuildAiQuestionMessage(topic.Question)
 }
 
 // buildProblemContext 构建通用的题目上下文

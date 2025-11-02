@@ -36,6 +36,7 @@ func BuildAiQuestionMessage(topic qentity.Question) AIChatMessages {
 		return handleTermExplanationAnswer(topic)
 	case qtype.Essay:
 		return handleEssayAnswer(topic)
+
 	}
 	return AIChatMessages{}
 }
@@ -112,6 +113,17 @@ func handleEssayAnswer(topic qentity.Question) AIChatMessages {
 	}}
 }
 
+//// 连线题处理策略
+//func handleMatchingAnswer(topic qentity.Question) AIChatMessages {
+//	problem := buildProblemHeader(topic.Type, topic)
+//	return AIChatMessages{Messages: []Message{
+//		{Role: "system", Content: "接下来你只需要以json格式回答选项对应内容即可，比如：[\"xxx->xxx\",\"xxx->xxx\"]"},
+//		{Role: "system", Content: "就算你不知道选什么也随机按指定要求格式回答...无需回答任何解释！！！"},
+//		{Role: "system", Content: exampleMatchingAnswer()},
+//		{Role: "user", Content: problem},
+//	}}
+//}
+
 // 构建题目头部信息
 func buildProblemHeader(topicType string, topic qentity.Question) string {
 	selectStr := []string{"A", "B", "C", "D", "E", "F", "G", "H", "I", "J", "K", "L", "M", "N", "O", "P", "Q", "R", "S", "T", "U", "V", "W", "X", "Y", "Z"}
@@ -138,6 +150,15 @@ func buildProblemHeader(topicType string, topic qentity.Question) string {
 	case qtype.ShortAnswer: //简答题
 	case qtype.TermExplanation: //名词解释
 	case qtype.Essay: //论述题
+		//case qtype.Matching:
+		//	for _, option := range topic.Options {
+		//		sprintf += fmt.Sprintf("%s\n", option)
+		//	}
+		//	for _, sel := range topic.Selects {
+		//		context += fmt.Sprintf("%s\n", sel)
+		//	}
+		//	context += "\n"
+		//}
 	}
 
 	return sprintf

@@ -295,7 +295,7 @@ func GetAIAnswer(as AnswerSetter, userID string, url, model string, aiType ctype
 	err = json.Unmarshal([]byte(aiAnswer), &answers)
 	if err != nil {
 		answers = []string{"A"}
-		fmt.Println("AI回复解析错误:", err)
+		fmt.Println("AI回复解析错误:", err, fmt.Sprintf("题目：%v \nAI回复： %v", aiChatMessages, aiAnswer))
 	}
 
 	as.SetAnswers(answers)
@@ -317,11 +317,17 @@ func (q *ChoiceQue) AnswerExternalGet(exUrl string) {
 	for _, k := range q.Options {
 		question.Options = append(question.Options, k)
 	}
-	request, err := external.ApiQueRequest(question, exUrl, 3, nil)
+	request, err := external.ApiQueRequest(question, exUrl, 5, nil)
 	if err != nil {
 		log2.Fatal(err)
 	}
 	//赋值答案
+	var answers []string
+	if request.Question.Answers == nil {
+		answers = []string{"A"}
+		fmt.Println("回复解析错误:", err, fmt.Sprintf("题目：%v \n外置题库回复： %v", q, request))
+		request.Question.Answers = answers
+	}
 	q.Answers = request.Question.Answers
 }
 
@@ -341,9 +347,15 @@ func (q *JudgeQue) AnswerExternalGet(exUrl string) {
 	for _, k := range q.Options {
 		question.Options = append(question.Options, k)
 	}
-	request, err := external.ApiQueRequest(question, exUrl, 3, nil)
+	request, err := external.ApiQueRequest(question, exUrl, 5, nil)
 	if err != nil {
 		log2.Fatal(err)
+	}
+	var answers []string
+	if request.Question.Answers == nil {
+		answers = []string{"A"}
+		fmt.Println("回复解析错误:", err, fmt.Sprintf("题目：%v \n外置题库回复： %v", q, request))
+		request.Question.Answers = answers
 	}
 	//赋值答案
 	q.Answers = request.Question.Answers
@@ -362,7 +374,7 @@ func (q *FillQue) AnswerExternalGet(exUrl string) {
 	}
 	//赋值选项
 
-	request, err := external.ApiQueRequest(question, exUrl, 3, nil)
+	request, err := external.ApiQueRequest(question, exUrl, 5, nil)
 	if err != nil {
 		log2.Fatal(err)
 	}
@@ -395,9 +407,15 @@ func (q *ShortQue) AnswerExternalGet(exUrl string) {
 		Content: q.Text,
 	}
 	//赋值选项
-	request, err := external.ApiQueRequest(question, exUrl, 3, nil)
+	request, err := external.ApiQueRequest(question, exUrl, 5, nil)
 	if err != nil {
 		log2.Fatal(err)
+	}
+	var answers []string
+	if request.Question.Answers == nil {
+		answers = []string{"A"}
+		fmt.Println("回复解析错误:", err, fmt.Sprintf("题目：%v \n外置题库回复： %v", q, request))
+		request.Question.Answers = answers
 	}
 	//赋值答案
 	q.SetAnswers(request.Question.Answers)
@@ -415,7 +433,7 @@ func (q *TermExplanationQue) AnswerExternalGet(exUrl string) {
 		Content: q.Text,
 	}
 	//赋值选项
-	request, err := external.ApiQueRequest(question, exUrl, 3, nil)
+	request, err := external.ApiQueRequest(question, exUrl, 5, nil)
 	if err != nil {
 		log2.Fatal(err)
 	}
@@ -435,7 +453,7 @@ func (q *EssayQue) AnswerExternalGet(exUrl string) {
 		Content: q.Text,
 	}
 	//赋值选项
-	request, err := external.ApiQueRequest(question, exUrl, 3, nil)
+	request, err := external.ApiQueRequest(question, exUrl, 5, nil)
 	if err != nil {
 		log2.Fatal(err)
 	}
@@ -454,7 +472,7 @@ func (q *MatchingQue) AnswerExternalGet(exUrl string) {
 		Content: q.Text,
 	}
 	//赋值选项
-	request, err := external.ApiQueRequest(question, exUrl, 3, nil)
+	request, err := external.ApiQueRequest(question, exUrl, 5, nil)
 	if err != nil {
 		log2.Fatal(err)
 	}
