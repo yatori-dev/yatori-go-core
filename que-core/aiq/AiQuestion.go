@@ -73,10 +73,10 @@ func AICheck(url, model, apiKey string, aiType ctype.AiType) error {
 	}
 
 	if aiType == "" {
-		return errors.New("AI Type: " + "请先填写AIType参数")
+		return errors.New("AI Type: " + "请先填写AIType参数，详细参考官方文档：https://yatori-dev.github.io/yatori-docs/yatori-go-console/docs.html")
 	}
 	if apiKey == "" {
-		return errors.New("无效apiKey，请检查apiKey是否正确填写")
+		return errors.New("无效apiKey，请检查apiKey是否正确填写，详细情参考对应AI平台的API文档或者对应yatori的官方文档：https://yatori-dev.github.io/yatori-docs/yatori-go-console/docs.html")
 	}
 	_, err := AggregationAIApi(url, model, aiType, aiChatMessages, apiKey)
 	return err
