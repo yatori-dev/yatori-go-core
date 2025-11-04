@@ -325,6 +325,12 @@ func (q *ChoiceQue) AnswerExternalGet(exUrl string) {
 	}
 	//赋值答案
 	var answers []string
+	if request.Code == 404 {
+		answers = []string{"A"}
+		log.Print(log.INFO, "外置题库未找到答案，已使用默认答案A:", fmt.Sprintf("题目：%v \n外置题库回复： %v", q, request))
+		request.Question.Answers = answers
+		return
+	}
 	if request.Question.Answers == nil {
 		answers = []string{"A"}
 		fmt.Println("回复解析错误:", err, fmt.Sprintf("题目：%v \n外置题库回复： %v", q, request))
@@ -353,6 +359,12 @@ func (q *JudgeQue) AnswerExternalGet(exUrl string) {
 	if err != nil {
 		log2.Fatal(err)
 	}
+	if request.Code == 404 {
+		log.Print(log.INFO, "外置题库未找到答案，已使用默认答案：正确:", fmt.Sprintf("题目：%v \n外置题库回复： %v", q, request))
+		request.Question.Answers = []string{"对"}
+		return
+	}
+
 	var answers []string
 	if request.Question.Answers == nil {
 		answers = []string{"A"}
@@ -380,20 +392,14 @@ func (q *FillQue) AnswerExternalGet(exUrl string) {
 	if err != nil {
 		log2.Fatal(err)
 	}
-	//赋值答案
-	//for key := range q.OpFromAnswer {
-	//	// 提取键中的序号（假设格式为"0第X空"）
-	//	index := extractIndexFromKey(key)
-	//	if index >= 0 && index < len(question.Options) {
-	//		q.OpFromAnswer[key] = []string{request.Answers[index]}
-	//	} else {
-	//		if len(request.Answers) > 0 {
-	//			q.OpFromAnswer[key] = []string{request.Answers[0]}
-	//		} else {
-	//			q.OpFromAnswer[key] = []string{}
-	//		}
-	//	}
-	//}
+	if request.Code == 404 {
+		log.Print(log.INFO, "外置题库未找到答案，已自动留空", fmt.Sprintf("题目：%v \n外置题库回复： %v", q, request))
+		request.Question.Answers = []string{}
+		for i := 0; i < len(q.OpFromAnswer); i++ {
+			request.Question.Answers = append(request.Question.Answers, "")
+		}
+		return
+	}
 	q.OpFromAnswer = request.Question.Answers
 
 }

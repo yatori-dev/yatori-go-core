@@ -469,7 +469,7 @@ func TestXueXiToFlushCourse(t *testing.T) {
 	utils.YatoriCoreInit()
 	//测试账号
 	setup()
-	user := global.Config.Users[59]
+	user := global.Config.Users[62]
 
 	userCache := xuexitongApi.XueXiTUserCache{
 		Name:     user.Account,
@@ -487,7 +487,7 @@ func TestXueXiToFlushCourse(t *testing.T) {
 		//if course.CourseName != "解读中国经济发展的密码" {
 		//	continue
 		//}
-		if course.CourseName != "人格与心理健康" {
+		if course.CourseName != "药用植物学" {
 			continue
 		}
 		// 6c444b8d5c6203ee2f2aef4b76f5b2ce qrcEnc
@@ -538,7 +538,7 @@ func TestXueXiToFlushCourse(t *testing.T) {
 			log.Printf("ID.%d(%s/%s)正在执行任务点\n",
 				item,
 				pointAction.Knowledge[index].Label, pointAction.Knowledge[index].Name)
-			if pointAction.Knowledge[index].Label != "5.5" {
+			if pointAction.Knowledge[index].Label != "14.10.7" {
 				//fmt.Println("断点")
 				continue
 			}
@@ -617,12 +617,14 @@ func TestXueXiToFlushCourse(t *testing.T) {
 					fmt.Println(questionAction)
 					for i := range questionAction.Choice {
 						q := &questionAction.Choice[i] // 获取对应选项
-						message := xuexitong.AIProblemMessage(questionAction.Title, q.Type.String(), entity.ExamTurn{
-							XueXChoiceQue: *q,
-						})
-						//q.AnswerExternalGet()
-						aiSetting := global.Config.Setting.AiSetting //获取AI设置
-						q.AnswerAIGet(userCache.UserID, aiSetting.AiUrl, aiSetting.Model, aiSetting.AiType, message, aiSetting.APIKEY)
+						//message := xuexitong.AIProblemMessage(questionAction.Title, q.Type.String(), entity.ExamTurn{
+						//	XueXChoiceQue: *q,
+						//})
+						//
+						////q.AnswerExternalGet()
+						//aiSetting := global.Config.Setting.AiSetting //获取AI设置
+						//q.AnswerAIGet(userCache.UserID, aiSetting.AiUrl, aiSetting.Model, aiSetting.AiType, message, aiSetting.APIKEY)
+						q.AnswerExternalGet("http://localhost:8083")
 					}
 					//判断题
 					for i := range questionAction.Judge {
@@ -637,20 +639,22 @@ func TestXueXiToFlushCourse(t *testing.T) {
 					//填空题
 					for i := range questionAction.Fill {
 						q := &questionAction.Fill[i] // 获取对应选项
-						message := xuexitong.AIProblemMessage(questionAction.Title, q.Type.String(), entity.ExamTurn{
-							XueXFillQue: *q,
-						})
-						aiSetting := global.Config.Setting.AiSetting //获取AI设置
-						q.AnswerAIGet(userCache.UserID, aiSetting.AiUrl, aiSetting.Model, aiSetting.AiType, message, aiSetting.APIKEY)
+						//message := xuexitong.AIProblemMessage(questionAction.Title, q.Type.String(), entity.ExamTurn{
+						//	XueXFillQue: *q,
+						//})
+						//aiSetting := global.Config.Setting.AiSetting //获取AI设置
+						//q.AnswerAIGet(userCache.UserID, aiSetting.AiUrl, aiSetting.Model, aiSetting.AiType, message, aiSetting.APIKEY)
+						q.AnswerExternalGet("http://localhost:8083")
 					}
 					//简答题
 					for i := range questionAction.Short {
 						q := &questionAction.Short[i] // 获取对应选项
-						message := xuexitong.AIProblemMessage(questionAction.Title, q.Type.String(), entity.ExamTurn{
-							XueXShortQue: *q,
-						})
-						aiSetting := global.Config.Setting.AiSetting //获取AI设置
-						q.AnswerAIGet(userCache.UserID, aiSetting.AiUrl, aiSetting.Model, aiSetting.AiType, message, aiSetting.APIKEY)
+						//message := xuexitong.AIProblemMessage(questionAction.Title, q.Type.String(), entity.ExamTurn{
+						//	XueXShortQue: *q,
+						//})
+						//aiSetting := global.Config.Setting.AiSetting //获取AI设置
+						//q.AnswerAIGet(userCache.UserID, aiSetting.AiUrl, aiSetting.Model, aiSetting.AiType, message, aiSetting.APIKEY)
+						q.AnswerExternalGet("http://localhost:8083")
 					}
 					//名词解释
 					for i := range questionAction.TermExplanation {
