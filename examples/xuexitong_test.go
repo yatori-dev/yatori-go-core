@@ -620,6 +620,7 @@ func TestXueXiToFlushCourse(t *testing.T) {
 						message := xuexitong.AIProblemMessage(questionAction.Title, q.Type.String(), entity.ExamTurn{
 							XueXChoiceQue: *q,
 						})
+						//q.AnswerExternalGet()
 						aiSetting := global.Config.Setting.AiSetting //获取AI设置
 						q.AnswerAIGet(userCache.UserID, aiSetting.AiUrl, aiSetting.Model, aiSetting.AiType, message, aiSetting.APIKEY)
 					}

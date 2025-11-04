@@ -126,10 +126,11 @@ type JudgeQue struct {
 
 // FillQue 填空类型
 type FillQue struct {
-	Type         qtype.QType         `json:"type"`
-	Qid          string              `json:"qid"`
-	Text         string              `json:"text"`
-	OpFromAnswer map[string][]string `json:"opFromAnswer"` // 位置与答案
+	Type qtype.QType `json:"type"`
+	Qid  string      `json:"qid"`
+	Text string      `json:"text"`
+	//OpFromAnswer map[string][]string `json:"opFromAnswer"` // 位置与答案
+	OpFromAnswer []string `json:"opFromAnswer"` // 位置与答案
 }
 
 // 简答类型
@@ -239,20 +240,21 @@ func (q *FillQue) SetAnswers(answers []string) {
 		return
 	}
 
-	for key := range q.OpFromAnswer {
-		// 提取键中的序号（假设格式为"0第X空"）
-		index := extractIndexFromKey(key)
-		if index >= 0 && index < len(answers) {
-			q.OpFromAnswer[key] = []string{answers[index]}
-		} else {
-			// 默认使用第一个答案或空列表
-			if len(answers) > 0 {
-				q.OpFromAnswer[key] = []string{answers[0]}
-			} else {
-				q.OpFromAnswer[key] = []string{}
-			}
-		}
-	}
+	//for key := range q.OpFromAnswer {
+	//	// 提取键中的序号（假设格式为"0第X空"）
+	//	index := extractIndexFromKey(key)
+	//	if index >= 0 && index < len(answers) {
+	//		q.OpFromAnswer[key] = []string{answers[index]}
+	//	} else {
+	//		// 默认使用第一个答案或空列表
+	//		if len(answers) > 0 {
+	//			q.OpFromAnswer[key] = []string{answers[0]}
+	//		} else {
+	//			q.OpFromAnswer[key] = []string{}
+	//		}
+	//	}
+	//}
+	q.OpFromAnswer = answers
 }
 
 func (q *ShortQue) SetAnswers(answers []string) {
@@ -379,19 +381,20 @@ func (q *FillQue) AnswerExternalGet(exUrl string) {
 		log2.Fatal(err)
 	}
 	//赋值答案
-	for key := range q.OpFromAnswer {
-		// 提取键中的序号（假设格式为"0第X空"）
-		index := extractIndexFromKey(key)
-		if index >= 0 && index < len(question.Options) {
-			q.OpFromAnswer[key] = []string{request.Answers[index]}
-		} else {
-			if len(request.Answers) > 0 {
-				q.OpFromAnswer[key] = []string{request.Answers[0]}
-			} else {
-				q.OpFromAnswer[key] = []string{}
-			}
-		}
-	}
+	//for key := range q.OpFromAnswer {
+	//	// 提取键中的序号（假设格式为"0第X空"）
+	//	index := extractIndexFromKey(key)
+	//	if index >= 0 && index < len(question.Options) {
+	//		q.OpFromAnswer[key] = []string{request.Answers[index]}
+	//	} else {
+	//		if len(request.Answers) > 0 {
+	//			q.OpFromAnswer[key] = []string{request.Answers[0]}
+	//		} else {
+	//			q.OpFromAnswer[key] = []string{}
+	//		}
+	//	}
+	//}
+	q.OpFromAnswer = request.Question.Answers
 
 }
 

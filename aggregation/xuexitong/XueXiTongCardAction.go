@@ -457,7 +457,8 @@ func ParseWorkQuestionAction(cache *xuexitong.XueXiTUserCache, workPoint *entity
 			judgeQue.Options = options
 			judgeQuestion = append(judgeQuestion, judgeQue)
 		case qtype.FillInTheBlank.String():
-			options := make(map[string][]string)
+			//options := make(map[string][]string)
+			options := []string{}
 			fillQue := entity.FillQue{}
 			fillQue.Type = qtype.FillInTheBlank
 			fillQue.Qid = qs.ID
@@ -472,8 +473,9 @@ func ParseWorkQuestionAction(cache *xuexitong.XueXiTUserCache, workPoint *entity
 						validParts = append(validParts, part)
 					}
 				}
-				for j, s := range validParts {
-					options[s] = []string{fmt.Sprintf("填空%d", j+1)}
+				for j, _ := range validParts {
+					options = append(options, fmt.Sprintf("%d", j+1))
+					//options[s] = []string{fmt.Sprintf("填空%d", j+1)}
 				}
 			})
 			fillQue.OpFromAnswer = options
