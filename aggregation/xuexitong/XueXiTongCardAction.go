@@ -63,6 +63,13 @@ func PageMobileChapterCardAction(
 		}
 		//过完人脸重新拉取章节信息
 		cardHtml, err = cache.PageMobileChapterCard(classId, courseId, knowledgeId, cardIndex, cpi, 3, nil)
+		//如果新版本人脸过不去，则再尝试旧版本人脸
+		if strings.Contains(cardHtml, `title : "人脸识别"`) {
+			ObjectId, err1 = PassFacePhoneOldAction(cache, fmt.Sprintf("%d", courseId), fmt.Sprintf("%d", classId), fmt.Sprintf("%d", cpi), fmt.Sprintf("%d", knowledgeId), "", "", "")
+			time.Sleep(1 * time.Second) //隔一下
+		}
+
+		cardHtml, err = cache.PageMobileChapterCard(classId, courseId, knowledgeId, cardIndex, cpi, 3, nil)
 		if strings.Contains(cardHtml, `title : "人脸识别"`) {
 			return nil, "", errors.New("通过人脸识别失败")
 		}
@@ -340,7 +347,6 @@ func ParseWorkQuestionAction(cache *xuexitong.XueXiTUserCache, workPoint *entity
 	//用于拉取并完善workPointDto信息
 	informMap, err := utils.ParseWorkInform(doc)
 	WorkInformInputWorkDTO(informMap, &questionEntity) //转换
-
 	// 内置，用于从文本中提取题目类型
 	var extractQuestionType = func(text string) string {
 		start := strings.Index(text, "[")

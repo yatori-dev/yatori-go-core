@@ -612,7 +612,7 @@ func (cache *XueXiTUserCache) GetCourseFaceQrPlan1Api(courseId, classId, uuid, o
 }
 
 // 手机端过人脸接口
-func (cache *XueXiTUserCache) PassFaceQrPlanPhoneApi(classId, courseId, knowledgeId, cpi, objectId /*人脸上传id*/ string) (string, error) {
+func (cache *XueXiTUserCache) PassFaceQrPlanPhoneNewApi(classId, courseId, knowledgeId, cpi, objectId /*人脸上传id*/ string) (string, error) {
 
 	//urlStr := "https://mooc1-api.chaoxing.com/mooc-ans/facephoto/clientfacecheckstatus?" + "courseId=" + courseId + "&clazzId=" + classId + "&cpi=" + cpi + "&chapterId=" + knowledgeId + "&objectId=" + objectId + "&type=1"
 	urlStr := "https://mooc1-api.chaoxing.com/mooc-ans/facephoto/clientfacecheckstatus?" + "courseId=" + courseId + "&clazzId=" + classId + "&cpi=" + cpi + "&chapterId=" + knowledgeId + "&objectId=" + objectId + "&liveDetectionStatus=1" + "&signt=" + "&signk=" + "&cxtime=" + "&cxcid=" + "&type=1"
@@ -661,6 +661,58 @@ func (cache *XueXiTUserCache) PassFaceQrPlanPhoneApi(classId, courseId, knowledg
 		return "", nil
 	}
 	utils.CookiesAddNoRepetition(&cache.cookies, res.Cookies()) //赋值cookie
+	return string(body), nil
+}
+
+// 手机端过人脸接口（老接口）
+func (cache *XueXiTUserCache) PassFaceQrPlanPhoneOldApi(classId, courseId, knowledgeId, cpi, objectId string) (string, error) {
+
+	url := "https://mooc1-api.chaoxing.com/mooc-ans/knowledge/uploadInfo"
+	method := "POST"
+
+	//payload := strings.NewReader("clazzId=130390181&courseId=256426381&knowledgeId=705058652&uuid=&qrcEnc=&objectId=123")
+	payload := strings.NewReader("clazzId=" + classId + "&courseId=" + courseId + "&knowledgeId=" + knowledgeId + "&uuid=&qrcEnc=&objectId=" + objectId)
+	client := &http.Client{}
+	req, err := http.NewRequest(method, url, payload)
+
+	if err != nil {
+		fmt.Println(err)
+		return "", err
+	}
+	req.Header.Add("Accept", "application/json, text/javascript, */*; q=0.01")
+	req.Header.Add("Accept-Language", "zh-CN,zh;q=0.9,en;q=0.8,en-GB;q=0.7,en-US;q=0.6")
+	req.Header.Add("Cache-Control", "no-cache")
+	req.Header.Add("Connection", "keep-alive")
+	req.Header.Add("Origin", "https://mooc1-api.chaoxing.com")
+	req.Header.Add("Pragma", "no-cache")
+	//req.Header.Add("Referer", "https://mooc1-api.chaoxing.com/mooc-ans/knowledge/startface?clazzid=130390181&courseid=256426381&knowledgeid=705058652&cpi=415794696")
+	req.Header.Add("Sec-Fetch-Dest", "empty")
+	req.Header.Add("Sec-Fetch-Mode", "cors")
+	req.Header.Add("Sec-Fetch-Site", "same-origin")
+	//req.Header.Add("User-Agent", "Mozilla/5.0 (Linux; Android 11; MI10 Build/OPM1.171019.019; wv) AppleWebKit/537.36 (KHTML, like Gecko) Version/4.0 Chrome/71.0.3578.99 Mobile Safari/537.36 (schild:5e5510ce86e012a7f489e7c488fc17b4) (device:MI10) Language/zh_CN com.chaoxing.mobile/ChaoXingStudy_3_6.6.4_android_phone_10831_263 (@Kalimdor)_c86f59bf72a9e4a0540b390d77d3ec3d Edg/142.0.0.0")
+	req.Header.Add("User-Agent", GetUA("mobile"))
+	req.Header.Add("X-Requested-With", "XMLHttpRequest")
+	req.Header.Add("sec-ch-ua", "\"\"")
+	req.Header.Add("sec-ch-ua-mobile", "?1")
+	req.Header.Add("sec-ch-ua-platform", "\"\"")
+	//req.Header.Add("Cookie", "k8s=1762337350.653.18689.743497; route=1ab934bb3bbdaaef56ce3b0da45c52ed; _dd346641211=1762358418802; fanyamoocs=11401F839C536D9E; source=\"\"; thirdRegist=0; tl=1; _industry=5; 255186229cpi=411545273; 255186229ut=s; 255186229t=1762358657220; 255186229enc=3e13cb080fa477dbd818156cb91de0d4; fid=2686; _uid=204829133; _d=1762358786077; UID=204829133; vc3=RGTGzsh80CCRgjDTsTigmbE8%2BXs79J1TanBqTCRNPDeR09oQuv3uIkBhpwvR7Uk6HuCEYkSqMEfsUjNX8bA9CDRHxgL26BkYMn0tjgQIuyYsOGEIpTzik34iH3%2Bqyi%2BIKw%2B3ZcJ0JwOs8FBYUSCEfrPuA2UwydkYD4NcnRM9C04%3Ddba872eca162e2fe6dfe110db1ee7497; uf=da0883eb5260151e5f54c6a6fa04ba8489c582b4b6465dd50e585af013aa820e8d8e8570660b5853ea8fd838263a3ddf81a6c9ddee30899fd807a544f7930b6aed1e6c11a143bb563b0339d97cdac4bad20af5f25b1eb0de713028f1ec42bf71b1188854805578cc098e771249996442f29925d8775c79f5a70a86a26f75d5de0dee9dfbfd96b31c202693c24ebda8384df7ff280fcb29d10d8a4c92b12beb4b4714a603e7645861e24e864e015fccbdae5af46d05a99736e7fafd565af53bf2; cx_p_token=5a9e0bddd4186122faaf7d3d98b53407; p_auth_token=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1aWQiOiIyMDQ4MjkxMzMiLCJsb2dpblRpbWUiOjE3NjIzNTg3ODYwNzgsImV4cCI6MTc2Mjk2MzU4Nn0.wtNWmthSl-yQVP-31k1w5ay2Ljj9oNd0iTYCSm8I4X4; xxtenc=48068786a1344a3d1e59334f12ac813e; DSSTASH_LOG=C_38-UN_1480-US_204829133-T_1762358786078; jrose=948DEF89A82642E68B0FD4BBCA0BF426.mooc-2223393995-kxhrk")
+	req.Header.Add("Content-Type", "application/x-www-form-urlencoded; charset=UTF-8")
+	req.Header.Add("Host", "mooc1-api.chaoxing.com")
+	for _, cookie := range cache.cookies {
+		req.AddCookie(cookie)
+	}
+	res, err := client.Do(req)
+	if err != nil {
+		fmt.Println(err)
+		return "", err
+	}
+	defer res.Body.Close()
+
+	body, err := ioutil.ReadAll(res.Body)
+	if err != nil {
+		fmt.Println(err)
+		return "", err
+	}
 	return string(body), nil
 }
 
@@ -914,8 +966,8 @@ func (cache *XueXiTUserCache) GetCourseFaceQrPlan4Api(clazzId, courseId, knowled
 	for _, cookie := range cache.cookies {
 		req.AddCookie(cookie)
 	}
-	//req.Header.Add("User-Agent", GetUA("mobile"))
-	req.Header.Add("User-Agent", utils.DefaultUserAgent)
+	req.Header.Add("User-Agent", GetUA("mobile"))
+	//req.Header.Add("User-Agent", utils.DefaultUserAgent)
 	res, err := client.Do(req)
 	if err != nil {
 		return "", err

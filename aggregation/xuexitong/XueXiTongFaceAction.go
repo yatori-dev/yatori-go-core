@@ -43,7 +43,7 @@ func PassFaceAction1(cache *xuexitong.XueXiTUserCache, courseId, classId, cpi, c
 	}
 	//暂时先用plan3的过人脸（进入课程扫通过的）
 	//plan2Api, err := cache.GetCourseFaceQrPlan3Api(classId, courseId, uuid, qrEnc, cpi, ObjectId)
-	plan2Api, err := cache.PassFaceQrPlanPhoneApi(classId, courseId, chapterId, cpi, ObjectId)
+	plan2Api, err := cache.PassFaceQrPlanPhoneNewApi(classId, courseId, chapterId, cpi, ObjectId)
 	//plan3Api, err := cache.GetCourseFaceQrPlan1Api(courseId, classId, uuid, ObjectId, qrEnc, "0")
 	log2.Print(log2.DEBUG, plan2Api)
 	passMsg := gojsonq.New().JSONString(plan2Api).Find("msg")
@@ -117,7 +117,77 @@ func PassFacePhoneAction(cache *xuexitong.XueXiTUserCache, courseId, classId, cp
 		return "", errors.New("ObjectId is empty")
 	}
 	time.Sleep(2 * time.Second)
-	plan3Api, err := cache.PassFaceQrPlanPhoneApi(classId, courseId, chapterId, cpi, ObjectId)
+	plan3Api, err := cache.PassFaceQrPlanPhoneNewApi(classId, courseId, chapterId, cpi, ObjectId)
+	//暂时先用plan3的过人脸（进入课程扫通过的）
+
+	passMsg := gojsonq.New().JSONString(plan3Api).Find("msg")
+	if err != nil {
+		return "", err
+	}
+
+	if strings.Contains(plan3Api, "活体检测不通过") {
+		return "", errors.New(plan3Api)
+	}
+	if strings.Contains(plan3Api, "用户图片信息出错") {
+		return "", errors.New(plan3Api)
+	}
+	if passMsg != nil {
+		if passMsg != "通过" && passMsg != "识别通过" {
+			return "", errors.New(plan3Api)
+		}
+	}
+	//获取人脸状态
+
+	return ObjectId, nil
+}
+
+// 手机端过人脸接口(老接口）
+func PassFacePhoneOldAction(cache *xuexitong.XueXiTUserCache, courseId, classId, cpi, chapterId, videojobid, mid, videoRandomCollectTime string) (string /*识别状态*/, error) {
+	//拉取用户照片
+	localFaceExists, _ := utils.PathExists("./assets/faces/" + cache.Name + ".jpg")
+	var faceImg image.Image
+	if localFaceExists {
+		img, err2 := utils.LoadImage("./assets/faces/" + cache.Name + ".jpg")
+		if err2 != nil {
+			log2.Print(log2.INFO, err2)
+			//os.Exit(0)
+			return "", err2
+		}
+		faceImg = img
+	} else {
+		pullJson, img, err2 := cache.GetHistoryFaceImg("")
+		if err2 != nil {
+			log2.Print(log2.DEBUG, pullJson, err2)
+			//os.Exit(0)
+			return "", err2
+		}
+		faceImg = img
+	}
+	disturbImage := utils.ImageRGBDisturb(faceImg)
+	//disturbImage := utils.ProcessImageDisturb(faceImg)
+	//disturbImage := utils.ImageRGBDisturbAdjust(faceImg, 10)
+	//utils.SaveImageAsJPEG(disturbImage, "./assets/18106919661.jpg")
+	//cache.GetCourseFaceStart(classId, courseId, chapterId, cpi) //没事别放开，测试用的
+
+	//获取token
+	tokenJson, err := cache.GetFaceUpLoadToken()
+
+	token := gojsonq.New().JSONString(tokenJson).Find("_token").(string)
+	if err != nil {
+		return "", err
+	}
+	time.Sleep(1 * time.Second) //隔一下
+	//上传人脸
+	ObjectId, err := cache.UploadFaceImageApi(token, disturbImage)
+	if err != nil {
+		return "", err
+	}
+	if ObjectId == "" {
+		return "", errors.New("ObjectId is empty")
+	}
+	time.Sleep(2 * time.Second)
+	//plan3Api, err := cache.GetCourseFaceQrPlan4Api( classId,courseId, chapterId,"", "", ObjectId)
+	plan3Api, err := cache.PassFaceQrPlanPhoneOldApi(classId, courseId, chapterId, cpi, ObjectId)
 	//暂时先用plan3的过人脸（进入课程扫通过的）
 
 	passMsg := gojsonq.New().JSONString(plan3Api).Find("msg")

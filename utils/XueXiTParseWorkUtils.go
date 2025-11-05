@@ -58,6 +58,9 @@ func ParseWorkInform(doc *goquery.Document) (map[string]interface{}, error) {
 		if exists {
 			dataMap["title"] = val
 		}
+		if dataMap["title"] == nil {
+			dataMap["title"] = s.Text()
+		}
 	})
 	return dataMap, nil
 }
