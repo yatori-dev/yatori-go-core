@@ -42,7 +42,9 @@ func PageMobileChapterCardAction(
 	cache *xuexitong.XueXiTUserCache,
 	classId, courseId, knowledgeId, cardIndex, cpi int) (interface{}, string, error) {
 	cardHtml, err := cache.PageMobileChapterCard(classId, courseId, knowledgeId, cardIndex, cpi, 3, nil)
-
+	if strings.Contains(cardHtml, `<p class="blankTips">章节未开放</p>`) {
+		return nil, "", errors.New("章节未开放")
+	}
 	//如果遇到人脸,则进行过人脸
 	if strings.Contains(cardHtml, `title : "人脸识别"`) {
 		ObjectId, err1 := PassFacePhoneAction(cache, fmt.Sprintf("%d", courseId), fmt.Sprintf("%d", classId), fmt.Sprintf("%d", cpi), fmt.Sprintf("%d", knowledgeId), "", "", "")
@@ -319,7 +321,9 @@ func ParseWorkQuestionAction(cache *xuexitong.XueXiTUserCache, workPoint *entity
 	var termQuestion []entity.TermExplanationQue
 	var essayQuestion []entity.EssayQue
 	var matchingQuestion []entity.MatchingQue
+
 	question, _ := cache.WorkFetchQuestion(workPoint, 3, nil)
+	//先检测是否含有加密字体，如果有则先解密
 
 	// 使用 goquery 解析 HTML
 	doc, err := goquery.NewDocumentFromReader(bytes.NewReader([]byte(question)))

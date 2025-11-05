@@ -2,13 +2,22 @@ package xuexitong
 
 import (
 	"bytes"
+	"crypto/md5"
+	"crypto/sha1"
 	"crypto/tls"
+	"encoding/base64"
+	"encoding/binary"
+	"encoding/hex"
 	"encoding/json"
 	"errors"
 	"fmt"
+	"io"
+	"os"
+	"regexp"
 	"sort"
 	"strings"
 
+	"github.com/PuerkitoBio/goquery"
 	"github.com/yatori-dev/yatori-go-core/api/entity"
 	"github.com/yatori-dev/yatori-go-core/que-core/qtype"
 	"github.com/yatori-dev/yatori-go-core/utils"
@@ -240,4 +249,167 @@ func (cache *XueXiTUserCache) WorkNewSubmitAnswer(courseId string, classId strin
 	}
 	utils.CookiesAddNoRepetition(&cache.cookies, resp.Cookies()) //赋值cookie
 	return string(body), nil
+}
+
+//用于解析试卷加密字符的html----------------------------------------------------------------------------------------------------------
+// --------------------- 全局变量 ---------------------
+
+var glyfHashed map[string]uint16
+var cmap map[string]rune
+
+// --------------------- 工具函数 ---------------------
+
+func keyFor(data []byte) string {
+	h1 := sha1.Sum(data)
+	h2 := md5.Sum(data)
+	return hex.EncodeToString(h1[:]) + "|" + hex.EncodeToString(h2[:])
+}
+
+func loadJSONTables() error {
+	gData, _ := os.ReadFile("glyfHashed.json")
+	cData, _ := os.ReadFile("cmap.json")
+	if err := json.Unmarshal(gData, &glyfHashed); err != nil {
+		return err
+	}
+	if err := json.Unmarshal(cData, &cmap); err != nil {
+		return err
+	}
+	fmt.Println("✅ 字体映射表加载完成:", len(glyfHashed), "个哈希项")
+	return nil
+}
+
+// --------------------- 解析 TTF ---------------------
+
+type tableRecord struct {
+	Offset uint32
+	Length uint32
+}
+
+type ttfFile struct {
+	src    []byte
+	tables map[string]tableRecord
+}
+
+func parseTTF(b []byte) (*ttfFile, error) {
+	r := bytes.NewReader(b)
+	var numTables uint16
+	if _, err := r.Seek(4, io.SeekStart); err != nil {
+		return nil, err
+	}
+	binary.Read(r, binary.BigEndian, &numTables)
+	r.Seek(6, io.SeekCurrent)
+	tables := make(map[string]tableRecord)
+	for i := 0; i < int(numTables); i++ {
+		tag := make([]byte, 4)
+		r.Read(tag)
+		r.Seek(4, io.SeekCurrent)
+		var off, length uint32
+		binary.Read(r, binary.BigEndian, &off)
+		binary.Read(r, binary.BigEndian, &length)
+		tables[string(tag)] = tableRecord{Offset: off, Length: length}
+	}
+	return &ttfFile{src: b, tables: tables}, nil
+}
+
+func (t *ttfFile) table(tag string) ([]byte, error) {
+	rec, ok := t.tables[tag]
+	if !ok {
+		return nil, fmt.Errorf("missing table %s", tag)
+	}
+	return t.src[rec.Offset : rec.Offset+rec.Length], nil
+}
+
+// head: indexToLocFormat @ offset 50
+func parseHeadIndexToLocFormat(head []byte) int16 {
+	return int16(binary.BigEndian.Uint16(head[50:]))
+}
+
+// maxp: numGlyphs @ offset 4
+func parseMaxpNumGlyphs(maxp []byte) uint16 {
+	return binary.BigEndian.Uint16(maxp[4:6])
+}
+
+// loca -> glyph offsets
+func parseLoca(loca []byte, long bool, numGlyphs uint16) []uint32 {
+	offsets := make([]uint32, numGlyphs+1)
+	if long {
+		for i := range offsets {
+			offsets[i] = binary.BigEndian.Uint32(loca[i*4:])
+		}
+	} else {
+		for i := range offsets {
+			offsets[i] = uint32(binary.BigEndian.Uint16(loca[i*2:])) * 2
+		}
+	}
+	return offsets
+}
+
+// translate: 计算哈希映射
+func translate(font []byte) map[rune]rune {
+	mapping := make(map[rune]rune)
+
+	ttf, err := parseTTF(font)
+	if err != nil {
+		fmt.Println("字体解析错误:", err)
+		return mapping
+	}
+
+	head, _ := ttf.table("head")
+	maxp, _ := ttf.table("maxp")
+	loca, _ := ttf.table("loca")
+	glyf, _ := ttf.table("glyf")
+
+	locFormat := parseHeadIndexToLocFormat(head)
+	numGlyphs := parseMaxpNumGlyphs(maxp)
+	offsets := parseLoca(loca, locFormat != 0, numGlyphs)
+
+	for i := 0; i < int(numGlyphs); i++ {
+		start, end := offsets[i], offsets[i+1]
+		if end <= start || int(end) > len(glyf) {
+			continue
+		}
+		raw := glyf[start:end]
+		k := keyFor(raw)
+
+		refGID, ok := glyfHashed[k]
+		if !ok {
+			continue
+		}
+		targetRune, ok := cmap[fmt.Sprint(refGID)]
+		if !ok {
+			continue
+		}
+		mapping[rune(i)] = targetRune
+	}
+	return mapping
+}
+
+// --------------------- HTML 替换 ---------------------
+
+func decodeHTML(html string) (string, error) {
+	re := regexp.MustCompile(`data:(?:application|font)/font-ttf[^,]*,([A-Za-z0-9+/=]+)`)
+	match := re.FindStringSubmatch(html)
+	if len(match) == 0 {
+		return "", errors.New("未检测到字体 base64")
+	}
+	fontBytes, _ := base64.StdEncoding.DecodeString(match[1])
+	fmt.Println("✅ 检测到 Base64 字体")
+
+	mapping := translate(fontBytes)
+	doc, _ := goquery.NewDocumentFromReader(strings.NewReader(html))
+
+	doc.Find("*").Each(func(_ int, s *goquery.Selection) {
+		text := s.Text()
+		var out strings.Builder
+		for _, r := range text {
+			if newRune, ok := mapping[r]; ok {
+				out.WriteRune(newRune)
+			} else {
+				out.WriteRune(r)
+			}
+		}
+		s.SetText(out.String())
+	})
+
+	return doc.Text(), nil
 }

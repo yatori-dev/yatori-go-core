@@ -469,7 +469,7 @@ func TestXueXiToFlushCourse(t *testing.T) {
 	utils.YatoriCoreInit()
 	//测试账号
 	setup()
-	user := global.Config.Users[62]
+	user := global.Config.Users[63]
 
 	userCache := xuexitongApi.XueXiTUserCache{
 		Name:     user.Account,
@@ -487,7 +487,7 @@ func TestXueXiToFlushCourse(t *testing.T) {
 		//if course.CourseName != "解读中国经济发展的密码" {
 		//	continue
 		//}
-		if course.CourseName != "药用植物学" {
+		if course.CourseName != "大学体育第二课堂（体育Ⅲ）" {
 			continue
 		}
 		// 6c444b8d5c6203ee2f2aef4b76f5b2ce qrcEnc
@@ -538,10 +538,10 @@ func TestXueXiToFlushCourse(t *testing.T) {
 			log.Printf("ID.%d(%s/%s)正在执行任务点\n",
 				item,
 				pointAction.Knowledge[index].Label, pointAction.Knowledge[index].Name)
-			if pointAction.Knowledge[index].Label != "14.10.7" {
-				//fmt.Println("断点")
-				continue
-			}
+			//if pointAction.Knowledge[index].Label != "3.1" {
+			//	//fmt.Println("断点")
+			//	continue
+			//}
 			_, fetchCards, err := xuexitong.ChapterFetchCardsAction(&userCache, &action, nodes, index, courseId, key, course.Cpi)
 
 			if err != nil {
@@ -553,7 +553,7 @@ func TestXueXiToFlushCourse(t *testing.T) {
 			}
 
 			// 视频刷取
-			if videoDTOs != nil && false {
+			if videoDTOs != nil && true {
 				for _, videoDTO := range videoDTOs {
 					card, enc, err := xuexitong.PageMobileChapterCardAction(
 						&userCache, key, courseId, videoDTO.KnowledgeID, videoDTO.CardIndex, course.Cpi)
@@ -565,10 +565,10 @@ func TestXueXiToFlushCourse(t *testing.T) {
 					//if videoDTO.IsPassed == true { //过滤完成的
 					//	continue
 					//}
-					if !videoDTO.IsJob {
-						fmt.Println("(", videoDTO.Title, ")", "该视频为非任务点，已自动跳过")
-						continue
-					}
+					//if !videoDTO.IsJob {
+					//	fmt.Println("(", videoDTO.Title, ")", "该视频为非任务点，已自动跳过")
+					//	continue
+					//}
 					videoDTO.Enc = enc
 					point.ExecuteVideoTest(&userCache, &videoDTO, key, course.Cpi) //常规
 					//point.ExecuteFastVideo(&userCache, &videoDTO) //秒刷
@@ -598,7 +598,7 @@ func TestXueXiToFlushCourse(t *testing.T) {
 				}
 			}
 			//作业刷取
-			if workDTOs != nil && true {
+			if workDTOs != nil && false {
 				for _, workDTO := range workDTOs {
 
 					//以手机端拉取章节卡片数据
@@ -690,7 +690,7 @@ func TestXueXiToFlushCourse(t *testing.T) {
 				}
 			}
 			//外链任务点刷取
-			if hyperlinkDTOs != nil && false {
+			if hyperlinkDTOs != nil && true {
 				for _, hyperlinkDTO := range hyperlinkDTOs {
 					card, _, err := xuexitong.PageMobileChapterCardAction(
 						&userCache, key, courseId, hyperlinkDTO.KnowledgeID, hyperlinkDTO.CardIndex, course.Cpi)
@@ -708,7 +708,7 @@ func TestXueXiToFlushCourse(t *testing.T) {
 				}
 			}
 			//直播任务
-			if liveDTOs != nil && false {
+			if liveDTOs != nil && true {
 				for _, liveDTO := range liveDTOs {
 					card, _, err := xuexitong.PageMobileChapterCardAction(
 						&userCache, key, courseId, liveDTO.KnowledgeID, liveDTO.CardIndex, course.Cpi)

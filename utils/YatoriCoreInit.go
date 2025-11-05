@@ -17,12 +17,16 @@ import (
 //go:embed assets/tencentCollect.exe
 //go:embed assets/tencentPowSolve.exe
 //go:embed assets/node_modules/jsdom/**/*
+//go:embed assets/cmap.json
+//go:embed assets/glyfHashed.json
 var assets embed.FS
 
 // 数据列表
 var assetsList = []string{
 	"tencentCollect.exe",
 	"tencentPowSolve.exe",
+	"cmap.json",
+	"glyfHashed.json",
 }
 
 func YatoriCoreInit() {
