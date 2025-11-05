@@ -67,9 +67,9 @@ func PageMobileChapterCardAction(
 		if strings.Contains(cardHtml, `title : "人脸识别"`) {
 			ObjectId, err1 = PassFacePhoneOldAction(cache, fmt.Sprintf("%d", courseId), fmt.Sprintf("%d", classId), fmt.Sprintf("%d", cpi), fmt.Sprintf("%d", knowledgeId), "", "", "")
 			time.Sleep(1 * time.Second) //隔一下
+			cardHtml, err = cache.PageMobileChapterCard(classId, courseId, knowledgeId, cardIndex, cpi, 3, nil)
 		}
 
-		cardHtml, err = cache.PageMobileChapterCard(classId, courseId, knowledgeId, cardIndex, cpi, 3, nil)
 		if strings.Contains(cardHtml, `title : "人脸识别"`) {
 			return nil, "", errors.New("通过人脸识别失败")
 		}
