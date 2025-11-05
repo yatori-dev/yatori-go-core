@@ -171,6 +171,8 @@ func AnswerFixedPattern(choices []entity.ChoiceQue, judges []entity.JudgeQue) {
 			selectAnswer := []string{}
 			for _, answer := range judge.Answers {
 				answer = strings.ReplaceAll(answer, "对", "正确")
+				answer = strings.ReplaceAll(answer, "√", "正确")
+				answer = strings.ReplaceAll(answer, "×", "错误")
 				selectAnswer = append(selectAnswer, qutils.SimilarityArrayAnswer(answer, []string{"正确", "错误"}))
 			}
 			judges[i].Answers = selectAnswer

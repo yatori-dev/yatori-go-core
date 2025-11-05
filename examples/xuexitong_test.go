@@ -797,3 +797,20 @@ func TestFaceQrScan(t *testing.T) {
 	//planApi, err := userCache.PassFaceQrPlanPhoneApi("128609334", "255665643", "44736e4b27f8981de19e222bf29c969d", "492936718", ObjectId)
 	log.Println(planApi, err)
 }
+
+func TestXXTQuestionSelect(t *testing.T) {
+	resSe := []string{"1", "2", "3", "4"}
+
+	options := make(map[string]string)
+	letter := []string{"A", "B", "C", "D", "E", "F"}
+	for i, _ := range resSe {
+		options[letter[i]] = ""
+	}
+	options["C"] = "选项1"
+	options["D"] = "选项2"
+	options["A"] = "选项3"
+	options["B"] = "选项4"
+	for k, v := range options {
+		fmt.Println(k, v)
+	}
+}

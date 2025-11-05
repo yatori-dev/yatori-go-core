@@ -56,7 +56,7 @@ func (cache *XueXiTUserCache) WorkNewSubmitAnswer(courseId string, classId strin
 	_ = writer.WriteField("userId", cache.UserID)
 	_ = writer.WriteField("cpi", cpi)
 	_ = writer.WriteField("workTimesEnc", "")
-	_ = writer.WriteField("randomOptions", "true")
+	_ = writer.WriteField("randomOptions", "false")
 	_ = writer.WriteField("isAccessibleCustomFid", "0")
 	answerwqbid := ""
 	//选择题
@@ -67,8 +67,12 @@ func (cache *XueXiTUserCache) WorkNewSubmitAnswer(courseId string, classId strin
 		if ch.Type == qtype.SingleChoice {
 			answers := ""
 			candidateSelects := []string{} //待选
-			for _, option := range ch.Options {
-				candidateSelects = append(candidateSelects, option)
+			resSelect := []string{"A", "B", "C", "D", "E", "F", "G", "H", "I", "J", "K", "L", "M", "N"}
+			for _, option := range resSelect {
+				if ch.Options[option] == "" {
+					break
+				}
+				candidateSelects = append(candidateSelects, ch.Options[option])
 			}
 			for _, item := range ch.Answers {
 				answers += qutils.SimilarityArraySelect(item, candidateSelects)
@@ -79,8 +83,12 @@ func (cache *XueXiTUserCache) WorkNewSubmitAnswer(courseId string, classId strin
 		if ch.Type == qtype.MultipleChoice {
 			answers := ""
 			candidateSelects := []string{} //待选
-			for _, option := range ch.Options {
-				candidateSelects = append(candidateSelects, option)
+			resSelect := []string{"A", "B", "C", "D", "E", "F", "G", "H", "I", "J", "K", "L", "M", "N"}
+			for _, option := range resSelect {
+				if ch.Options[option] == "" {
+					break
+				}
+				candidateSelects = append(candidateSelects, ch.Options[option])
 			}
 			for _, item := range ch.Answers {
 				answers += qutils.SimilarityArraySelect(item, candidateSelects)

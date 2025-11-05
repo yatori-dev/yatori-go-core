@@ -385,14 +385,19 @@ func ParseWorkQuestionAction(cache *xuexitong.XueXiTUserCache, workPoint *entity
 			choiceQue.Type = qtype.SingleChoice
 			choiceQue.Qid = qs.ID
 			choiceQue.Text = quesText
+
+			//用于临时存储选项，后面进行排序，因为学习通可能会打乱答题顺序
+			resOptions := make(map[string]string)
 			// 提取选项
 			qdoc.Find(".answerList.singleChoice li").Each(func(i int, s *goquery.Selection) {
 				optionLetter := s.Find("em.choose-opt").Text()
-
 				// 查找 <cc> 内的内容
 				ccContent := s.Find("cc").Contents().First()
 				text := ccContent.Text()
-
+				//如果ccFirst没有，则采用Contents.Text()
+				if text == "" {
+					text = s.Find("cc").Contents().Text()
+				}
 				// 如果没有文本，则尝试获取 img 标签的 src 属性
 				if text == "" {
 					img, exists := s.Find("cc img").Attr("src")
@@ -402,8 +407,16 @@ func ParseWorkQuestionAction(cache *xuexitong.XueXiTUserCache, workPoint *entity
 						text = "No content available"
 					}
 				}
-				options[optionLetter] = text
+				resOptions[optionLetter] = text
 			})
+			//对Map的内容按字母选项排序
+			resSelect := []string{"A", "B", "C", "D", "E", "F", "G", "H", "I", "J", "K", "L", "M", "N"}
+			for _, sel := range resSelect {
+				if resOptions[sel] == "" {
+					break
+				}
+				options[sel] = resOptions[sel]
+			}
 			choiceQue.Options = options
 			workQuestion = append(workQuestion, choiceQue)
 			break
@@ -414,6 +427,8 @@ func ParseWorkQuestionAction(cache *xuexitong.XueXiTUserCache, workPoint *entity
 			choiceQue.Type = qtype.MultipleChoice
 			choiceQue.Qid = qs.ID
 			choiceQue.Text = quesText
+			//用于临时存储选项，后面进行排序，因为学习通可能会打乱答题顺序
+			resOptions := make(map[string]string)
 			// 提取选项
 			//qdoc.Find(".answerList li").Each(func(i int, s *goquery.Selection) {
 			qdoc.Find(".answerList.multiChoice li").Each(func(i int, s *goquery.Selection) {
@@ -421,13 +436,15 @@ func ParseWorkQuestionAction(cache *xuexitong.XueXiTUserCache, workPoint *entity
 
 				// 查找 <cc> 内的内容
 				ccContent := s.Find("cc").Contents().First()
+				//fmt.Println(s.Html())
+				//fmt.Println(ccContent.Html())
+				//fmt.Println(s.Find("cc").Contents().Text())
 				text := ccContent.Text()
 
-				////如果cc没有则另外的查找
-				//if text == "" {
-				//	ccContent = s.Find("div").First()
-				//	text = ccContent.Text()
-				//}
+				//如果ccFirst没有，则采用Contents.Text()
+				if text == "" {
+					text = s.Find("cc").Contents().Text()
+				}
 				// 如果没有文本，则尝试获取 img 标签的 src 属性
 				if text == "" {
 					img, exists := s.Find("cc img").Attr("src")
@@ -437,8 +454,16 @@ func ParseWorkQuestionAction(cache *xuexitong.XueXiTUserCache, workPoint *entity
 						text = "No content available"
 					}
 				}
-				options[optionLetter] = text
+				resOptions[optionLetter] = text
 			})
+			//对Map的内容按字母选项排序
+			resSelect := []string{"A", "B", "C", "D", "E", "F", "G", "H", "I", "J", "K", "L", "M", "N"}
+			for _, sel := range resSelect {
+				if resOptions[sel] == "" {
+					break
+				}
+				options[sel] = resOptions[sel]
+			}
 			choiceQue.Options = options
 			workQuestion = append(workQuestion, choiceQue)
 			break
