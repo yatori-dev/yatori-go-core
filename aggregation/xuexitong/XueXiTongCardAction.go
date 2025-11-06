@@ -338,15 +338,16 @@ func ParseWorkQuestionAction(cache *xuexitong.XueXiTUserCache, workPoint *entity
 		log.Fatal(err)
 	}
 
+	//用于拉取并完善workPointDto信息
+	informMap, err := utils.ParseWorkInform(doc)
+	WorkInformInputWorkDTO(informMap, &questionEntity) //转换
+
 	//用于判断是否已经截止
 	textStatus := doc.Find("div.chapter-content").Text()
 	if strings.Contains(textStatus, "已截止，不能作答") {
 		return questionEntity, errors.New("已截止，不能作答")
 	}
 
-	//用于拉取并完善workPointDto信息
-	informMap, err := utils.ParseWorkInform(doc)
-	WorkInformInputWorkDTO(informMap, &questionEntity) //转换
 	// 内置，用于从文本中提取题目类型
 	var extractQuestionType = func(text string) string {
 		start := strings.Index(text, "[")
