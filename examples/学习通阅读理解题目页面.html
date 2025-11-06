@@ -1,0 +1,3288 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+
+<script>
+    _HOST_ = "//mooc1-api.chaoxing.com";
+    _CP_ = "/mooc-ans";
+    _HOST_CP1_ = "//mooc1-api.chaoxing.com/mooc-ans";
+    // _HOST_CP2_ = _HOST_ + _CP_;
+    _HOST_CP2_ = _CP_;
+</script><head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    <meta name="viewport" content="width=device-width, target-densitydpi=medium-dpi, initial-scale=1, user-scalable=no"/>
+    <title>章节</title>
+    <link href="//mooc1-api.chaoxing.com/mooc-ans/css/work/phone/basic-s.css?v=2023-0619-1500" rel="stylesheet" type="text/css" />
+    <link href="//mooc1-api.chaoxing.com/mooc-ans/css/work/phone/css-s.css?v=28.4" type="text/css" rel="stylesheet"/>
+    <link href="/mooc-ans/spacx/work/phone/sdo.css?v=27" rel="stylesheet" type="text/css" />
+    <link href="/mooc-ans/spacx/new/css/work-css-tpl.cssx?enc=eb72fae29c352a1bfbaf924790f212f3" rel="stylesheet" type="text/css" />
+    <link href="//mooc1-api.chaoxing.com/mooc-ans/css/work/phone/sdo-opt.css?v=27" rel="stylesheet" type="text/css" />
+
+    <link href="//mooc1-api.chaoxing.com/mooc-ans/css/questionBank/questionBankUsual.css?v=2019-1120-1400" type="text/css" rel="stylesheet"/><link rel="stylesheet" href="//mooc1-api.chaoxing.com/mooc-ans/css/work/phone/s/css/style-normal.css?v=1.0.1" />
+    <link rel="stylesheet" href="//mooc1-api.chaoxing.com/mooc-ans/css/work/phone/s/connLine-ceyan.css" />
+    <link href="//mooc1-api.chaoxing.com/mooc-ans/css/work/viewer.min.css" rel="stylesheet" type="text/css" />
+    <link href="//mooc1-api.chaoxing.com/mooc-ans/mooc2/css/font.css?v=2025-0403-1500" rel="stylesheet" type="text/css" /><style>
+    .Py-m1-title p {word-wrap: break-word;padding-right:0;}
+    .zqu_r_span{word-wrap: break-word;word-break:break-all;}
+    .answerList li {padding: 8px 0;}
+    .zquestions{padding-bottom:0;}
+    .zsubmit {padding: 0 0.3rem;height:0.8rem;margin:0.5rem 0;}
+    pre{white-space: pre-wrap;}
+    .trueGreen{float:right;margin-right:0;width:30px;height:30px;background:url(//mooc1-api.chaoxing.com/mooc-ans/images/phone/right-green.png) no-repeat left center;background-size: 100%;}
+    .halfTrueGreen{float:right;margin-right:0;width:30px;height:30px;background:url(//mooc1-api.chaoxing.com/mooc-ans/images/phone/halfRight-green.png) no-repeat left center;background-size: 100%;}
+    .falseRed{float:right;margin-right:0;width:30px;height:30px;background:url(//mooc1-api.chaoxing.com/mooc-ans/images/phone/wrong-red.png) no-repeat left center;background-size: 100%;}
+</style>
+    <link rel="stylesheet" href="//mooc1-api.chaoxing.com/mooc-ans/css/work/phone/s/css/style-normal-rem.css?v=2018-0904-1051"/>
+    <link href="/ananas/ueditor/themes/iframe_wap_editor.css" type="text/css" rel="stylesheet"/>
+    <link rel="stylesheet" href="//mooc1-api.chaoxing.com/mooc-ans/css/work/phone/s/css/work-do.css?v=2021-0601-1102"/>
+    <link rel="stylesheet" type="text/css" href="//mooc1-api.chaoxing.com/mooc-ans/css/work/phone/s/css/edit.css?v=2024-0104-1736" />
+    <script>window.UEDITOR_HOME_URL = '/ananas/ueditor/';</script>
+    <script type="text/javascript" src="/ananas/ext-4.2.0.663/wap-classes.js?v=2018-0111-2134"></script>
+    <script type="text/javascript" charset="utf-8" src="/ananas/ueditor/ueditor.config.js?v=2018-0111-2134"></script>
+    <script type="text/javascript" charset="utf-8" src="/ananas/ueditor/ueditor.all.min.js?v=2023-1007-1500"></script>
+    <script src="/ananas/ueditor/ueditor.parse_wap.js?v=2"></script>
+    <script src="//mooc1-api.chaoxing.com/mooc-ans/js/phone/zepto-1.2.0.min.js"></script>
+    <script src="//mooc1-api.chaoxing.com/mooc-ans/js/ServerHost.js"></script>
+    <script src="//mooc1-api.chaoxing.com/mooc-ans/js/phone/protocolChaoXing/CXJSBridge.js?v=2018-0329-1557"></script>
+    <script src="//mooc1-api.chaoxing.com/mooc-ans/js/phone/app.utils2.js?v=2022-0322-2130"></script>
+    <script src="//mooc-res2.chaoxing.com/mooc-ans/js/work/phone/fix-svg-path.js"></script>
+    <script type="text/javascript">window.SUPPORT_AUDIO_SETTING = true; window.SUPPORT_AUDIO_CONTROL = true;</script>
+    <script src="//mooc1-api.chaoxing.com/mooc-ans/js/work/work-audio-playtimes.js?v=2024-0104-1500"></script>
+
+    <input type="hidden" id="fromDevice" value="mobile"/>
+
+    <div class="maskDiv" style="display:none;z-index:1000;" id="audioLimitTimesWinNew">
+        <div class="popSetDiv wid440">
+            <div class="popHead RadisTop">
+                <a href="javascript:;" class="popClose fr" onclick="$('#audioLimitTimesWinNew').fullFadeOut();">
+                    <img src="//mooc1-api.chaoxing.com/mooc-ans/mooc2/images/popClose.png"/>
+                </a>
+                <p class="fl fs18 color1">提示</p>
+            </div>
+            <div class="het62"></div>
+            <p class="popWord fs16 color2 audioLimitTimesTip">此附件仅支持打开 <span></span> 次，你已打开 <span></span> 次，不能再次打开</p>
+            <div class="popBottom RadisBom">
+                <a href="javascript:;" class="jb_btn jb_btn_92 fr fs14" onclick="$('#audioLimitTimesWinNew').fullFadeOut();">知道了</a>
+            </div>
+            <div class="het72"></div>
+        </div>
+    </div>
+
+    <div class="AlertCon02" style="width:400px; height:200px;display:none;" id="audioLimitTimesWin">
+        <h3 class="clearfix">
+            <a href="javascript:;" class="closed02 fr" onclick="WAY.box.hide();$('#audioLimitTimesWin').css('display','none')" style="margin-top:1px;"></a>
+        </h3>
+        <div class="con03">
+            <p class="audioLimitTimesTip" style="margin-top:16px;text-align:left;">此附件仅支持打开 <span></span> 次，你已打开 <span></span> 次，不能再次打开</p>
+            <div style="margin-top:60px;">
+                <a class="bluebtn" href="javascript:;" onclick="WAY.box.hide();$('#audioLimitTimesWin').css('display','none')">知道了</a>
+            </div>
+        </div>
+    </div>    <script type="text/javascript">
+    EXAM_I18N_Config = {
+        'nodata': '暂无数据',
+        'courseinfo': '课程信息',
+        'analysisClass': '分析班级',
+        'courseTeacher': '任课教师',
+        'teamTeacher': '教师团队',
+        'className': '班级名称',
+        'numberOfStudents': '学生数',
+        'score': '分',
+        'ZGF': '最高分',
+        'ZDF': '最低分',
+        'pblavag': '平均分',
+        'passingRate': '及格率',
+        'excellentRate': '优良率',
+        'standardDeviation': '标准差',
+        'variance': '方差',
+        'excellentDes': '优秀',
+        'goodDes': '良好',
+        'mediumDes': '中等',
+        'passDes': '及格',
+        'belowDes': '以下',
+        'scoreDistributionChart': '成绩分布图',
+        'scoreComparisonChart': '成绩对比图',
+        'scoreRank': '成绩排名',
+        'crs': '人数',
+        'noPass': '不及格',
+        'percentage': '比例',
+        'excellentAndGood': '优良',
+        'general': '一般',
+        'FS': '分数',
+        'zuoye': '作业',
+        'ClassroomInteraction': '课程积分',
+        'attendance': '签到',
+        'videoWeight': '章节任务点',
+        'chaptertest': '章节测验',
+        'visittimes': '章节学习次数',
+        'talk': '讨论',
+        'reader': '阅读',
+        'live': '直播',
+        'test': '考试',
+        'reward': '奖励',
+        'offline': '线下',
+        'weightItem': '权重项',
+        'weight': '权重',
+        'weightItemDes': '权重项说明',
+        'examWeightTip': '所有考试的平均分',
+        'homework': '作业',
+        'homeworkWeightTip': '按在线作业的平均分计分。如设置作业明细分配，则按（按班级发放的作业成绩*权重占比＋按人发放的作业成绩)/(1＋按人发放的作业数量）或按班级发放的作业成绩*权重占比计分',
+        'ClassroomInteractionTip1': '参与抢答、主题讨论、选人、问卷、评分、随堂练习、投票全部课程活动以及老师加分可以获得相应分数，积分达',
+        'ClassroomInteractionTip2': '分为满分',
+        'attendanceTip1': '按次数累计，每签到一次+1，签到数达',
+        'attendanceTip2': '次为满分',
+        'courseVideo': '章节任务点',
+        'videoWeightTip': '课程视频/音频全部完成得满分,单个视频/音频分值平均分配，满分100分',
+        'coursetestWeightTip': '只计算为任务点的章节测验,取学生章节测验平均分,未做测验按“0”分计算',
+        'PBLWeightTip': '学生在每个分组任务活动获得的分数取平均分',
+        'pvWeightTip1': '章节学习次数达',
+        'bbsWeightTip1': '发表或回复一个讨论得',
+        'AppreciateDes': '获得一个赞得',
+        'bbsWeightTip3': '最高100分',
+        'reading': '阅读',
+        'readingWeightTip1': '按阅读课程中阅读材料的时长计分，总时长达到',
+        'readingWeightTip2': '分钟为满分',
+        'liveWeightTip1': '观看章节中的直播、直播回放总时长达到',
+        'liveWeightTip2': '分钟为满分',
+        'rewardScoreTip': '教师对学生的奖励加分,奖励积分',
+        'offlineWeightTip': '学生线下学习行为得分',
+        'saving': '正在保存...',
+        'saveSuccess': '保存成功',
+        'saveFailed': '保存失败',
+        'loadData': '正在加载数据...',
+        'adding': '正在添加...',
+        'addFailureTip': '添加失败,稍后再试',
+        'deleteTip': '正在删除...',
+        'deleteFailureTip': '删除失败,稍后再试',
+        'moving': '正在移动...',
+        'moveFailureTip': '移动失败,稍后再试...',
+        'selectClassTip': '请选择班级！',
+        'noCheckConditionTips':'您还没有选择提醒的条件',
+        'warningWay':'提醒方式',
+        'ImmediateWarning':'立即提醒',
+        'automaticWarning':'自动提醒',
+        'singleSupervisionAndPromotion':'单次提醒',
+        'cycleSupervision':'循环提醒',
+        'urgeTime':'提醒时间',
+        'superviseTheCycle':'提醒频率',
+        'weekly':'每周',
+        'everyTwoWeeks':'每两周',
+        'everyThreeWeeks':'每三周',
+        'every4Weeks':'每四周',
+        'superviseTheLengthOfTime':'持续时长',
+        'oneMonth':'1个月',
+        'TMonth':'2个月',
+        'SMonth':'3个月',
+        'FMonth':'4个月',
+        'FiMonth':'5个月',
+        'SMonth':'6个月',
+        'notStudyTips':'同学你好，您有课程学习进度未达标，请加快学习进度。在本课程中以下条件未达标:',
+        'checkDate':'请选择日期',
+        'hellouser': '用户，您好',
+        'clickToEditQuestion': '请在上方点击题型按钮添加题目，然后在此编辑区添加内容',
+        'coursename': '课程名称',
+        'PBLWeight': '分组任务（PBL）',
+        'qBankTip1':'请输入试题的内容',
+        'qBankTip2':'请设置正确答案',
+        'qBankTip3':'确认修改？',
+        'testTimeOverSubmitTip':'作答时间耗尽，试卷已提交',
+        'testReceiveTime':'试卷领取时间：',
+        'stuTestUseTime':'考试用时：',
+        'minute':'分钟',
+        'confirmKnow':'知道了',
+        'confirm':'确定',
+        'leavetip2':'次，将强制收卷',
+        'leavetip1':'系统检测到你已离开考试',
+        'leavetip3':'系统检测到学生考试多终端，将强制收卷',
+        'leavetip6':'系统检测到屏幕异常',
+        'submitExam':'您确定要交卷吗?',
+        'worksubmitTips2':'，确认提交吗？',
+        'worksubmitTips1':'您还有未做完的',
+        'shoujuantz':'收卷通知',
+        'zhuapaiTip':'本次考试需要进行屏幕抓拍，系统需要开启您的屏幕录制权限，请确认同意',
+        'reEnter':'重新进入',
+        'cancel':'取消',
+        'notLeaveTip1':'系统检测到你于',
+        'notLeaveTip2':'离开考试，请不要中途离开。',
+        'exitExam1':'离开考试提示',
+        'littleUnDo':'此题目仍有小题未作答，继续作答下一题？',
+        'littleUnDo2':'此题目仍有小题未作答，确认继续？',
+        'continueexam':'继续考试',
+        'exitExamTitle':'退出考试',
+        'projectionScreenTip':'检测到有其他应用正在投屏/共享屏幕，请关闭后进入考试',
+        'exitDurationTipPrerix':'系统检测到你的切屏时长已超过',
+        'exitDurationTipSuffix':'秒，将强制收卷',
+        'forceSubmitTip':'考试已被提交',
+        'forceSubmitStyle1Tip':'你已被老师收卷',
+        'examScreenAbnormalTitle':'屏幕异常提示',
+        'examScreenAbnormalTip':'系统检测到你于[0]屏幕出现异常，您已被检测到屏幕异常[1]次，屏幕异常[2]次将强制收卷，请关闭与考试无关页面。',
+        'exitForceSubmitExamTip':'系统检测到曾退出考试，将强制收卷',
+        'secondDeviceLiveOpenTip':'检测到未按考试要求开启第二设备直播，请确认直播已开启',
+        'appeal':'申诉',
+        'allowAnswerBackTips':'本场考试教师已设置不允许查看上一题，当前题目未作答，确认继续作答下一题？',
+        'delayReminder':'延时提醒',
+        'teacherDelayOperate':'该考试教师进行延时操作',
+        'delayDuration':'延时时长：[1]分钟',
+        'delayReason':'延时原因：[1]',
+        'examFaceAbnormalTitle':'识别异常',
+        'examFaceAbnormalTip':'系统检测到你于[0]人脸识别异常[1]，请调整摄像头角度，确保脸部位于画面中心，以便人脸识别。',
+        'examFaceAbnormalNoFace':'（画面无人）',
+        'examFaceAbnormalMultipleFace':'（画面多人）',
+        'examFaceAbnormalConfirm':'重新识别',
+        "selfTestCreating":"自测试卷生成中，已完成",
+        "createSuccess":"创建成功",
+        "exitCountExamLockTipPrefix":"系统检测到你离开考试",
+        "exitCountExamLockTipSuffix":"次，已锁定考试",
+        "exitDurationExamLockTipPrefix":"系统检测到你的切屏时长超过",
+        "exitDurationExamLockTipSuffix":"秒，已锁定考试",
+        "unLockExamTip":"考试锁定已经解除，请继续作答",
+        "unlockNotification":"解锁通知",
+        "screenshotNumberLockTipPrefix":"系统检测到你截屏次数达到",
+        "screenshotOccupancyNumberLockTipPrefix":"系统检测到你屏幕权限被占用次数达到",
+        "screenshotLockTipSuffix":"次，已锁定考试",
+        "screenshotSubmitTipSuffix":"次，已强制收卷",
+        "screenshotPrompt":"截屏提示",
+        "screenshotOccupancyPrompt":"屏幕权限被占用提示",
+        "getPermission":"获取权限"
+    };
+</script>    <script type="text/javascript">
+    I18N_WORK = {
+        "cpResult": "测评结果",
+        "ylch": "遗漏词汇",
+        "zqdfx": "准确度分析",
+        "tasktips1": "未达到及格线，请重做",
+        "tasktips2": "未达到通过标准，请重做",
+        "backdohereV2": "很遗憾，未达到及格线，请重做"
+    };
+</script>    <style>
+    html, body,h1, h2, h3, h4, h5, h6{font:14px/1.5 PingFangSC,微软雅黑, 黑体, Arial, Helvetica, sans-serif}
+    .Wrappadding{border: 0.02rem solid #F2F2F2;border-radius: 0.12rem;background:#fff}
+    .cyTag{height:0.6rem;width:100%;background:#F8F8F8;line-height:0.6rem;border-radius:0.12rem 0.12rem 0 0;font-size:0.26rem;border-bottom: 1px solid #f2f2f2;}
+    .c1{margin-left:0.3rem;font-size:0.26rem;color:#999}
+    .cyTips{margin-right:0.3rem;font-size:0.26rem;color:#FF3B30}
+    img {max-width: 100%;}
+    .zm_boxmsg { padding: 5% 8% 5% ;font-size: 0.34rem;text-align: center;border-bottom: none;color: #999999;}
+    .ans-cc p{font-size: 0.34rem;}
+    .ans-cc{margin-top:0.5rem;font-size:0.34rem;}
+    .ananas-editor-answer{padding:0.3rem;background-color:#fff;}
+    .ans-cc td{line-height:0.4rem;}
+
+    .blankList2 { padding: 0.2rem 0.3rem .5rem 0.3rem; font-size: 0.32rem;}
+    .blankList2 li{width:100%;border-bottom:1px solid #EBEBEB;position:relative;height:.9rem;line-height:.9rem;}
+    .blankList2 span {display:block;line-height: 0.9rem;width: 1.3rem;height: .9rem; position: absolute;left: 0; bottom: -2px;background:#fff;font-size:0.32rem;color:#999}
+    .blankInp2{width:75%; padding:.1rem 0;line-height:.5rem;border:none;display:inline-block;margin-left:1.3rem;border-radius:0;font-size:.32rem;background:none;}
+    .Py-mian1 .blankInp2{word-wrap: normal;word-break:normal;}
+    .Py-m1-title{padding:0.5rem 0.3rem 0;font-size:0.32rem;line-height:0.56rem;color:#333;}
+    .quesType{color:#999}
+    .answerList{padding: 0.4rem 0.3rem 0.5rem;font-size:0.32rem;line-height:0.56rem}
+    .answerList li:last-child{padding-bottom:0}
+    .Py-mian1{margin-top:0;box-shadow:inset 0px -0.5px 0px #EBEBEB;border-top:none;}
+    .py-Title{overflow: hidden;background:#fff;text-overflow: ellipsis;display: -webkit-box;-webkit-line-clamp: 2;-webkit-box-orient: vertical;padding:0 0.3rem;font-size:0.34rem;line-height:0.46rem;border:none;margin:0.36rem 0}
+    .answerList li >em{border:0.02rem solid #0099FF;margin-right:0.2rem}
+    .multiChoice li >em{border-radius: 0.12rem;width:0.64rem;height:0.64rem;line-height:0.64rem}
+    .readComprehension .mult >em{border-radius: 0.12rem;width:0.64rem;height:0.64rem;line-height:0.64rem}
+    .Briefanswer{margin-top:0.3rem;border-bottom:none;}
+    .btn-ok-bottom{float:right;width:2.98rem;height:0.78rem;border:1px solid #0099ff;background:#0099ff;color:#FFF;font-size:0.32rem;line-height:0.78rem;}
+    .save{float:left;width:3rem;height:0.8rem;}
+    .btn-save{width:2.98rem;height:0.78rem;border:1px solid #0099ff;color:#0099ff;font-size:0.32rem;line-height:0.78rem;}
+    .BanswerIcon{border-top:none}
+    .answerpla,.answerExplain,.sortQuesSelect{border-top:none;}
+    .jdt{border-top:1px solid #f2f2f2;border-bottom:1px solid #f2f2f2;}
+    .cyTips{padding-top:.1rem;color: #FF8800;padding:0 .3rem;margin-bottom:.36rem;display:block}
+    .time-icon{display:inline-block;width:.26rem;height:.26rem;background:url("//mooc1-api.chaoxing.com/mooc-ans/images/work/phone/time-icon.png") no-repeat;background-size:100%;vertical-align: middle;margin-right: .1rem;}
+    .cy_tit{ padding: 0.3rem; display: -webkit-box;  -webkit-box-align: center; width: 100%;}
+    .py-Title{margin: 0;padding: 0; width: calc(100% - 1.2rem);}
+    .tit_dl{width: .8rem; margin-left: .4rem;}
+    .tit_dl dt{width: .44rem;height: .44rem;margin: 0 auto;}
+    .tit_dl dt img{display:block;width:100%;height:100%}
+    .tit_dl dd{color: #E88C17; font-size: .24rem; margin-top: .1rem;}
+    .con_info{color: #F3AD55; font-size: .26rem; text-align: center; padding-top: .3rem; position: relative; z-index: 2; margin: 0 .3rem;}
+    .con_info::after{content:'';position:absolute;left:0;top:0.52rem;  border-bottom:1px dashed #F3AD55;width: 100%;}
+    .con_info span{vertical-align: middle; display: inline-block; background: #fff; padding: 0 .2rem; position: relative; z-index: 2;}
+    .con_info span i{display: inline-block; width: .18rem; height: .18rem;margin-left: 0.06rem;}
+    .viewer-button {right: 15px;background: url(//mooc1-api.chaoxing.com/mooc-ans/images/work/icon.png) no-repeat -255px -3px;width: 50px;}
+    input::-webkit-input-placeholder, textarea::-webkit-input-placeholder {color: #CCCCCC;font-weight: 100;}
+    input:-moz-placeholder, textarea:-moz-placeholder {color: #CCCCCC;font-weight: 100;}
+    input::-moz-placeholder, textarea::-moz-placeholder {color: #CCCCCC;font-weight: 100;}
+    input:-ms-input-placeholder, textarea:-ms-input-placeholder {color: #CCCCCC;font-weight: 100;}
+    .answerList li p {padding: 0;}
+    .main-box .more-choose-item {display: flex;align-items: start;}
+    .main-box .more-choose-item .choose-desc{flex: 1;width: calc(100% - 1rem);}
+    .doWorkArea {max-height: 6rem;height: 115px;font-size: .32rem;line-height: 1.6;width: 100%;resize: none;margin-bottom: 0.1rem;min-height: 2rem;vertical-align: middle;color: #333;outline: none;background: none;border: none;}
+    .doWorkAreaDiv {float: none;width: 100%;border: 1px solid #ebebeb;border-radius: 0.1rem;overflow: hidden;padding: 0.2rem 0.2rem 0;margin-bottom: 0.3rem;}
+    .englishWritingInputTips {text-align: right;color: #999;font-size: .24rem}
+    .wordStyleTit{font-size: 14px;font-weight: 500;color:#F28C24;margin: 0 20px;}
+    /**暂无题目移动端新添样式**/
+    .noTitleBx{padding:.5rem .3rem}
+    .noTitImg{height:3.4rem;width:4.08rem;margin:0 auto}
+    .noTitleBx p{text-align:center;font-size:.28rem;line-height:.48rem;color:#8A8B99}
+</style>
+    <link rel="stylesheet" type="text/css" href="//mooc1-api.chaoxing.com/mooc-ans/css/phone/pad/chapterPadStyle.css?v=2024-0122-1801" />
+    <script type="text/javascript" src="//mooc-res2.chaoxing.com/mooc-ans/js/common/jquery.min.js"></script>
+    <script type="text/javascript" src="//mooc-res2.chaoxing.com/mooc-ans/js/common/jquery-migrate.min.js"></script>    <script src="//mooc1-api.chaoxing.com/mooc-ans/js/phone/touch-1.2.0.js"></script>
+    <script src="//mooc1-api.chaoxing.com/mooc-ans/static/js/domain.js"></script>
+    <script type="text/javascript" src="//mooc1-api.chaoxing.com/mooc-ans/space/doworkinphone/js/prettyCheckboxes.js"></script>
+    <script src="/ananas/space/exam/js/enc_js_work.js?v=1762430928709"></script>
+    <script src="//mooc1-api.chaoxing.com/mooc-ans/js/phone/rem750s1.js"></script>
+    <script type="text/javascript" src="//mooc1-api.chaoxing.com/mooc-ans/js/common/viewer.js"></script>
+    <script type="text/javascript" src="//mooc1-api.chaoxing.com/mooc-ans/js/common/jquery-viewer.min.js"></script>
+    <script type="text/javascript" src="//mooc1-api.chaoxing.com/mooc-ans/mooc2/js/oraltest-quiz.js?v=2025-0702-1700"></script>
+    <script type="text/javascript" src="//mooc1-api.chaoxing.com/mooc-ans/mooc2/js/workEnglishWriting.js?v=2024-0116-2000"></script>
+    <script src="//mooc1-api.chaoxing.com/mooc-ans/js/work/phone/work-attach.js?v=2025-0527-1100"></script>    <script>
+    var enterTipText = '输入答案';
+    window["uid"] = '351129290';
+    window["currentTime"] = '1762430928696';
+    window["uploadEnc"] = '1a44feea3d7d507aa2c17054e4b2d58c';
+
+    var editors = new Array();
+    var placeholderTip = '<span style="color:#ccc;font-size:16px;">' + enterTipText +'</span>';
+    window.UEDITOR_CONFIG.imagePopup = false;
+</script>
+    <script src="//mooc1-api.chaoxing.com/mooc-ans/js/work/phone/add-audio.js"></script>
+    <script src="//mooc1-api.chaoxing.com/mooc-ans/js/exam/phone/testPaperUtils.js?v=2024-0425-1600"></script>
+</head>
+<body>
+<input type="hidden" id="currentTime" value="1762430928696"/>
+<input type="hidden" id="uploadEnc" value="1a44feea3d7d507aa2c17054e4b2d58c"/>
+<input type="hidden" id="uploadUid" value="351129290"/>
+<input type="hidden" id="openChapterVideo" value="1"/>
+<input type="hidden" id="oralEvalSync" value="0" />
+<input type="hidden" id="taskTipsNew" value="" />
+
+<div class="Wrappadding main-box">
+    <div class="cyTag">
+        <span class="fl c1">章节测验</span>
+        <span class="fr cyTips">
+                                    </span>
+    </div>
+    <div class="chapter-content">
+        <div class="left-content">
+            <h3 class="chapter-title" workName="&#31532;&#19968;&#31456;&#27979;&#39564;">
+                &#31532;&#19968;&#31456;&#27979;&#39564;
+            </h3>
+        </div>
+        <div class="right-content">
+            <img src="//mooc1-api.chaoxing.com/mooc-ans/images/work/phone/ceyan-do.png" alt="">
+            <div class="r-tip">
+                待完成                                    </div>
+        </div>
+    </div>
+
+
+    <p class="con_info"><span>由此作答<i><img src="//mooc1-api.chaoxing.com/mooc-ans/images/work/phone/ceyan-tip.png" tabindex="-1" aria-hidden="true" /></i></span></p>
+
+    <form action="/mooc-ans/work/addStudentWorkNew?keyboardDisplayRequiresUserAction=1&_classId=125571842&courseid=250215285&token=c6ca2bc43aa2c1eda9a5ac8c8826932a&workAnswerId=54593695&workid=44975884&cpi=416970639&jobid=work-1686c411151848d4b88c2be1d56a7b1e&knowledgeid=951782946&originJobId=null" method="post" name="form1" id="form1" >
+        <!--是否提交还是暂不提交-->
+        <input type="hidden" name="pyFlag" id="pyFlag"/>
+
+        <!--需要传递的参数-->
+        <input type="hidden" name="courseId" id="courseId" value="250215285"/>
+        <input type="hidden" id="classId" name="classId" value="125571842" />
+        <input type="hidden" name="api" id="api" value="1"/>
+        <input type="hidden" name="mooc" id="mooc" value="0"/>
+        <input type="hidden" name="workAnswerId" id="workAnswerId" value="54593695"/>
+        <input type="hidden" id="answerId" value="54593695"/>
+        <input type="hidden" name="totalQuestionNum" id="totalQuestionNum" value="ea6e069c909c29501d2d7f2f42629c7d"/><!--总题数-->
+        <input type="hidden" name="fullScore" id="fullScore" value="100.0"/><!--满分-->
+        <input type="hidden" name="knowledgeid" id="knowledgeid" value="951782946"/><!--章节id-->
+        <input type="hidden" name="oldSchoolId" id="oldSchoolId" value=""/><!--原始作业单位id-->
+        <input type="hidden" name="oldWorkId" id="oldWorkId" value="1686c411151848d4b88c2be1d56a7b1e"/><!--最原始原始作业id-->
+        <input type="hidden" name="jobid" id="jobid" value="work-1686c411151848d4b88c2be1d56a7b1e"/>
+        <input type="hidden" name="workRelationId" id="workRelationId" value="44975884"/>
+        <input type="hidden" id="workId" value="44975884"/>
+        <input type="hidden" name="enc_work" id="enc_work" value="c6ca2bc43aa2c1eda9a5ac8c8826932a"/>
+        <input type="hidden" name="isphone" id="isphone" value="true"/>
+        <input type="hidden" id="userId" name="userId" value="351129290"/>
+        <input type="hidden" id="addTimes" value="0"/>
+        <input type="hidden" name="workTimesEnc" id="workTimesEnc" value=""/>
+        <input type="hidden" id="limitWorkSubmitTimes" value="100" />
+        <input type="hidden" id="cpi" value="416970639" />
+        <input type="hidden" id="isChaoxingClient" value="true" />
+        <input type="hidden" id="randomOptions" value="false" />
+        <input type="hidden" id="matchEnc" value="465866527395aa540c6847b776d93c02" />
+        <input type="hidden" id="cfid" value="123402" />
+        <input type="text" value="" style="display: none;"/>
+        <div class="zquestions">
+
+            <div class="Py-mian1 singleQuesId" data="404885919">
+                <div>
+                    <div class="Py-m1-title fs16 fontLabel" tabindex="0" role="text" >
+                        1.<span class="quesType">[单选题]</span>
+                        <font face="Times New Roman, serif"><u>____</u></font><span style="font-family:宋体">是构成机械的最小单元，也是制造机械时的最小单元。</span>
+                    </div>
+                    <ul class="answerList singleChoice">
+                        <li id-param="404885919"
+                            class="clearfix more-choose-item"
+                            tabindex="0" role="text" >
+                            <em id-param="A" class="choose-opt">A</em>
+                            <div class="choose-desc">
+                                <cc><p><span style="font-size:14px;font-family:宋体">机器</span></p></cc>
+                            </div>
+                        </li>
+                        <li id-param="404885919"
+                            class="clearfix more-choose-item"
+                            tabindex="0" role="text" >
+                            <em id-param="B" class="choose-opt">B</em>
+                            <div class="choose-desc">
+                                <cc><p><span style="font-size:14px;font-family:宋体">零件</span></p></cc>
+                            </div>
+                        </li>
+                        <li id-param="404885919"
+                            class="clearfix more-choose-item"
+                            tabindex="0" role="text" >
+                            <em id-param="C" class="choose-opt">C</em>
+                            <div class="choose-desc">
+                                <cc><p><span style="font-size:14px;font-family:宋体">构件</span></p></cc>
+                            </div>
+                        </li>
+                        <li id-param="404885919"
+                            class="clearfix more-choose-item"
+                            tabindex="0" role="text" >
+                            <em id-param="D" class="choose-opt">D</em>
+                            <div class="choose-desc">
+                                <cc><p><span style="font-size:14px;font-family:宋体">机构</span></p></cc>
+                            </div>
+                        </li>
+                    </ul>
+
+                    <input type="hidden" id="answer404885919" name="answer404885919"   value="" class="answerInput"/>
+                    <input type="hidden" id="answertype404885919" name="answertype404885919" value="0"/>
+
+                </div>
+            </div>
+
+            <div class="Py-mian1 singleQuesId" data="404885920">
+                <div>
+                    <div class="Py-m1-title fs16 fontLabel" tabindex="0" role="text" >
+                        2.<span class="quesType">[单选题]</span>
+                        <span style="font-family:宋体">两个构件之间以线或点接触形成的运动副，称为<u>____</u></span><span style="font-family:宋体">。</span>
+                    </div>
+                    <ul class="answerList singleChoice">
+                        <li id-param="404885920"
+                            class="clearfix more-choose-item"
+                            tabindex="0" role="text" >
+                            <em id-param="A" class="choose-opt">A</em>
+                            <div class="choose-desc">
+                                <cc><p><span style="font-size:14px;font-family:宋体">低副</span></p></cc>
+                            </div>
+                        </li>
+                        <li id-param="404885920"
+                            class="clearfix more-choose-item"
+                            tabindex="0" role="text" >
+                            <em id-param="B" class="choose-opt">B</em>
+                            <div class="choose-desc">
+                                <cc><p><span style="font-size:14px;font-family:宋体">高副</span></p></cc>
+                            </div>
+                        </li>
+                        <li id-param="404885920"
+                            class="clearfix more-choose-item"
+                            tabindex="0" role="text" >
+                            <em id-param="C" class="choose-opt">C</em>
+                            <div class="choose-desc">
+                                <cc><p><span style="font-size:14px;font-family:宋体">移动副</span></p></cc>
+                            </div>
+                        </li>
+                        <li id-param="404885920"
+                            class="clearfix more-choose-item"
+                            tabindex="0" role="text" >
+                            <em id-param="D" class="choose-opt">D</em>
+                            <div class="choose-desc">
+                                <cc><p><span style="font-size:14px;font-family:宋体">转动副</span></p></cc>
+                            </div>
+                        </li>
+                    </ul>
+
+                    <input type="hidden" id="answer404885920" name="answer404885920"   value="" class="answerInput"/>
+                    <input type="hidden" id="answertype404885920" name="answertype404885920" value="0"/>
+
+                </div>
+            </div>
+
+            <div class="Py-mian1 singleQuesId" data="404885921">
+                <div>
+                    <div class="Py-m1-title fs16 fontLabel" tabindex="0" role="text" >
+                        3.<span class="quesType">[单选题]</span>
+                        <span style="font-family:宋体">图示为一机构模型，其对应的机构运动简图为（&nbsp;</span><span style="font-family:&#39;Times&nbsp;New&nbsp;Roman&#39;,serif">&nbsp;</span><span style="font-family:宋体">）</span></p><p><span style="font-family:宋体"><img src="http://p.ananas.chaoxing.com/star3/origin/8d295f6e43d084d5fd70f12d96037ef9.jpg" title="?????7.jpg"/></span></p><p><span style="font-family:宋体"><br/></span></p><p><span style="font-family:宋体"><span style="font-family:宋体">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;图</span><span style="font-family:&#39;Times&nbsp;New&nbsp;Roman&#39;,serif">3-3</span></span></p><p><span style="font-family:宋体"><span style="font-family:&#39;Times&nbsp;New&nbsp;Roman&#39;,serif"><img src="http://p.ananas.chaoxing.com/star3/origin/9675ee9044b24cec4bfefa99abe55857.jpg" title="?????8.jpg"/></span></span>
+                    </div>
+                    <ul class="answerList singleChoice">
+                        <li id-param="404885921"
+                            class="clearfix more-choose-item"
+                            tabindex="0" role="text" >
+                            <em id-param="A" class="choose-opt">A</em>
+                            <div class="choose-desc">
+                                <cc><p><span style="font-size:14px;font-family:宋体">图</span><span style="font-size:14px;font-family:&#39;Times&nbsp;New&nbsp;Roman&#39;,serif">a</span></p></cc>
+                            </div>
+                        </li>
+                        <li id-param="404885921"
+                            class="clearfix more-choose-item"
+                            tabindex="0" role="text" >
+                            <em id-param="B" class="choose-opt">B</em>
+                            <div class="choose-desc">
+                                <cc><p><span style="font-size:14px;font-family:宋体">图</span><span style="font-size:14px;font-family:&#39;Times&nbsp;New&nbsp;Roman&#39;,serif">b</span></p></cc>
+                            </div>
+                        </li>
+                        <li id-param="404885921"
+                            class="clearfix more-choose-item"
+                            tabindex="0" role="text" >
+                            <em id-param="C" class="choose-opt">C</em>
+                            <div class="choose-desc">
+                                <cc><p><span style="font-size:14px;font-family:宋体">图</span><span style="font-size:14px;font-family:&#39;Times&nbsp;New&nbsp;Roman&#39;,serif">c</span></p></cc>
+                            </div>
+                        </li>
+                        <li id-param="404885921"
+                            class="clearfix more-choose-item"
+                            tabindex="0" role="text" >
+                            <em id-param="D" class="choose-opt">D</em>
+                            <div class="choose-desc">
+                                <cc><p><span style="font-size:14px;font-family:宋体">图</span><span style="font-size:14px;font-family:&#39;Times&nbsp;New&nbsp;Roman&#39;,serif">d</span></p></cc>
+                            </div>
+                        </li>
+                    </ul>
+
+                    <input type="hidden" id="answer404885921" name="answer404885921"   value="" class="answerInput"/>
+                    <input type="hidden" id="answertype404885921" name="answertype404885921" value="0"/>
+
+                </div>
+            </div>
+
+            <div class="Py-mian1 singleQuesId" data="404885922">
+                <div>
+                    <div class="Py-m1-title fs16 fontLabel" tabindex="0" role="text" >
+                        4.<span class="quesType">[填空题]</span>
+                        <span style="font-family:宋体">机</span><span style="font-family:宋体">械是<strong style="white-space: normal;"><span style=" font-family: Times&nbsp;New&nbsp;Roman, serif;"><span style="text-decoration-line: underline;">&nbsp;</span></span><span style="text-decoration-line: underline;"><span style=" font-family: 宋体;">&nbsp;&nbsp;</span></span></strong><strong style=""><span style="text-decoration:underline;"></span>和</strong></span><strong><span style="font-family:&#39;Times&nbsp;New&nbsp;Roman&#39;,serif"><span style="text-decoration:underline;">&nbsp;</span></span><span style="text-decoration:underline;"><span style="font-family:宋体">&nbsp;&nbsp;</span></span></strong><span style="font-size:&nbsp;14px;font-family:宋体">的总称。</span>
+                    </div>
+
+
+                    <ul class="blankList2">
+                        <p style="font-size:.3rem;color:#999;padding:.2rem 0;">第1空:</p>
+                        <div class="Briefanswer editorBlank404885922" data-itemId="4048859221" data-editorIndex="0" style="border:1px solid #EBEBEB;overflow:hidden;border-radius:.1rem;margin-top:0;min-height: 60px;">
+                            <div class="jdt" style="padding:0px;border:none;" data-editorIndex="0">
+                                <div id="ananas-editor-answer4048859221" class="ananas-editor-answer"></div>
+                                <textarea id="answer4048859221" name="answer4048859221" style="display:none;"></textarea>
+                            </div>
+                        </div>
+                        <p style="font-size:.3rem;color:#999;padding:.2rem 0;">第2空:</p>
+                        <div class="Briefanswer editorBlank404885922" data-itemId="4048859222" data-editorIndex="1" style="border:1px solid #EBEBEB;overflow:hidden;border-radius:.1rem;margin-top:0;min-height: 60px;">
+                            <div class="jdt" style="padding:0px;border:none;" data-editorIndex="1">
+                                <div id="ananas-editor-answer4048859222" class="ananas-editor-answer"></div>
+                                <textarea id="answer4048859222" name="answer4048859222" style="display:none;"></textarea>
+                            </div>
+                        </div>
+                    </ul>
+
+
+                    <input type="hidden" name="tiankongsize404885922" value="2">
+                    <input type="hidden" id="answertype404885922" name="answertype404885922" value="2"/>
+
+
+                    <script>
+                        var body = Ext.getBody();
+                        var editorBlanks = $(".editorBlank404885922");
+                        var editorNum = editorBlanks.length;
+                        var qtid = "404885922";
+
+                        var ueConfig ={
+                            initialFrameHeight : 200,
+                            autoHeightEnabled : true,
+                            iframeCssUrl : '/ananas/ueditor/themes/iframe_wap_editor.css'
+                        }
+                        if('1' == '1' && '0' != '1'){
+                            ueConfig.initialFrameHeight = 60;
+                            ueConfig.pasteplain = true;
+                            ueConfig.disablePasteImage = true;
+                        }
+                        editorBlanks.each(function(idx) {
+                            var index = parseInt($(this).attr("data-editorIndex"));
+                            var itemId = $(this).attr("data-itemId");
+                            editors[index] = Ext.create('ananas.InnerEditor', {
+                                renderTo : "ananas-editor-answer" + itemId,
+                                ueditorConfig : ueConfig
+                            });
+
+                            editors[index].on('ready', function() {
+                                document.activeElement.blur();
+                                var ueditor = this.ueditor;
+                                var c = $('#answer' + itemId).val();
+                                if (c) {
+                                    ueditor.setContent(c);
+                                } else {
+                                    ueditor.setContent("");
+                                }
+
+                                ueditor && ueditor.addListener('blur', function(e) {
+                                    $('#answer' + itemId).val(ueditor.getContent());
+                                });
+
+                                ueditor && ueditor.addListener('contentChange', function(e) {
+                                    var balnkAnswer = ueditor.getContent();
+                                    var truelyChange = balnkAnswer != $('#answer' + itemId).val();
+                                    $('#answer' + itemId).val(balnkAnswer);
+                                    controlEmoticons(ueditor, true);
+                                    if(truelyChange){
+                                        stopSwipe();
+                                    }
+                                });
+
+                                ueditor.emptyPlaceHolder && ueditor.emptyPlaceHolder('请输入答案');
+
+                                var imgs = $('.ans-ued-img', ueditor.document.body);
+                                if (imgs && imgs.length > 0) {
+                                    var img = imgs[imgs.length - 1];
+                                    img.onload = function() {
+                                        ueditor.adjustHeight();
+                                    }
+                                }
+
+                            });
+                        });
+
+                    </script>
+                </div>
+            </div>
+
+            <div class="Py-mian1 singleQuesId" data="404885923">
+                <div>
+                    <div class="Py-m1-title fs16 fontLabel" tabindex="0" role="text" >
+                        5.<span class="quesType">[填空题]</span>
+                        <span style="font-family:宋体">机构中各个构件相对于机架能够产生独立运动的数目称为</span><strong><span style="font-family: 宋体"> <span style="text-decoration:underline;">&nbsp;&nbsp;</span></span><span style="font-family:宋体">。</span></strong>
+                    </div>
+
+
+                    <ul class="blankList2">
+                        <p style="font-size:.3rem;color:#999;padding:.2rem 0;">第1空:</p>
+                        <div class="Briefanswer editorBlank404885923" data-itemId="4048859231" data-editorIndex="2" style="border:1px solid #EBEBEB;overflow:hidden;border-radius:.1rem;margin-top:0;min-height: 60px;">
+                            <div class="jdt" style="padding:0px;border:none;" data-editorIndex="2">
+                                <div id="ananas-editor-answer4048859231" class="ananas-editor-answer"></div>
+                                <textarea id="answer4048859231" name="answer4048859231" style="display:none;"></textarea>
+                            </div>
+                        </div>
+                    </ul>
+
+
+                    <input type="hidden" name="tiankongsize404885923" value="1">
+                    <input type="hidden" id="answertype404885923" name="answertype404885923" value="2"/>
+
+
+                    <script>
+                        var body = Ext.getBody();
+                        var editorBlanks = $(".editorBlank404885923");
+                        var editorNum = editorBlanks.length;
+                        var qtid = "404885923";
+
+                        var ueConfig ={
+                            initialFrameHeight : 200,
+                            autoHeightEnabled : true,
+                            iframeCssUrl : '/ananas/ueditor/themes/iframe_wap_editor.css'
+                        }
+                        if('1' == '1' && '0' != '1'){
+                            ueConfig.initialFrameHeight = 60;
+                            ueConfig.pasteplain = true;
+                            ueConfig.disablePasteImage = true;
+                        }
+                        editorBlanks.each(function(idx) {
+                            var index = parseInt($(this).attr("data-editorIndex"));
+                            var itemId = $(this).attr("data-itemId");
+                            editors[index] = Ext.create('ananas.InnerEditor', {
+                                renderTo : "ananas-editor-answer" + itemId,
+                                ueditorConfig : ueConfig
+                            });
+
+                            editors[index].on('ready', function() {
+                                document.activeElement.blur();
+                                var ueditor = this.ueditor;
+                                var c = $('#answer' + itemId).val();
+                                if (c) {
+                                    ueditor.setContent(c);
+                                } else {
+                                    ueditor.setContent("");
+                                }
+
+                                ueditor && ueditor.addListener('blur', function(e) {
+                                    $('#answer' + itemId).val(ueditor.getContent());
+                                });
+
+                                ueditor && ueditor.addListener('contentChange', function(e) {
+                                    var balnkAnswer = ueditor.getContent();
+                                    var truelyChange = balnkAnswer != $('#answer' + itemId).val();
+                                    $('#answer' + itemId).val(balnkAnswer);
+                                    controlEmoticons(ueditor, true);
+                                    if(truelyChange){
+                                        stopSwipe();
+                                    }
+                                });
+
+                                ueditor.emptyPlaceHolder && ueditor.emptyPlaceHolder('请输入答案');
+
+                                var imgs = $('.ans-ued-img', ueditor.document.body);
+                                if (imgs && imgs.length > 0) {
+                                    var img = imgs[imgs.length - 1];
+                                    img.onload = function() {
+                                        ueditor.adjustHeight();
+                                    }
+                                }
+
+                            });
+                        });
+
+                    </script>
+                </div>
+            </div>
+
+            <div class="Py-mian1 singleQuesId" data="404885924">
+                <div>
+                    <div class="Py-m1-title fs16 fontLabel" tabindex="0" role="text" >
+                        6.<span class="quesType">[填空题]</span>
+                        平面机构的自由度计算公式为：______。
+                    </div>
+
+
+                    <ul class="blankList2">
+                        <p style="font-size:.3rem;color:#999;padding:.2rem 0;">第1空:</p>
+                        <div class="Briefanswer editorBlank404885924" data-itemId="4048859241" data-editorIndex="3" style="border:1px solid #EBEBEB;overflow:hidden;border-radius:.1rem;margin-top:0;min-height: 60px;">
+                            <div class="jdt" style="padding:0px;border:none;" data-editorIndex="3">
+                                <div id="ananas-editor-answer4048859241" class="ananas-editor-answer"></div>
+                                <textarea id="answer4048859241" name="answer4048859241" style="display:none;"></textarea>
+                            </div>
+                        </div>
+                    </ul>
+
+
+                    <input type="hidden" name="tiankongsize404885924" value="1">
+                    <input type="hidden" id="answertype404885924" name="answertype404885924" value="2"/>
+
+
+                    <script>
+                        var body = Ext.getBody();
+                        var editorBlanks = $(".editorBlank404885924");
+                        var editorNum = editorBlanks.length;
+                        var qtid = "404885924";
+
+                        var ueConfig ={
+                            initialFrameHeight : 200,
+                            autoHeightEnabled : true,
+                            iframeCssUrl : '/ananas/ueditor/themes/iframe_wap_editor.css'
+                        }
+                        if('1' == '1' && '0' != '1'){
+                            ueConfig.initialFrameHeight = 60;
+                            ueConfig.pasteplain = true;
+                            ueConfig.disablePasteImage = true;
+                        }
+                        editorBlanks.each(function(idx) {
+                            var index = parseInt($(this).attr("data-editorIndex"));
+                            var itemId = $(this).attr("data-itemId");
+                            editors[index] = Ext.create('ananas.InnerEditor', {
+                                renderTo : "ananas-editor-answer" + itemId,
+                                ueditorConfig : ueConfig
+                            });
+
+                            editors[index].on('ready', function() {
+                                document.activeElement.blur();
+                                var ueditor = this.ueditor;
+                                var c = $('#answer' + itemId).val();
+                                if (c) {
+                                    ueditor.setContent(c);
+                                } else {
+                                    ueditor.setContent("");
+                                }
+
+                                ueditor && ueditor.addListener('blur', function(e) {
+                                    $('#answer' + itemId).val(ueditor.getContent());
+                                });
+
+                                ueditor && ueditor.addListener('contentChange', function(e) {
+                                    var balnkAnswer = ueditor.getContent();
+                                    var truelyChange = balnkAnswer != $('#answer' + itemId).val();
+                                    $('#answer' + itemId).val(balnkAnswer);
+                                    controlEmoticons(ueditor, true);
+                                    if(truelyChange){
+                                        stopSwipe();
+                                    }
+                                });
+
+                                ueditor.emptyPlaceHolder && ueditor.emptyPlaceHolder('请输入答案');
+
+                                var imgs = $('.ans-ued-img', ueditor.document.body);
+                                if (imgs && imgs.length > 0) {
+                                    var img = imgs[imgs.length - 1];
+                                    img.onload = function() {
+                                        ueditor.adjustHeight();
+                                    }
+                                }
+
+                            });
+                        });
+
+                    </script>
+                </div>
+            </div>
+
+            <div class="Py-mian1 singleQuesId" data="404885925">
+                <div>
+                    <div class="Py-m1-title fs16 fontLabel" tabindex="0" role="text" >
+                        7.<span class="quesType">[填空题]</span>
+                        下图中吊扇的扇叶与吊架组成_____副，书桌的桌身与抽斗组成____副，机车直线运动时的车轮与路轨组成____副。</p><p><img src="http://p.ananas.chaoxing.com/star3/origin/c5a60bd4ef0b26f81ba5aeba7118c48e.jpg" style="width:&nbsp;200px;&nbsp;height:&nbsp;135px;" title="?????1.jpg" width="200" height="135" border="0" hspace="0" vspace="0"/>&nbsp; &nbsp;&nbsp;<img src="http://p.ananas.chaoxing.com/star3/origin/01817ecf3b00a67d68e2e02cb2374530.jpg" title="?????2.jpg" width="200" height="150" border="0" hspace="0" vspace="0"/>&nbsp; &nbsp;&nbsp;<img src="http://p.ananas.chaoxing.com/star3/origin/477045a593da2fdaee7f6510756ca558.jpg" title="?????3.jpg"/></p><p><br/></p><p><br/>
+                    </div>
+
+
+                    <ul class="blankList2">
+                        <p style="font-size:.3rem;color:#999;padding:.2rem 0;">第1空:</p>
+                        <div class="Briefanswer editorBlank404885925" data-itemId="4048859251" data-editorIndex="4" style="border:1px solid #EBEBEB;overflow:hidden;border-radius:.1rem;margin-top:0;min-height: 60px;">
+                            <div class="jdt" style="padding:0px;border:none;" data-editorIndex="4">
+                                <div id="ananas-editor-answer4048859251" class="ananas-editor-answer"></div>
+                                <textarea id="answer4048859251" name="answer4048859251" style="display:none;"></textarea>
+                            </div>
+                        </div>
+                        <p style="font-size:.3rem;color:#999;padding:.2rem 0;">第2空:</p>
+                        <div class="Briefanswer editorBlank404885925" data-itemId="4048859252" data-editorIndex="5" style="border:1px solid #EBEBEB;overflow:hidden;border-radius:.1rem;margin-top:0;min-height: 60px;">
+                            <div class="jdt" style="padding:0px;border:none;" data-editorIndex="5">
+                                <div id="ananas-editor-answer4048859252" class="ananas-editor-answer"></div>
+                                <textarea id="answer4048859252" name="answer4048859252" style="display:none;"></textarea>
+                            </div>
+                        </div>
+                        <p style="font-size:.3rem;color:#999;padding:.2rem 0;">第3空:</p>
+                        <div class="Briefanswer editorBlank404885925" data-itemId="4048859253" data-editorIndex="6" style="border:1px solid #EBEBEB;overflow:hidden;border-radius:.1rem;margin-top:0;min-height: 60px;">
+                            <div class="jdt" style="padding:0px;border:none;" data-editorIndex="6">
+                                <div id="ananas-editor-answer4048859253" class="ananas-editor-answer"></div>
+                                <textarea id="answer4048859253" name="answer4048859253" style="display:none;"></textarea>
+                            </div>
+                        </div>
+                    </ul>
+
+
+                    <input type="hidden" name="tiankongsize404885925" value="3">
+                    <input type="hidden" id="answertype404885925" name="answertype404885925" value="2"/>
+
+
+                    <script>
+                        var body = Ext.getBody();
+                        var editorBlanks = $(".editorBlank404885925");
+                        var editorNum = editorBlanks.length;
+                        var qtid = "404885925";
+
+                        var ueConfig ={
+                            initialFrameHeight : 200,
+                            autoHeightEnabled : true,
+                            iframeCssUrl : '/ananas/ueditor/themes/iframe_wap_editor.css'
+                        }
+                        if('1' == '1' && '0' != '1'){
+                            ueConfig.initialFrameHeight = 60;
+                            ueConfig.pasteplain = true;
+                            ueConfig.disablePasteImage = true;
+                        }
+                        editorBlanks.each(function(idx) {
+                            var index = parseInt($(this).attr("data-editorIndex"));
+                            var itemId = $(this).attr("data-itemId");
+                            editors[index] = Ext.create('ananas.InnerEditor', {
+                                renderTo : "ananas-editor-answer" + itemId,
+                                ueditorConfig : ueConfig
+                            });
+
+                            editors[index].on('ready', function() {
+                                document.activeElement.blur();
+                                var ueditor = this.ueditor;
+                                var c = $('#answer' + itemId).val();
+                                if (c) {
+                                    ueditor.setContent(c);
+                                } else {
+                                    ueditor.setContent("");
+                                }
+
+                                ueditor && ueditor.addListener('blur', function(e) {
+                                    $('#answer' + itemId).val(ueditor.getContent());
+                                });
+
+                                ueditor && ueditor.addListener('contentChange', function(e) {
+                                    var balnkAnswer = ueditor.getContent();
+                                    var truelyChange = balnkAnswer != $('#answer' + itemId).val();
+                                    $('#answer' + itemId).val(balnkAnswer);
+                                    controlEmoticons(ueditor, true);
+                                    if(truelyChange){
+                                        stopSwipe();
+                                    }
+                                });
+
+                                ueditor.emptyPlaceHolder && ueditor.emptyPlaceHolder('请输入答案');
+
+                                var imgs = $('.ans-ued-img', ueditor.document.body);
+                                if (imgs && imgs.length > 0) {
+                                    var img = imgs[imgs.length - 1];
+                                    img.onload = function() {
+                                        ueditor.adjustHeight();
+                                    }
+                                }
+
+                            });
+                        });
+
+                    </script>
+                </div>
+            </div>
+
+            <div class="Py-mian1 singleQuesId" data="404885936">
+                <div>
+                    <div class="Py-m1-title fs16 fontLabel" tabindex="0" role="text" >
+                        8.<span class="quesType">[阅读理解]</span>
+                        如图所示机构中，（标有箭头的构件为原动件）<br/></p><p><img src="http://p.ananas.chaoxing.com/star3/origin/efcae8f8203384b2bcd8d976cfba17ad.jpg" title="?????10.jpg"/>
+                    </div>
+                    <style>
+                        .blankList li{width:100%}
+                        .blankInp{width: 5.4rem; border:none; border-bottom:1px solid #e1e1e1;}
+                    </style>
+                    <div class="readComprehension">
+                        <input type="hidden" name="readCompreHension-childType" value="0"/>
+                        <input type="hidden" name="readCompreHension-childId" value="0205f9c7-0530-4ec9-bfee-9590c43a61f3"/>
+                        <ul class="answerList" style="border-top:1px solid #f2f2f2;">
+                            <li style="font-size:15px;" class="ignoreli clearfix">
+                                <span style="color:#666">1 (单选题)</span>
+                                <div class="ans-cc"><p>复合铰链有（ &nbsp;）处</p></div>
+                            </li>
+                            <li data="answer" data-itemId="0205f9c7-0530-4ec9-bfee-9590c43a61f3"  class="clearfix single" >
+                                <em id-param="A">A</em>
+                                <p class="type14">
+                                    <cc><p>0<br/></p></cc>
+                                </p>
+                            </li>
+                            <li data="answer" data-itemId="0205f9c7-0530-4ec9-bfee-9590c43a61f3"  class="clearfix single" >
+                                <em id-param="B">B</em>
+                                <p class="type14">
+                                    <cc><p>3</p></cc>
+                                </p>
+                            </li>
+                            <li data="answer" data-itemId="0205f9c7-0530-4ec9-bfee-9590c43a61f3"  class="clearfix single" >
+                                <em id-param="C">C</em>
+                                <p class="type14">
+                                    <cc><p>2</p></cc>
+                                </p>
+                            </li>
+                            <li data="answer" data-itemId="0205f9c7-0530-4ec9-bfee-9590c43a61f3"  class="clearfix single" >
+                                <em id-param="D">D</em>
+                                <p class="type14">
+                                    <cc><p>1</p></cc>
+                                </p>
+                            </li>
+                        </ul>
+                        <input type="hidden" name="readCompreHension-childType" value="0"/>
+                        <input type="hidden" name="readCompreHension-childId" value="3ade5909-0d73-40ab-99f0-31292ed5315f"/>
+                        <ul class="answerList" style="border-top:1px solid #f2f2f2;">
+                            <li style="font-size:15px;" class="ignoreli clearfix">
+                                <span style="color:#666">2 (单选题)</span>
+                                <div class="ans-cc"><p>局部自由度在（ &nbsp; ）</p></div>
+                            </li>
+                            <li data="answer" data-itemId="3ade5909-0d73-40ab-99f0-31292ed5315f"  class="clearfix single" >
+                                <em id-param="A">A</em>
+                                <p class="type14">
+                                    <cc><p>铰链D处</p></cc>
+                                </p>
+                            </li>
+                            <li data="answer" data-itemId="3ade5909-0d73-40ab-99f0-31292ed5315f"  class="clearfix single" >
+                                <em id-param="B">B</em>
+                                <p class="type14">
+                                    <cc><p>铰链B处</p></cc>
+                                </p>
+                            </li>
+                            <li data="answer" data-itemId="3ade5909-0d73-40ab-99f0-31292ed5315f"  class="clearfix single" >
+                                <em id-param="C">C</em>
+                                <p class="type14">
+                                    <cc><p>铰链E处</p></cc>
+                                </p>
+                            </li>
+                            <li data="answer" data-itemId="3ade5909-0d73-40ab-99f0-31292ed5315f"  class="clearfix single" >
+                                <em id-param="D">D</em>
+                                <p class="type14">
+                                    <cc><p>铰链C处</p></cc>
+                                </p>
+                            </li>
+                        </ul>
+                        <input type="hidden" name="readCompreHension-childType" value="0"/>
+                        <input type="hidden" name="readCompreHension-childId" value="957ff4fb-a063-49b3-8738-a875e3fb72fb"/>
+                        <ul class="answerList" style="border-top:1px solid #f2f2f2;">
+                            <li style="font-size:15px;" class="ignoreli clearfix">
+                                <span style="color:#666">3 (单选题)</span>
+                                <div class="ans-cc"><p>可用作自由度计算的高副有（ &nbsp;）处</p></div>
+                            </li>
+                            <li data="answer" data-itemId="957ff4fb-a063-49b3-8738-a875e3fb72fb"  class="clearfix single" >
+                                <em id-param="A">A</em>
+                                <p class="type14">
+                                    <cc><p>2<br/></p></cc>
+                                </p>
+                            </li>
+                            <li data="answer" data-itemId="957ff4fb-a063-49b3-8738-a875e3fb72fb"  class="clearfix single" >
+                                <em id-param="B">B</em>
+                                <p class="type14">
+                                    <cc><p>1</p></cc>
+                                </p>
+                            </li>
+                            <li data="answer" data-itemId="957ff4fb-a063-49b3-8738-a875e3fb72fb"  class="clearfix single" >
+                                <em id-param="C">C</em>
+                                <p class="type14">
+                                    <cc><p>3</p></cc>
+                                </p>
+                            </li>
+                            <li data="answer" data-itemId="957ff4fb-a063-49b3-8738-a875e3fb72fb"  class="clearfix single" >
+                                <em id-param="D">D</em>
+                                <p class="type14">
+                                    <cc><p>0</p></cc>
+                                </p>
+                            </li>
+                        </ul>
+                        <input type="hidden" name="readCompreHension-childType" value="0"/>
+                        <input type="hidden" name="readCompreHension-childId" value="4879e4a8-4ffa-49d2-af6e-52503336ed24"/>
+                        <ul class="answerList" style="border-top:1px solid #f2f2f2;">
+                            <li style="font-size:15px;" class="ignoreli clearfix">
+                                <span style="color:#666">4 (单选题)</span>
+                                <div class="ans-cc"><p>可用自由度计算的转动副有（ &nbsp; ）处</p></div>
+                            </li>
+                            <li data="answer" data-itemId="4879e4a8-4ffa-49d2-af6e-52503336ed24"  class="clearfix single" >
+                                <em id-param="A">A</em>
+                                <p class="type14">
+                                    <cc><p>1</p></cc>
+                                </p>
+                            </li>
+                            <li data="answer" data-itemId="4879e4a8-4ffa-49d2-af6e-52503336ed24"  class="clearfix single" >
+                                <em id-param="B">B</em>
+                                <p class="type14">
+                                    <cc><p>2</p></cc>
+                                </p>
+                            </li>
+                            <li data="answer" data-itemId="4879e4a8-4ffa-49d2-af6e-52503336ed24"  class="clearfix single" >
+                                <em id-param="C">C</em>
+                                <p class="type14">
+                                    <cc><p>3</p></cc>
+                                </p>
+                            </li>
+                            <li data="answer" data-itemId="4879e4a8-4ffa-49d2-af6e-52503336ed24"  class="clearfix single" >
+                                <em id-param="D">D</em>
+                                <p class="type14">
+                                    <cc><p>4</p></cc>
+                                </p>
+                            </li>
+                        </ul>
+                        <input type="hidden" name="readCompreHension-childType" value="0"/>
+                        <input type="hidden" name="readCompreHension-childId" value="3f744517-c7b8-4b45-b045-7676b5cfc61a"/>
+                        <ul class="answerList" style="border-top:1px solid #f2f2f2;">
+                            <li style="font-size:15px;" class="ignoreli clearfix">
+                                <span style="color:#666">5 (单选题)</span>
+                                <div class="ans-cc"><p>可用自由度计算的移动副有（ &nbsp;）处</p></div>
+                            </li>
+                            <li data="answer" data-itemId="3f744517-c7b8-4b45-b045-7676b5cfc61a"  class="clearfix single" >
+                                <em id-param="A">A</em>
+                                <p class="type14">
+                                    <cc><p>2<br/></p></cc>
+                                </p>
+                            </li>
+                            <li data="answer" data-itemId="3f744517-c7b8-4b45-b045-7676b5cfc61a"  class="clearfix single" >
+                                <em id-param="B">B</em>
+                                <p class="type14">
+                                    <cc><p>1</p></cc>
+                                </p>
+                            </li>
+                            <li data="answer" data-itemId="3f744517-c7b8-4b45-b045-7676b5cfc61a"  class="clearfix single" >
+                                <em id-param="C">C</em>
+                                <p class="type14">
+                                    <cc><p>3</p></cc>
+                                </p>
+                            </li>
+                            <li data="answer" data-itemId="3f744517-c7b8-4b45-b045-7676b5cfc61a"  class="clearfix single" >
+                                <em id-param="D">D</em>
+                                <p class="type14">
+                                    <cc><p>0</p></cc>
+                                </p>
+                            </li>
+                        </ul>
+                        <input type="hidden" name="readCompreHension-childType" value="0"/>
+                        <input type="hidden" name="readCompreHension-childId" value="dd2f4e16-9253-40a3-bdcc-14cd2c4f95e4"/>
+                        <ul class="answerList" style="border-top:1px solid #f2f2f2;">
+                            <li style="font-size:15px;" class="ignoreli clearfix">
+                                <span style="color:#666">6 (单选题)</span>
+                                <div class="ans-cc"><p><span style="font-size: 14px;font-family: 宋体">机构的自由度数为（ &nbsp;）</span></p></div>
+                            </li>
+                            <li data="answer" data-itemId="dd2f4e16-9253-40a3-bdcc-14cd2c4f95e4"  class="clearfix single" >
+                                <em id-param="A">A</em>
+                                <p class="type14">
+                                    <cc><p>2<br/></p></cc>
+                                </p>
+                            </li>
+                            <li data="answer" data-itemId="dd2f4e16-9253-40a3-bdcc-14cd2c4f95e4"  class="clearfix single" >
+                                <em id-param="B">B</em>
+                                <p class="type14">
+                                    <cc><p>1</p></cc>
+                                </p>
+                            </li>
+                            <li data="answer" data-itemId="dd2f4e16-9253-40a3-bdcc-14cd2c4f95e4"  class="clearfix single" >
+                                <em id-param="C">C</em>
+                                <p class="type14">
+                                    <cc><p>3</p></cc>
+                                </p>
+                            </li>
+                            <li data="answer" data-itemId="dd2f4e16-9253-40a3-bdcc-14cd2c4f95e4"  class="clearfix single" >
+                                <em id-param="D">D</em>
+                                <p class="type14">
+                                    <cc><p>0</p></cc>
+                                </p>
+                            </li>
+                        </ul>
+                        <input type="hidden" name="readCompreHension-childType" value="0"/>
+                        <input type="hidden" name="readCompreHension-childId" value="2a28e10b-055f-4659-8460-678a678ec62b"/>
+                        <ul class="answerList" style="border-top:1px solid #f2f2f2;">
+                            <li style="font-size:15px;" class="ignoreli clearfix">
+                                <span style="color:#666">7 (单选题)</span>
+                                <div class="ans-cc"><p>该机构是否具有确定运动。</p></div>
+                            </li>
+                            <li data="answer" data-itemId="2a28e10b-055f-4659-8460-678a678ec62b"  class="clearfix single" >
+                                <em id-param="A">A</em>
+                                <p class="type14">
+                                    <cc><p>是</p></cc>
+                                </p>
+                            </li>
+                            <li data="answer" data-itemId="2a28e10b-055f-4659-8460-678a678ec62b"  class="clearfix single" >
+                                <em id-param="B">B</em>
+                                <p class="type14">
+                                    <cc><p>否</p></cc>
+                                </p>
+                            </li>
+                        </ul>
+                        <input type="hidden" id="answertype404885936" name="answertype404885936" value="15"/>
+                        <input type="hidden" name="answer404885936" id="answer404885936"  value="$StringEscapeUtils.escapeHtml($!{question.strStudentAnswer})" class="answerInput"/>
+                    </div>
+                    <script>
+                        var shortAnswers = $(".shortAnswer404885936");
+                        var editorNum = shortAnswers.length;
+                        var blankobj = '1' == '1';
+                        shortAnswers.each(function() {
+                            var index = $(this).attr("data-editorIndex");
+                            var ueConfig = {
+                                initialFrameHeight : 200,
+                                autoHeightEnabled : true,
+                                iframeCssUrl : '/ananas/ueditor/themes/iframe_wap_editor.css?v=2022-0616-2100'
+                            }
+                            if(blankobj && $(this).hasClass('blankItem')){
+                                ueConfig.initialFrameHeight = 60;
+                                ueConfig.pasteplain = true;
+                                ueConfig.disablePasteImage = true;
+                            }
+                            var itemId = $(this).attr("data-itemId");
+                            editors[index] = Ext.create('ananas.InnerEditor',{
+                                renderTo : "ananas-editor-answer"+itemId,
+                                ueditorConfig : ueConfig
+                            });
+
+                            editors[index].on('ready',function(){
+                                document.activeElement.blur();
+                                var ueditor = this.ueditor;
+                                var c = $('#answer'+itemId).val();
+                                if(c){
+                                    ueditor.setContent(c);
+                                }else{
+                                    ueditor.setContent("");
+                                }
+
+                                ueditor && ueditor.addListener("blur", function(e) {
+                                    $("#answer" + itemId).val(ueditor.getContent());
+                                });
+
+                                ueditor && ueditor.addListener("contentChange", function(e) {
+                                    var str = ueditor.getContent();
+                                    var truelyChange = str != $("#answer" + itemId).val();
+                                    $("#answer" + itemId).val(str);
+                                    if(truelyChange){
+                                        stopSwipe();
+                                    }
+                                });
+
+                                var imgs = $('.ans-ued-img',ueditor.document.body);
+                                if(imgs && imgs.length > 0){
+                                    var img = imgs[imgs.length-1];
+                                    img.onload = function() {ueditor.adjustHeight();}
+                                }
+
+                                //放粘贴功能 0
+                            });
+                        });
+
+                    </script>								                                                                        </div>
+            </div>
+
+            <div class="Py-mian1 singleQuesId" data="404885937">
+                <div>
+                    <div class="Py-m1-title fs16 fontLabel" tabindex="0" role="text" >
+                        9.<span class="quesType">[阅读理解]</span>
+                        如图所示机构中，（标有箭头的构件为原动件）。</p><p><img src="http://p.ananas.chaoxing.com/star3/origin/c6ba31dc88cf41c073237ec7d0d03c54.jpg" title="?????11.jpg"/>
+                    </div>
+                    <style>
+                        .blankList li{width:100%}
+                        .blankInp{width: 5.4rem; border:none; border-bottom:1px solid #e1e1e1;}
+                    </style>
+                    <div class="readComprehension">
+                        <input type="hidden" name="readCompreHension-childType" value="0"/>
+                        <input type="hidden" name="readCompreHension-childId" value="3efd68fb-52b7-46cf-a0f0-b63ac91f3a92"/>
+                        <ul class="answerList" style="border-top:1px solid #f2f2f2;">
+                            <li style="font-size:15px;" class="ignoreli clearfix">
+                                <span style="color:#666">1 (单选题)</span>
+                                <div class="ans-cc"><p>复合铰链在（ &nbsp; ）处</p></div>
+                            </li>
+                            <li data="answer" data-itemId="3efd68fb-52b7-46cf-a0f0-b63ac91f3a92"  class="clearfix single" >
+                                <em id-param="A">A</em>
+                                <p class="type14">
+                                    <cc><p>铰链A处</p></cc>
+                                </p>
+                            </li>
+                            <li data="answer" data-itemId="3efd68fb-52b7-46cf-a0f0-b63ac91f3a92"  class="clearfix single" >
+                                <em id-param="B">B</em>
+                                <p class="type14">
+                                    <cc><p>铰链B处</p></cc>
+                                </p>
+                            </li>
+                            <li data="answer" data-itemId="3efd68fb-52b7-46cf-a0f0-b63ac91f3a92"  class="clearfix single" >
+                                <em id-param="C">C</em>
+                                <p class="type14">
+                                    <cc><p>铰链C处</p></cc>
+                                </p>
+                            </li>
+                            <li data="answer" data-itemId="3efd68fb-52b7-46cf-a0f0-b63ac91f3a92"  class="clearfix single" >
+                                <em id-param="D">D</em>
+                                <p class="type14">
+                                    <cc><p>&nbsp;铰链E处</p></cc>
+                                </p>
+                            </li>
+                        </ul>
+                        <input type="hidden" name="readCompreHension-childType" value="0"/>
+                        <input type="hidden" name="readCompreHension-childId" value="4707bfbd-5f82-4012-bf1b-05f1db22bb1e"/>
+                        <ul class="answerList" style="border-top:1px solid #f2f2f2;">
+                            <li style="font-size:15px;" class="ignoreli clearfix">
+                                <span style="color:#666">2 (单选题)</span>
+                                <div class="ans-cc"><p><span style="font-size: 14px;font-family: 宋体">活动构件数有（ ）个。</span></p></div>
+                            </li>
+                            <li data="answer" data-itemId="4707bfbd-5f82-4012-bf1b-05f1db22bb1e"  class="clearfix single" >
+                                <em id-param="A">A</em>
+                                <p class="type14">
+                                    <cc><p>5<br/></p></cc>
+                                </p>
+                            </li>
+                            <li data="answer" data-itemId="4707bfbd-5f82-4012-bf1b-05f1db22bb1e"  class="clearfix single" >
+                                <em id-param="B">B</em>
+                                <p class="type14">
+                                    <cc><p>6</p></cc>
+                                </p>
+                            </li>
+                            <li data="answer" data-itemId="4707bfbd-5f82-4012-bf1b-05f1db22bb1e"  class="clearfix single" >
+                                <em id-param="C">C</em>
+                                <p class="type14">
+                                    <cc><p>7</p></cc>
+                                </p>
+                            </li>
+                            <li data="answer" data-itemId="4707bfbd-5f82-4012-bf1b-05f1db22bb1e"  class="clearfix single" >
+                                <em id-param="D">D</em>
+                                <p class="type14">
+                                    <cc><p>8</p></cc>
+                                </p>
+                            </li>
+                        </ul>
+                        <input type="hidden" name="readCompreHension-childType" value="0"/>
+                        <input type="hidden" name="readCompreHension-childId" value="3eda132f-0b5f-44f6-9721-99ccb1d92a3f"/>
+                        <ul class="answerList" style="border-top:1px solid #f2f2f2;">
+                            <li style="font-size:15px;" class="ignoreli clearfix">
+                                <span style="color:#666">3 (单选题)</span>
+                                <div class="ans-cc"><p>可用自由度计算的转动副有（ &nbsp;）处</p></div>
+                            </li>
+                            <li data="answer" data-itemId="3eda132f-0b5f-44f6-9721-99ccb1d92a3f"  class="clearfix single" >
+                                <em id-param="A">A</em>
+                                <p class="type14">
+                                    <cc><p>3</p></cc>
+                                </p>
+                            </li>
+                            <li data="answer" data-itemId="3eda132f-0b5f-44f6-9721-99ccb1d92a3f"  class="clearfix single" >
+                                <em id-param="B">B</em>
+                                <p class="type14">
+                                    <cc><p>4</p></cc>
+                                </p>
+                            </li>
+                            <li data="answer" data-itemId="3eda132f-0b5f-44f6-9721-99ccb1d92a3f"  class="clearfix single" >
+                                <em id-param="C">C</em>
+                                <p class="type14">
+                                    <cc><p>5</p></cc>
+                                </p>
+                            </li>
+                            <li data="answer" data-itemId="3eda132f-0b5f-44f6-9721-99ccb1d92a3f"  class="clearfix single" >
+                                <em id-param="D">D</em>
+                                <p class="type14">
+                                    <cc><p>6</p></cc>
+                                </p>
+                            </li>
+                        </ul>
+                        <input type="hidden" name="readCompreHension-childType" value="0"/>
+                        <input type="hidden" name="readCompreHension-childId" value="0e91ce7e-24df-457d-b1f1-ff01e5086dc7"/>
+                        <ul class="answerList" style="border-top:1px solid #f2f2f2;">
+                            <li style="font-size:15px;" class="ignoreli clearfix">
+                                <span style="color:#666">4 (单选题)</span>
+                                <div class="ans-cc"><p><span style="font-size: 14px;font-family: 宋体">可用自由度计算的移动副有（ &nbsp;）处</span></p></div>
+                            </li>
+                            <li data="answer" data-itemId="0e91ce7e-24df-457d-b1f1-ff01e5086dc7"  class="clearfix single" >
+                                <em id-param="A">A</em>
+                                <p class="type14">
+                                    <cc><p>1</p></cc>
+                                </p>
+                            </li>
+                            <li data="answer" data-itemId="0e91ce7e-24df-457d-b1f1-ff01e5086dc7"  class="clearfix single" >
+                                <em id-param="B">B</em>
+                                <p class="type14">
+                                    <cc><p>2</p></cc>
+                                </p>
+                            </li>
+                            <li data="answer" data-itemId="0e91ce7e-24df-457d-b1f1-ff01e5086dc7"  class="clearfix single" >
+                                <em id-param="C">C</em>
+                                <p class="type14">
+                                    <cc><p>3</p></cc>
+                                </p>
+                            </li>
+                            <li data="answer" data-itemId="0e91ce7e-24df-457d-b1f1-ff01e5086dc7"  class="clearfix single" >
+                                <em id-param="D">D</em>
+                                <p class="type14">
+                                    <cc><p>4</p></cc>
+                                </p>
+                            </li>
+                        </ul>
+                        <input type="hidden" name="readCompreHension-childType" value="0"/>
+                        <input type="hidden" name="readCompreHension-childId" value="6d90101d-a976-4f8f-a968-c4f46e27ff9c"/>
+                        <ul class="answerList" style="border-top:1px solid #f2f2f2;">
+                            <li style="font-size:15px;" class="ignoreli clearfix">
+                                <span style="color:#666">5 (单选题)</span>
+                                <div class="ans-cc"><p><span style="font-size: 14px;font-family: 宋体">机构的自由度数为（ &nbsp; ）</span></p></div>
+                            </li>
+                            <li data="answer" data-itemId="6d90101d-a976-4f8f-a968-c4f46e27ff9c"  class="clearfix single" >
+                                <em id-param="A">A</em>
+                                <p class="type14">
+                                    <cc><p>2</p></cc>
+                                </p>
+                            </li>
+                            <li data="answer" data-itemId="6d90101d-a976-4f8f-a968-c4f46e27ff9c"  class="clearfix single" >
+                                <em id-param="B">B</em>
+                                <p class="type14">
+                                    <cc><p>1</p></cc>
+                                </p>
+                            </li>
+                            <li data="answer" data-itemId="6d90101d-a976-4f8f-a968-c4f46e27ff9c"  class="clearfix single" >
+                                <em id-param="C">C</em>
+                                <p class="type14">
+                                    <cc><p>3</p></cc>
+                                </p>
+                            </li>
+                            <li data="answer" data-itemId="6d90101d-a976-4f8f-a968-c4f46e27ff9c"  class="clearfix single" >
+                                <em id-param="D">D</em>
+                                <p class="type14">
+                                    <cc><p>0</p></cc>
+                                </p>
+                            </li>
+                        </ul>
+                        <input type="hidden" name="readCompreHension-childType" value="0"/>
+                        <input type="hidden" name="readCompreHension-childId" value="96d05580-caef-48ac-bf44-be1336a5c505"/>
+                        <ul class="answerList" style="border-top:1px solid #f2f2f2;">
+                            <li style="font-size:15px;" class="ignoreli clearfix">
+                                <span style="color:#666">6 (单选题)</span>
+                                <div class="ans-cc"><p>该机构是否具有确定运动。</p></div>
+                            </li>
+                            <li data="answer" data-itemId="96d05580-caef-48ac-bf44-be1336a5c505"  class="clearfix single" >
+                                <em id-param="A">A</em>
+                                <p class="type14">
+                                    <cc><p><span style="font-size: 10.5pt; font-family: 宋体;">是</span></p></cc>
+                                </p>
+                            </li>
+                            <li data="answer" data-itemId="96d05580-caef-48ac-bf44-be1336a5c505"  class="clearfix single" >
+                                <em id-param="B">B</em>
+                                <p class="type14">
+                                    <cc><p><span style="font-size: 10.5pt; font-family: 宋体;">否</span></p></cc>
+                                </p>
+                            </li>
+                        </ul>
+                        <input type="hidden" id="answertype404885937" name="answertype404885937" value="15"/>
+                        <input type="hidden" name="answer404885937" id="answer404885937"  value="$StringEscapeUtils.escapeHtml($!{question.strStudentAnswer})" class="answerInput"/>
+                    </div>
+                    <script>
+                        var shortAnswers = $(".shortAnswer404885937");
+                        var editorNum = shortAnswers.length;
+                        var blankobj = '1' == '1';
+                        shortAnswers.each(function() {
+                            var index = $(this).attr("data-editorIndex");
+                            var ueConfig = {
+                                initialFrameHeight : 200,
+                                autoHeightEnabled : true,
+                                iframeCssUrl : '/ananas/ueditor/themes/iframe_wap_editor.css?v=2022-0616-2100'
+                            }
+                            if(blankobj && $(this).hasClass('blankItem')){
+                                ueConfig.initialFrameHeight = 60;
+                                ueConfig.pasteplain = true;
+                                ueConfig.disablePasteImage = true;
+                            }
+                            var itemId = $(this).attr("data-itemId");
+                            editors[index] = Ext.create('ananas.InnerEditor',{
+                                renderTo : "ananas-editor-answer"+itemId,
+                                ueditorConfig : ueConfig
+                            });
+
+                            editors[index].on('ready',function(){
+                                document.activeElement.blur();
+                                var ueditor = this.ueditor;
+                                var c = $('#answer'+itemId).val();
+                                if(c){
+                                    ueditor.setContent(c);
+                                }else{
+                                    ueditor.setContent("");
+                                }
+
+                                ueditor && ueditor.addListener("blur", function(e) {
+                                    $("#answer" + itemId).val(ueditor.getContent());
+                                });
+
+                                ueditor && ueditor.addListener("contentChange", function(e) {
+                                    var str = ueditor.getContent();
+                                    var truelyChange = str != $("#answer" + itemId).val();
+                                    $("#answer" + itemId).val(str);
+                                    if(truelyChange){
+                                        stopSwipe();
+                                    }
+                                });
+
+                                var imgs = $('.ans-ued-img',ueditor.document.body);
+                                if(imgs && imgs.length > 0){
+                                    var img = imgs[imgs.length-1];
+                                    img.onload = function() {ueditor.adjustHeight();}
+                                }
+
+                                //放粘贴功能 0
+                            });
+                        });
+
+                    </script>								                                                                        </div>
+            </div>
+
+            <div class="Py-mian1 singleQuesId" data="404885926">
+                <div>
+                    <div class="Py-m1-title fs16 fontLabel" tabindex="0" role="text" >
+                        10.<span class="quesType">[判断题]</span>
+                        <span style="font-family:宋体">两个构件之间为面接触形成的运动副，称为低副。</span>
+                    </div>
+                    <ul class="answerList panduan">
+                        <li  val-param="true" id-param="404885926"
+                             class="clearfix"  tabindex="0"  role="text" ><em>A</em><p>对</p>
+                        </li>
+                        <li  val-param="false" id-param="404885926"
+                             class="clearfix"   tabindex="0"  role="text" ><em>B</em><p>错</p></li>
+                    </ul>
+
+
+                    <input type="hidden" id="answer404885926" name="answer404885926" value="" class="answerInput"/>
+                    <input type="hidden" id="answertype404885926" name="answertype404885926" value="3"/>
+                </div>
+            </div>
+
+            <div class="Py-mian1 singleQuesId" data="404885927">
+                <div>
+                    <div class="Py-m1-title fs16 fontLabel" tabindex="0" role="text" >
+                        11.<span class="quesType">[判断题]</span>
+                        <span style="font-family:宋体">一个低副的形成引入两个约束。</span>
+                    </div>
+                    <ul class="answerList panduan">
+                        <li  val-param="true" id-param="404885927"
+                             class="clearfix"  tabindex="0"  role="text" ><em>A</em><p>对</p>
+                        </li>
+                        <li  val-param="false" id-param="404885927"
+                             class="clearfix"   tabindex="0"  role="text" ><em>B</em><p>错</p></li>
+                    </ul>
+
+
+                    <input type="hidden" id="answer404885927" name="answer404885927" value="" class="answerInput"/>
+                    <input type="hidden" id="answertype404885927" name="answertype404885927" value="3"/>
+                </div>
+            </div>
+
+            <div class="Py-mian1 singleQuesId" data="404885928">
+                <div>
+                    <div class="Py-m1-title fs16 fontLabel" tabindex="0" role="text" >
+                        12.<span class="quesType">[判断题]</span>
+                        <span style="font-family:宋体">一个高副的形成引入两个约束。</span>
+                    </div>
+                    <ul class="answerList panduan">
+                        <li  val-param="true" id-param="404885928"
+                             class="clearfix"  tabindex="0"  role="text" ><em>A</em><p>对</p>
+                        </li>
+                        <li  val-param="false" id-param="404885928"
+                             class="clearfix"   tabindex="0"  role="text" ><em>B</em><p>错</p></li>
+                    </ul>
+
+
+                    <input type="hidden" id="answer404885928" name="answer404885928" value="" class="answerInput"/>
+                    <input type="hidden" id="answertype404885928" name="answertype404885928" value="3"/>
+                </div>
+            </div>
+
+            <div class="Py-mian1 singleQuesId" data="404885929">
+                <div>
+                    <div class="Py-m1-title fs16 fontLabel" tabindex="0" role="text" >
+                        13.<span class="quesType">[判断题]</span>
+                        <span style="font-family:宋体">在计算机构自由度时，可不考虑虚约束。</span>
+                    </div>
+                    <ul class="answerList panduan">
+                        <li  val-param="true" id-param="404885929"
+                             class="clearfix"  tabindex="0"  role="text" ><em>A</em><p>对</p>
+                        </li>
+                        <li  val-param="false" id-param="404885929"
+                             class="clearfix"   tabindex="0"  role="text" ><em>B</em><p>错</p></li>
+                    </ul>
+
+
+                    <input type="hidden" id="answer404885929" name="answer404885929" value="" class="answerInput"/>
+                    <input type="hidden" id="answertype404885929" name="answertype404885929" value="3"/>
+                </div>
+            </div>
+
+            <div class="Py-mian1 singleQuesId" data="404885930">
+                <div>
+                    <div class="Py-m1-title fs16 fontLabel" tabindex="0" role="text" >
+                        14.<span class="quesType">[判断题]</span>
+                        <span style="font-family: 宋体; ">局部自由度是与机构运动无关的自由度。</span>
+                    </div>
+                    <ul class="answerList panduan">
+                        <li  val-param="true" id-param="404885930"
+                             class="clearfix"  tabindex="0"  role="text" ><em>A</em><p>对</p>
+                        </li>
+                        <li  val-param="false" id-param="404885930"
+                             class="clearfix"   tabindex="0"  role="text" ><em>B</em><p>错</p></li>
+                    </ul>
+
+
+                    <input type="hidden" id="answer404885930" name="answer404885930" value="" class="answerInput"/>
+                    <input type="hidden" id="answertype404885930" name="answertype404885930" value="3"/>
+                </div>
+            </div>
+
+            <div class="Py-mian1 singleQuesId" data="404885931">
+                <div>
+                    <div class="Py-m1-title fs16 fontLabel" tabindex="0" role="text" >
+                        15.<span class="quesType">[判断题]</span>
+                        <span style="font-family:宋体">虚约束是在机构中存在的多余约束</span><span style="font-family:&#39;Times New Roman&#39;,serif">,</span><span style="font-family:宋体">计算机构自由度时应除去。</span>
+                    </div>
+                    <ul class="answerList panduan">
+                        <li  val-param="true" id-param="404885931"
+                             class="clearfix"  tabindex="0"  role="text" ><em>A</em><p>对</p>
+                        </li>
+                        <li  val-param="false" id-param="404885931"
+                             class="clearfix"   tabindex="0"  role="text" ><em>B</em><p>错</p></li>
+                    </ul>
+
+
+                    <input type="hidden" id="answer404885931" name="answer404885931" value="" class="answerInput"/>
+                    <input type="hidden" id="answertype404885931" name="answertype404885931" value="3"/>
+                </div>
+            </div>
+
+            <div class="Py-mian1 singleQuesId" data="404885932">
+                <div>
+                    <div class="Py-m1-title fs16 fontLabel" tabindex="0" role="text" >
+                        16.<span class="quesType">[判断题]</span>
+                        <span style="font-family:宋体">机构中每个可动构件都应该有自由度，如图所示的搅面机机构有三个可动构件，所以搅面机有三个自由度。</span></p><p><span style="font-family:宋体"><img src="http://p.ananas.chaoxing.com/star3/origin/a2556e9117496dbfbe46c38508822e4e.jpg" title="?????4.jpg" width="200" height="144" border="0" hspace="0" vspace="0" style="width: 200px; height: 144px;"/></span>
+                    </div>
+                    <ul class="answerList panduan">
+                        <li  val-param="true" id-param="404885932"
+                             class="clearfix"  tabindex="0"  role="text" ><em>A</em><p>对</p>
+                        </li>
+                        <li  val-param="false" id-param="404885932"
+                             class="clearfix"   tabindex="0"  role="text" ><em>B</em><p>错</p></li>
+                    </ul>
+
+
+                    <input type="hidden" id="answer404885932" name="answer404885932" value="" class="answerInput"/>
+                    <input type="hidden" id="answertype404885932" name="answertype404885932" value="3"/>
+                </div>
+            </div>
+
+            <div class="Py-mian1 singleQuesId" data="404885933">
+                <div>
+                    <div class="Py-m1-title fs16 fontLabel" tabindex="0" role="text" >
+                        17.<span class="quesType">[判断题]</span>
+                        <span style="font-family:宋体">图中构件</span><span style="font-size:&nbsp;14px;font-family:&#39;Times&nbsp;New&nbsp;Roman&#39;,serif">1</span><span style="font-family:宋体">相对于构件</span><span style="font-family:&#39;Times&nbsp;New&nbsp;Roman&#39;,serif">2</span><span style="font-family:&nbsp;宋体">能沿切向</span><em><span style="font-family:&#39;Times&nbsp;New&nbsp;Roman&#39;,serif">A</span></em><sub><span style="font-size:&nbsp;14px;font-family:&#39;Times&nbsp;New&nbsp;Roman&#39;,serif">t</span></sub>&nbsp;<span style="font-family:&nbsp;宋体">移动，沿法向</span><em><span style="font-family:&#39;Times&nbsp;New&nbsp;Roman&#39;,serif">A</span></em><sub><span style="font-size:&nbsp;14px;font-family:&#39;Times&nbsp;New&nbsp;Roman&#39;,serif">n</span></sub><span style="font-family:宋体">向上移动和绕接触点</span><em><span style="font-family:&#39;Times&nbsp;New&nbsp;Roman&#39;,serif">A</span></em><span style="font-family:宋体">转动，所以构件</span><span style="font-family:&#39;Times&nbsp;New&nbsp;Roman&#39;,serif">1</span><span style="font-family:&nbsp;宋体">与</span><span style="font-family:&#39;Times&nbsp;New&nbsp;Roman&#39;,serif">2</span><span style="font-family:宋体">组成的运动副保留三个相对运动。</span></p><p><img src="http://p.ananas.chaoxing.com/star3/origin/f8baecc27e71b940266e9bd3bd87e4f7.jpg" title="?????5.jpg"/>
+                    </div>
+                    <ul class="answerList panduan">
+                        <li  val-param="true" id-param="404885933"
+                             class="clearfix"  tabindex="0"  role="text" ><em>A</em><p>对</p>
+                        </li>
+                        <li  val-param="false" id-param="404885933"
+                             class="clearfix"   tabindex="0"  role="text" ><em>B</em><p>错</p></li>
+                    </ul>
+
+
+                    <input type="hidden" id="answer404885933" name="answer404885933" value="" class="answerInput"/>
+                    <input type="hidden" id="answertype404885933" name="answertype404885933" value="3"/>
+                </div>
+            </div>
+
+            <div class="Py-mian1 singleQuesId" data="404885934">
+                <div>
+                    <div class="Py-m1-title fs16 fontLabel" tabindex="0" role="text" >
+                        18.<span class="quesType">[判断题]</span>
+                        <span style="font-family:宋体">图中构件</span><span style="font-family:&#39;Times New Roman&#39;,serif">1</span><span style="font-family:宋体">与</span><span style="font-family:&#39;Times New Roman&#39;,serif">2</span><span style="font-family: 宋体">在</span><em><span style="font-family:&#39;Times New Roman&#39;,serif">A</span><span style="font-family: 宋体">、A<sup>’</sup></span></em><span style="font-family:宋体">两处接触，所以构件</span><span style="font-family:&#39;Times New Roman&#39;,serif">1</span><span style="font-family: 宋体">与</span><span style="font-family:&#39;Times New Roman&#39;,serif">2</span><span style="font-family:宋体">组成两个高副。</span></p><p><span style="font-family:宋体"><img src="http://p.ananas.chaoxing.com/star3/origin/84bbab5992c4d5640e9fa2149d53355c.jpg" title="?????6.jpg"/></span>
+                    </div>
+                    <ul class="answerList panduan">
+                        <li  val-param="true" id-param="404885934"
+                             class="clearfix"  tabindex="0"  role="text" ><em>A</em><p>对</p>
+                        </li>
+                        <li  val-param="false" id-param="404885934"
+                             class="clearfix"   tabindex="0"  role="text" ><em>B</em><p>错</p></li>
+                    </ul>
+
+
+                    <input type="hidden" id="answer404885934" name="answer404885934" value="" class="answerInput"/>
+                    <input type="hidden" id="answertype404885934" name="answertype404885934" value="3"/>
+                </div>
+            </div>
+
+            <div class="Py-mian1 singleQuesId" data="404885935">
+                <div>
+                    <div class="Py-m1-title fs16 fontLabel" tabindex="0" role="text" >
+                        19.<span class="quesType">[判断题]</span>
+                        <span style="font-family:宋体">虽然局部自由度不影响整个机构运动，</span><span style="font-family:宋体">但为了改善机构的运动性能，将滑动摩擦变为滚动摩擦,在</span><span style="font-family:宋体">实际机构中还是采用了局部自由度的结构。</span>
+                    </div>
+                    <ul class="answerList panduan">
+                        <li  val-param="true" id-param="404885935"
+                             class="clearfix"  tabindex="0"  role="text" ><em>A</em><p>对</p>
+                        </li>
+                        <li  val-param="false" id-param="404885935"
+                             class="clearfix"   tabindex="0"  role="text" ><em>B</em><p>错</p></li>
+                    </ul>
+
+
+                    <input type="hidden" id="answer404885935" name="answer404885935" value="" class="answerInput"/>
+                    <input type="hidden" id="answertype404885935" name="answertype404885935" value="3"/>
+                </div>
+            </div>
+            <input type="hidden" id="answerwqbid" name="answerwqbid"/>
+            <div class="zsubmit">
+                <button type="button" class="btn-ok-bottom" onclick="submitData();">提交</button>
+                <div class="save">
+                    <button type="button" class="btn-save" onclick="noSubmit();">保存</button>
+                </div>
+            </div>
+        </div>
+
+    </form>
+</div>
+<style>
+    .cx_alert { position: fixed; left: 0; top: 0; width: 100%; height: 100%; background: #000; opacity: 0.4; display:none; z-index:10000;}
+    .cx_alert-box { position: fixed; left: 50%; top: 30%; width: 72%; height: auto; margin-left: -36%; display:none; z-index:10001;}
+    .cx_alert-content { padding: 0.351rem 0.3276rem;  border-radius: 0.234rem 0.234rem 0 0;  background: #fff; text-align: center; color: #333; font-size: 0.2574rem;}
+    .cx_alert-txt { padding-top: 0.117rem; line-height: 0.48rem;font-size:0.32rem;}
+    .cx_alert-btn { border-top: 0.5px solid #EBEBEB; border-radius: 0 0 0.234rem 0.234rem ; overflow: hidden; }
+    .cx_alert-btn ul { display: -webkit-box; display: box; }
+    .cx_alert-blue, .cx_alert-black { -webkit-box-flex: 1; box-flex: 1; height: 0.936rem; background: #fff; line-height: 0.936rem; text-align: center; font-size: 0.32rem; color: #09f;}
+    .cx_alert-black { color: #0099FF;}
+    .cx_alert-blue:not(:last-child),
+    .cx_alert-black:not(:last-child) { border-right: 0.5px solid #EBEBEB}
+
+    .cx_box { display: -webkit-box; -webkit-box-orient: vertical;  height: 100vh;}
+    .cx_box-top { position: relative; width: 100%; height: 0.0023rem; z-index:100000;}
+    .cx_box-content { -webkit-box-flex: 1;  -webkit-overflow-scrolling:touch; overflow:hidden; overflow-y:auto; }
+    .cx_box-footer { position: relative; width: 100%;  height: 1.0764rem; z-index: 100;}
+    .cx_box-bottom { height: 0.0023rem;}
+    .loading{width:.4rem; height:4rem; position:fixed; left:50%; top:30%; margin-left:-.2rem; display: none; z-index:10001;}
+</style>
+
+<article class="cx_alert" id="cxAlert1" style="display: none;"></article>
+<article class="cx_alert-box" id="cxAlertBox1" style="display: none;">
+    <div class="cx_alert-content">
+        <div class="cx_alert-txt" id="cxAlertTxt1"></div>
+    </div>
+    <div class="cx_alert-btn">
+        <ul>
+            <li class="cx_alert-black" id="cancelBtn">取消</li>
+            <li class="cx_alert-blue" id="okBtn">确定</li>
+        </ul>
+    </div>
+</article>
+
+<div class="loading" id="alertLoading1"><img src="//mooc1-api.chaoxing.com/mooc-ans/images/loading.gif"/></div>
+
+<script>
+    function loading() {
+        $("#cxAlert1").css("display", "block");
+        $("#alertLoading1").css("display", "block");
+    }
+
+    function loadingClose() {
+        $("#cxAlert1").css("display", "none");
+        $("#alertLoading1").css("display", "none");
+    }
+
+    function workPop(content, okTent, okcallback, cancelCallback) {
+        var ta = $("#cxAlertBox1");
+        $("#cxAlertTxt1").html(content);
+        $("#okBtn").html(okTent);
+        $("#cxAlert1").css("display", "block");
+        $("#cxAlertBox1").css("display", "block");
+        $("#okBtn").unbind();
+        $("#cancelBtn").unbind();
+        $("#cancelBtn").css("display", "block");
+        $("#okBtn").on("click", function() {
+            okcallback && okcallback(ta);
+            $("#cxAlert1").css("display", "none");
+            $("#cxAlertBox1").css("display", "none");
+        });
+        $("#cancelBtn").on("click", function() {
+            cancelCallback && cancelCallback(ta);
+            $("#cxAlert1").css("display", "none");
+            $("#cxAlertBox1").css("display", "none");
+        });
+    }
+
+    function workPop2(content, okTent, cancelTent, okcallback, cancelCallback) {
+        var ta = $("#cxAlertBox1");
+        $("#cxAlertTxt1").html(content);
+        $("#okBtn").html(okTent);
+        $("#cancelBtn").html(cancelTent);
+        $("#cxAlert1").css("display", "block");
+        $("#cxAlertBox1").css("display", "block");
+        $("#okBtn").unbind();
+        $("#cancelBtn").unbind();
+        $("#cancelBtn").css("display", "block");
+        $("#okBtn").on("click", function() {
+            okcallback && okcallback(ta);
+            $("#cxAlert1").css("display", "none");
+            $("#cxAlertBox1").css("display", "none");
+        });
+        $("#cancelBtn").on("click", function() {
+            cancelCallback && cancelCallback(ta);
+            $("#cxAlert1").css("display", "none");
+            $("#cxAlertBox1").css("display", "none");
+        });
+    }
+
+    function workAlertPop(content, okTent) {
+        $("#cxAlertTxt1").html(content);
+        $("#okBtn").html(okTent);
+        $("#cxAlert1").css("display", "block");
+        $("#cxAlertBox1").css("display", "block");
+        $("#okBtn").unbind();
+        $("#cancelBtn").unbind();
+        $("#cancelBtn").css("display", "none");
+        $("#okBtn").on("click", function() {
+            $("#cxAlert1").css("display", "none");
+            $("#cxAlertBox1").css("display", "none");
+            $("#cancelBtn").css("display", "block");
+        });
+    }
+
+    function workAlertPop2(content, okTent, okcallback) {
+        var ta = $("#cxAlertBox1");
+        $("#cxAlertTxt1").html(content);
+        $("#okBtn").html(okTent);
+        $("#cxAlert1").css("display", "block");
+        $("#cxAlertBox1").css("display", "block");
+        $("#okBtn").unbind();
+        $("#cancelBtn").unbind();
+        $("#cancelBtn").css("display", "none");
+        $("#okBtn").on("click", function() {
+            okcallback && okcallback(ta);
+            $("#cxAlert1").css("display", "none");
+            $("#cxAlertBox1").css("display", "none");
+        });
+    }
+
+</script><script>
+    var courseId = $("#courseId").val() || 0;
+    var mirrorFid = Math.round(courseId / 10000000000);
+    if (mirrorFid == 1731) {
+        $(".attachClass").hide();
+    }
+
+    $(function(){
+        //美化checkbox/radio
+        $('body input[type=checkbox],body input[type=radio]').prettycheckradio({
+            prettyW:30,
+            prettyH:30
+        });
+        // H5章节测验离开页面自动保存
+        var isChaoxingClient = $("#isChaoxingClient").val() || "";
+        if(isChaoxingClient == "false") {
+            document.addEventListener('visibilitychange', function () {
+                try {
+                    var wnStatus = '0';
+                    if (document.visibilityState === 'hidden' && parent.document.visibilityState === 'hidden' && (wnStatus == '0' || wnStatus == '1' || wnStatus == '5' )) {
+                        // 当页面变为不可见状态时执行的操作
+                        noSubmitNoTips();
+                    }
+                }catch (e) {
+                    console.log(e)
+                }
+            });
+        }
+    });
+</script>
+<script>
+    //可见区域高度
+    var seeHeight = window.top.document.body.clientHeight;
+    var lazyload = function (parentHeight) {
+        var iframes = $("iframe[module$=insertaudio]");
+        total = iframes.length;
+        //滚动条距离顶部高度
+        var scrollTop = window.top.document.documentElement.scrollTop || window.top.document.body.scrollTop;
+        for (var i = 0; i < total; i++) {
+            var iframeItem = iframes[i];
+            if ((parseInt(parentHeight) + parseInt(iframeItem.offsetTop) < parseInt(seeHeight) + parseInt(scrollTop)) && (parseInt(parentHeight) + parseInt(iframeItem.offsetTop) > parseInt(scrollTop))) {
+                if (!iframeItem.getAttribute("src")) {
+                    var url = iframeItem.getAttribute("_src");
+                    iframeItem.setAttribute("src", url);
+                }
+            }
+        }
+    }
+    $(function(){
+        // 父级iframe距离card页面的距离
+        var frameObj = $(self.parent)[0].frameElement;
+        var iframes = $("iframe[module$=insertaudio]");
+        if (frameObj != null && iframes.length > 0) {
+            var parentHeight = frameObj.offsetTop;
+            lazyload(parentHeight); //页面载入完毕加载可是区域内的图片
+        }
+        $("input[type='text'],textarea").bind('change', function(e) {
+            controlEmoticons(this);
+        });
+        if (parent != this) {
+            var workIframe = parent.document.getElementById("frame_content");
+            if(workIframe) {
+                var oldHeight = workIframe.style.height;
+                workIframe.style.height = '0';
+                try {
+                    parent.dynIframeSize(workIframe);
+                    if (workIframe.style.height == '0' || workIframe.style.height == '0px') {
+                        workIframe.style.height = oldHeight;
+                    }
+                } catch (e) {
+                    workIframe.style.height = oldHeight;
+                }
+            }
+        }
+
+        window.setInterval(function(){
+            try{
+                parent.dynIframeSize(parent.document.getElementById("frame_content"));
+            }catch(e){}
+        }, 200);
+
+        $(".singleChoice li").click(function(){
+            $(this).addClass("cur").siblings().removeClass("cur");
+            var inpId = "answer" + $(this).attr("id-param");
+            var val = $(this).find("em").attr("id-param");
+            $("#" + inpId).val(val);
+
+            stopSwipe();
+            var valChooseDesc = $(this).find(".choose-desc cc p").html();
+            $(this).attr("aria-label", "选项" + val + ";" + valChooseDesc + ";已选择");
+            $(this).siblings().attr("aria-label","");
+        });
+
+        $(".multiChoice li").toggle(
+            function(){
+                if($(this).parent().hasClass('evaluationQuesBlock') && !checkEvaluationQuesNum(this)){
+                    return;
+                }
+                $(this).addClass("cur");
+                var name = "answers" + $(this).attr('id-param');
+                var answerStr = "";
+                $(this).parent().find("li").each(function(index,element){
+                    if($(element).hasClass("cur")){
+                        //answerStr += $(element).find("em").text();
+                        answerStr += $(element).find("em").attr("id-param");
+                        var valChoose = $(element).find("em").attr("id-param");
+                        var valChooseDesc = $(element).find(".choose-desc cc p").html();
+                        $(element).attr("aria-label", "选项" + valChoose + ";" + valChooseDesc + ";已选择");
+                    }
+                });
+                var randomOptions = $("#randomOptions").val();
+                answerStr = randomOptions ? sortMultiAnswer(answerStr) : answerStr;
+
+                $("#" + name).val(answerStr);
+                stopSwipe();
+            },
+            function(){
+                if($(this).parent().hasClass('evaluationQuesBlock') && !checkEvaluationQuesNum(this)){
+                    return;
+                }
+                $(this).removeClass("cur");
+                $(this).attr("aria-label", "");
+                var name = "answers" + $(this).attr('id-param');
+                var answerStr = "";
+                $(this).parent().find("li").each(function(index,element){
+                    if($(element).hasClass("cur")){
+                        //answerStr += $(element).find("em").text();
+                        answerStr += $(element).find("em").attr("id-param");
+                    }
+                });
+                var randomOptions = $("#randomOptions").val();
+                answerStr = randomOptions ? sortMultiAnswer(answerStr) : answerStr;
+
+                $("#" + name).val(answerStr);
+                stopSwipe();
+            }
+        );
+
+        $(".voteQuestionSingle li").click(function(){
+            $(this).addClass("cur").siblings().removeClass("cur");
+            var name = "answer" + $(this).attr("id-param");
+            //var val = $(this).find("em").text();
+            var val = $(this).find("em").attr("id-param");
+            $("#" + name).val(val);
+            stopSwipe();
+        });
+
+        $(".voteQuestionMulti li").toggle(
+            function(){
+                $(this).addClass("cur");
+                var name = "answer" + $(this).attr('id-param');
+                var answerStr = "";
+                $(this).parent().find("li").each(function(index,element){
+                    if($(element).hasClass("cur")){
+                        //answerStr += $(element).find("em").text();
+                        answerStr += $(element).find("em").attr("id-param");
+                    }
+                });
+                $("#" + name).val(answerStr);
+                stopSwipe();
+            },
+            function(){
+                $(this).removeClass("cur");
+                var name = "answer" + $(this).attr('id-param');
+                var answerStr = "";
+                $(this).parent().find("li").each(function(index,element){
+                    if($(element).hasClass("cur")){
+                        //answerStr += $(element).find("em").text();
+                        answerStr += $(element).find("em").attr("id-param");
+                    }
+                });
+                $("#" + name).val(answerStr);
+                stopSwipe();
+            }
+        );
+
+        $(".panduan li").click(function(){
+            $(this).addClass("cur").siblings().removeClass("cur")
+            var data = $(this).attr("val-param");
+            var id_param = $(this).attr("id-param");
+            var name = "answer" + id_param;
+            $("#" + name).val(data);
+            stopSwipe();
+            var val = $(this).find("em").html();
+            var valChooseDesc = $(this).find("p").html();
+            $(this).attr("aria-label", "选项" + val + ";" + valChooseDesc + ";已选择");
+            $(this).siblings().attr("aria-label","");
+        });
+
+        $(".sortQuesSelect li .selDiv span").click(function(){
+            var me = $(this);
+            if(me.hasClass("selItemBtn")){
+                me.removeClass("selItemBtn");
+                // me.siblings("div").hide();
+            }else{
+                me.addClass("selItemBtn");
+                me.siblings("span").removeClass("selItemBtn");
+                // me.siblings("div").hide();
+                // me.siblings("div."+me.html()).show();
+            }
+            var questionId = me.parent().parent().parent().attr("id");
+            setSortQuesAnswer(questionId);
+            stopSwipe();
+            try{
+                parent.dynIframeSize(parent.document.getElementById("frame_content"));
+            }catch(e){}
+        });
+
+        $(".clozeBlank .choice").click(function(){
+            $(this).addClass("cur").siblings().removeClass("cur");
+            stopSwipe();
+        });
+        $(".readComprehension .single,.judge").click(function(){
+            $(this).addClass("cur").siblings().removeClass("cur");
+            stopSwipe();
+        });
+        $(".readComprehension .mult").toggle(
+            function(){
+                $(this).addClass("cur");
+                stopSwipe();
+            },
+            function(){
+                $(this).removeClass("cur");
+                stopSwipe();
+            });
+
+
+        $(".B-answerCon span").click(function(){
+            $(this).parent().find("span").removeClass("check_answer")
+            $(this).addClass("check_answer");
+            setBType($(this).parents('.BTypeItem'));
+            stopSwipe();
+        });
+
+    });
+
+    function setBType(bTypeItemEle) {
+        var quesId = bTypeItemEle.attr('data');
+        var answerCons = bTypeItemEle.find(".B-answerCon");
+        var answer = [];
+        answerCons.each(function(index,obj) {
+            var choice = $(this).find("span.check_answer").attr("data") || "";
+            var item = {"name" : (index + 1), "content" : choice};
+            answer.push(item);
+        });
+        var answerStr = JSON.stringify(answer);
+        $("#answer" + quesId).val(answerStr);
+    }
+
+    function setSortQuesAnswer(questionId){
+        var answerStr = $("#"+questionId).find("li").map(function() {
+            if($(this).find(".selItemBtn").length > 0){
+                return $(this).find(".selItemBtn").text();
+            }else{
+                return "-";
+            }
+        }).get().join('');
+        $("#answer"+questionId).val(answerStr);
+    }
+
+
+    //设置答案【新完型填空、新阅读理解】
+    function setCompoundQuesAnswer(){
+        var input_clozeTextQues=$("input[name^='answertype'][value='14']");
+        input_clozeTextQues.each(function(){
+            var answer=getClozeTextAnswer(this);
+            //console.log("clozetext:"+answer);
+            $(this).next().val(answer);
+        });
+
+        var input_readComprehensionQues=$("input[name^='answertype'][value='15']");
+        $(input_readComprehensionQues).each(function(){
+            var answer=getReadComprehensionAnswer(this);
+            // console.log("readComprehension:"+answer);
+            $(this).next().val(answer);
+        });
+
+        var input_readComprehensionQues = $("input[name^='answertype'][value='19']");
+        $(input_readComprehensionQues).each(function(){
+            var answer = getReadComprehensionAnswer(this);
+            $(this).next().val(answer);
+        });
+    }
+
+    //获取新完型填空答案
+    function getClozeTextAnswer(obj){
+        var answerObj={};
+        var choiceList=$(obj).parent().find(".clozeBlank");
+        choiceList.each(function(index,obj) {
+            var itemId = $(obj).attr("data-itemId");
+            var val ="";
+            var checkLi=$(obj).find(".cur");
+            if(checkLi.length > 0){
+                val=$(checkLi).find("em:first").attr("id-param") || "";
+            }
+            var pair = {};
+            pair.answer = val;
+            answerObj[itemId] = pair;
+        });
+        var answer=[];
+        answer.push(answerObj);
+        var answerStr=JSON.stringify(answer);
+        return answerStr;
+    }
+
+    //获取新阅读理解答案
+    function getReadComprehensionAnswer(obj){
+        var answerObj={};
+        var quesList=$(obj).parent().find("input[name='readCompreHension-childType']");
+        quesList.each(function(index){
+            var type=$(this).val();
+            var itemId=$(this).next().val();
+            var ul=$(this).next().next();
+            var itemAnswer="";
+            switch(parseInt(type)){
+                case 0:
+                case 3:{
+                    var checkLi=ul.find(".cur") ;
+                    if(checkLi.length > 0){
+                        itemAnswer=checkLi.find("em:first").attr("id-param");
+                    }
+                    if(type==3){
+                        itemAnswer=itemAnswer?(itemAnswer=="A"?true:false):itemAnswer;
+                    }
+                    break;
+                }
+                case 1:{
+                    ul.find(".cur").each(function() {
+                        itemAnswer +=$(this).find("em:first").attr("id-param");
+                    });
+                    var randomOptions = $("#randomOptions").val();
+                    itemAnswer = randomOptions ? sortMultiAnswer(itemAnswer) : itemAnswer;
+
+                    break;
+                }
+                case 2:{
+                    var answerItem=[];
+                    var blankInput=ul.find(".blankItem textarea") || [];
+                    blankInput.each(function(index,obj){
+                        var blankInput = $(obj).val() || "";
+                        var item={};
+                        item.content=blankInput;
+                        var i= index +1;
+                        item.name=i.toString();
+                        answerItem.push(item);
+                    });
+                    itemAnswer=answerItem;
+                    break;
+                }
+                case 4:{
+                    var textarea=ul.find("textarea");
+                    itemAnswer=textarea.length ==1 ? textarea.val():"";
+                    break;
+                }
+                default: { }
+            }
+
+            var info={};
+            info.type=parseInt(type);
+
+            info.answer=(itemAnswer!=undefined?itemAnswer:"");
+            answerObj[itemId]=info;
+        });
+        var answer=[];
+        answer.push(answerObj);
+        var answerStr=JSON.stringify(answer);
+        return answerStr;
+    }
+</script>
+
+<script type="text/javascript">
+    var swipeFlag = 0;
+
+    $(".zquestions  img:not(.noimg)").each(function () {
+        var imgSrc = $(this).attr('src');
+        if(top.jsBridge && top.jsBridge.postNotification) {
+            $(this).click(function () {
+                var data = fixImageData(imgSrc);
+                top.jsBridge.postNotification("CLIENT_PREVIEW_IMAGES", {
+                    imageUrls: [{
+                        imageUrl: data.url,
+                        originUrl: data.originUrl,
+                        getOriginSize: 1
+                    }],
+                    showIndex: 0
+                });
+            })
+        }else {
+            $(this).attr("onclick", "top.zoomImageClick('" + imgSrc + "')");
+        }
+    });
+    $('.more-choose-item').each(function(index,item) {
+        var height = $(item).find('.choose-desc').height();
+        if(height<=$(item).find('.choose-opt').height()) {
+            $(item).css({
+                'align-items':'center'
+            })
+        }
+    });
+    function submitData(){
+        if(top.getInputCode){
+            var addTimes = $("#addTimes").val() || 0;
+            var limitWorkSubmitTimes = $("#limitWorkSubmitTimes").val() || 100;
+            if (parseInt(addTimes) > parseInt(limitWorkSubmitTimes)) {
+                top.showWorkVerify(function () {
+                    var courseId = $("#courseId").val() || 0;
+                    var classId = $("#classId").val() || 0;
+                    var cpi = $("#cpi").val() || 0;
+                    var workId = $("#workRelationId").val() || 0;
+                    var answerId = $("#workAnswerId").val() || 0;
+                    var inputCode = top.getInputCode() || "";
+
+                    $.ajax({
+                        type: "get",
+                        url: _HOST_CP2_ + "/work/verify/code",
+                        cache: false,
+                        dataType: "json",
+                        async: false,
+                        data: {
+                            "courseId": courseId,
+                            "classId": classId,
+                            "cpi": cpi,
+                            "workId": workId,
+                            "answerId": answerId,
+                            "inputCode": inputCode
+                        },
+                        success: function (data) {
+                            if (!data.status) {
+                                top.openWindowHint(HINT_TYPE_TIME, "", data.msg, function() {
+                                    top.workVerifyCode();
+                                    top.clearInputCode();
+                                }, 1000);
+                            } else {
+                                var enc = data.enc;
+                                $("#workTimesEnc").val(enc);
+                                top.hideWorkVerify();
+                                toadd();
+                            }
+                        }
+                    });
+                });
+            } else {
+                toadd();
+            }
+        }else {
+            submitCheckTimes();
+        }
+    }
+    function toadd(){
+        $("#pyFlag").val("");
+        var a = "404885919,404885920,404885921,404885922,404885923,404885924,404885925,404885936,404885937,404885926,404885927,404885928,404885929,404885930,404885931,404885932,404885933,404885934,404885935";
+        synUeditorContent2FormField();
+        /*
+        var legal = true;
+        $("textarea").each(function(){
+            var patt =  /[\uD800-\uDBFF][\uDC00-\uDFFF]/g;
+            var content = $(this).val();
+            if(patt.test(content)){
+                legal = false
+            }
+        });
+        if(!legal){
+            openWindowHint(HINT_TYPE_TIME,'','含有不支持的表情或字符',function(){
+                    },3000);
+            return ;
+        }
+        */
+
+        $("#answerwqbid").val(a);
+        var jiandaId = "";
+        var wordNum = "";
+        var flagAnswer = true;
+
+        if(parseInt(wordNum) > 0) {
+            if(jiandaId != "") {
+                var jiandaIdArr = jiandaId.split(",");
+                for(var i=0;i<jiandaIdArr.length;i++) {
+                    var temp = $("#answer" + jiandaIdArr[i]).val();
+                    if((wordNum != "" && removeAllSpace(temp, i).length < parseInt(wordNum)) || (wordNum != "" && removeAllSpace(temp, i) == "")) {
+                        window.alert("您最少输入" + wordNum + "个字");
+                        flagAnswer = false;
+                        break;
+                    }
+                }
+            }
+        }
+
+        if(!flagAnswer) {
+            return;
+        }
+
+        var questionIds = a.split(",");
+        var flag = false;
+        var tipStr = "";
+        var otherTypeArr = ["0","1","2","3","9","10","11","12","13","14","15","19","20","21","22"];
+        for (var q = 0; q < questionIds.length; q++) {
+            var id1 = questionIds[q];
+            var type1 = $("#answertype" + id1).val();
+            var subject = $("#answer" + id1).attr("subject") || 0;
+            var grade = $("#answer" + id1).attr("grade") || "";
+            var isCollegeWriting = subject == 1 && grade =="十三";
+            if (type1 && otherTypeArr.indexOf(type1, 0) < 0 || (type1 == 26 && isCollegeWriting)) {
+                try {
+                    var answerClass = "textarea[name=" + "answer" + id1 + "]";
+                    var numLimitIndex = $(answerClass).attr('step');
+                    if (numLimitIndex) {
+                        var ueditor = editors[numLimitIndex];
+                        if (ueditor) {
+                            var wordNum = ueditor.getUeditorConfig().maximumWords;
+                            var minimumWords = ueditor.getUeditorConfig().minimumWords;
+                            if (wordNum == "") {
+                                wordNum = 0;
+                            }
+                            var count = 0;
+                            var curContent = ueditor.getContent();
+                            if (curContent.indexOf('<p><span style="color:#ccc;font-size:16px;">' + '输入答案' + '</span></p>') > -1) {
+                                count = 0;
+                            } else {
+                                count = ueditor.ueditor.pureWordCount();
+                            }
+                            var isChaoxingstudy = $("#isChaoxingClient").val();
+                            var strTips = "";
+                            var wordLimit = false;
+                            if (wordNum > 0 && count > wordNum) {
+                                wordLimit = true;
+                                strTips = '答案超过教师限制字数，请限定在 ' + wordNum + ' 字以内';
+                            }
+                            if (minimumWords > 0 && minimumWords > count) {
+                                wordLimit = true;
+                                strTips = '答案字数未达到教师设置的最少字数要求，最少需输入 ' + minimumWords + ' 字';
+                            }
+                            if(wordLimit){
+                                if(isChaoxingstudy == 'true' && parent.parent.openWindowHint){
+                                    var hintSpan = parent.parent.document.getElementById('hint');
+                                    $(hintSpan).find('span').text('知道了').css("color", "#0299FF");
+                                    $(hintSpan).find('.hint-content-left').css({"background-color":"#eee","margin-top":"10px","border":"0"});
+                                    parent.parent.openWindowHint(HINT_TYPE_HINT, '', strTips, null, null);
+                                }else if(isChaoxingstudy == 'false' && parent.parent.workAlertPop){
+                                    parent.parent.workAlertPop(strTips, '知道了');
+                                }else {
+                                    $("#hint span").text('知道了');
+                                    $("#hint span").css("color", "#0299FF");
+                                    $(".hint-content-left").css("background-color", "#eee");
+                                    $(".hint-content-left").css("margin-top", "10px");
+                                    openWindowHint(HINT_TYPE_HINT, '', strTips, null, null);
+                                }
+                                return false;
+                            }
+                        }
+                    }
+                } catch (exception) {
+                }
+            }
+        }
+        for (var i = 0; i < questionIds.length; i++) {
+            var id = questionIds[i];
+            var type = $("#answertype" + id).val();
+            var subject = $("#answer" + id).attr("subject") || 0;
+            var grade = $("#answer" + id).attr("grade") || "";
+            var isCollegeWriting = subject == 1 && grade =="十三";
+            if(type == "0") {
+                var answer = $("#answer" + id).val();
+                if(typeof(answer) == "undefined" || removeAllSpace(answer).length == 0) {
+                    flag = true;
+                    tipStr = "单选题";
+                    break;
+                }
+            } else if(type == "1" || type == "21") {
+                //多选
+                var answer = $("#answers" + id).val();
+                if(typeof(answer) == "undefined" || removeAllSpace(answer).length == 0) {
+                    flag = true;
+                    tipStr = (type == 1 ? "多选题" : "测评题");
+                    break;
+                }
+            } else if(type == "2" || type == "9" || type == "10") {
+                var blankNum = $("input[name=tiankongsize" + id + "]").val();
+                var tem = false;
+                for (var j = 1; j <= parseInt(blankNum); j++) {
+                    var answer = $("#answer" + id + j).val();
+                    if ( typeof (answer) != "undefined" && removeAllSpace(answer).length != 0) {
+                        tem = true;
+                        break;
+                    }
+                }
+                if ( !tem) {
+                    if (type == "2") {
+                        tipStr = "填空题";
+                        flag = true;
+                        break;
+                    }
+                    if (type == "9") {
+                        tipStr = "分录题";
+                        flag = true;
+                        break;
+                    }
+                    if (type == "10") {
+                        tipStr = "资料题";
+                        flag = true;
+                        break;
+                    }
+                }
+
+            } else if(type == "3") {
+                //判断
+                var answer = $("input[name=answer"+id+"]").val();
+                if(typeof(answer) == "undefined" || removeAllSpace(answer).length == 0) {
+                    flag = true;
+                    tipStr = "判断题";
+                    break;
+                }
+            } else if(type == "11" || type == "20") {
+                //连线题
+                var answer = $("#answer" + id).val();
+                if(answer!=""){
+                    var answer_array= JSON.parse(answer);
+                    for(var index in answer_array){
+                        var content=answer_array[index].content;
+                        if(typeof(content) == "undefined" || removeAllSpace(content).length == 0){
+                            flag = true;
+                            tipStr = (type == "11" ? "连线题" : "共用选项题");
+                            break;
+                        }
+                    }
+                }else{
+                    flag = true;
+                    tipStr = (type == "11" ? "连线题" : "共用选项题");
+                    break;
+                }
+            }else if(type == "12"){
+                var answer = $("input:radio[name=answer"+id+"]:checked").val();
+                if(typeof(answer) == "undefined" || removeAllSpace(answer).length == 0) {
+                    flag = true;
+                    tipStr = "投票题";
+                    break;
+                }
+            }else if(type == "13") {
+                //排序
+                var answer = $("input[name=answer" + id + "]").val();
+                if (typeof (answer) == "undefined" || removeAllSpace(answer).length == 0) {
+                    flag = true;
+                    tipStr = "排序题";
+                    break;
+                }
+            } else if (type == "22") {
+                var objectid = $("#answerEditor" + id).attr("objectid");
+                if (typeof (objectid) == "undefined" || removeAllSpace(objectid).length == 0) {
+                    flag = true;
+                    tipStr = "口语测评题";
+                    break;
+                }
+            } else if (type == "14" || type == "15" || type == "19") {  //新完型填空、新阅读理解
+                var typeTip="完型填空";
+                if(type == "15"){
+                    typeTip="阅读理解";
+                }else if(type == "19"){
+                    typeTip = "听力题";
+                }
+                setCompoundQuesAnswer();
+                var answer = $("#answer" + id).val();
+                //console.log(answer);
+                var answer_array= JSON.parse(answer);
+                var answerContent=answer_array[0];
+                for(var key in answerContent){
+                    var content=answerContent[key];
+                    var answerStr=content.answer;
+                    var innerType=content.type;
+                    if(innerType && innerType == 2){
+                        for(var index in answerStr){
+                            var item=answerStr[index];
+                            var content=item.content;
+                            if(content==""||content.length==0){
+                                flag=true;
+                                break;
+                            }
+                        }
+                    }
+                    if(innerType==3){
+                        answerStr=answerStr.toString();
+                    }
+                    if(flag || answerStr =="" || answerStr.length == 0){
+                        flag = true;
+                        break;
+                    }
+                }
+                if(flag){
+                    tipStr = typeTip;
+                    break;
+                }
+            } else if (type == "26" && !isCollegeWriting) {
+                var questionContent = $("#answer" + id).val();
+                var count = UE.Editor.prototype.pureWordCount(questionContent);
+                if (count == 0) {
+                    flag = true;
+                    tipStr = "写作题";
+                    break;
+                }
+            }else {
+                var answer = $("#answer" + id).val();
+                if(typeof(answer) == "undefined" || removeAllSpace(answer).length == 0) {
+                    flag = true;
+                    if (type == "26") {
+                        tipStr = "写作题";
+                    } else {
+                        tipStr = "简答题";
+                    }
+                    break;
+
+                }
+            }
+        }
+
+        setCompoundQuesAnswer();
+
+
+        // 学生作答全部题目才能提交
+        if(flag && '0' == '1'){
+            var submitTips = "教师设置了作答完才能提交，你还有 " + tipStr + " 未答，请完成作答 ";
+            if(isChaoxingstudy == 'true' && parent.parent.openWindowHint){
+                var hintSpan = parent.parent.document.getElementById('hint');
+                $(hintSpan).find('span').text('知道了').css("color", "#0299FF");
+                $(hintSpan).find('.hint-content-left').css({"background-color":"#eee","margin-top":"10px","border":"0"});
+                parent.parent.openWindowHint(HINT_TYPE_HINT, '', submitTips, null, null);
+            }else if(isChaoxingstudy == 'false' && parent.parent.workAlertPop){
+                parent.parent.workAlertPop(submitTips, '知道了');
+            }else {
+                $("#hint span").text('知道了');
+                $("#hint span").css("color", "#0299FF");
+                $(".hint-content-left").css("background-color", "#eee");
+                $(".hint-content-left").css("margin-top", "10px");
+                openWindowHint(HINT_TYPE_HINT, '', submitTips, null, null);
+            }
+            return false;
+        }
+
+        var showTips = "确认提交吗？";
+        if (flag) {
+            showTips = "您还有未做完的 " + tipStr + " ，确认提交吗？";
+        }
+        if (window.confirm(showTips)) {
+            openWindowHint(HINT_TYPE_TIME, '', "正在提交...", function () {
+            }, 500);
+            escapeBlank();
+            submitAction();
+        }
+
+    }
+
+    var submitLock = 0;
+    function submitAction() {
+        function version(url) {
+            var pos = "";
+            try {
+                pos = getEnc();
+                if (pos) {
+                    pos = pos.replace(/\|/g, '%7C');
+                }
+            } catch (e) {
+            }
+            url += '&ua=' + clientType();
+            url += '&formType2=' + getformType();
+            url += '&saveStatus=' + 1;
+            url += '&pos=' + pos;
+
+            var re = /&version=(\d+)/;
+            var version = 1;
+            if (re.test(url)) {
+                var arr = re.exec(url);
+                version += parseInt(arr[1]);
+                url = url.replace(re, '&version=' + version);
+            } else {
+                url = url + '&version=1';
+            }
+
+            return url;
+        }
+
+        if (submitLock != 0) {
+            return false;
+        }
+        submitLock = 1;
+
+        var ajax_url = version(document.form1.action);
+        var ajax_type = $("#form1").attr("method");
+        var ajax_data = $("#form1").serialize();
+
+        $.ajax({
+            type : ajax_type,
+            url : ajax_url,
+            data : ajax_data,
+            dataType : "json",
+            success : function(data) {
+                if (!data.status) {
+                    openWindowHint(HINT_TYPE_TIME, "", data.msg, null, 1000);
+                    window.location.reload();
+                    return false;
+                }
+
+                letSwipe();
+
+                if (data.stuStatus == 5) {
+
+                    var taskTips = I18N_WORK.backdohereV2;
+                    if($("#taskTipsNew").val() == '1'){
+                        taskTips = I18N_WORK.tasktips2;
+                    }
+                    var redo = window.confirm(taskTips);
+                    if (redo) {
+                        var url = location.origin + data.backUrl;
+                        window.location.href = url;
+                    } else {
+                        var url = location.origin + data.url;
+                        window.location.href = url;
+                    }
+                } else {
+                    var url = location.origin + data.url;
+                    window.location.href = url;
+                }
+            }
+        });
+    }
+
+    function processOpenUrl(url, title, loadType) {
+        top.jsBridge.postNotification('CLIENT_OPEN_URL', {
+            "title" : title,
+            "loadType" : loadType,
+            "webUrl" : url
+        });
+    }
+
+    //对填空题答案中的 >和<进行转义
+    function escapeBlank() {
+        if ($('.escapeInput').length > 0) {
+            $('.escapeInput').each(function () {
+                //转义填空题作答内容
+                var answer = $(this).val();
+                if (typeof answer == "string") {
+                    answer = unhtml(answer);
+                    $(this).val(answer);
+                }
+            })
+        }
+    }
+
+    function unhtml(input) {
+        if (!input || input.length == 0) {
+            return input;
+        }
+        var newInput = input.replace(/[&<">']/g, function (a, b) {
+            return {
+                '<': '&lt;',
+                '&': '&amp;',
+                '"': '&quot;',
+                '>': '&gt;',
+                "'": '&#39;'
+            }[a];
+        });
+        return newInput;
+    }
+
+    function removeAllSpace(str, value) {
+        return str.replace(/<\s?img[^>]*>/gi, "图片").replace(/<\s?iframe[^>]*>/gi, "音频").replace(/<[^>]+>/g, "").replace(/&nbsp;/ig, "").replace(/\s+/g, "");
+    }
+
+    function noSubmit(){
+        var a = "404885919,404885920,404885921,404885922,404885923,404885924,404885925,404885936,404885937,404885926,404885927,404885928,404885929,404885930,404885931,404885932,404885933,404885934,404885935";
+        $("#answerwqbid").val(a);
+        $("#pyFlag").val("1");
+        synUeditorContent2FormField();
+        /*
+        var legal = true;
+        $("textarea").each(function(){
+            var patt =  /[\uD800-\uDBFF][\uDC00-\uDFFF]/g;
+            var content = $(this).val();
+            if(patt.test(content)){
+                legal = false
+            }
+        });
+        if(!legal){
+            openWindowHint(HINT_TYPE_TIME,'','含有不支持的表情或字符',function(){
+                },3000);
+            return ;
+        }
+      */
+        escapeBlank();
+        setCompoundQuesAnswer();
+        //临时保存或时间到系统自动提交试卷
+        var ajax_url = _HOST_CP2_ + "/work/addStudentWorkNew?_classId="+$("#classId").val()+"&courseid="+$("#courseId").val()+"&token="+$("#enc_work").val()+"&workAnswerId=54593695"; //表单目标
+        var ajax_type = $("#form1").attr('method'); //提交方法
+        var ajax_data = $("#form1").serialize(); //表单数据
+        ajax_url += '&ua='+clientType();
+        ajax_url += '&formType2=' + getformType();
+        ajax_url += '&saveStatus=' + 1;
+        ajax_url += '&version=1';
+        ajax_url += '&tempsave=1';
+        jQuery.ajax({
+            type : ajax_type,
+            url : ajax_url,
+            data :ajax_data,
+            dataType : "json",
+            success : function(data){
+                if (data.status) {
+                    window.alert("保存成功");
+                    letSwipe();
+                    window.location.reload();
+                } else {
+                    window.alert(data.msg);
+                }
+            }
+        });
+    }
+    function noSubmitNoTips(){
+        var a = "404885919,404885920,404885921,404885922,404885923,404885924,404885925,404885936,404885937,404885926,404885927,404885928,404885929,404885930,404885931,404885932,404885933,404885934,404885935";
+        $("#answerwqbid").val(a);
+        $("#pyFlag").val("2");
+        synUeditorContent2FormField();
+        escapeBlank();
+        setCompoundQuesAnswer();
+        //临时保存或时间到系统自动提交试卷
+        var ajax_url = _HOST_CP2_ + "/work/addStudentWorkNew?_classId="+$("#classId").val()+"&courseid="+$("#courseId").val()+"&token="+$("#enc_work").val()+"&workAnswerId=54593695"; //表单目标
+        var ajax_type = $("#form1").attr('method'); //提交方法
+        var ajax_data = $("#form1").serialize(); //表单数据
+        ajax_url += '&ua='+clientType();
+        ajax_url += '&formType2=' + getformType();
+        ajax_url += '&saveStatus=' + 1;
+        ajax_url += '&version=1';
+        ajax_url += '&tempsave=1';
+        jQuery.ajax({
+            type : ajax_type,
+            url : ajax_url,
+            data :ajax_data,
+            dataType : "json"
+        });
+    }
+
+    $(".selLineList li .selDiv span").click(function(){
+        var me = $(this);
+        if(me.hasClass("selItemBtn")){
+            me.removeClass("selItemBtn");
+            me.parent().next().val("");
+            me.siblings("div").hide();
+        }else{
+            me.addClass("selItemBtn");
+            me.siblings("span").removeClass("selItemBtn");
+            me.siblings("div").hide();
+            me.siblings("div."+me.html()).show();
+            me.parent().next().val(me.html());
+        }
+        setConnLineAnswer(me);
+        stopSwipe();
+        try{
+            parent.dynIframeSize(parent.document.getElementById("frame_content"));
+        }catch(e){}
+
+    });
+
+    function clientType(){
+        var userAgent = navigator.userAgent;
+        var ua = "pc";
+        try{
+            if(userAgent.indexOf("ChaoXingStudy") > -1){
+                ua = "app";
+            }
+        }catch(e){}
+
+        return ua;
+    }
+
+    function getformType(){
+        var form_type = $("#form1").attr('method'); //提交方法
+        if(form_type){
+            return form_type;
+        }
+        return "post2";
+    }
+
+    //连线题处理
+    function getOneConnLineAnswer(obj){
+        var answerPair=[];
+        $(obj).each(function(index){
+            var checked=$(this).val();
+            var obj={};
+            obj.name=(index+1);
+            obj.content=(checked);
+            answerPair.push(obj);
+        });
+        return JSON.stringify(answerPair);
+    }
+
+    function setConnLineAnswer(dataOption){
+        var questionId = dataOption.attr("data-id");
+        var curlSelLineList = dataOption.parent().parent().parent();
+        var answerLineSelect = curlSelLineList.find("input[name='answerLineSelect']");
+        var answer = getOneConnLineAnswer(answerLineSelect);
+        $("#answer"+questionId).val(answer);
+    }
+
+    function paste(){
+        openWindowHint(HINT_TYPE_TIME,'','该作业不允许粘贴答案',null,2000);
+    }
+
+    function controlEmoticons(obj , isEditor){
+        var patt =  /[\uD800-\uDBFF][\uDC00-\uDFFF]/g;
+        var input="";
+        if(isEditor){
+            input= obj.getContent();
+        }else{
+            input=$(obj).val();
+        }
+        if(patt.test(input)){
+            openWindowHint(HINT_TYPE_TIME,'','含有不支持的表情或字符',function(){
+                input=input.replace(/[\uD800-\uDBFF][\uDC00-\uDFFF]/g, '');
+                if(isEditor){
+                    obj.setContent(input);
+                }else{
+                    $(obj).val(input);
+                }
+            },1000);
+            return ;
+        }
+    }
+
+    function synUeditorContent2FormField() {
+        try {
+            if ( typeof (editors) == 'undefined' || editors.length == 0) {
+                return;
+            }
+            for (var i = 0; i < editors.length; i++) {
+                var editor = editors[i];
+                if ( !editor) {
+                    continue;
+                }
+                var ueditor = editor.ueditor;
+                if ( typeof (placeholderTip) != 'undefined') {
+                    ueditor.clearPlaceHolder(placeholderTip);
+                }
+                ueditor && ueditor.fireEvent('contentChange');
+            }
+        } catch (error) {}
+    }
+
+    function checkEvaluationQuesNum(object){
+        var quesId = $(object).attr('id-param');
+        var selectNum = $('#selectNum' + quesId).val() || 0;
+        if(selectNum > 0){
+            var questionWrap = $(object).parents('.evaluationQuesBlock');
+            var alreadyCheckedNum = questionWrap.find('.cur').length;
+            if(!$(object).hasClass('cur')){
+                if(parseInt(alreadyCheckedNum) >= parseInt(selectNum)){
+                    openWindowHint(HINT_TYPE_TIME, '', '最多选' + selectNum + '项', null, 1200);
+                    return false;
+                }
+            }
+        }
+        return true;
+    }
+
+    function stopSwipe() {
+        if(top.courseEnded){
+            return;
+        }
+        var isChaoxingClient = $("#isChaoxingClient").val() || "";
+        // 设置测验修改信息(客户端和H5共用，无需判断来源)
+        var workLiraryId = '276f53c9054e4d0aa4e9aedee834c1c6';
+        var workName = $('.chapter-title').attr('workName');
+        if(top.doWorkList){
+            var doWorkFlag = true;
+            for (let i = 0; i < top.doWorkList.length; i++) {
+                if(top.doWorkList[i].id == workLiraryId){
+                    doWorkFlag = false;
+                    break
+                }
+            }
+            if(doWorkFlag){
+                top.doWorkList.push({'id': workLiraryId, 'value': workName});
+            }
+        }
+        // 如果是客户端，调用协议，阻止离开当前卡片
+        if (isChaoxingClient == "true" && top.doWorkList ){
+            try {
+                top.jsBridge.postNotification('CLIENT_CHAPTER_OPTION', {
+                    "optionType": 1,
+                    "data": {"scroll": false, "msg": workName + '测验还未提交，请先保存或提交'}
+                });
+            } catch (e) {
+            }
+        }
+    }
+
+    function letSwipe() {
+        if(top.courseEnded){
+            return;
+        }
+        var isChaoxingClient = $("#isChaoxingClient").val() || "";
+        // 设置测验修改信息(客户端和H5共用，无需判断来源)
+        var workLiraryId = '276f53c9054e4d0aa4e9aedee834c1c6';
+        if(top.doWorkList){
+            var index = -1;
+            for (let i = 0; i < top.doWorkList.length; i++) {
+                if(top.doWorkList[i].id == workLiraryId){
+                    index = i;
+                    break;
+                }
+            }
+            if(index > -1){
+                top.doWorkList.splice(index, 1);
+            }
+        }
+        // 如果是客户端，调用协议，允许离开当前卡片
+        if (isChaoxingClient == "true" && top.doWorkList) {
+            if(top.doWorkList.length <= 0){
+                try {
+                    top.jsBridge.postNotification('CLIENT_CHAPTER_OPTION', {
+                        "optionType": 1,
+                        "data": {"scroll": true}
+                    });
+                } catch (e) {
+                }
+            }
+        }
+    }
+</script>
+<link rel="stylesheet" href="//mooc1-api.chaoxing.com/mooc-ans/css/phone/hint750.css?v=2024-0925-1455" />
+<div id="msg" class="rescan_main hint_pop">
+    <div class="msg-title">title</div>
+    <div class="msg-content">
+        <div class="msg-content-middle"></div>
+        <div class="msg-content-b">
+            <span class="msg-content-left msg-content-ok" >确定</span>
+            <span class="msg-content-right msg-content-cancel" >取消</span>
+        </div>
+    </div>
+</div>
+<div id="hint" class="rescan_main hint_pop">
+    <div class="msg-title">title</div>
+    <div class="msg-content">
+        <div class="msg-content-middle"></div>
+        <div class="msg-content-b">
+            <span class="hint-content-left msg-content-cancel">确定</span>
+        </div>
+    </div>
+</div>
+<div id="time" class="rescan_main hint_pop">
+    <div class="msg-title">title</div>
+    <div class="msg-content">
+        <div class="msg-content-middle"></div>
+    </div>
+</div>
+<div id="confirm" class="rescan_main hint_pop">
+    <div class="msg-title"></div>
+    <div class="msg-content">
+        <div class="msg-content-middle"></div>
+        <div class="msg-content-b">
+            <span class="msg-content-left msg-content-ok"></span>
+            <span class="msg-content-right msg-content-cancel"></span>
+        </div>
+    </div>
+</div>
+
+<div id="confirmNew" class="rescan_mainNew hint_pop">
+    <div class="msg-title"></div>
+    <div class="msg-contentNew">
+        <div class="msg-content-middleNew"></div>
+        <div class="msg-content-bNew">
+            <span class="msg-content-leftNew msg-content-okNew"></span>
+            <span class="msg-content-rightNew msg-content-cancelNew"></span>
+        </div>
+    </div>
+</div>
+
+<div id="confirmPop" class="rescan_main_pop hint_pop">
+    <div class="msg-title"></div>
+    <div class="msg-content">
+        <div class="msg-content-middle"></div>
+        <div class="msg-content-b">
+            <span class="msg-content-left msg-content-ok"  ></span>
+            <span class="msg-content-right msg-content-cancel"  ></span>
+        </div>
+    </div>
+</div>
+
+
+<div id="noticeConfirm" class="rescan_mainNew hint_pop">
+    <div class="notice-title"></div>
+    <div class="msg-contentNew">
+        <div class="notice-content-middle"></div>
+        <div class="msg-content-bNew">
+            <span class="msg-content-leftNew msg-content-okNew" style="width:100%;"></span>
+        </div>
+    </div>
+</div>
+
+<div id="monitorForceSubmitConfirm" class="rescan_mainNew hint_pop" style="height:3.2rem;">
+    <div class="notice-title" style="color:red;"></div>
+    <div class="msg-contentNew">
+        <div class="notice-content-middle"></div>
+        <div class="msg-content-bNew" style="color:#333;">
+            <span class="msg-content-leftNew msg-content-okNew" style="width:100%;"></span>
+        </div>
+    </div>
+</div>
+
+<div id="noticeConfirmNew" class="rescan_mainNew hint_pop" style="padding:0;height: auto">
+    <div class="notice-title" style="position: unset;padding-top:0.2rem;"></div>
+    <div class="noconPad" style="padding: 0.2rem 0.6rem">
+        <div style="color: #333;  font-size: 0.32rem; line-height: 0.5rem;" class="content-middle-new"></div>
+    </div>
+    <div class="msg-content-bNew" style=" position: unset;">
+        <span class="msg-content-leftNew msg-content-okNew" style="width:100%;"></span>
+    </div>
+</div>
+
+
+<div id="exitConfirm" class="exitMask hint_pop">
+    <div class="exitContent">
+        <p class="exitTit"></p>
+        <ul class="exitList">
+            <li class="exitAndSave"></li>
+            <li class="exitNoSve" style="color:#FF3B30"></li>
+        </ul>
+        <p class="exitCancel"></p>
+    </div>
+</div>
+
+
+<div id="mask" class="black_overlay"></div>
+<script src="//mooc-res2.chaoxing.com/mooc-ans/js/phone/hint.js?v=2024-0925-2055"></script><!--处理audio 播放 -->
+<link type="text/css" rel="stylesheet" href="/ananas/modules/audio/AudioPlayer2/audioplayer.css?t=20151210" />
+<style>
+    .audioReader{width: 100%;height: 70px;} .audioplayer {height: 60px;width: 95%;left: 4%;top: 10px; }
+</style>
+<script type="text/javascript" src="//mooc-res2.chaoxing.com/mooc-ans/js/common/jquery.min.js"></script>
+<script type="text/javascript" src="//mooc-res2.chaoxing.com/mooc-ans/js/common/jquery-migrate.min.js"></script><script type="text/javascript">
+    jQuery.noConflict();
+</script>
+<script type="text/javascript" src="/ananas/modules/audio/AudioPlayer2/audioplayer.js?t=20151210"></script>
+<script type="text/javascript">
+    function formatTime(duration) {
+        if (!duration) {
+            return '00:00';
+        }
+        var m = Math.floor(duration / 60);
+        var s = Math.ceil(duration % 60);
+        return (m < 10 ? '0' + m : m) + ':' + (s < 10 ? '0' + s : s);
+    }
+
+    function renderAudio(object,data,index) {
+        var showName = data.name;
+        var http=data.http;
+        duration  = data.duration;
+        var html = [
+            '<audio preload="none" controls>',
+            '<source src="'+http+'" />',
+            '</audio>'
+        ].join('');
+
+        var audioId="audio_"+index;
+        var audioDiv='<div class="audioReader" id="'+audioId+'"></div>';
+        jQuery(object).parent().html(audioDiv);
+
+        jQuery("#"+audioId).html(html);
+        jQuery("#"+ audioId +" audio").audioPlayer({
+            title: showName,
+            duration: data.duration
+        });
+    }
+
+    jQuery(document).ready(function() {
+        try{
+            var audios=jQuery("object[type='application/x-shockwave-flash']");
+            audios.each(function(index){
+                if(jQuery(this).attr("data").indexOf('audioplayer') < 0) {
+                    return true;
+                }
+                var url=jQuery(this).find("param[name='flashvars']").val();
+                var offset=url.indexOf("http");
+                var http=url.substring(offset);
+                var audioName=jQuery(this).prev().text();
+                var data={"name":audioName,"http":http};
+                renderAudio(this,data,index);
+            });
+        }catch(e){ }
+    });
+</script>
+
+
+<!--处理video 播放 -->
+<script>
+    function videoPlay(object,data,index){
+        var playOuterDiv=[ '<div class="zcenter">',
+            '<div class="zbanner">',
+            '<div id="zvideo_'+index+'" style="width:733;height:434;" width="733" height="434">',
+            '<div id="moocplayer_'+index+'"></div>',
+            ' </div>',
+            '</div>',
+            ' </div>'].join('');
+        jQuery(object).parent().html(playOuterDiv);
+        jQuery('#moocplayer_'+index).html([
+            '<video width="100%" height="100%"  poster="' + data.coverUrl+ '" preload="none"  controls="controls" webkit-playsinline>',
+            '<source type="video/mp4" src="' +data.http+ '"></source>',
+            '</video>'
+        ].join(''));
+        var zplay=document.getElementById("zvideo_"+index);
+        zplay.style.display="block";
+        jQuery("#moocplayer_"+index+" div").css("width","87.5%");
+    }
+
+
+    function checkAppVersion(versonControl_android,versonControl_ios){
+        var versonControl ="";
+        var userAgent = navigator.userAgent;
+        var offset = userAgent.indexOf("ChaoXingStudy_");
+        var stop = 0;
+        if(userAgent.indexOf("_ios_phone") > -1){
+            stop = userAgent.indexOf("_ios_phone");
+            versonControl = versonControl_ios;
+        }else if(userAgent.indexOf("_android_phone") > -1){
+            stop = userAgent.indexOf("_android_phone");
+            versonControl = versonControl_android;
+        }
+        var versionStr = userAgent.substring(offset+14,stop);
+        versionStr = versionStr.split('_')[1];
+        if(versionStr == undefined){
+            return false;
+        }
+        versionStr = versionStr.replace(/_|\./g,"");
+        return versionStr+'' >= versonControl;
+    }
+
+    jQuery(document).ready(function(){
+        try{
+            var maybeVideos=jQuery("a[href^='/ueditorupload/read?objectId']");
+            maybeVideos.each(function(index){
+                var videoName=jQuery(this).text();
+                if(!videoName.endsWith(".mp4")){
+                    return true;
+                }
+                if(!checkAppVersion("3039","1000")){
+                    jQuery(this).attr("href","javascript:void(0);");
+                    jQuery(this).on('tap',function(){
+                        openWindowHint && openWindowHint(HINT_TYPE_TIME,'',"暂不支持打开",null, 1000);
+                    });
+                    return true;
+                }
+
+                var me=this;
+                var objectId=jQuery(this).attr("href").replace('/ueditorupload/read?objectId=','');
+                // 获取objectId出错
+                if (objectId.indexOf('&') > 0) {
+                    objectId = objectId.substring(0, objectId.indexOf('&'))
+                }
+                jQuery.ajax({
+                    type : 'get',
+                    url : '/ananas/status/'+objectId,
+                    dataType:'json',
+                    success : function(data){
+                        var status=data.status;
+                        if(status == 'success'){
+                            var coverUrl=data.screenshot;
+                            var http=data.http;
+                            var data={"coverUrl":coverUrl,"http":http};
+                            videoPlay(me,data,index);
+                        }
+                    }
+                });
+            });
+        }catch(e){ }
+
+    });
+</script><style>
+    .verify-box { position: fixed; left: 50%; top: 30%; width: 66%; height: auto; margin-left: -33%; display:none; z-index:1001;border: 1px solid #eee;
+        border-radius: .1rem;    box-shadow: 0 0.05rem 0.3rem 0 rgba(237,238,240,0.5);}
+    .verify-content { padding: 0.351rem 0.3276rem;  border-radius: 0.234rem 0.234rem 0 0;  background: #fff; text-align: center; color: #333; font-size: 0.2574rem;}
+    .verify-btn { border-top: 1px #ebebeb solid; border-radius: 0 0 0.234rem 0.234rem ; overflow: hidden; }
+    .verify-btn ul { display: -webkit-box;}
+    .verify-blue, .verify-black { -webkit-box-flex: 1; box-flex: 1; height: 0.936rem; background: #fff; line-height: 0.936rem; text-align: center; font-size: 0.2808rem; color: #09f;}
+    .verify-black { color: #333;}
+    .verify-blue:not(:last-child), .verify-black:not(:last-child) { border-right: 1px #ebebeb solid;}
+    .verify-inp{width: 2.5rem;line-height:.4rem;padding:.2rem .1rem;border:1px solid #ebebeb;border-radius:.04rem;font-size: .26rem;color: #333;box-sizing: border-box}
+    .verify-img{display:inline-block;width: 1.5rem;height:.8rem;background:#ccc;margin-left:.2rem;border:1px solid #ebebeb;box-sizing: border-box}
+    .verify-img img{max-width:100%;height:100%}
+    .tit-verify{width:100%;font-size:.32rem;color:#333;text-align:center;margin-bottom:.32rem}
+    .verify-ct{overflow:hidden;}
+</style>
+
+<article class="verify-box">
+    <div class="verify-content">
+        <p class="tit-verify">输入验证码</p>
+        <div class="verify-ct">
+            <input type="text" class="verify-inp fl" id="inputCode" />
+            <span class="verify-img fl">
+				<img class="work-verify" id="workVerifyImg" src="" onclick="workVerifyCode();"/>
+			</span>
+        </div>
+    </div>
+    <div class="verify-btn">
+        <ul>
+            <li class="verify-black" onclick="hideWorkVerify();">取消</li>
+            <li class="verify-blue" onclick="verifyCode();">确定</li>
+        </ul>
+    </div>
+</article>
+
+<script>
+    function showWorkVerify() {
+        workVerifyCode();
+        $(".verify-box").css("display", "block");
+    }
+
+    function hideWorkVerify() {
+        $(".verify-box").css("display", "none");
+    }
+
+    function submitCheckTimes() {
+        var addTimes = $("#addTimes").val() || 0;
+        var limitWorkSubmitTimes = $("#limitWorkSubmitTimes").val() || 100;
+        if (parseInt(addTimes) > parseInt(limitWorkSubmitTimes)) {
+            showWorkVerify();
+        } else {
+            toadd();
+        }
+    }
+
+    function workVerifyCode() {
+        $("#workVerifyImg").attr("src", _HOST_CP2_ + "/verifyCode/stuWork?" + new Date().getTime());
+    }
+
+    function verifyCode() {
+
+        var courseId = $("#courseId").val() || 0;
+        var classId = $("#classId").val() || 0;
+        var cpi = $("#cpi").val() || 0;
+        var workId = $("#workRelationId").val() || 0;
+        var answerId = $("#workAnswerId").val() || 0;
+        var inputCode = $("#inputCode").val() || "";
+
+        $.ajax({
+            type: "get",
+            url: _HOST_CP2_ + "/work/verify/code",
+            cache: false,
+            dataType: "json",
+            async: false,
+            data: {
+                "courseId": courseId,
+                "classId": classId,
+                "cpi": cpi,
+                "workId": workId,
+                "answerId": answerId,
+                "inputCode": inputCode
+            },
+            success: function (data) {
+                if (!data.status) {
+                    openWindowHint(HINT_TYPE_TIME, "", data.msg, function() {
+                        workVerifyCode();
+                        $("#inputCode").val("");
+                    }, 1000);
+                } else {
+                    var enc = data.enc;
+                    $("#workTimesEnc").val(enc);
+                    toadd();
+                }
+            }
+        });
+    }
+</script></body>
+<style>
+    .edui-default .edui-editor {
+        border: none;
+    }
+
+    .hint-content-left {
+        border: 0px;
+    }
+    #time{width:6rem;margin-left:-3rem;bottom: 2rem;top: auto;}
+    #time .msg-content-middle{padding:0.5rem 0;line-height: 0.32rem;;}
+</style>
+<script>
+    $(".ans-cc object").css("display", "none");
+    var isNewVersion = AppUtils.isNewVersionNew(7);
+    var isNewVersion45 = AppUtils.isNewVersionNew(45);
+    $(document).ready(function () {
+        if (isNewVersion) {
+            $(".BanswerIcon").show();
+        }
+
+        if (!isNewVersion45) {
+            $(".addAttachClass").hide();
+        }
+    });
+    function sortMultiAnswer(answer) {
+        if ( !answer || answer.length == 0) {
+            return answer;
+        }
+        var answerArray = answer.split('');
+        var sortedAnswerArray = answerArray.sort();
+        var sortedAnswer = sortedAnswerArray.join('');
+        return sortedAnswer;
+    }
+</script>
+<link rel="stylesheet" href="//mooc1-api.chaoxing.com/mooc-ans/css/statistic/phone/circle.css?v=1" />
+<div class="Wrappadding" id="Wrappadding">
+    <div class="ui-loader ui-corner-all ui-body-a ui-loader-default"><span class="ui-icon ui-icon-loading"></span></div>
+</div></html>
