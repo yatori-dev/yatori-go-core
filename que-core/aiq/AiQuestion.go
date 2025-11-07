@@ -4,17 +4,17 @@ package aiq
 
 import (
 	"bytes"
+	"crypto/tls"
 	"encoding/json"
 	"errors"
 	"fmt"
+	"github.com/yatori-dev/yatori-go-core/models/ctype"
 	"io/ioutil"
 	"log"
 	"net/http"
 	"strings"
 	"sync"
 	"time"
-
-	"github.com/yatori-dev/yatori-go-core/models/ctype"
 )
 
 // AIChatMessages ChatGLMChat struct that holds the chat messages.
@@ -96,8 +96,14 @@ func TongYiChatReplyApi(
 	if model == "" {
 		model = "qwen-plus"
 	}
+	tr := &http.Transport{
+		TLSClientConfig: &tls.Config{
+			InsecureSkipVerify: true,
+		},
+	}
 	client := &http.Client{
-		Timeout: 30 * time.Second, // Set connection and read timeout
+		Transport: tr,
+		Timeout:   60 * time.Second, // Set connection and read timeout
 	}
 
 	url := "https://dashscope.aliyuncs.com/compatible-mode/v1/chat/completions"
@@ -170,8 +176,14 @@ func ChatGLMChatReplyApi(
 	if retryNum < 0 { //重连次数用完直接返回
 		return "", lastErr
 	}
+	tr := &http.Transport{
+		TLSClientConfig: &tls.Config{
+			InsecureSkipVerify: true,
+		},
+	}
 	client := &http.Client{
-		Timeout: 30 * time.Second, // Set connection and read timeout
+		Transport: tr,
+		Timeout:   60 * time.Second, // Set connection and read timeout
 	}
 
 	url := "https://open.bigmodel.cn/api/paas/v4/chat/completions"
@@ -244,8 +256,14 @@ func XingHuoChatReplyApi(model,
 	if model == "" {
 		model = "generalv3.5" //默认模型
 	}
+	tr := &http.Transport{
+		TLSClientConfig: &tls.Config{
+			InsecureSkipVerify: true,
+		},
+	}
 	client := &http.Client{
-		Timeout: 30 * time.Second, // Set connection and read timeout
+		Transport: tr,
+		Timeout:   60 * time.Second, // Set connection and read timeout
 	}
 
 	url := "https://spark-api-open.xf-yun.com/v1/chat/completions"
@@ -325,8 +343,14 @@ func DouBaoChatReplyApi(model,
 		return "", lastErr
 	}
 
+	tr := &http.Transport{
+		TLSClientConfig: &tls.Config{
+			InsecureSkipVerify: true,
+		},
+	}
 	client := &http.Client{
-		Timeout: 120 * time.Second, // Set connection and read timeout
+		Transport: tr,
+		Timeout:   60 * time.Second, // Set connection and read timeout
 	}
 
 	url := "https://ark.cn-beijing.volces.com/api/v3/chat/completions"
@@ -399,8 +423,14 @@ func OpenAiReplyApi(model,
 		return "", lastErr
 	}
 
+	tr := &http.Transport{
+		TLSClientConfig: &tls.Config{
+			InsecureSkipVerify: true,
+		},
+	}
 	client := &http.Client{
-		Timeout: 120 * time.Second, // Set connection and read timeout
+		Transport: tr,
+		Timeout:   60 * time.Second, // Set connection and read timeout
 	}
 
 	url := "https://api.openai.com/v1/responses"
@@ -473,8 +503,14 @@ func DeepSeekChatReplyApi(model,
 		return "", lastErr
 	}
 
+	tr := &http.Transport{
+		TLSClientConfig: &tls.Config{
+			InsecureSkipVerify: true,
+		},
+	}
 	client := &http.Client{
-		Timeout: 120 * time.Second, // Set connection and read timeout
+		Transport: tr,
+		Timeout:   60 * time.Second, // Set connection and read timeout
 	}
 	if model == "" {
 		model = "deepseek-chat" //默认模型
@@ -549,8 +585,14 @@ func OtherChatReplyApi(url,
 	if retryNum < 0 { //重连次数用完直接返回
 		return "", lastErr
 	}
+	tr := &http.Transport{
+		TLSClientConfig: &tls.Config{
+			InsecureSkipVerify: true,
+		},
+	}
 	client := &http.Client{
-		Timeout: 40 * time.Second, // Set connection and read timeout
+		Transport: tr,
+		Timeout:   60 * time.Second, // Set connection and read timeout
 	}
 	requestBody := map[string]interface{}{
 		"model":       model,
@@ -639,7 +681,15 @@ func MetaAIReplyApi(model, apiKey string, aiChatMessages AIChatMessages, retryNu
 	}
 	payload := strings.NewReader(string(marshal))
 
-	client := &http.Client{}
+	tr := &http.Transport{
+		TLSClientConfig: &tls.Config{
+			InsecureSkipVerify: true,
+		},
+	}
+	client := &http.Client{
+		Transport: tr,
+		Timeout:   60 * time.Second, // Set connection and read timeout
+	}
 	req, err := http.NewRequest(method, url, payload)
 
 	if err != nil {
