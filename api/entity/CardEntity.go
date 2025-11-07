@@ -428,8 +428,16 @@ func (p *PointWorkDto) AttachmentsDetection(attachment interface{}) (bool, error
 		if !ok {
 			return false, errors.New("invalid property structure")
 		}
-		workId := property["workid"]
-		if workId == nil {
+		workId, ok1 := property["workid"].(string)
+		//傻逼学习通，踏马这个字段有时候可能是数字类型，有时候又是字符串类型。
+		if !ok1 {
+			resWorkID, resOk1 := property["workid"].(float64)
+			if resOk1 {
+				workId = strconv.Itoa(int(resWorkID))
+				ok1 = resOk1
+			}
+		}
+		if workId == "" {
 			continue
 		}
 		if workId == p.WorkID {

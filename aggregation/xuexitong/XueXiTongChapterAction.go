@@ -223,6 +223,14 @@ func ChapterFetchCardsAction(
 			case string(ctype.Work):
 
 				workID, ok1 := point.Data["workid"].(string)
+				//傻逼学习通，踏马这个字段有时候可能是数字类型，有时候又是字符串类型。
+				if !ok1 {
+					resWorkID, resOk1 := point.Data["workid"].(float64)
+					if resOk1 {
+						workID = strconv.Itoa(int(resWorkID))
+						ok1 = resOk1
+					}
+				}
 				// 此ID可能有时候不存在 暂不知有何作用先不做强制处理
 				schoolID, _ := point.Data["schoolid"].(string)
 				jobID, ok3 := point.Data["_jobid"].(string)
