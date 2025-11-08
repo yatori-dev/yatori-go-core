@@ -538,7 +538,7 @@ func TestXueXiToFlushCourse(t *testing.T) {
 			log.Printf("ID.%d(%s/%s)正在执行任务点\n",
 				item,
 				pointAction.Knowledge[index].Label, pointAction.Knowledge[index].Name)
-			if pointAction.Knowledge[index].Label != "4.8" {
+			if pointAction.Knowledge[index].Label != "8.6" {
 				//fmt.Println("断点")
 				continue
 			}
@@ -617,14 +617,13 @@ func TestXueXiToFlushCourse(t *testing.T) {
 					fmt.Println(questionAction)
 					for i := range questionAction.Choice {
 						q := &questionAction.Choice[i] // 获取对应选项
-						//message := xuexitong.AIProblemMessage(questionAction.Title, q.Type.String(), entity.ExamTurn{
-						//	XueXChoiceQue: *q,
-						//})
-						//
-						////q.AnswerExternalGet()
-						//aiSetting := global.Config.Setting.AiSetting //获取AI设置
-						//q.AnswerAIGet(userCache.UserID, aiSetting.AiUrl, aiSetting.Model, aiSetting.AiType, message, aiSetting.APIKEY)
-						q.AnswerExternalGet("http://localhost:8083")
+						message := xuexitong.AIProblemMessage(questionAction.Title, q.Type.String(), entity.ExamTurn{
+							XueXChoiceQue: *q,
+						})
+
+						aiSetting := global.Config.Setting.AiSetting //获取AI设置
+						q.AnswerAIGet(userCache.UserID, aiSetting.AiUrl, aiSetting.Model, aiSetting.AiType, message, aiSetting.APIKEY)
+						//q.AnswerExternalGet("http://localhost:8083")
 					}
 					//判断题
 					for i := range questionAction.Judge {
@@ -639,22 +638,22 @@ func TestXueXiToFlushCourse(t *testing.T) {
 					//填空题
 					for i := range questionAction.Fill {
 						q := &questionAction.Fill[i] // 获取对应选项
-						//message := xuexitong.AIProblemMessage(questionAction.Title, q.Type.String(), entity.ExamTurn{
-						//	XueXFillQue: *q,
-						//})
-						//aiSetting := global.Config.Setting.AiSetting //获取AI设置
-						//q.AnswerAIGet(userCache.UserID, aiSetting.AiUrl, aiSetting.Model, aiSetting.AiType, message, aiSetting.APIKEY)
-						q.AnswerExternalGet("http://localhost:8083")
+						message := xuexitong.AIProblemMessage(questionAction.Title, q.Type.String(), entity.ExamTurn{
+							XueXFillQue: *q,
+						})
+						aiSetting := global.Config.Setting.AiSetting //获取AI设置
+						q.AnswerAIGet(userCache.UserID, aiSetting.AiUrl, aiSetting.Model, aiSetting.AiType, message, aiSetting.APIKEY)
+						//q.AnswerExternalGet("http://localhost:8083")
 					}
 					//简答题
 					for i := range questionAction.Short {
 						q := &questionAction.Short[i] // 获取对应选项
-						//message := xuexitong.AIProblemMessage(questionAction.Title, q.Type.String(), entity.ExamTurn{
-						//	XueXShortQue: *q,
-						//})
-						//aiSetting := global.Config.Setting.AiSetting //获取AI设置
-						//q.AnswerAIGet(userCache.UserID, aiSetting.AiUrl, aiSetting.Model, aiSetting.AiType, message, aiSetting.APIKEY)
-						q.AnswerExternalGet("http://localhost:8083")
+						message := xuexitong.AIProblemMessage(questionAction.Title, q.Type.String(), entity.ExamTurn{
+							XueXShortQue: *q,
+						})
+						aiSetting := global.Config.Setting.AiSetting //获取AI设置
+						q.AnswerAIGet(userCache.UserID, aiSetting.AiUrl, aiSetting.Model, aiSetting.AiType, message, aiSetting.APIKEY)
+						//q.AnswerExternalGet("http://localhost:8083")
 					}
 					//名词解释
 					for i := range questionAction.TermExplanation {
@@ -684,6 +683,17 @@ func TestXueXiToFlushCourse(t *testing.T) {
 						aiSetting := global.Config.Setting.AiSetting //获取AI设置
 						q.AnswerAIGet(userCache.UserID, aiSetting.AiUrl, aiSetting.Model, aiSetting.AiType, message, aiSetting.APIKEY)
 					}
+
+					//其他题（按论述题方式进行）
+					for i := range questionAction.Other {
+						q := &questionAction.Other[i] // 获取对应选项
+						message := xuexitong.AIProblemMessage(questionAction.Title, q.Type.String(), entity.ExamTurn{
+							XueXOtherQue: *q,
+						})
+						aiSetting := global.Config.Setting.AiSetting //获取AI设置
+						q.AnswerAIGet(userCache.UserID, aiSetting.AiUrl, aiSetting.Model, aiSetting.AiType, message, aiSetting.APIKEY)
+					}
+
 					xuexitong.AnswerFixedPattern(questionAction.Choice, questionAction.Judge)
 					answerAction, _ := xuexitong.WorkNewSubmitAnswerAction(&userCache, questionAction, false)
 					fmt.Printf("%s答题完成，返回信息：%s\n", questionAction.Title, answerAction)

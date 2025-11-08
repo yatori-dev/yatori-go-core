@@ -3,6 +3,7 @@ package aiq
 import (
 	"encoding/json"
 	"fmt"
+	"strings"
 
 	"github.com/yatori-dev/yatori-go-core/que-core/qentity"
 	"github.com/yatori-dev/yatori-go-core/que-core/qtype"
@@ -36,6 +37,8 @@ func BuildAiQuestionMessage(topic qentity.Question) AIChatMessages {
 		return handleTermExplanationAnswer(topic)
 	case qtype.Essay:
 		return handleEssayAnswer(topic)
+	case qtype.Matching:
+		return handleMatchingAnswer(topic)
 
 	}
 	return AIChatMessages{}
@@ -113,16 +116,16 @@ func handleEssayAnswer(topic qentity.Question) AIChatMessages {
 	}}
 }
 
-//// 连线题处理策略
-//func handleMatchingAnswer(topic qentity.Question) AIChatMessages {
-//	problem := buildProblemHeader(topic.Type, topic)
-//	return AIChatMessages{Messages: []Message{
-//		{Role: "system", Content: "接下来你只需要以json格式回答选项对应内容即可，比如：[\"xxx->xxx\",\"xxx->xxx\"]"},
-//		{Role: "system", Content: "就算你不知道选什么也随机按指定要求格式回答...无需回答任何解释！！！"},
-//		{Role: "system", Content: exampleMatchingAnswer()},
-//		{Role: "user", Content: problem},
-//	}}
-//}
+// 连线题处理策略
+func handleMatchingAnswer(topic qentity.Question) AIChatMessages {
+	problem := buildProblemHeader(topic.Type, topic)
+	return AIChatMessages{Messages: []Message{
+		{Role: "system", Content: "接下来你只需要以json格式回答选项对应内容即可，比如：[\"xxx->xxx\",\"xxx->xxx\"]"},
+		{Role: "system", Content: "就算你不知道选什么也随机按指定要求格式回答...无需回答任何解释！！！"},
+		{Role: "system", Content: exampleMatchingAnswer()},
+		{Role: "user", Content: problem},
+	}}
+}
 
 // 构建题目头部信息
 func buildProblemHeader(topicType string, topic qentity.Question) string {
@@ -150,15 +153,21 @@ func buildProblemHeader(topicType string, topic qentity.Question) string {
 	case qtype.ShortAnswer: //简答题
 	case qtype.TermExplanation: //名词解释
 	case qtype.Essay: //论述题
-		//case qtype.Matching:
-		//	for _, option := range topic.Options {
-		//		sprintf += fmt.Sprintf("%s\n", option)
-		//	}
-		//	for _, sel := range topic.Selects {
-		//		context += fmt.Sprintf("%s\n", sel)
-		//	}
-		//	context += "\n"
-		//}
+	case qtype.Matching:
+		sprintf += "组别一：\n"
+		for _, option := range topic.Options {
+			if strings.HasPrefix(option, "[1]") {
+				sprintf += strings.Replace(option, "[1]", "", 1) + "\n"
+			}
+		}
+
+		sprintf += "组别二：\n"
+		for _, option := range topic.Options {
+			if strings.HasPrefix(option, "[2]") {
+				sprintf += strings.Replace(option, "[2]", "", 1) + "\n"
+			}
+		}
+
 	}
 
 	return sprintf
@@ -245,4 +254,28 @@ func exampleEssayAnswer() string {
 答案：设计艺术的构成元素包括点、线、面、形体、色彩、质感与空间等。它们相互依存、互为补充，通过合理的组织和运用，形成和谐、统一而富有美感的设计作品。
 
 那么你应该回答（回答字数不能少于500字）： ["设计艺术的构成元素包括点、线、面、形体、色彩、质感与空间等。它们相互依存、互为补充，通过合理的组织和运用，形成和谐、统一而富有美感的设计作品。"]`
+}
+
+// 连线题
+func exampleMatchingAnswer() string {
+	return `比如：
+试卷名称：考试
+题目类型：连线题
+题目内容：
+5.[连线题] 下列认知心理学家与其所做的经典研究之间的关系：
+
+1、桑代克 ()
+2、威特金 ()
+3、凯利 ()
+4、卡特尔 ()
+
+A、迷箱实验
+B、角色建构测验
+C、16PF
+D、棒框实验
+
+答案：第一空：桑代克->迷箱实验、威特金->棒框实验、凯利->角色建构测验、卡特尔->16PF
+
+那么你应该回答： ["桑代克->迷箱实验","威特金->棒框实验","凯利->角色建构测验","卡特尔->16PF"]`
+
 }

@@ -167,10 +167,18 @@ type MatchingQue struct {
 	Answers []string    `json:"answers"` // 答案
 }
 
+// “其他”题
+type OtherQue struct {
+	Type         qtype.QType         `json:"type"`
+	Qid          string              `json:"qid"`
+	Text         string              `json:"text"`
+	OpFromAnswer map[string][]string `json:"opFromAnswer"`
+}
+
 // Question TODO 这里考虑是否在其中直接将答案做出 直接上报提交 或 保存提交
 type Question struct {
 	Title            string               `json:"title"` //试卷标题
-	Cpi              string               `json:"cpi""`
+	Cpi              string               `json:"cpi"`
 	JobId            string               `json:"jobId"`
 	WorkId           string               `json:"workId"`
 	ClassId          string               `json:"classId"`
@@ -201,6 +209,7 @@ type Question struct {
 	TermExplanation  []TermExplanationQue //名词解释类型
 	Essay            []EssayQue           //论述题类型
 	Matching         []MatchingQue        //连线题
+	Other            []OtherQue           //其他题
 }
 
 // 序列化输出答题信息
@@ -220,6 +229,7 @@ type ExamTurn struct {
 	XueXTermExplanationQue TermExplanationQue
 	XueXEssayQue           EssayQue
 	XueXMatchingQue        MatchingQue
+	XueXOtherQue           OtherQue
 	YingHuaExamTopic
 }
 
@@ -269,6 +279,10 @@ func (q *EssayQue) SetAnswers(answers []string) {
 }
 func (q *MatchingQue) SetAnswers(answers []string) {
 	q.Answers = answers
+}
+
+func (q *OtherQue) SetAnswers(answers []string) {
+	q.OpFromAnswer["回复"] = answers
 }
 
 // 从键中提取序号（例如："0第3空" → 2，注意索引从0开始）
@@ -489,18 +503,22 @@ func (q *MatchingQue) AnswerExternalGet(exUrl string) {
 	q.SetAnswers(request.Question.Answers)
 }
 
-// TurnProblem 转标准题目格式
-//func (q *YingHuaExamTopic) TurnProblem() utils.Problem {
-//	problem := utils.Problem{
-//		Hash:    "",
-//		Type:    q.Type,
-//		Content: q.Content,
-//		Options: []string{},
-//		Answer:  []string{},
-//		Json:    "",
-//	}
-//	for _, topicSelect := range q.Selects {
-//		problem.Options = append(problem.Options, topicSelect.Num+topicSelect.Text)
-//	}
-//	return problem
-//}
+// AnswerAIGet Other的AI回答获取方法
+func (q *OtherQue) AnswerAIGet(userID,
+	url, model string, aiType ctype.AiType, aiChatMessages aiq.AIChatMessages, apiKey string) {
+	GetAIAnswer(q, userID, url, model, aiType, aiChatMessages, apiKey)
+}
+
+func (q *OtherQue) AnswerExternalGet(exUrl string) {
+	question := qentity.Question{
+		Type:    q.Type.String(), //直接采用论述题方案
+		Content: q.Text,
+	}
+	//赋值选项
+	request, err := external.ApiQueRequest(question, exUrl, 5, nil)
+	if err != nil {
+		log2.Fatal(err)
+	}
+	//赋值答案
+	q.SetAnswers(request.Question.Answers)
+}

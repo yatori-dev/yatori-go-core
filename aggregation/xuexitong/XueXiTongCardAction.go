@@ -328,6 +328,7 @@ func ParseWorkQuestionAction(cache *xuexitong.XueXiTUserCache, workPoint *entity
 	var termQuestion []entity.TermExplanationQue
 	var essayQuestion []entity.EssayQue
 	var matchingQuestion []entity.MatchingQue
+	var otherQuestion []entity.OtherQue
 
 	question, _ := cache.WorkFetchQuestion(workPoint, 3, nil)
 	//先检测是否含有加密字体，如果有则先解密
@@ -571,6 +572,32 @@ func ParseWorkQuestionAction(cache *xuexitong.XueXiTUserCache, workPoint *entity
 			matchingQue.Options = options
 			matchingQue.Selects = selects
 			matchingQuestion = append(matchingQuestion, matchingQue)
+		case qtype.QueOther.String():
+			options := make(map[string][]string)
+			otherQue := entity.OtherQue{}
+			otherQue.Type = qtype.QueOther
+			otherQue.Qid = qs.ID
+			otherQue.Text = quesText
+			// 简答暂时未发现有多个textarea标签出现 不做多答案处理
+			options["回复"] = []string{""}
+			otherQue.OpFromAnswer = options
+			otherQuestion = append(otherQuestion, otherQue)
+		case qtype.ReadingComprehension.String(): //阅读理解题处理(未完工）
+			//截取阅读理解子题目
+			doc.Find("ul.answerList").Each(func(i int, s *goquery.Selection) {
+				queType := s.Find("li.ignoreli .span").Text() //截取题目类型
+				if strings.Contains(queType, "单选题") {
+					content := strings.TrimSpace(doc.Find(".ans-cc p").Text())
+					fmt.Println(content)
+					// 提取选项
+					doc.Find(`li[data="answer"]`).Each(func(i int, s *goquery.Selection) {
+						option := strings.TrimSpace(s.Find("em").Text())
+						selectContent := strings.TrimSpace(s.Find("cc p").Text())
+						fmt.Printf("选项 %s: %s\n", option, selectContent)
+					})
+				}
+			})
+
 		}
 	}
 
@@ -581,12 +608,15 @@ func ParseWorkQuestionAction(cache *xuexitong.XueXiTUserCache, workPoint *entity
 	questionEntity.TermExplanation = termQuestion
 	questionEntity.Essay = essayQuestion
 	questionEntity.Matching = matchingQuestion
+	questionEntity.Other = otherQuestion
 	return questionEntity, nil
 }
 
+// Deprecated: 此方法将在未来版本中删除
 // 定义题型处理策略函数类型
 type problemMessageStrategy func(paperTitle, context string, topic entity.ExamTurn) que_core.AIChatMessages
 
+// Deprecated: 此方法将在未来版本中删除
 // 策略映射表：题型 -> 处理函数
 var problemStrategies = map[string]problemMessageStrategy{
 	"单选题":  handleSingleChoice,
@@ -602,11 +632,33 @@ var problemStrategies = map[string]problemMessageStrategy{
 // 构建AI问答消息
 func AIProblemMessage(paperTitle, typeStr string, topic entity.ExamTurn) que_core.AIChatMessages {
 
-	context := buildProblemContext(typeStr, topic)
-
-	// 查找对应的处理策略
-	if strategy, exists := problemStrategies[typeStr]; exists {
-		return strategy(paperTitle, context, topic)
+	//context := buildProblemContext(typeStr, topic)
+	//
+	//// 查找对应的处理策略
+	//if strategy, exists := problemStrategies[typeStr]; exists {
+	//	return strategy(paperTitle, context, topic)
+	//}
+	switch typeStr {
+	case qtype.SingleChoice.String():
+		return que_core.BuildAiQuestionMessage(topic.XueXChoiceQue.TurnStandardQuestion())
+	case qtype.MultipleChoice.String():
+		return que_core.BuildAiQuestionMessage(topic.XueXChoiceQue.TurnStandardQuestion())
+	case qtype.TrueOrFalse.String():
+		return que_core.BuildAiQuestionMessage(topic.XueXJudgeQue.TurnStandardQuestion())
+	case qtype.FillInTheBlank.String():
+		return que_core.BuildAiQuestionMessage(topic.XueXFillQue.TurnStandardQuestion())
+	case qtype.ShortAnswer.String():
+		return que_core.BuildAiQuestionMessage(topic.XueXShortQue.TurnStandardQuestion())
+	case qtype.TermExplanation.String():
+		return que_core.BuildAiQuestionMessage(topic.XueXTermExplanationQue.TurnStandardQuestion())
+	case qtype.Essay.String():
+		return que_core.BuildAiQuestionMessage(topic.XueXEssayQue.TurnStandardQuestion())
+	case qtype.Matching.String():
+		return que_core.BuildAiQuestionMessage(topic.XueXMatchingQue.TurnStandardQuestion())
+	case qtype.QueOther.String():
+		resQue := topic.XueXOtherQue.TurnStandardQuestion()
+		resQue.Type = qtype.ShortAnswer.String() //按照简答题方式处理
+		return que_core.BuildAiQuestionMessage(resQue)
 	}
 
 	// 默认返回空消息
@@ -615,6 +667,7 @@ func AIProblemMessage(paperTitle, typeStr string, topic entity.ExamTurn) que_cor
 	//return que_core.BuildAiQuestionMessage(topic.Question)
 }
 
+// Deprecated: 此方法将在未来版本中删除
 // buildProblemContext 构建通用的题目上下文
 func buildProblemContext(problemTypeStr string, topic entity.ExamTurn) (context string) {
 	switch problemTypeStr {
@@ -661,6 +714,7 @@ func buildProblemContext(problemTypeStr string, topic entity.ExamTurn) (context 
 	return context
 }
 
+// Deprecated: 此方法将在未来版本中删除
 // 单选题处理策略
 func handleSingleChoice(paperTitle, content string, topic entity.ExamTurn) que_core.AIChatMessages {
 	problem := buildProblemHeader(paperTitle, topic.XueXChoiceQue.Type.String(), content)
@@ -672,6 +726,7 @@ func handleSingleChoice(paperTitle, content string, topic entity.ExamTurn) que_c
 	}}
 }
 
+// Deprecated: 此方法将在未来版本中删除
 // 多选题处理策略
 func handleMultipleChoice(paperTitle, context string, topic entity.ExamTurn) que_core.AIChatMessages {
 	problem := buildProblemHeader(paperTitle, topic.XueXChoiceQue.Type.String(), context)
@@ -683,6 +738,7 @@ func handleMultipleChoice(paperTitle, context string, topic entity.ExamTurn) que
 	}}
 }
 
+// Deprecated: 此方法将在未来版本中删除
 // 判断题处理策略
 func handleTrueFalse(paperTitle, content string, topic entity.ExamTurn) que_core.AIChatMessages {
 	problem := buildProblemHeader(paperTitle, topic.XueXJudgeQue.Type.String(), content)
@@ -693,6 +749,7 @@ func handleTrueFalse(paperTitle, content string, topic entity.ExamTurn) que_core
 	}}
 }
 
+// Deprecated: 此方法将在未来版本中删除
 // 填空题处理策略
 func handleFillInTheBlank(paperTitle, content string, topic entity.ExamTurn) que_core.AIChatMessages {
 	problem := buildProblemHeader(paperTitle, topic.XueXFillQue.Type.String(), content)
@@ -704,6 +761,7 @@ func handleFillInTheBlank(paperTitle, content string, topic entity.ExamTurn) que
 	}}
 }
 
+// Deprecated: 此方法将在未来版本中删除
 // 简答题处理策略
 func handleShortAnswer(paperTitle, content string, topic entity.ExamTurn) que_core.AIChatMessages {
 	problem := buildProblemHeader(paperTitle, topic.XueXShortQue.Type.String(), content)
@@ -714,6 +772,7 @@ func handleShortAnswer(paperTitle, content string, topic entity.ExamTurn) que_co
 	}}
 }
 
+// Deprecated: 此方法将在未来版本中删除
 // 名词解释处理策略
 func handleTermExplanationAnswer(paperTitle, content string, topic entity.ExamTurn) que_core.AIChatMessages {
 	problem := buildProblemHeader(paperTitle, topic.XueXTermExplanationQue.Type.String(), content)
@@ -724,6 +783,7 @@ func handleTermExplanationAnswer(paperTitle, content string, topic entity.ExamTu
 	}}
 }
 
+// Deprecated: 此方法将在未来版本中删除
 // 论述题处理策略
 func handleEssayAnswer(paperTitle, content string, topic entity.ExamTurn) que_core.AIChatMessages {
 	problem := buildProblemHeader(paperTitle, topic.XueXEssayQue.Type.String(), content)
@@ -734,6 +794,7 @@ func handleEssayAnswer(paperTitle, content string, topic entity.ExamTurn) que_co
 	}}
 }
 
+// Deprecated: 此方法将在未来版本中删除
 // 连线题处理策略
 func handleMatchingAnswer(paperTitle, context string, topic entity.ExamTurn) que_core.AIChatMessages {
 	problem := buildProblemHeader(paperTitle, topic.XueXChoiceQue.Type.String(), context)
@@ -745,6 +806,7 @@ func handleMatchingAnswer(paperTitle, context string, topic entity.ExamTurn) que
 	}}
 }
 
+// Deprecated: 此方法将在未来版本中删除
 // 构建题目头部信息
 func buildProblemHeader(testPaperTitle, topicType, context string) string {
 	return fmt.Sprintf(`试卷名称：%s
@@ -752,6 +814,7 @@ func buildProblemHeader(testPaperTitle, topicType, context string) string {
 题目内容：%s`, testPaperTitle, topicType, context)
 }
 
+// Deprecated: 此方法将在未来版本中删除
 // 单选题示例
 func exampleSingleChoice() string {
 	return `比如：
@@ -766,6 +829,7 @@ D. 2002年10月1日
 那么你应该回答选项B的内容：["1949年10月1日"]`
 }
 
+// Deprecated: 此方法将在未来版本中删除
 // 多选题示例
 func exampleMultipleChoice() string {
 	return `比如：
@@ -780,6 +844,7 @@ D. 资本主义社会失业现象产生的根源
 那么你应该回答选项A、B、D的内容：["资本主义扩大再生产的源泉","社会财富占有两极分化的重要原因","资本主义社会失业现象产生的根源"]`
 }
 
+// Deprecated: 此方法将在未来版本中删除
 // 判断题示例
 func exampleTrueFalse() string {
 	return `比如：
@@ -792,6 +857,7 @@ B. 错误
 那么你应该回答选项A的内容：["正确"]`
 }
 
+// Deprecated: 此方法将在未来版本中删除
 // 填空题示例
 func exampleFillInTheBlank() string {
 	return ` 比如：
@@ -803,6 +869,7 @@ func exampleFillInTheBlank() string {
 那么你应该回答："["1949"]"`
 }
 
+// Deprecated: 此方法将在未来版本中删除
 // 简答题
 func exampleShortAnswer() string {
 	return `比如：
@@ -814,6 +881,7 @@ func exampleShortAnswer() string {
 那么你应该回答： ["中国和外国的国别 differences"]`
 }
 
+// Deprecated: 此方法将在未来版本中删除
 // 名词解释
 func exampleTermExplanationAnswer() string {
 	return `比如：
@@ -825,6 +893,7 @@ func exampleTermExplanationAnswer() string {
 那么你应该回答： ["绿色设计是指在产品、建筑、工程或系统设计的全过程中，将环境保护和可持续发展理念融入其中的一种设计方法。"]`
 }
 
+// Deprecated: 此方法将在未来版本中删除
 // 论述题
 func exampleEssayAnswer() string {
 	return `比如：
@@ -836,6 +905,7 @@ func exampleEssayAnswer() string {
 那么你应该回答（回答字数不能少于500字）： ["设计艺术的构成元素包括点、线、面、形体、色彩、质感与空间等。它们相互依存、互为补充，通过合理的组织和运用，形成和谐、统一而富有美感的设计作品。"]`
 }
 
+// Deprecated: 此方法将在未来版本中删除
 // 连线题
 func exampleMatchingAnswer() string {
 	return `比如：
