@@ -31,6 +31,7 @@ import (
 )
 
 // WorkNewSubmitAnswer 新的提交作业答案的接口
+// stuStatus：3代表待批阅
 func (cache *XueXiTUserCache) WorkNewSubmitAnswer(courseId string, classId string, knowledgeid string,
 	cpi string, jobid string, totalQuestionNum string, answerId string,
 	workAnswerId string, api string, fullScore string, oldSchoolId string,

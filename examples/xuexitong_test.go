@@ -695,7 +695,7 @@ func TestXueXiToFlushCourse(t *testing.T) {
 					}
 
 					xuexitong.AnswerFixedPattern(questionAction.Choice, questionAction.Judge)
-					answerAction, _ := xuexitong.WorkNewSubmitAnswerAction(&userCache, questionAction, false)
+					answerAction, _ := xuexitong.WorkNewSubmitAnswerAction(&userCache, questionAction, true)
 					fmt.Printf("%s答题完成，返回信息：%s\n", questionAction.Title, answerAction)
 				}
 			}
