@@ -11,16 +11,16 @@ import (
 	"strings"
 	"time"
 
-	"github.com/yatori-dev/yatori-go-core/api/entity"
-	"github.com/yatori-dev/yatori-go-core/que-core/aiq"
-	"github.com/yatori-dev/yatori-go-core/que-core/external"
-	"github.com/yatori-dev/yatori-go-core/que-core/qtype"
-	"github.com/yatori-dev/yatori-go-core/utils/qutils"
-
 	"github.com/thedevsaddam/gojsonq"
+	"github.com/yatori-dev/yatori-go-core/api/entity"
 	yinghuaApi "github.com/yatori-dev/yatori-go-core/api/yinghua"
 	"github.com/yatori-dev/yatori-go-core/models/ctype"
+	"github.com/yatori-dev/yatori-go-core/que-core/aiq"
+	"github.com/yatori-dev/yatori-go-core/que-core/external"
+	"github.com/yatori-dev/yatori-go-core/que-core/qentity"
+	"github.com/yatori-dev/yatori-go-core/que-core/qtype"
 	"github.com/yatori-dev/yatori-go-core/utils/log"
+	"github.com/yatori-dev/yatori-go-core/utils/qutils"
 )
 
 // 课程必要数据得截取
@@ -457,10 +457,11 @@ func StartExamForExternalAction(
 		}
 		//AnswerTurnResult(answer, v)
 		v.Question.Answers = answer.Answers
+		v.Question.Answers = answerTurnResult(userCache, v.Question) //转换答案
 
-		subWorkApi, err := yinghuaApi.SubmitExamApi(*userCache, exam.ExamId, v.Index, v.Question, "0", 8, nil)
+		subWorkApi, err := yinghuaApi.SubmitExamApi(*userCache, exam.ExamId, v.AnswerId, v.Question, "0", 8, nil)
 		if err != nil {
-			log.Print(log.INFO, `[`, userCache.Account, `] `, log.BoldRed, "Ai异常，返回信息：", err.Error())
+			log.Print(log.INFO, `[`, userCache.Account, `] `, log.BoldRed, "外置题库异常，返回信息：", err.Error())
 		}
 		//如果提交答案服务器端返回信息异常
 		if gojsonq.New().JSONString(subWorkApi).Find("msg") != "答题保存成功" {
@@ -563,9 +564,9 @@ func aiTurnYingHuaAnswer(cache *yinghuaApi.YingHuaUserCache, aiAnswer string, v 
 	if len(answer) == 0 || answer == nil {
 		if v.Type == qtype.SingleChoice.String() || v.Type == qtype.MultipleChoice.String() || v.Type == qtype.TrueOrFalse.String() {
 			answer = []string{"A"}
-		} else if v.Type == "多选" {
+		} else if v.Type == qtype.MultipleChoice.String() {
 			answer = []string{"B", "C"}
-		} else if v.Type == "简答" || v.Type == "填空" {
+		} else if v.Type == qtype.ShortAnswer.String() || v.Type == qtype.FillInTheBlank.String() {
 			log.Print(log.INFO, `[`, cache.Account, `] `, log.BoldRed, "\n题目类型：", v.Type, "\n题目：", v.Content, "\n\nAi回答内容无法解析，因该题为填空或简答题，所以自动留空")
 			return answer
 		}
@@ -636,6 +637,42 @@ func StartWorkAction(userCache *yinghuaApi.YingHuaUserCache,
 	return nil
 }
 
+// 转换未标准答案
+func answerTurnResult(cache *yinghuaApi.YingHuaUserCache, question qentity.Question) []string {
+	var answer = make([]string, 0)
+	if question.Type == qtype.SingleChoice.String() || question.Type == qtype.TrueOrFalse.String() || question.Type == qtype.MultipleChoice.String() {
+		//var jsonStr []string
+		var res []string
+		//json.Unmarshal([]byte(aiAnswer), &jsonStr)
+		//直接相同匹配方式
+		for _, item := range question.Answers {
+			//result := qutils.SimilarityArrayAnswer(item, v.Question.Options)
+			result := qutils.SimilarityArraySelect(item, question.Options)
+			res = append(res, result)
+		}
+
+		answer = res
+	} else if question.Type == qtype.FillInTheBlank.String() || question.Type == qtype.ShortAnswer.String() {
+		//var res []string
+		//json.Unmarshal([]byte(aiAnswer), &res)
+		for _, item := range question.Answers {
+			answer = append(answer, item)
+		}
+	}
+	if len(answer) == 0 || answer == nil {
+		if question.Type == qtype.SingleChoice.String() || question.Type == qtype.MultipleChoice.String() || question.Type == qtype.TrueOrFalse.String() {
+			answer = []string{"A"}
+		} else if question.Type == qtype.MultipleChoice.String() {
+			answer = []string{"B", "C"}
+		} else if question.Type == qtype.ShortAnswer.String() || question.Type == qtype.FillInTheBlank.String() {
+			log.Print(log.INFO, `[`, cache.Account, `] `, log.BoldRed, "\n题目类型：", question.Type, "\n题目：", question.Content, "\n\nAi回答内容无法解析，因该题为填空或简答题，所以自动留空")
+			return answer
+		}
+		log.Print(log.INFO, `[`, cache.Account, `] `, log.BoldRed, "\n题目类型：", question.Type, "\n题目：", question.Content, "\n\nAi回答内容无法解析，使用使用随机答案策略")
+	}
+	return answer
+}
+
 // StartWorkForExternalAction 外部题库开始写作业
 func StartWorkForExternalAction(userCache *yinghuaApi.YingHuaUserCache,
 	queBankUrl string,
@@ -666,17 +703,17 @@ func StartWorkForExternalAction(userCache *yinghuaApi.YingHuaUserCache,
 
 		//standardProblem := v.TurnProblem() //转为标准问题结构体
 		resultQuestion, err := external.ApiQueRequest(v.Question, queBankUrl, 5, nil)
-		v.Question = resultQuestion.Question //赋值给题目结构体变量
-		//answer = AnswerTurnResult(answer, v) //转换答案
-
+		v.Question.Answers = resultQuestion.Question.Answers         //赋值给题目结构体变量
+		v.Question.Answers = answerTurnResult(userCache, v.Question) //转换答案
+		//v.Question.Answers = aiTurnYingHuaAnswer(userCache,, v)
 		if err != nil {
-			log.Print(log.INFO, `[`, userCache.Account, `] `, log.BoldRed, "Ai异常，返回信息：", err.Error())
+			log.Print(log.INFO, `[`, userCache.Account, `] `, log.BoldRed, "外置题库异常，返回信息：", err.Error())
 			os.Exit(0)
 		}
 		//fmt.Println(aiAnswer)
 		subWorkApi, err := yinghuaApi.SubmitWorkApi(*userCache, work.WorkId, v.AnswerId, v.Question, "0", 10, nil)
 		if err != nil {
-			log.Print(log.INFO, `[`, userCache.Account, `] `, log.BoldRed, "Ai异常，返回信息：", err.Error())
+			log.Print(log.INFO, `[`, userCache.Account, `] `, log.BoldRed, "外置题库异常，返回信息：", err.Error())
 		}
 		//如果提交答案服务器端返回信息异常
 		if gojsonq.New().JSONString(subWorkApi).Find("msg") != "答题保存成功" {
