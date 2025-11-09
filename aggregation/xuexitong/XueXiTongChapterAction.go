@@ -181,6 +181,10 @@ func ChapterFetchCardsAction(
 							pointObj.PointVideoDto.Title = titleStr
 						}
 					}
+					jobid, ok1 := point.Data["jobid"].(string)
+					if ok1 {
+						pointObj.PointVideoDto.JobID = jobid
+					}
 
 					cords2, _ := cache.FetchChapterCords2(strconv.Itoa(classId), strconv.Itoa(courseId), strconv.Itoa(card.KnowledgeID), strconv.Itoa(cpi), 3, nil)
 					find := gojsonq.New().JSONString(cords2).Find("attachments")
@@ -189,6 +193,10 @@ func ChapterFetchCardsAction(
 						if item, ok := list.([]interface{}); ok {
 							for _, item1 := range item {
 								if obj, ok := item1.(map[string]interface{}); ok {
+									resjobid, _ := obj["jobid"].(string)
+									if pointObj.PointVideoDto.JobID != resjobid {
+										continue
+									}
 									if obj["otherInfo"] != nil {
 										if len(obj["otherInfo"].(string)) > 80 {
 											pointObj.PointVideoDto.OtherInfo = obj["otherInfo"].(string)

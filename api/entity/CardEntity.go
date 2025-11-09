@@ -305,8 +305,10 @@ func (p *PointVideoDto) AttachmentsDetection(attachment interface{}) (bool, erro
 		if objectid == nil {
 			continue
 		}
+		jobid, ok := property["jobid"].(string)
 
-		if objectid == p.ObjectID {
+		if objectid == p.ObjectID && p.JobID == jobid {
+
 			var otherInfo string
 
 			parts := strings.SplitN(attachment["otherInfo"].(string), "&", 2)
