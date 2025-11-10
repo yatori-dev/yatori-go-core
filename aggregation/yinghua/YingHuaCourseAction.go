@@ -390,14 +390,14 @@ func StartExamAction(
 		aiAnswer, err1 := aiq.AggregationAIApi(url, model, aiType, aiq.BuildAiQuestionMessage(v.Question), apiKey)
 		if err1 != nil {
 			log.Print(log.INFO, `[`, userCache.Account, `] `, log.BoldRed, "Ai异常，返回信息：", err1.Error())
-			os.Exit(0)
+			//os.Exit(0)
 		}
 
 		v.Question.Answers = aiTurnYingHuaAnswer(userCache, aiAnswer, v)
-		if err != nil {
-			log.Print(log.INFO, `[`, userCache.Account, `] `, log.BoldRed, "Ai异常，返回信息：", err.Error())
-			os.Exit(0)
-		}
+		//if err != nil {
+		//	log.Print(log.INFO, `[`, userCache.Account, `] `, log.BoldRed, "Ai异常，返回信息：", err.Error())
+		//	os.Exit(0)
+		//}
 		//fmt.Println(aiAnswer)
 		subWorkApi, err1 := yinghuaApi.SubmitExamApi(*userCache, exam.ExamId, v.AnswerId, v.Question, "0", 8, nil)
 		if err1 != nil {
@@ -603,7 +603,7 @@ func StartWorkAction(userCache *yinghuaApi.YingHuaUserCache,
 		aiAnswer, err1 := aiq.AggregationAIApi(url, model, aiType, aiq.BuildAiQuestionMessage(v.Question), apiKey)
 		if err1 != nil {
 			log.Print(log.INFO, `[`, userCache.Account, `] `, log.BoldRed, "Ai异常，返回信息：", err1.Error())
-			os.Exit(0)
+			//os.Exit(0)
 		}
 
 		v.Question.Answers = aiTurnYingHuaAnswer(userCache, aiAnswer, v)
