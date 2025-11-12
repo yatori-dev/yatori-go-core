@@ -129,7 +129,7 @@ func (cache *YingHuaUserCache) LoginApi(retry int, lastError error) (string, err
 		return "", err
 	}
 	//502情况进行重新请求
-	if strings.Contains(string(body), "502 Bad Gateway") || strings.Contains(string(body), "504 Gateway Time-out") {
+	if strings.Contains(string(body), "502 Bad Gateway") || strings.Contains(string(body), "504 Gateway Time-out") || strings.Contains(string(body), `"status":false,"_code":500`) {
 		res.Body.Close()                   //立即释放
 		time.Sleep(time.Millisecond * 150) //延迟
 		return cache.LoginApi(retry-1, err)
@@ -278,7 +278,7 @@ func KeepAliveApi(cache YingHuaUserCache, retry int) string {
 		fmt.Println(err)
 		return ""
 	}
-	if strings.Contains(string(body), "502 Bad Gateway") || strings.Contains(string(body), "504 Gateway Time-out") {
+	if strings.Contains(string(body), "502 Bad Gateway") || strings.Contains(string(body), "504 Gateway Time-out") || strings.Contains(string(body), `"status":false,"_code":500`) {
 		res.Body.Close()                   //立即释放
 		time.Sleep(time.Millisecond * 150) //延迟
 		return KeepAliveApi(cache, retry-1)
@@ -350,7 +350,7 @@ func (cache *YingHuaUserCache) CourseListApi(retry int, lastError error) (string
 		time.Sleep(time.Millisecond * 150) //延迟
 		return cache.CourseListApi(retry-1, err)
 	}
-	if strings.Contains(string(body), "502 Bad Gateway") || strings.Contains(string(body), "504 Gateway Time-out") {
+	if strings.Contains(string(body), "502 Bad Gateway") || strings.Contains(string(body), "504 Gateway Time-out") || strings.Contains(string(body), `"status":false,"_code":500`) {
 		res.Body.Close()                   //立即释放
 		time.Sleep(time.Millisecond * 150) //延迟
 		return cache.CourseListApi(retry-1, err)
@@ -429,7 +429,7 @@ func (cache *YingHuaUserCache) CourseDetailApi(courseId string, retry int, lastE
 		time.Sleep(time.Millisecond * 150) //延迟
 		return cache.CourseDetailApi(courseId, retry-1, err)
 	}
-	if strings.Contains(string(body), "502 Bad Gateway") || strings.Contains(string(body), "504 Gateway Time-out") {
+	if strings.Contains(string(body), "502 Bad Gateway") || strings.Contains(string(body), "504 Gateway Time-out") || strings.Contains(string(body), `"status":false,"_code":500`) {
 		res.Body.Close()                   //立即释放
 		time.Sleep(time.Millisecond * 150) //延迟
 		return cache.CourseDetailApi(courseId, retry-1, err)
@@ -501,7 +501,7 @@ func CourseVideListApi(cache YingHuaUserCache, courseId string /*课程ID*/, ret
 		time.Sleep(time.Millisecond * 150) //延迟
 		return CourseVideListApi(cache, courseId, retry-1, err)
 	}
-	if strings.Contains(string(body), "502 Bad Gateway") || strings.Contains(string(body), "504 Gateway Time-out") {
+	if strings.Contains(string(body), "502 Bad Gateway") || strings.Contains(string(body), "504 Gateway Time-out") || strings.Contains(string(body), `"status":false,"_code":500`) {
 		res.Body.Close()                   //立即释放
 		time.Sleep(time.Millisecond * 150) //延迟
 		return CourseVideListApi(cache, courseId, retry-1, err)
@@ -574,7 +574,7 @@ func SubmitStudyTimeApi(cache YingHuaUserCache, nodeId string /*对应视屏节�
 	}
 
 	//避免502情况
-	if strings.Contains(string(body), "502 Bad Gateway") || strings.Contains(string(body), "504 Gateway Time-out") {
+	if strings.Contains(string(body), "502 Bad Gateway") || strings.Contains(string(body), "504 Gateway Time-out") || strings.Contains(string(body), `"status":false,"_code":500`) {
 		res.Body.Close()                   //立即释放
 		time.Sleep(time.Millisecond * 150) //延迟
 		return SubmitStudyTimeApi(cache, nodeId, studyId, studyTime, retry-1, err)
@@ -642,7 +642,7 @@ func (cache *YingHuaUserCache) VideStudyTimeApi(nodeId string, retryNum int, las
 		time.Sleep(time.Millisecond * 150) //延迟
 		return cache.VideStudyTimeApi(nodeId, retryNum-1, lastError)
 	}
-	if strings.Contains(string(body), "502 Bad Gateway") || strings.Contains(string(body), "504 Gateway Time-out") {
+	if strings.Contains(string(body), "502 Bad Gateway") || strings.Contains(string(body), "504 Gateway Time-out") || strings.Contains(string(body), `"status":false,"_code":500`) {
 		time.Sleep(time.Millisecond * 150) //延迟
 		return cache.VideStudyTimeApi(nodeId, retryNum-1, lastError)
 	}
@@ -708,7 +708,7 @@ func VideWatchRecodeApi(cache YingHuaUserCache, courseId string, page int, retry
 		//fmt.Println(err)
 		return VideWatchRecodeApi(cache, courseId, page, retry-1, err)
 	}
-	if strings.Contains(string(body), "502 Bad Gateway") || strings.Contains(string(body), "504 Gateway Time-out") {
+	if strings.Contains(string(body), "502 Bad Gateway") || strings.Contains(string(body), "504 Gateway Time-out") || strings.Contains(string(body), `"status":false,"_code":500`) {
 		res.Body.Close()                   //立即释放
 		time.Sleep(time.Millisecond * 150) //延迟
 		return VideWatchRecodeApi(cache, courseId, page, retry-1, lastError)
@@ -764,7 +764,7 @@ func VideoWatchRecodePCListApi(cache YingHuaUserCache, courseId string, page int
 		//fmt.Println(err)
 		return VideoWatchRecodePCListApi(cache, courseId, page, retry-1, err)
 	}
-	if strings.Contains(string(body), "502 Bad Gateway") || strings.Contains(string(body), "504 Gateway Time-out") {
+	if strings.Contains(string(body), "502 Bad Gateway") || strings.Contains(string(body), "504 Gateway Time-out") || strings.Contains(string(body), `"status":false,"_code":500`) {
 		res.Body.Close()                   //立即释放
 		time.Sleep(time.Millisecond * 150) //延迟
 		return VideoWatchRecodePCListApi(cache, courseId, page, retry-1, lastError)
@@ -834,7 +834,7 @@ func ExamDetailApi(cache YingHuaUserCache, nodeId string, retryNum int, lastErro
 		time.Sleep(time.Millisecond * 150) //延迟
 		return ExamDetailApi(cache, nodeId, retryNum-1, err)
 	}
-	if strings.Contains(string(body), "502 Bad Gateway") || strings.Contains(string(body), "504 Gateway Time-out") {
+	if strings.Contains(string(body), "502 Bad Gateway") || strings.Contains(string(body), "504 Gateway Time-out") || strings.Contains(string(body), `"status":false,"_code":500`) {
 		res.Body.Close()                   //立即释放
 		time.Sleep(time.Millisecond * 150) //延迟
 		return ExamDetailApi(cache, nodeId, retryNum-1, err)
@@ -893,7 +893,7 @@ func StartExam(cache YingHuaUserCache, courseId, nodeId, examId string, retryNum
 		time.Sleep(100 * time.Millisecond)
 		return StartExam(cache, courseId, nodeId, examId, retryNum-1, err)
 	}
-	if strings.Contains(string(body), "502 Bad Gateway") || strings.Contains(string(body), "504 Gateway Time-out") {
+	if strings.Contains(string(body), "502 Bad Gateway") || strings.Contains(string(body), "504 Gateway Time-out") || strings.Contains(string(body), `"status":false,"_code":500`) {
 		res.Body.Close()                   //立即释放
 		time.Sleep(time.Millisecond * 150) //延迟
 		return StartExam(cache, courseId, nodeId, examId, retryNum-1, lastError)
@@ -958,7 +958,7 @@ func GetExamTopicApi(cache YingHuaUserCache, nodeId, examId string, retryNum int
 		time.Sleep(100 * time.Millisecond)
 		return GetExamTopicApi(cache, nodeId, examId, retryNum-1, err)
 	}
-	if strings.Contains(string(body), "502 Bad Gateway") || strings.Contains(string(body), "504 Gateway Time-out") {
+	if strings.Contains(string(body), "502 Bad Gateway") || strings.Contains(string(body), "504 Gateway Time-out") || strings.Contains(string(body), `"status":false,"_code":500`) {
 		resp.Body.Close()                  //立即释放
 		time.Sleep(time.Millisecond * 150) //延迟
 		return GetExamTopicApi(cache, nodeId, examId, retryNum-1, err)
@@ -1066,7 +1066,7 @@ func SubmitExamApi(cache YingHuaUserCache, examId, answerId string, answers qent
 		return "", err
 	}
 
-	if strings.Contains(string(bodyStr), "502 Bad Gateway") || strings.Contains(string(bodyStr), "504 Gateway Time-out") {
+	if strings.Contains(string(bodyStr), "502 Bad Gateway") || strings.Contains(string(bodyStr), "504 Gateway Time-out") || strings.Contains(string(bodyStr), `"status":false,"_code":500`) {
 		resp.Body.Close()                  //立即释放
 		time.Sleep(time.Millisecond * 150) //延迟
 		return SubmitExamApi(cache, examId, answerId, answers, finish, retryNum-1, err)
@@ -1136,7 +1136,7 @@ func WorkDetailApi(cache YingHuaUserCache, nodeId string, retryNum int, lastErro
 		time.Sleep(100 * time.Millisecond)
 		return WorkDetailApi(cache, nodeId, retryNum-1, err)
 	}
-	if strings.Contains(string(body), "502 Bad Gateway") || strings.Contains(string(body), "504 Gateway Time-out") {
+	if strings.Contains(string(body), "502 Bad Gateway") || strings.Contains(string(body), "504 Gateway Time-out") || strings.Contains(string(body), `"status":false,"_code":500`) {
 		time.Sleep(time.Millisecond * 150) //延迟
 		return WorkDetailApi(cache, nodeId, retryNum-1, err)
 	}
@@ -1190,7 +1190,7 @@ func StartWork(userCache YingHuaUserCache, courseId, nodeId, workId string, retr
 		fmt.Println(err)
 		return "", nil
 	}
-	if strings.Contains(string(body), "502 Bad Gateway") || strings.Contains(string(body), "504 Gateway Time-out") {
+	if strings.Contains(string(body), "502 Bad Gateway") || strings.Contains(string(body), "504 Gateway Time-out") || strings.Contains(string(body), `"status":false,"_code":500`) {
 		time.Sleep(time.Millisecond * 150) //延迟
 		return StartWork(userCache, courseId, nodeId, workId, retryNum-1, err)
 	}
@@ -1252,7 +1252,7 @@ func GetWorkApi(UserCache YingHuaUserCache, nodeId, workId string, retryNum int,
 		fmt.Println(err)
 		return "", nil
 	}
-	if strings.Contains(string(body), "502 Bad Gateway") || strings.Contains(string(body), "504 Gateway Time-out") {
+	if strings.Contains(string(body), "502 Bad Gateway") || strings.Contains(string(body), "504 Gateway Time-out") || strings.Contains(string(body), `"status":false,"_code":500`) {
 		time.Sleep(time.Millisecond * 150) //延迟
 		return GetWorkApi(UserCache, nodeId, workId, retryNum-1, err)
 	}
@@ -1358,7 +1358,7 @@ func SubmitWorkApi(cache YingHuaUserCache, workId, answerId string, answers qent
 	defer resp.Body.Close()
 	// Optionally, read the response body
 	bodyBytes, _ := ioutil.ReadAll(resp.Body)
-	if strings.Contains(string(bodyBytes), "502 Bad Gateway") || strings.Contains(string(bodyBytes), "504 Gateway Time-out") {
+	if strings.Contains(string(bodyBytes), "502 Bad Gateway") || strings.Contains(string(bodyBytes), "504 Gateway Time-out") || strings.Contains(string(bodyBytes), `"status":false,"_code":500`) {
 		time.Sleep(time.Millisecond * 150) //延迟
 		return SubmitWorkApi(cache, workId, answerId, answers, finish, retryNum-1, err)
 	}
@@ -1414,7 +1414,7 @@ func WorkedFinallyDetailApi(userCache YingHuaUserCache, courseId, nodeId, workId
 		fmt.Println(err)
 		return "", err
 	}
-	if strings.Contains(string(body), "502 Bad Gateway") || strings.Contains(string(body), "504 Gateway Time-out") {
+	if strings.Contains(string(body), "502 Bad Gateway") || strings.Contains(string(body), "504 Gateway Time-out") || strings.Contains(string(body), `"status":false,"_code":500`) {
 		time.Sleep(time.Millisecond * 150) //延迟
 		return WorkedFinallyDetailApi(userCache, courseId, nodeId, workId, retryNum-1, err)
 	}
@@ -1470,7 +1470,7 @@ func ExamFinallyDetailApi(userCache YingHuaUserCache, courseId, nodeId, workId s
 		fmt.Println(err)
 		return "", err
 	}
-	if strings.Contains(string(body), "502 Bad Gateway") || strings.Contains(string(body), "504 Gateway Time-out") {
+	if strings.Contains(string(body), "502 Bad Gateway") || strings.Contains(string(body), "504 Gateway Time-out") || strings.Contains(string(body), `"status":false,"_code":500`) {
 		time.Sleep(time.Millisecond * 150) //延迟
 		return ExamFinallyDetailApi(userCache, courseId, nodeId, workId, retryNum-1, err)
 	}
