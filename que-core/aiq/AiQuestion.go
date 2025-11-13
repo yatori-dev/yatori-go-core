@@ -610,7 +610,7 @@ func DeepSeekChatReplyApi(model,
 	return content, nil
 }
 
-// SiliconFlowReplyApi DeepSeek API
+// SiliconFlowReplyApi 硅基流动 API
 func SiliconFlowReplyApi(model,
 	apiKey string,
 	aiChatMessages AIChatMessages,
