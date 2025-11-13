@@ -56,7 +56,7 @@ func ResponseTurnQuestion(question qentity.Question, response string) qentity.Qu
 func handleMultipleChoice(topic qentity.Question) AIChatMessages {
 	problem := buildProblemHeader("多选题", topic)
 	return AIChatMessages{Messages: []Message{
-		{Role: "system", Content: "接下来你只需要回答选项对应内容即可...格式：[\"选项1\",\"选项2\"]"},
+		{Role: "system", Content: `接下来你只需要回答选项对应内容即可...格式：["选项1","选项2"]`},
 		{Role: "system", Content: "就算你不知道选什么也随机选...无需回答任何解释！！！"},
 		{Role: "system", Content: exampleMultipleChoice()},
 		{Role: "user", Content: problem},
@@ -67,7 +67,7 @@ func handleMultipleChoice(topic qentity.Question) AIChatMessages {
 func handleTrueFalse(topic qentity.Question) AIChatMessages {
 	problem := buildProblemHeader("判断题", topic)
 	return AIChatMessages{Messages: []Message{
-		{Role: "system", Content: "接下来你只需要回答“正确”或者“错误”即可...格式：[\"正确\"]"},
+		{Role: "system", Content: `接下来你只需要回答“正确”或者“错误”即可...格式：["正确"]`},
 		{Role: "system", Content: "就算你不知道选什么也随机选...无需回答任何解释！！！"},
 		{Role: "system", Content: exampleTrueFalse()},
 		{Role: "user", Content: problem},
@@ -78,7 +78,7 @@ func handleTrueFalse(topic qentity.Question) AIChatMessages {
 func handleFillInTheBlank(topic qentity.Question) AIChatMessages {
 	problem := buildProblemHeader("填空题", topic)
 	return AIChatMessages{Messages: []Message{
-		{Role: "system", Content: "其中，“（answer_数字）”相关字样的地方是你需要填写答案的地方，回答时请严格遵循json格式：[\"答案1\",\"答案2\"]"},
+		{Role: "system", Content: `其中，“（answer_数字）”相关字样的地方是你需要填写答案的地方，回答时请严格遵循json格式：["答案1","答案2"]`},
 		{Role: "system", Content: "就算你不知道选什么也随机选...无需回答任何解释！！！"},
 		{Role: "system", Content: exampleFillInTheBlank()},
 		{Role: "user", Content: problem},
@@ -120,7 +120,7 @@ func handleEssayAnswer(topic qentity.Question) AIChatMessages {
 func handleMatchingAnswer(topic qentity.Question) AIChatMessages {
 	problem := buildProblemHeader(topic.Type, topic)
 	return AIChatMessages{Messages: []Message{
-		{Role: "system", Content: "接下来你只需要以json格式回答选项对应内容即可，比如：[\"xxx->xxx\",\"xxx->xxx\"]"},
+		{Role: "system", Content: `接下来你只需要以json格式回答选项对应内容即可，比如：["xxx->xxx","xxx->xxx"]`},
 		{Role: "system", Content: "就算你不知道选什么也随机按指定要求格式回答...无需回答任何解释！！！"},
 		{Role: "system", Content: exampleMatchingAnswer()},
 		{Role: "user", Content: problem},
