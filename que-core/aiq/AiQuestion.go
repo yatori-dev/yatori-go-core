@@ -55,6 +55,8 @@ func AggregationAIApi(url,
 		return MetaAIReplyApi(model, apiKey, aiChatMessages, 5, nil)
 	case ctype.DeepSeek:
 		return DeepSeekChatReplyApi(model, apiKey, aiChatMessages, 5, nil)
+	case ctype.Silicon:
+		return SiliconFlowReplyApi(model, apiKey, aiChatMessages, 5, nil)
 	case ctype.Other:
 		return OtherChatReplyApi(url, model, apiKey, aiChatMessages, 5, nil)
 	default:
@@ -545,6 +547,93 @@ func DeepSeekChatReplyApi(model,
 		model = "deepseek-chat" //默认模型
 	}
 	url := "https://api.deepseek.com/chat/completions"
+	requestBody := map[string]interface{}{
+		"model":           model,
+		"temperature":     0.2,
+		"messages":        aiChatMessages.Messages,
+		"response_format": map[string]string{"type": "json_object"},
+	}
+
+	jsonData, err := json.Marshal(requestBody)
+	if err != nil {
+		return "", fmt.Errorf("failed to marshal JSON data: %v", err)
+	}
+
+	req, err := http.NewRequest("POST", url, bytes.NewBuffer(jsonData))
+	if err != nil {
+		return "", fmt.Errorf("failed to create HTTP request: %v", err)
+	}
+
+	req.Header.Set("Authorization", "Bearer "+apiKey)
+	req.Header.Set("Content-Type", "application/json")
+
+	resp, err := client.Do(req)
+	if err != nil {
+		time.Sleep(100 * time.Millisecond)
+		return DouBaoChatReplyApi(model, apiKey, aiChatMessages, retryNum-1, fmt.Errorf("failed to execute HTTP request: %v", err))
+
+	}
+	defer resp.Body.Close()
+
+	body, err := ioutil.ReadAll(resp.Body)
+	if err != nil {
+		time.Sleep(100 * time.Millisecond)
+		return DouBaoChatReplyApi(model, apiKey, aiChatMessages, retryNum-1, fmt.Errorf("failed to read response body: %v", err))
+	}
+
+	var responseMap map[string]interface{}
+	if err := json.Unmarshal(body, &responseMap); err != nil {
+		time.Sleep(100 * time.Millisecond)
+		return DouBaoChatReplyApi(model, apiKey, aiChatMessages, retryNum-1, fmt.Errorf("failed to parse JSON response: %v    response body: %s", err, body))
+	}
+	//处理异常
+	resultMsg, ok := responseMap["message"].(string)
+	if ok && strings.Contains(resultMsg, "Request processing has failed") {
+		return DeepSeekChatReplyApi(model, apiKey, aiChatMessages, retryNum-1, fmt.Errorf("AI回复内容未找到，AI返回信息：%s", string(body)))
+	}
+	choices, ok := responseMap["choices"].([]interface{})
+	if !ok || len(choices) == 0 {
+		log.Printf("unexpected response structure: %v", responseMap)
+		return "", fmt.Errorf("AI回复内容未找到，AI返回信息：" + string(body))
+	}
+
+	message, ok := choices[0].(map[string]interface{})["message"].(map[string]interface{})
+	if !ok {
+		return "", fmt.Errorf("failed to parse message from response")
+	}
+
+	content, ok := message["content"].(string)
+	if !ok {
+		return "", fmt.Errorf("content field missing or not a string in response")
+	}
+
+	return content, nil
+}
+
+// SiliconFlowReplyApi DeepSeek API
+func SiliconFlowReplyApi(model,
+	apiKey string,
+	aiChatMessages AIChatMessages,
+	retryNum int, /*最大重连次数*/
+	lastErr error,
+) (string, error) {
+	if retryNum < 0 { //重连次数用完直接返回
+		return "", lastErr
+	}
+
+	tr := &http.Transport{
+		TLSClientConfig: &tls.Config{
+			InsecureSkipVerify: true,
+		},
+	}
+	client := &http.Client{
+		Transport: tr,
+		Timeout:   60 * time.Second, // Set connection and read timeout
+	}
+	if model == "" {
+		model = "deepseek-chat" //默认模型
+	}
+	url := "https://api.siliconflow.cn/v1/chat/completions"
 	requestBody := map[string]interface{}{
 		"model":           model,
 		"temperature":     0.2,

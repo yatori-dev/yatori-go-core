@@ -10,5 +10,6 @@ const (
 	OpenAi   AiType = "OPENAI"
 	DeepSeek AiType = "DEEPSEEK"
 	MetaAi   AiType = "METAAI"
+	Silicon  AiType = "SILICON"
 	Other    AiType = "OTHER"
 )
