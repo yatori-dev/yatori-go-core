@@ -183,6 +183,7 @@ func turnTypeStr(origin string) string {
 	return "其他"
 }
 
+// Deprecated: 此方法将在未来版本中删除
 // 组装AI问题消息
 func AIProblemMessage(testPaperTitle string, question qentity.Question) aiq.AIChatMessages {
 	topicType := question.Type
