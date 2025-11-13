@@ -89,7 +89,7 @@ func handleFillInTheBlank(topic qentity.Question) AIChatMessages {
 func handleShortAnswer(topic qentity.Question) AIChatMessages {
 	problem := buildProblemHeader("简答题", topic)
 	return AIChatMessages{Messages: []Message{
-		{Role: "system", Content: "这是一个简答题，回答时请严格遵循json格式：[\"答案\"]，注意不要拆分答案！！！"},
+		{Role: "system", Content: `这是一个简答题，回答时请严格遵循json格式，包括换行等特殊符号也要遵循json语法：["答案"]，注意不要拆分答案！！！`},
 		//{Role: "system", Content: "就算你不知道选什么也随机选...无需回答任何解释！！！"},
 		{Role: "system", Content: exampleShortAnswer()},
 		{Role: "user", Content: problem},
@@ -100,7 +100,7 @@ func handleShortAnswer(topic qentity.Question) AIChatMessages {
 func handleTermExplanationAnswer(topic qentity.Question) AIChatMessages {
 	problem := buildProblemHeader(topic.Type, topic)
 	return AIChatMessages{Messages: []Message{
-		{Role: "system", Content: "这是一个名词解释题，回答时请严格遵循json格式：[\"答案\"]，注意不要拆分答案！！！"},
+		{Role: "system", Content: `这是一个名词解释题，回答时请严格遵循json格式，包括换行等特殊符号也要遵循json语法：["答案"]，注意不要拆分答案！！！`},
 		{Role: "system", Content: exampleTermExplanationAnswer()},
 		{Role: "user", Content: problem},
 	}}
@@ -110,7 +110,7 @@ func handleTermExplanationAnswer(topic qentity.Question) AIChatMessages {
 func handleEssayAnswer(topic qentity.Question) AIChatMessages {
 	problem := buildProblemHeader(topic.Type, topic)
 	return AIChatMessages{Messages: []Message{
-		{Role: "system", Content: `这是一个论述题，回答时请严格遵循json格式：["答案"]，注意不要拆分答案！！！`},
+		{Role: "system", Content: `这是一个论述题，回答时请严格遵循json格式，包括换行等特殊符号也要遵循json语法：["答案"]，注意不要拆分答案！！！`},
 		{Role: "system", Content: exampleEssayAnswer()},
 		{Role: "user", Content: problem},
 	}}
