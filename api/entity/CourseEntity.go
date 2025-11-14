@@ -310,7 +310,8 @@ func GetAIAnswer(as AnswerSetter, userID string, url, model string, aiType ctype
 	err = json.Unmarshal([]byte(aiAnswer), &answers)
 	if err != nil {
 		answers = []string{"A"}
-		fmt.Println("AI回复解析错误，已采用随机答案:", err, fmt.Sprintf("题目：%v \nAI回复： %v", aiChatMessages, aiAnswer))
+		//fmt.Println("AI回复解析错误，已采用随机答案:", err, fmt.Sprintf("题目：%v \nAI回复： %v", aiChatMessages, aiAnswer))
+		log.Print(log.INFO, "AI回复解析错误，已采用随机答案:", err.Error(), fmt.Sprintf("题目：%v \nAI回复： %v", aiChatMessages, aiAnswer))
 	}
 
 	as.SetAnswers(answers)
