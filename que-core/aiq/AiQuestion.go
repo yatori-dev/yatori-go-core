@@ -111,10 +111,10 @@ func TongYiChatReplyApi(
 
 	url := "https://dashscope.aliyuncs.com/compatible-mode/v1/chat/completions"
 	requestBody := map[string]interface{}{
-		"model":           model,
-		"temperature":     0.2,
-		"messages":        aiChatMessages.Messages,
-		"response_format": map[string]string{"type": "json_object"},
+		"model":       model,
+		"temperature": 0.2,
+		"messages":    aiChatMessages.Messages,
+		//"response_format": map[string]string{"type": "json_object"},
 	}
 
 	jsonData, err := json.Marshal(requestBody)
@@ -198,10 +198,10 @@ func ChatGLMChatReplyApi(
 
 	url := "https://open.bigmodel.cn/api/paas/v4/chat/completions"
 	requestBody := map[string]interface{}{
-		"model":           model,
-		"temperature":     0.2,
-		"messages":        aiChatMessages.Messages,
-		"response_format": map[string]string{"type": "json_object"},
+		"model":       model,
+		"temperature": 0.2,
+		"messages":    aiChatMessages.Messages,
+		//"response_format": map[string]string{"type": "json_object"},
 	}
 
 	jsonData, err := json.Marshal(requestBody)
@@ -284,10 +284,10 @@ func XingHuoChatReplyApi(model,
 
 	url := "https://spark-api-open.xf-yun.com/v1/chat/completions"
 	requestBody := map[string]interface{}{
-		"model":           model,
-		"temperature":     0.2,
-		"messages":        aiChatMessages.Messages,
-		"response_format": map[string]string{"type": "json_object"},
+		"model":       model,
+		"temperature": 0.2,
+		"messages":    aiChatMessages.Messages,
+		//"response_format": map[string]string{"type": "json_object"},
 	}
 
 	jsonData, err := json.Marshal(requestBody)
@@ -376,10 +376,10 @@ func DouBaoChatReplyApi(model,
 
 	url := "https://ark.cn-beijing.volces.com/api/v3/chat/completions"
 	requestBody := map[string]interface{}{
-		"model":           model,
-		"temperature":     0.2,
-		"messages":        aiChatMessages.Messages,
-		"response_format": map[string]string{"type": "json_object"},
+		"model":       model,
+		"temperature": 0.2,
+		"messages":    aiChatMessages.Messages,
+		//"response_format": map[string]string{"type": "json_object"},
 	}
 
 	jsonData, err := json.Marshal(requestBody)
@@ -461,10 +461,10 @@ func OpenAiReplyApi(model,
 
 	url := "https://api.openai.com/v1/responses"
 	requestBody := map[string]interface{}{
-		"model":           model,
-		"temperature":     0.2,
-		"input":           aiChatMessages.Messages,
-		"response_format": map[string]string{"type": "json_object"},
+		"model":       model,
+		"temperature": 0.2,
+		"input":       aiChatMessages.Messages,
+		//"response_format": map[string]string{"type": "json_object"},
 	}
 
 	jsonData, err := json.Marshal(requestBody)
@@ -635,10 +635,10 @@ func SiliconFlowReplyApi(model,
 	}
 	url := "https://api.siliconflow.cn/v1/chat/completions"
 	requestBody := map[string]interface{}{
-		"model":           model,
-		"temperature":     0.2,
-		"messages":        aiChatMessages.Messages,
-		"response_format": map[string]string{"type": "json_object"},
+		"model":       model,
+		"temperature": 0.2,
+		"messages":    aiChatMessages.Messages,
+		//"response_format": map[string]string{"type": "json_object"},
 	}
 
 	jsonData, err := json.Marshal(requestBody)
@@ -765,6 +765,7 @@ func MetaAIReplyApi(model, apiKey string, aiChatMessages AIChatMessages, retryNu
 	if err := json.Unmarshal(body, &responseMap); err != nil {
 		time.Sleep(100 * time.Millisecond)
 		return MetaAIReplyApi(model, apiKey, aiChatMessages, retryNum-1, lastErr)
+		return MetaAIReplyApi(model, apiKey, aiChatMessages, retryNum-1, lastErr)
 	}
 	//处理异常
 	resultMsg, ok := responseMap["message"].(string)
@@ -799,10 +800,10 @@ func OtherChatReplyApi(url,
 		Timeout:   60 * time.Second, // Set connection and read timeout
 	}
 	requestBody := map[string]interface{}{
-		"model":           model,
-		"temperature":     0.2,
-		"messages":        aiChatMessages.Messages,
-		"response_format": map[string]string{"type": "json_object"},
+		"model":       model,
+		"temperature": 0.2,
+		"messages":    aiChatMessages.Messages,
+		//"response_format": map[string]string{"type": "json_object"},
 	}
 
 	jsonData, err := json.Marshal(requestBody)
