@@ -77,9 +77,9 @@ type PointWorkDto struct {
 	PUID        string
 	KToken      string
 	Enc         string
-
-	Type  ctype.CardType
-	IsSet bool
+	IsJob       bool //是否为任务点
+	Type        ctype.CardType
+	IsSet       bool
 }
 
 // 外链

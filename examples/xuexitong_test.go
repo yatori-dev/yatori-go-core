@@ -469,7 +469,7 @@ func TestXueXiToFlushCourse(t *testing.T) {
 	utils.YatoriCoreInit()
 	//测试账号
 	setup()
-	user := global.Config.Users[64]
+	user := global.Config.Users[65]
 
 	userCache := xuexitongApi.XueXiTUserCache{
 		Name:     user.Account,
@@ -487,7 +487,7 @@ func TestXueXiToFlushCourse(t *testing.T) {
 		//if course.CourseName != "解读中国经济发展的密码" {
 		//	continue
 		//}
-		if course.CourseName != "机械零件加工工艺" {
+		if course.CourseName != "2025秋中共党史" {
 			continue
 		}
 		// 6c444b8d5c6203ee2f2aef4b76f5b2ce qrcEnc
@@ -538,7 +538,7 @@ func TestXueXiToFlushCourse(t *testing.T) {
 			log.Printf("ID.%d(%s/%s)正在执行任务点\n",
 				item,
 				pointAction.Knowledge[index].Label, pointAction.Knowledge[index].Name)
-			if pointAction.Knowledge[index].Label != "8.6" {
+			if pointAction.Knowledge[index].Label != "2.1" {
 				//fmt.Println("断点")
 				continue
 			}
@@ -565,10 +565,10 @@ func TestXueXiToFlushCourse(t *testing.T) {
 					//if videoDTO.IsPassed == true { //过滤完成的
 					//	continue
 					//}
-					//if !videoDTO.IsJob {
-					//	fmt.Println("(", videoDTO.Title, ")", "该视频为非任务点，已自动跳过")
-					//	continue
-					//}
+					if !videoDTO.IsJob {
+						fmt.Println("(", videoDTO.Title, ")", "该视频为非任务点，已自动跳过")
+						continue
+					}
 					videoDTO.Enc = enc
 					point.ExecuteVideoTest(&userCache, &videoDTO, key, course.Cpi) //常规
 					//point.ExecuteFastVideo(&userCache, &videoDTO) //秒刷

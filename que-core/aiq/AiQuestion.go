@@ -548,10 +548,10 @@ func DeepSeekChatReplyApi(model,
 	}
 	url := "https://api.deepseek.com/chat/completions"
 	requestBody := map[string]interface{}{
-		"model":           model,
-		"temperature":     0.2,
-		"messages":        aiChatMessages.Messages,
-		"response_format": map[string]string{"type": "json_object"},
+		"model":       model,
+		"temperature": 0.2,
+		"messages":    aiChatMessages.Messages,
+		//"response_format": map[string]string{"type": "json_object"},
 	}
 
 	jsonData, err := json.Marshal(requestBody)
@@ -675,8 +675,12 @@ func SiliconFlowReplyApi(model,
 	}
 	//处理异常
 	resultMsg, ok := responseMap["message"].(string)
-	if ok && strings.Contains(resultMsg, "Request processing has failed") {
-		return DeepSeekChatReplyApi(model, apiKey, aiChatMessages, retryNum-1, fmt.Errorf("AI回复内容未找到，AI返回信息：%s", string(body)))
+	if ok {
+		if strings.Contains(resultMsg, "Request processing has failed") {
+			return DeepSeekChatReplyApi(model, apiKey, aiChatMessages, retryNum-1, fmt.Errorf("AI回复内容未找到，AI返回信息：%s", string(body)))
+		} else if strings.Contains(resultMsg, `The API key format is incorrect`) { //有时候硅基流动会抽风
+			return DeepSeekChatReplyApi(model, apiKey, aiChatMessages, retryNum-1, fmt.Errorf("AI回复内容未找到，AI返回信息：%s", string(body)))
+		}
 	}
 	choices, ok := responseMap["choices"].([]interface{})
 	if !ok || len(choices) == 0 {

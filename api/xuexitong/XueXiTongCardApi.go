@@ -470,7 +470,87 @@ func (cache *XueXiTUserCache) WorkFetchQuestion(p *entity.PointWorkDto, retry in
 	}
 	//req.Header.Add("User-Agent", "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/139.0.0.0 Safari/537.36 Edg/139.0.0.0")
 	req.Header.Add("User-Agent", GetUA("mobile"))
-	req.Header.Add("Sec-Ch-Ua-Platform", "Windows")
+	//req.Header.Add("Sec-Ch-Ua-Platform", "Windows")
+	req.Header.Add("Accept", "*/*")
+	req.Header.Add("Host", "mooc1-api.chaoxing.com")
+	req.Header.Add("Connection", "keep-alive")
+	//req.Header.Add("Cookie", cache.cookie)
+	for _, cookie := range cache.cookies {
+		req.AddCookie(cookie)
+	}
+
+	res, err := client.Do(req)
+	if err != nil {
+		//fmt.Println(err)
+		time.Sleep(time.Duration(retry*5) * time.Second)
+		return cache.WorkFetchQuestion(p, retry-1, err)
+		//return "", err
+	}
+	defer res.Body.Close()
+
+	body, err := ioutil.ReadAll(res.Body)
+	if err != nil {
+		fmt.Println(err)
+		return "", nil
+	}
+	utils.CookiesAddNoRepetition(&cache.cookies, res.Cookies()) //赋值cookie
+	return string(body), nil
+}
+
+// 另外一个
+func (cache *XueXiTUserCache) WorkFetchNewQuestion(p *entity.PointWorkDto, retry int, lastErr error) (string, error) {
+	if retry < 0 {
+		return "", lastErr
+	}
+	method := "GET"
+
+	params := url.Values{}
+	params.Add("courseid", p.CourseID)
+	var SorW func(string, string) string
+	SorW = func(s string, w string) string {
+		if s != "0" {
+			return fmt.Sprintf("%s-%s", s, w)
+		}
+		return w
+	}
+	//https://mooc1-api.chaoxing.com/mooc-ans/work/phone/doHomeWork?keyboardDisplayRequiresUserAction=1&courseId=254400851&workAnswerId=54171892&workId=45344318&knowledgeId=1014007460&classId=125387404&oldWorkId=b17fc7cdb508465683b7d6a76b3f318c&jobId=&mooc=0&enc=f91dd202312a8455af627283cff524c1&cpi=486494165&originJobId=work-b17fc7cdb508465683b7d6a76b3f318c
+	params.Add("keyboardDisplayRequiresUserAction", "1")
+	params.Add("courseId", p.CourseID)
+	params.Add("workAnswerId", p.JobID)              //例子：54171892，次值待定
+	params.Add("workId", SorW(p.SchoolID, p.WorkID)) //例子：45344318，此值待定
+	params.Add("knowledgeId", strconv.Itoa(p.KnowledgeID))
+	params.Add("clazzId", p.ClassID)
+	params.Add("oldWorkId", p.WorkID)
+	params.Add("jobId", "")
+	params.Add("mooc", "0")
+	params.Add("enc", p.Enc)
+	params.Add("cpi", p.Cpi)
+	params.Add("originJobId", p.JobID)
+
+	tr := &http.Transport{
+		TLSClientConfig: &tls.Config{
+			InsecureSkipVerify: true, // 跳过证书验证，仅用于开发环境
+		},
+	}
+
+	//如果开启了IP代理，那么就直接添加代理
+	if cache.IpProxySW {
+		tr.Proxy = func(req *http.Request) (*url.URL, error) {
+			return url.Parse(cache.ProxyIP) // 设置代理
+		}
+	}
+	client := &http.Client{
+		Transport: tr,
+	}
+	req, err := http.NewRequest(method, PageMobileWorkY+"?"+params.Encode(), nil)
+
+	if err != nil {
+		fmt.Println(err)
+		return "", err
+	}
+	//req.Header.Add("User-Agent", "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/139.0.0.0 Safari/537.36 Edg/139.0.0.0")
+	req.Header.Add("User-Agent", GetUA("mobile"))
+	//req.Header.Add("Sec-Ch-Ua-Platform", "Windows")
 	req.Header.Add("Accept", "*/*")
 	req.Header.Add("Host", "mooc1-api.chaoxing.com")
 	req.Header.Add("Connection", "keep-alive")

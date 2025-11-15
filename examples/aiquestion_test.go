@@ -14,6 +14,33 @@ import (
 )
 
 // 学习通AI答题统一转换测试
+func TestSingleChoiceAIQuestion(t *testing.T) {
+	utils.YatoriCoreInit()
+	setup()
+	aiSetting := global.Config.Setting.AiSetting
+	matchingTurn := entity.ExamTurn{
+		XueXChoiceQue: entity.ChoiceQue{
+			Type:    qtype.SingleChoice,
+			Qid:     "",
+			Text:    "21.[单选题] 下列国民党右派制造的反革命活动（事变），其先后顺序是(       )①“七·一五”反革命政变②“四·一二”反革命政变③中山舰事件④西山会议",
+			Options: map[string]string{"A": "①②③④", "B": "②③①④", "C": "④①②③", "D": "④③②①"},
+		},
+	}
+	aiMessage := xuexitong.AIProblemMessage("考试", qtype.SingleChoice.String(), matchingTurn)
+	fmt.Println(aiMessage)
+	aiResult, err := aiq.AggregationAIApi(aiSetting.AiUrl, aiSetting.Model, aiSetting.AiType, aiMessage, aiSetting.APIKEY)
+	if err != nil {
+		t.Error(err)
+	}
+	var resultJson []string
+	err = json.Unmarshal([]byte(aiResult), &resultJson)
+	if err != nil {
+		t.Error(err)
+	}
+	fmt.Println(resultJson)
+}
+
+// 学习通AI答题统一转换测试
 func TestXXTAIQuestion(t *testing.T) {
 	utils.YatoriCoreInit()
 	setup()
