@@ -330,7 +330,14 @@ func ParseWorkQuestionAction(cache *xuexitong.XueXiTUserCache, workPoint *entity
 	var matchingQuestion []entity.MatchingQue
 	var otherQuestion []entity.OtherQue
 
-	question, _ := cache.WorkFetchQuestion(workPoint, 3, nil)
+	question, err := cache.WorkFetchQuestion(workPoint, 3, nil)
+
+	if err != nil {
+		//若无权限则采用第二种方式
+		if strings.Contains(err.Error(), `<p class="blankTips">无效的权限,code=2</p>`) {
+			question, err = cache.WorkFetch2Question(workPoint, 3, nil)
+		}
+	}
 	//先检测是否含有加密字体，如果有则先解密
 
 	// 使用 goquery 解析 HTML
@@ -597,7 +604,30 @@ func ParseWorkQuestionAction(cache *xuexitong.XueXiTUserCache, workPoint *entity
 					})
 				}
 			})
-
+		case qtype.JournalEntry.String(): //分录题，暂时按照填空题处理
+			//options := make(map[string][]string)
+			options := []string{}
+			fillQue := entity.FillQue{}
+			fillQue.Type = qtype.FillInTheBlank
+			fillQue.Qid = qs.ID
+			fillQue.Text = quesText
+			// 提取填空题
+			qdoc.Find("ul").Each(func(i int, selection *goquery.Selection) {
+				optionLetter := selection.Find("p").Text()
+				splitOptions := strings.Split(optionLetter, ":")
+				validParts := splitOptions[:0]
+				for _, part := range splitOptions {
+					if part != "" { // 忽略空值
+						validParts = append(validParts, part)
+					}
+				}
+				for j, _ := range validParts {
+					options = append(options, fmt.Sprintf("%d", j+1))
+					//options[s] = []string{fmt.Sprintf("填空%d", j+1)}
+				}
+			})
+			fillQue.OpFromAnswer = options
+			fillQuestion = append(fillQuestion, fillQue)
 		}
 	}
 
