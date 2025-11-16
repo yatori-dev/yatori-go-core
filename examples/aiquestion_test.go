@@ -49,7 +49,7 @@ func TestXXTAIQuestion(t *testing.T) {
 		XueXEssayQue: entity.EssayQue{
 			Type: qtype.Essay,
 			Qid:  "",
-			Text: "1.[论述题] 如何认识富国与强军的辩证统一关系？",
+			Text: "电影《八佰》是展现1937年沪会战期间四行仓库保卫战的一部历史战争片！电影中表现了国防动员的重要性。请在本讨论主题中谈谈你对电影中展示出的，国防动员各要素重要性的认识！！",
 		},
 		//XueXMatchingQue: entity.MatchingQue{
 		//	Type:    qtype.Matching,
