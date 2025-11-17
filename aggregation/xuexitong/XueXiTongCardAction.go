@@ -18,6 +18,7 @@ import (
 	que_core "github.com/yatori-dev/yatori-go-core/que-core/aiq"
 	"github.com/yatori-dev/yatori-go-core/que-core/qtype"
 	"github.com/yatori-dev/yatori-go-core/utils"
+	log2 "github.com/yatori-dev/yatori-go-core/utils/log"
 	"golang.org/x/net/html"
 )
 
@@ -633,6 +634,17 @@ func ParseWorkQuestionAction(cache *xuexitong.XueXiTUserCache, workPoint *entity
 			})
 			fillQue.OpFromAnswer = options
 			fillQuestion = append(fillQuestion, fillQue)
+		default:
+			log2.Print(log2.INFO, "[", cache.Name, "] ", "未知题目类型，类型为：", quesType, "默认采用论述题方式")
+			options := make(map[string][]string)
+			essayQue := entity.EssayQue{}
+			essayQue.Type = qtype.Essay
+			essayQue.Qid = qs.ID
+			essayQue.Text = quesText
+			// 简答暂时未发现有多个textarea标签出现 不做多答案处理
+			options["论述"] = []string{"论述"}
+			essayQue.OpFromAnswer = options
+			essayQuestion = append(essayQuestion, essayQue)
 		}
 	}
 

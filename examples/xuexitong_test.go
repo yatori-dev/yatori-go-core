@@ -538,7 +538,7 @@ func TestXueXiToFlushCourse(t *testing.T) {
 			log.Printf("ID.%d(%s/%s)正在执行任务点\n",
 				item,
 				pointAction.Knowledge[index].Label, pointAction.Knowledge[index].Name)
-			if pointAction.Knowledge[index].Label != "2.1" {
+			if pointAction.Knowledge[index].Label != "9.10" {
 				//fmt.Println("断点")
 				continue
 			}
