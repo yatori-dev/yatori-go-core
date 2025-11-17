@@ -379,6 +379,11 @@ func ParseWorkQuestionAction(cache *xuexitong.XueXiTUserCache, workPoint *entity
 		// 提取题目类型和题目文本
 		quesType := qdoc.Find(".Py-m1-title .quesType").Text()
 		quesType = extractQuestionType(quesType)
+		//傻逼学习通踏马题目内容都能放到题目类型里面，只能这么解决了
+		if strings.Contains(quesType, "辨析题") {
+			//fmt.Println(quesType)
+			quesType = "判断题" //将辨析题当判断题进行
+		}
 
 		// 提取题目文本和图片
 		// TODO 这里获取图片怎么都拿不到 不会了ಠ_ಠ
