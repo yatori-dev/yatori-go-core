@@ -201,7 +201,7 @@ func VideosListAction(UserCache *yinghuaApi.YingHuaUserCache, course YingHuaCour
 	signalSet := make(map[string]bool)
 	lastIndex := 999 //最后页码
 	for i := 1; i <= lastIndex; i++ {
-		listJson1, err := yinghuaApi.VideWatchRecodeApi(*UserCache, course.Id, i, 10, nil)
+		listJson1, err := yinghuaApi.VideWatchRecodeApi(*UserCache, course.Id, i, 20, nil)
 		if err != nil {
 			log.Print(log.INFO, `[`, UserCache.Account, `] `, log.BoldRed, err)
 		}
@@ -251,7 +251,7 @@ func VideosListAction(UserCache *yinghuaApi.YingHuaUserCache, course YingHuaCour
 	lastIndex2 := 999 //最后页码
 	//PC接口信息爬取
 	for i := 1; i <= lastIndex2; i++ {
-		listJson2, err := yinghuaApi.VideoWatchRecodePCListApi(*UserCache, course.Id, i, 10, nil)
+		listJson2, err := yinghuaApi.VideoWatchRecodePCListApi(*UserCache, course.Id, i, 20, nil)
 		if err != nil {
 			log.Print(log.INFO, `[`, UserCache.Account, `] `, log.BoldRed, err)
 		}
