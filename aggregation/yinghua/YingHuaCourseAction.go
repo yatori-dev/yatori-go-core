@@ -300,7 +300,7 @@ func VideosListAction(UserCache *yinghuaApi.YingHuaUserCache, course YingHuaCour
 // SubmitStudyTimeAction 提交学时
 func SubmitStudyTimeAction(userCache *yinghuaApi.YingHuaUserCache, nodeId string /*对应视屏节点ID*/, studyId string /*学习分配ID*/, studyTime int /*提交的学时*/) (string, error) {
 	//提交学时
-	sub, err := yinghuaApi.SubmitStudyTimeApi(*userCache, nodeId, studyId, studyTime, 10, nil)
+	sub, err := yinghuaApi.SubmitStudyTimeApi(*userCache, nodeId, studyId, studyTime, 20, nil)
 	//避免502情况
 	if err != nil { //其他错误
 		return "", err
@@ -312,7 +312,7 @@ func SubmitStudyTimeAction(userCache *yinghuaApi.YingHuaUserCache, nodeId string
 // {"_code":9,"status":false,"msg":"考试测试时间还未开始","result":{}}
 func ExamDetailAction(UserCache *yinghuaApi.YingHuaUserCache, nodeId string) ([]YingHuaExam, error) {
 	var examList []YingHuaExam
-	jsonStr, err := yinghuaApi.ExamDetailApi(*UserCache, nodeId, 10, nil)
+	jsonStr, err := yinghuaApi.ExamDetailApi(*UserCache, nodeId, 20, nil)
 	if err != nil {
 		return []YingHuaExam{}, errors.New("获取数据失败" + err.Error())
 	}
