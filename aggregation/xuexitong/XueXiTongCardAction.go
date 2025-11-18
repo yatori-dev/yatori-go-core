@@ -189,11 +189,19 @@ func VideoDtoFetchAction(cache *xuexitong.XueXiTUserCache, p *entity.PointVideoD
 		log.Println("VideoDtoFetchAction:", err)
 		return false, err
 	}
-	dtoken := gojsonq.New().JSONString(fetch).Find("dtoken").(string)
-	duration := gojsonq.New().JSONString(fetch).Find("duration").(float64)
+	dtoken, ok1 := gojsonq.New().JSONString(fetch).Find("dtoken").(string)
+	if ok1 {
+		p.DToken = dtoken
+	} else {
+		log2.Print(log2.INFO, fmt.Sprintf("[%s]", cache.Name), fmt.Sprintf("dtoken获取失败:%s", fetch))
+	}
+	duration, ok1 := gojsonq.New().JSONString(fetch).Find("duration").(float64)
+	if ok1 {
+		p.Duration = int(duration)
+	} else {
+		log2.Print(log2.INFO, fmt.Sprintf("[%s]", cache.Name), fmt.Sprintf("duration获取失败:%s", fetch))
+	}
 
-	p.DToken = dtoken
-	p.Duration = int(duration)
 	//titleStr, turnErr := url.QueryUnescape(gojsonq.New().JSONString(fetch).Find("filename").(string))
 	////转换
 	//if turnErr != nil {
@@ -202,8 +210,11 @@ func VideoDtoFetchAction(cache *xuexitong.XueXiTUserCache, p *entity.PointVideoD
 	//} else {
 	//	p.Title = titleStr
 	//}
-
-	if gojsonq.New().JSONString(fetch).Find("status").(string) == "success" {
+	stutas, ok := gojsonq.New().JSONString(fetch).Find("status").(string)
+	if !ok { //如果转化失败，可能是文件有问题
+		return false, nil
+	}
+	if stutas == "success" {
 		return true, nil
 	}
 	return false, errors.New("fetch failed")
