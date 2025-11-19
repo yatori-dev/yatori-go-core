@@ -580,9 +580,9 @@ func ParseWorkQuestionAction(cache *xuexitong.XueXiTUserCache, workPoint *entity
 			//连线题截取链接项
 			options := []string{}
 			selects := []string{}
-			fmt.Println(qdoc.Html())
-			doc.Find("ul.answerList-line").Each(func(i int, s *goquery.Selection) {
-				fmt.Printf("第 %d 组内容：\n", i+1)
+			//fmt.Println(qdoc.Html())
+			qdoc.Find("ul.answerList-line").Each(func(i int, s *goquery.Selection) {
+				//fmt.Printf("第 %d 组内容：\n", i+1)
 				if i%2 == 0 {
 					s.Find("li").Each(func(_ int, li *goquery.Selection) {
 						options = append(options, li.Text())
