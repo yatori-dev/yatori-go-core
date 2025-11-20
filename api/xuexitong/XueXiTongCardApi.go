@@ -351,11 +351,11 @@ func (cache *XueXiTUserCache) VideoDtoPlayReport(p *entity.PointVideoDto, playin
 	params.Set("clazzId", p.ClassID)
 	params.Set("objectId", p.ObjectID)
 	params.Set("userid", cache.UserID)
-	params.Set("isdrag", strconv.Itoa(isdrag)) //0为正常播放，2为点击暂停播放状态，3为点击开始播放
+	params.Set("isdrag", strconv.Itoa(isdrag)) //0为正常播放，2为点击暂停播放状态，3为点击开始播放。音频任务点是4
 	params.Set("enc", enc)
-	params.Set("rt", fmt.Sprintf("%f", p.RT))
+	params.Set("rt", fmt.Sprintf("%f", p.RT)) //Audio状态下是空值
 	//params.Set("retry", "0.9")
-	params.Set("dtype", "Video")
+	params.Set("dtype", "Video") //有Video，Audio
 	params.Set("view", "pc")
 	params.Set("rt", "0.9")
 	params.Set("courseId", p.CourseID)
