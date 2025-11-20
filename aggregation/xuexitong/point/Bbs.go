@@ -103,9 +103,9 @@ func PullBbsInfoAction(cache *xuexitong.XueXiTUserCache, p *entity.PointBBsDto) 
 func (bbsTopic *BBsTopic) AIAnswer(cache *xuexitong.XueXiTUserCache, p *entity.PointBBsDto, aiUrl, model string, aiType ctype.AiType, apiKey string) (string, error) {
 	que := entity.EssayQue{
 		Type:         qtype.Essay,
-		Text:         bbsTopic.Content,
 		OpFromAnswer: make(map[string][]string),
 	}
+	que.Text = bbsTopic.Title + "\n" + bbsTopic.Content //将题目数据加入到题目中
 
 	message := xuexitong2.AIProblemMessage(bbsTopic.Title, que.Type.String(), entity.ExamTurn{
 		XueXEssayQue: que,
