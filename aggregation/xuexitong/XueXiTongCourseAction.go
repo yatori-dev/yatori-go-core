@@ -125,8 +125,8 @@ func XueXiTPullCourseAction(cache *xuexitong.XueXiTUserCache) ([]XueXiTCourse, e
 			IsStart:       channel.Content.Isstart,
 			State:         channel.Content.State,
 		}
-		for _, course := range courseList {
-			if course.CourseID == courseID {
+		for _, cr := range courseList {
+			if cr.Key == course.Key {
 				flag = true
 				break
 			}
