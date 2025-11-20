@@ -480,6 +480,12 @@ func (q *EssayQue) AnswerExternalGet(exUrl string) {
 	if err != nil {
 		log2.Fatal(err)
 	}
+
+	//处理回复为空的情况
+	if len(request.Question.Answers) == 0 {
+		log.Print(log.INFO, "回复数据为空，已自动回复默认值A:", fmt.Sprintf("%x", request))
+		request.Question.Answers = []string{"A"}
+	}
 	//赋值答案
 	q.SetAnswers(request.Question.Answers)
 }
