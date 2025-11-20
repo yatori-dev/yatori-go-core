@@ -395,6 +395,8 @@ func ParseWorkQuestionAction(cache *xuexitong.XueXiTUserCache, workPoint *entity
 		if strings.Contains(quesType, "辨析题") {
 			//fmt.Println(quesType)
 			quesType = "判断题" //将辨析题当判断题进行
+		} else if strings.Contains(quesType, "投票题") {
+			quesType = "单选题"
 		}
 
 		// 提取题目文本和图片
