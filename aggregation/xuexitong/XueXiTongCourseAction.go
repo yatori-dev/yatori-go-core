@@ -11,6 +11,7 @@ import (
 	"strings"
 
 	ddddocr "github.com/Changbaiqi/ddddocr-go/utils"
+	"github.com/thedevsaddam/gojsonq"
 	ort "github.com/yalue/onnxruntime_go"
 	"github.com/yatori-dev/yatori-go-core/api/entity"
 	"github.com/yatori-dev/yatori-go-core/api/xuexitong"
@@ -27,10 +28,13 @@ type XueXiTCourse struct {
 	CourseName    string `json:"courseName"`    //课程名
 	CourseImage   string `json:"courseImage"`
 	// 两个标识 暂时不知道有什么用
-	CourseDataID int  `json:"courseDataId"`
-	ContentID    int  `json:"ContentID"`
-	IsStart      bool `json:"isstart"` //是否开课了，开课了为true，没开课为false。一般来说开课才能刷，不然刷不了的
-	State        int  `json:"state"`   //课程状态，0为正常，1为课程已经结束
+	CourseDataID   int     `json:"courseDataId"`
+	ContentID      int     `json:"ContentID"`
+	IsStart        bool    `json:"isstart"`        //是否开课了，开课了为true，没开课为false。一般来说开课才能刷，不然刷不了的
+	State          int     `json:"state"`          //课程状态，0为正常，1为课程已经结束
+	JobFinishCount int     `json:"jobFinishCount"` //完成的任务点数量
+	JobCount       int     `json:"jobCount"`       //一共多少任务点
+	JobRate        float64 `json:"jobRate"`        //完成进度
 }
 
 func (x *XueXiTCourse) ToString() string {
@@ -86,6 +90,7 @@ func XueXiTPullCourseAction(cache *xuexitong.XueXiTUserCache) ([]XueXiTCourse, e
 	// log2.Print(log2.INFO, "["+cache.Name+"] "+courses)
 
 	var courseList = make([]XueXiTCourse, 0)
+	keyCourse := map[string]int{}
 	for i, channel := range xueXiTCourse.ChannelList {
 		var flag = false
 		if channel.Content.Course.Data == nil && i >= 0 && i < len(xueXiTCourse.ChannelList) {
@@ -134,7 +139,27 @@ func XueXiTPullCourseAction(cache *xuexitong.XueXiTUserCache) ([]XueXiTCourse, e
 		if flag {
 			continue
 		}
+		keyCourse[course.Key] = len(courseList) //添加映射，方便后续处理
 		courseList = append(courseList, course)
+	}
+
+	//拉取课程完成度状态
+	courseListQueryData := ""
+	for i, course := range courseList {
+		courseListQueryData += fmt.Sprintf("%s_%d", course.Key, course.Cpi)
+		if i != len(courseList)-1 {
+			courseListQueryData += ","
+		}
+	}
+	courseStatusListJson, err := cache.CourseCompleteStatusApi(courseListQueryData, 5, nil)
+	courseStatusList := gojsonq.New().JSONString(courseStatusListJson).Find("jobArray")
+	//fmt.Println(courseStatusList)
+	for _, statusData := range courseStatusList.([]interface{}) {
+		index := strconv.Itoa(int(statusData.(map[string]any)["clazzId"].(float64)))
+		keyed := keyCourse[index]
+		courseList[keyed].JobFinishCount = int(statusData.(map[string]any)["jobFinishCount"].(float64))
+		courseList[keyed].JobRate = statusData.(map[string]any)["jobRate"].(float64)
+		courseList[keyed].JobCount = int(statusData.(map[string]any)["jobCount"].(float64))
 	}
 	return courseList, nil
 }
