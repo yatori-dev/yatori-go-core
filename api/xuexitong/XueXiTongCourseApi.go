@@ -11,6 +11,7 @@ import (
 	"strings"
 
 	"github.com/yatori-dev/yatori-go-core/utils"
+	"github.com/yatori-dev/yatori-go-core/utils/log"
 )
 
 // CourseListApi 拉取对应账号的课程数据
@@ -72,7 +73,7 @@ func (cache *XueXiTUserCache) CourseCompleteStatusApi(courseListData string, ret
 	req, err := http.NewRequest(method, urlStr, nil)
 
 	if err != nil {
-		fmt.Println(err)
+		log.Print(log.INFO, fmt.Sprintf("[%s]", cache.Name), err.Error())
 		return "", nil
 	}
 	req.Header.Add("Accept", "application/json, text/javascript, */*; q=0.01")
@@ -97,16 +98,15 @@ func (cache *XueXiTUserCache) CourseCompleteStatusApi(courseListData string, ret
 
 	res, err := client.Do(req)
 	if err != nil {
-		fmt.Println(err)
+		log.Print(log.INFO, fmt.Sprintf("[%s]", cache.Name), err.Error())
 		return "", nil
 	}
 	defer res.Body.Close()
 
 	body, err := ioutil.ReadAll(res.Body)
 	if err != nil {
-		fmt.Println(err)
+		log.Print(log.INFO, fmt.Sprintf("[%s]", cache.Name), err.Error())
 		return "", nil
 	}
-	fmt.Println(string(body))
 	return string(body), nil
 }
