@@ -29,7 +29,7 @@ func TestQsxtLogin(t *testing.T) {
 	//}
 	//fmt.Println(action)
 	qsxt.QsxtCookieLoginAction(&cache)
-	courseList, err := qsxt.PullCourseListACtion(&cache)
+	courseList, err := qsxt.PullCourseListAction(&cache)
 	if err != nil {
 		panic(err)
 	}
