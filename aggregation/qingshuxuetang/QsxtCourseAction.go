@@ -48,7 +48,7 @@ type QsxtNode struct {
 }
 
 // 拉取课程列表
-func PullCourseListACtion(cache *qingshuxuetang.QsxtUserCache) ([]QsxtCourse, error) {
+func PullCourseListAction(cache *qingshuxuetang.QsxtUserCache) ([]QsxtCourse, error) {
 	courseList := []QsxtCourse{}
 	coursesJson, err := cache.QsxtPullCourseApi(3, nil)
 	if err != nil {
