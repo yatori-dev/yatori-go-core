@@ -5,6 +5,8 @@ import (
 	"testing"
 	"time"
 
+	ddddocr "github.com/Changbaiqi/ddddocr-go/utils"
+	"github.com/thedevsaddam/gojsonq"
 	qsxt "github.com/yatori-dev/yatori-go-core/aggregation/qingshuxuetang"
 	"github.com/yatori-dev/yatori-go-core/api/qingshuxuetang"
 	"github.com/yatori-dev/yatori-go-core/global"
@@ -21,6 +23,11 @@ func TestQsxtLogin(t *testing.T) {
 		Password: user.Password,
 	}
 	//Cookie登录
+	//action, err2 := qsxt.QsxtLoginAction(&cache)
+	//if err2 != nil {
+	//	panic(err2)
+	//}
+	//fmt.Println(action)
 	qsxt.QsxtCookieLoginAction(&cache)
 	courseList, err := qsxt.PullCourseListACtion(&cache)
 	if err != nil {
@@ -38,11 +45,23 @@ func TestQsxtLogin(t *testing.T) {
 		if !course.AllowLearn {
 			continue
 		}
-		nodeList, err1 := qsxt.PullCourseNodeListAction(&cache, course)
+		videoList, err1 := qsxt.PullCourseNodeListAction(&cache, course)
 		if err1 != nil {
 			panic(err1)
 		}
-		for _, node := range nodeList {
+		workList, err2 := qsxt.PullWorkListAction(&cache, course)
+		if err2 != nil {
+			panic(err2)
+		}
+		for _, work := range workList {
+			action, err3 := qsxt.WriteWorkAction(&cache, work, true)
+			if err3 != nil {
+				panic(err3)
+			}
+			fmt.Println(action)
+		}
+		continue
+		for _, node := range videoList {
 			fmt.Println(node)
 			if node.NodeType == "chapter" {
 				continue
@@ -71,5 +90,32 @@ func TestQsxtLogin(t *testing.T) {
 			}
 			fmt.Println(submitResult)
 		}
+
 	}
+}
+
+func TestQsxtPullCodeList(t *testing.T) {
+	utils.YatoriCoreInit()
+	setup()
+	user := global.Config.Users[60]
+	cache := qingshuxuetang.QsxtUserCache{
+		Account:  user.Account,
+		Password: user.Password,
+	}
+	for i := 0; i < 50; i++ {
+		pullCodeJson, err := cache.QsxtPhoneValidationCodeApi()
+		if err != nil {
+			panic(err)
+		}
+		if codeImgBase64, ok := gojsonq.New().JSONString(pullCodeJson).Find("data.code").(string); ok {
+			image, err := utils.Base64ToImage(codeImgBase64)
+			if err != nil {
+				panic(err)
+			}
+			utils.SaveImageAsJPEG(image, "./qsxt_code/qsxt_code_"+fmt.Sprintf("%d", i)+".png")
+			verification := ddddocr.AutoOCRVerification(image)
+			fmt.Println(verification)
+		}
+	}
+
 }

@@ -246,6 +246,7 @@ func (cache *QsxtUserCache) StartStudyApi(classId, contentId, courseId, periodId
 	req.Header.Add("Content-Type", "application/json; charset=UTF-8")
 	req.Header.Add("Accept", "*/*")
 	req.Header.Add("Host", "api.qingshuxuetang.com")
+	req.Header.Add("Cookie", "__environment=production; AccessToken=eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJ1SWQiOjQ3NTAxNTE3LCJyb2xlIjoxMDAsIm1vY2tJZGVudGl0eSI6ZmFsc2UsImNsaWVudCI6InBjd2ViIiwib3JncyI6WyJ7XCJ0eXBlXCI6XCJkZ1wiLFwicm9sZXNcIjpbMV0sXCJpZFwiOjExNDA3OSxcIm91SWRcIjo3MzcsXCJvdVJvbGVzXCI6WzFdfSJdLCJleHAiOjE3NzIxNjc2NTEsImp0aSI6Imp3dDAxMzg3MzdmYjJkMzRiYTNhMDExZGMxMzcyYjY5NDcyIiwicGxhdGZvcm0iOiJxc3h0In0.x0p2RrY9oEUFRVeyKbasHxBCbL6mWpBQiC7rp3024VA")
 
 	res, err := client.Do(req)
 	if err != nil {

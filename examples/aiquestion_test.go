@@ -73,3 +73,8 @@ func TestXXTAIQuestion(t *testing.T) {
 	}
 	fmt.Println(resultJson)
 }
+
+func TestTypeValueTest(t *testing.T) {
+	var a int = -32767
+	fmt.Println(uint16(a))
+}
