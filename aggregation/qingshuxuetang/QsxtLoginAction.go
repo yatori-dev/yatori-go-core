@@ -12,6 +12,7 @@ import (
 	"github.com/yatori-dev/yatori-go-core/utils"
 )
 
+// 登录
 func QsxtLoginAction(cache *qingshuxuetang.QsxtUserCache) (string, error) {
 	for {
 		pullCodeJson, err := cache.QsxtPhoneValidationCodeApi()
