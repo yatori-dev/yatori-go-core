@@ -51,7 +51,7 @@ func QsxtLoginAction(cache *qingshuxuetang.QsxtUserCache) (string, error) {
 				continue
 			}
 			cache.VerCode = fmt.Sprintf("%d", calc)
-			fmt.Println(calc)
+			//fmt.Println(calc)
 		}
 		login_json, err := cache.QsxtPhoneLoginApi()
 		//fmt.Println(login_json)
