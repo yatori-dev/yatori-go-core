@@ -53,7 +53,7 @@ func QsxtLoginAction(cache *qingshuxuetang.QsxtUserCache) (string, error) {
 			fmt.Println(calc)
 		}
 		login_json, err := cache.QsxtPhoneLoginApi()
-		fmt.Println(login_json)
+		//fmt.Println(login_json)
 		if err != nil {
 			return "", err
 		}
