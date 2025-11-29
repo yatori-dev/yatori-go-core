@@ -39,11 +39,11 @@ type QsxtNode struct {
 	NodeName           string `json:"NodeName"`
 	Size               string `json:"Size"`
 	NodeType           string `json:"NodeType"` //有不同类型，chapter为章节节点一般不学，html类似于文档类型，video为视屏
-	Duration           int    `json:"Duration"`
+	Duration           int    `json:"Duration"` //视频总时长（ms）,如果是课件之类的这个值一般为0
 	NodeSize           int    `json:"NodeSize"`
-	StudyTimes         int    `json:"StudyTimes"`
-	TotalStudyDuration int    `json:"totalstudyDuration"`
-	LastStudyTime      int    `json:"lastStudyTime"`
+	StudyTimes         int    `json:"StudyTimes"`         //不知道是个啥
+	TotalStudyDuration int    `json:"totalstudyDuration"` //一共学习了多久
+	LastStudyTime      int    `json:"lastStudyTime"`      //最后学习的时间点
 	MaxStudyPosition   int    `json:"maxStudyPosition"`
 }
 
