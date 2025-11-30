@@ -15,7 +15,7 @@ type QsxtWork struct {
 	Type         int
 	TotalTime    int     //总时长
 	TotalScore   float64 //总分
-	AnswerStatus int     //答题状态
+	AnswerStatus int     //答题状态，打过了的话这个是2，没答过这个是-1，答过但没提交过只保存了那么就是0
 	StudentScore float64 //得分
 	TimeSpend    int     //花费时间
 	Free         bool
@@ -26,7 +26,7 @@ type QsxtWork struct {
 	ClassId      string
 	CourseId     string
 	PassScore    float64
-	AuditStatus  int
+	AuditStatus  int //从没答过或者答过但只保存这个是null，写过了并提交过的话这个是-1
 	FinalExam    bool
 	WebDetailUrl string
 }
