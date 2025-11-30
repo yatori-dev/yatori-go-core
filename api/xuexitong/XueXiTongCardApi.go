@@ -38,16 +38,16 @@ func (cache *XueXiTUserCache) PageMobileChapterCard(
 			InsecureSkipVerify: true, // 跳过证书验证，仅用于开发环境
 		},
 	}
-
+	client := &http.Client{
+		Transport: tr,
+	}
 	//如果开启了IP代理，那么就直接添加代理
 	if cache.IpProxySW {
 		tr.Proxy = func(req *http.Request) (*url.URL, error) {
 			return url.Parse(cache.ProxyIP) // 设置代理
 		}
 	}
-	client := &http.Client{
-		Transport: tr,
-	}
+
 	req, err := http.NewRequest(method, PageMobileChapterCard+"?"+params.Encode(), nil)
 
 	if err != nil {

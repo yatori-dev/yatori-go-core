@@ -1,6 +1,7 @@
 package qingshuxuetang
 
 import (
+	"crypto/tls"
 	"fmt"
 	"io/ioutil"
 	"net/http"
@@ -27,7 +28,14 @@ func (cache *QsxtUserCache) QsxtPhoneLoginApi() (string, error) {
 
 	payload := strings.NewReader(`{"name":"` + cache.Account + `","password":"` + cache.Password + `","type":1,"validation":{"sessionId":"` + cache.VerCodeSession + `","type":3,"userInput":"` + cache.VerCode + `"}}`)
 
-	client := &http.Client{}
+	tr := &http.Transport{
+		TLSClientConfig: &tls.Config{
+			InsecureSkipVerify: true, // 跳过证书验证，仅用于开发环境
+		},
+	}
+	client := &http.Client{
+		Transport: tr,
+	}
 	req, err := http.NewRequest(method, url, payload)
 
 	if err != nil {
@@ -68,7 +76,14 @@ func (cache *QsxtUserCache) QsxtPhoneValidationCodeApi() (string, error) {
 
 	payload := strings.NewReader(`{"recv":"` + cache.Account + `","validationType":3}`)
 
-	client := &http.Client{}
+	tr := &http.Transport{
+		TLSClientConfig: &tls.Config{
+			InsecureSkipVerify: true, // 跳过证书验证，仅用于开发环境
+		},
+	}
+	client := &http.Client{
+		Transport: tr,
+	}
 	req, err := http.NewRequest(method, url, payload)
 
 	if err != nil {

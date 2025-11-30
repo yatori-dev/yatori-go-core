@@ -1,6 +1,7 @@
 package qingshuxuetang
 
 import (
+	"crypto/tls"
 	"errors"
 	"fmt"
 	"io/ioutil"
@@ -16,7 +17,14 @@ func (cache *QsxtUserCache) QsxtPullCourseApi(retry int, lastErr error) (string,
 	url := "https://api.qingshuxuetang.com/v25_10/course/mine"
 	method := "GET"
 
-	client := &http.Client{}
+	tr := &http.Transport{
+		TLSClientConfig: &tls.Config{
+			InsecureSkipVerify: true, // 跳过证书验证，仅用于开发环境
+		},
+	}
+	client := &http.Client{
+		Transport: tr,
+	}
 	req, err := http.NewRequest(method, url, nil)
 
 	if err != nil {
@@ -50,11 +58,20 @@ func (cache *QsxtUserCache) QsxtPullCourseApi(retry int, lastErr error) (string,
 
 // 拉取课程进度接口
 func (cache *QsxtUserCache) QsxtPullCourseProcessApi(retry int, lastErr error) (string, error) {
-
+	if retry < 0 {
+		return "", lastErr
+	}
 	url := "https://api.qingshuxuetang.com/v25_10/course/extendInfo?courseIds%255B%255D=879,954,929,820&classId=45&period=24&schoolId=114079"
 	method := "GET"
 
-	client := &http.Client{}
+	tr := &http.Transport{
+		TLSClientConfig: &tls.Config{
+			InsecureSkipVerify: true, // 跳过证书验证，仅用于开发环境
+		},
+	}
+	client := &http.Client{
+		Transport: tr,
+	}
 	req, err := http.NewRequest(method, url, nil)
 
 	if err != nil {
@@ -95,7 +112,14 @@ func (cache *QsxtUserCache) QsxtPullCourseDetailApi(periodId, classId, schoolId,
 	url := "https://api.qingshuxuetang.com/v25_10/course/getCourseDetail?periodId=" + periodId + "&classId=" + classId + "&schoolId=" + schoolId + "&source=1&userClassId=0&courseId=" + courseId
 	method := "GET"
 
-	client := &http.Client{}
+	tr := &http.Transport{
+		TLSClientConfig: &tls.Config{
+			InsecureSkipVerify: true, // 跳过证书验证，仅用于开发环境
+		},
+	}
+	client := &http.Client{
+		Transport: tr,
+	}
 	req, err := http.NewRequest(method, url, nil)
 
 	if err != nil {
@@ -136,7 +160,14 @@ func (cache *QsxtUserCache) QsxtPullNodeApi(urlStr string, retry int, lastErr er
 	//url := "https://api.qingshuxuetang.com/v25_10/course/coursewareTree?sign=3952ef54d22df17936dac7aa6ef7ab20&id=5d4aafff9da4191eac39e616&timestamp=1761927389725"
 	method := "GET"
 
-	client := &http.Client{}
+	tr := &http.Transport{
+		TLSClientConfig: &tls.Config{
+			InsecureSkipVerify: true, // 跳过证书验证，仅用于开发环境
+		},
+	}
+	client := &http.Client{
+		Transport: tr,
+	}
 	req, err := http.NewRequest(method, urlStr, nil)
 
 	if err != nil {
@@ -177,7 +208,14 @@ func (cache *QsxtUserCache) QsxtPullCourseScoreApi(periodId, classId, schoolId, 
 	url := "https://api.qingshuxuetang.com/v25_10/score/studentScore?periodId=" + periodId + "&classId=" + classId + "&schoolId=" + schoolId + "&courseId=" + courseId
 	method := "GET"
 
-	client := &http.Client{}
+	tr := &http.Transport{
+		TLSClientConfig: &tls.Config{
+			InsecureSkipVerify: true, // 跳过证书验证，仅用于开发环境
+		},
+	}
+	client := &http.Client{
+		Transport: tr,
+	}
 	req, err := http.NewRequest(method, url, nil)
 
 	if err != nil {
@@ -217,7 +255,14 @@ func (cache *QsxtUserCache) PullStudyRecordApi(periodId, classId, schoolId, cour
 	url := "https://api.qingshuxuetang.com/v25_10/behavior/downloadStudyRecord?periodId=" + periodId + "&classId=" + classId + "&schoolId=" + schoolId + "&contentType=11&courseId=" + courseId
 	method := "GET"
 
-	client := &http.Client{}
+	tr := &http.Transport{
+		TLSClientConfig: &tls.Config{
+			InsecureSkipVerify: true, // 跳过证书验证，仅用于开发环境
+		},
+	}
+	client := &http.Client{
+		Transport: tr,
+	}
 	req, err := http.NewRequest(method, url, nil)
 
 	if err != nil {
@@ -271,7 +316,14 @@ func (cache *QsxtUserCache) StartStudyApi(classId, contentId, courseId, periodId
   "userClassId": 0
 }`)
 
-	client := &http.Client{}
+	tr := &http.Transport{
+		TLSClientConfig: &tls.Config{
+			InsecureSkipVerify: true, // 跳过证书验证，仅用于开发环境
+		},
+	}
+	client := &http.Client{
+		Transport: tr,
+	}
 	req, err := http.NewRequest(method, url, payload)
 
 	if err != nil {
@@ -307,7 +359,9 @@ func (cache *QsxtUserCache) StartStudyApi(classId, contentId, courseId, periodId
 
 // 提交学时接口，在使用该接口前必须要前使用StartStudyApi才能正常提交学时
 func (cache *QsxtUserCache) SubmitStudyTimeApi(schoolId, serverRecordId string, position int, isEnd bool, retry int, lastErr error) (string, error) {
-
+	if retry < 0 {
+		return "", lastErr
+	}
 	url := "https://api.qingshuxuetang.com/v25_10/behavior/studyRecordContinue"
 	method := "POST"
 	payloadStr := `{
@@ -332,7 +386,14 @@ func (cache *QsxtUserCache) SubmitStudyTimeApi(schoolId, serverRecordId string, 
 	}
 	payload := strings.NewReader(payloadStr)
 
-	client := &http.Client{}
+	tr := &http.Transport{
+		TLSClientConfig: &tls.Config{
+			InsecureSkipVerify: true, // 跳过证书验证，仅用于开发环境
+		},
+	}
+	client := &http.Client{
+		Transport: tr,
+	}
 	req, err := http.NewRequest(method, url, payload)
 
 	if err != nil {
@@ -351,8 +412,9 @@ func (cache *QsxtUserCache) SubmitStudyTimeApi(schoolId, serverRecordId string, 
 
 	res, err := client.Do(req)
 	if err != nil {
-		fmt.Println(err)
-		return "", err
+		//fmt.Println(err)
+		//return "", err
+		return cache.SubmitStudyTimeApi(schoolId, serverRecordId, position, isEnd, retry-1, err)
 	}
 	if res.StatusCode != 200 {
 		return "", errors.New(res.Status)

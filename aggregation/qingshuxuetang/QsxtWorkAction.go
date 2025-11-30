@@ -33,7 +33,7 @@ type QsxtWork struct {
 
 func PullWorkListAction(cache *qingshuxuetang.QsxtUserCache, course QsxtCourse) ([]QsxtWork, error) {
 	workList := []QsxtWork{}
-	workListJson, err := cache.PullWorkListApi(course.SemesterId, course.ClassId, course.SchoolId, course.CourseId)
+	workListJson, err := cache.PullWorkListApi(course.SemesterId, course.ClassId, course.SchoolId, course.CourseId, 3, nil)
 	if err != nil {
 		return workList, err
 	}
@@ -84,7 +84,7 @@ func PullWorkListAction(cache *qingshuxuetang.QsxtUserCache, course QsxtCourse) 
 
 // 写作业
 func WriteWorkAction(cache *qingshuxuetang.QsxtUserCache, work QsxtWork, isSubmit bool) (string, error) {
-	workQuestionsJson, err := cache.PullWorkQuestionListApi(work.ClassId, work.Id, work.SchoolId, work.CourseId)
+	workQuestionsJson, err := cache.PullWorkQuestionListApi(work.ClassId, work.Id, work.SchoolId, work.CourseId, 3, nil)
 	if err != nil {
 		return "", err
 	}
@@ -164,7 +164,7 @@ func WriteWorkAction(cache *qingshuxuetang.QsxtUserCache, work QsxtWork, isSubmi
 	if err != nil {
 		return "", err
 	}
-	saveJson, err := cache.SaveAnswerApi(string(marshal))
+	saveJson, err := cache.SaveAnswerApi(string(marshal), 3, nil)
 	if err != nil {
 		return "", err
 	}

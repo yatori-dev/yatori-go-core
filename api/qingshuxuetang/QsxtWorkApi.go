@@ -1,6 +1,7 @@
 package qingshuxuetang
 
 import (
+	"crypto/tls"
 	"fmt"
 	"io/ioutil"
 	"net/http"
@@ -8,13 +9,22 @@ import (
 )
 
 // 拉取作业列表
-func (cache *QsxtUserCache) PullWorkListApi(periodId, classId, schoolId, courseId string) (string, error) {
-
+func (cache *QsxtUserCache) PullWorkListApi(periodId, classId, schoolId, courseId string, retry int, lastErr error) (string, error) {
+	if retry < 0 {
+		return "", lastErr
+	}
 	//url := "https://api.qingshuxuetang.com/v25_10/quiz/search?periodId=24&classId=45&schoolId=114079&type=2&courseId=879"
 	urlStr := fmt.Sprintf("https://api.qingshuxuetang.com/v25_10/quiz/search?periodId=%s&classId=%s&schoolId=%s&type=2&courseId=%s", periodId, classId, schoolId, courseId)
 	method := "GET"
 
-	client := &http.Client{}
+	tr := &http.Transport{
+		TLSClientConfig: &tls.Config{
+			InsecureSkipVerify: true, // 跳过证书验证，仅用于开发环境
+		},
+	}
+	client := &http.Client{
+		Transport: tr,
+	}
 	req, err := http.NewRequest(method, urlStr, nil)
 
 	if err != nil {
@@ -47,13 +57,22 @@ func (cache *QsxtUserCache) PullWorkListApi(periodId, classId, schoolId, courseI
 }
 
 // 拉取试卷题目内容
-func (cache *QsxtUserCache) PullWorkQuestionListApi(classId, quizId, schoolId, courseId string) (string, error) {
-
+func (cache *QsxtUserCache) PullWorkQuestionListApi(classId, quizId, schoolId, courseId string, retry int, lastErr error) (string, error) {
+	if retry < 0 {
+		return "", lastErr
+	}
 	//urlStr := "https://api.qingshuxuetang.com/v25_10/quiz/detail?classId=45&quizId=2_69084c57c28a765d5459f6d7&schoolId=114079&courseId=879"
 	urlStr := fmt.Sprintf("https://api.qingshuxuetang.com/v25_10/quiz/detail?classId=%s&quizId=%s&schoolId=%s&courseId=%s", classId, quizId, schoolId, courseId)
 	method := "GET"
 
-	client := &http.Client{}
+	tr := &http.Transport{
+		TLSClientConfig: &tls.Config{
+			InsecureSkipVerify: true, // 跳过证书验证，仅用于开发环境
+		},
+	}
+	client := &http.Client{
+		Transport: tr,
+	}
 	req, err := http.NewRequest(method, urlStr, nil)
 
 	if err != nil {
@@ -97,7 +116,14 @@ func (cache *QsxtUserCache) SubmitAnswerApi(answer, questionId, quizId, schoolId
 	//payload := strings.NewReader(`{"questionAnswers": [{"answer": "B","questionId": "68d350735c711a0e952fb656"}],quizId": "2_69084c57c28a765d5459f6d7","schoolId": 114079}`)
 	payload := strings.NewReader(`{"questionAnswers": [{"answer": "` + answer + `","questionId": "` + questionId + `"}],"quizId": "` + quizId + `","schoolId": ` + schoolId + `}`)
 
-	client := &http.Client{}
+	tr := &http.Transport{
+		TLSClientConfig: &tls.Config{
+			InsecureSkipVerify: true, // 跳过证书验证，仅用于开发环境
+		},
+	}
+	client := &http.Client{
+		Transport: tr,
+	}
 	req, err := http.NewRequest(method, urlStr, payload)
 
 	if err != nil {
@@ -131,14 +157,23 @@ func (cache *QsxtUserCache) SubmitAnswerApi(answer, questionId, quizId, schoolId
 }
 
 // 保存答题
-func (cache *QsxtUserCache) SaveAnswerApi(answers string) (string, error) {
-
+func (cache *QsxtUserCache) SaveAnswerApi(answers string, retry int, lastErr error) (string, error) {
+	if retry < 0 {
+		return "", lastErr
+	}
 	url := "https://api.qingshuxuetang.com/v25_10/quiz/submit"
 	method := "POST"
 
 	payload := strings.NewReader(answers)
 
-	client := &http.Client{}
+	tr := &http.Transport{
+		TLSClientConfig: &tls.Config{
+			InsecureSkipVerify: true, // 跳过证书验证，仅用于开发环境
+		},
+	}
+	client := &http.Client{
+		Transport: tr,
+	}
 	req, err := http.NewRequest(method, url, payload)
 
 	if err != nil {
