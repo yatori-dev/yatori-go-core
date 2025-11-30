@@ -4,6 +4,7 @@ import (
 	"crypto/md5"
 	"crypto/tls"
 	"encoding/hex"
+	"errors"
 	"fmt"
 	"io/ioutil"
 	"net/http"
@@ -33,6 +34,8 @@ func (cache *XueXiTUserCache) PageMobileChapterCard(
 	params.Add("isPhone", "1")
 	params.Add("control", "true")
 	params.Add("cpi", strconv.Itoa(cpi))
+	//params.Add("pagestate", "0")
+	//params.Add("isMicroCourse", "false")
 	tr := &http.Transport{
 		TLSClientConfig: &tls.Config{
 			InsecureSkipVerify: true, // 跳过证书验证，仅用于开发环境
@@ -40,6 +43,19 @@ func (cache *XueXiTUserCache) PageMobileChapterCard(
 	}
 	client := &http.Client{
 		Transport: tr,
+		CheckRedirect: func(req *http.Request, via []*http.Request) error {
+			if len(via) >= 5 {
+				return errors.New("太多重定向")
+			}
+
+			// 复制 Cookie
+			if len(via) > 0 {
+				for _, c := range via[0].Cookies() {
+					req.AddCookie(c)
+				}
+			}
+			return nil // 允许重定向
+		},
 	}
 	//如果开启了IP代理，那么就直接添加代理
 	if cache.IpProxySW {
@@ -47,8 +63,10 @@ func (cache *XueXiTUserCache) PageMobileChapterCard(
 			return url.Parse(cache.ProxyIP) // 设置代理
 		}
 	}
-
-	req, err := http.NewRequest(method, PageMobileChapterCard+"?"+params.Encode(), nil)
+	//urlStr := "https://mooc1-api.chaoxing.com/knowledge/cards?clazzid=133129771&courseid=257616245&knowledgeid=1072936161&num=0&isPhone=1&control=true&cpi=492766448&pagestate=0&isMicroCourse=false"
+	//req, err := http.NewRequest(method, urlStr, nil)
+	//SSR页面-客户端章节任务卡片
+	req, err := http.NewRequest(method, "https://mooc1-api.chaoxing.com/knowledge/cards"+"?"+params.Encode(), nil)
 
 	if err != nil {
 		//fmt.Println(err)
@@ -60,15 +78,12 @@ func (cache *XueXiTUserCache) PageMobileChapterCard(
 		req.AddCookie(cookie)
 	}
 	req.Header.Add("User-Agent", GetUA("mobile"))
-	//req.Header.Add("User-Agent", "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/136.0.0.0 Safari/537.36 Edg/136.0.0.0")
 	req.Header.Add("Accept", "*/*")
 	req.Header.Add("Host", "mooc1-api.chaoxing.com")
 	req.Header.Add("Connection", "keep-alive")
 
 	res, err := client.Do(req)
 	if err != nil {
-		//fmt.Println(err)
-		//log2.Print(log2.INFO, err.Error())
 		return cache.PageMobileChapterCard(classId, courseId, knowledgeId, cardIndex, cpi, retry-1, err)
 	}
 	defer res.Body.Close()
@@ -79,6 +94,7 @@ func (cache *XueXiTUserCache) PageMobileChapterCard(
 		return "", nil
 	}
 	utils.CookiesAddNoRepetition(&cache.cookies, res.Cookies()) //赋值cookie
+
 	return string(body), nil
 }
 

@@ -30,9 +30,6 @@ const (
 	ApiChapterCards = "https://mooc1-api.chaoxing.com/gas/knowledge"
 	ApiPullChapter  = "https://mooc1-api.chaoxing.com/gas/clazz"
 
-	// PageMobileChapterCard SSR页面-客户端章节任务卡片
-	PageMobileChapterCard = "https://mooc1-api.chaoxing.com/knowledge/cards"
-
 	// APIChapterCardResource 接口-课程章节卡片资源
 	APIChapterCardResource = "https://mooc1-api.chaoxing.com/ananas/status"
 	// APIVideoPlayReport 接口-视频播放上报
@@ -51,12 +48,12 @@ const (
 	PageMobileWork  = "https://mooc1-api.chaoxing.com/android/mworkspecial"           // 这是个cxkitty中的
 	PageMobileWorkY = "https://mooc1-api.chaoxing.com/mooc-ans/work/phone/doHomeWork" // 这个是自己爬的
 
-	KEY = "u2oh6Vu^HWe4_AES" // 注意 Go 语言中字符串默认就是 UTF-8 编码
-	//APP_VERSION = "6.4.5"
-	APP_VERSION   = "6.6.4"
+	KEY         = "u2oh6Vu^HWe4_AES" // 注意 Go 语言中字符串默认就是 UTF-8 编码
+	APP_VERSION = "6.7.2"
+	//APP_VERSION   = "6.6.4"
 	DEVICE_VENDOR = "MI10"
-	BUILD         = "10831_263"
-	//BUILD           = "10903_285"
+	//BUILD         = "10831_263"
+	BUILD           = "10936_311"
 	ANDROID_VERSION = "Android 11"
 )
 

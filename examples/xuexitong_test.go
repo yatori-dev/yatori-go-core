@@ -469,7 +469,7 @@ func TestXueXiToFlushCourse(t *testing.T) {
 	utils.YatoriCoreInit()
 	//测试账号
 	setup()
-	user := global.Config.Users[62]
+	user := global.Config.Users[67]
 
 	userCache := xuexitongApi.XueXiTUserCache{
 		Name:     user.Account,
@@ -487,7 +487,7 @@ func TestXueXiToFlushCourse(t *testing.T) {
 		//if course.CourseName != "解读中国经济发展的密码" {
 		//	continue
 		//}
-		if course.CourseName != "大学生礼仪与形象设计" {
+		if course.CourseName != "生命与安全（机工版）" {
 			continue
 		}
 		// 6c444b8d5c6203ee2f2aef4b76f5b2ce qrcEnc
@@ -533,12 +533,15 @@ func TestXueXiToFlushCourse(t *testing.T) {
 					item,
 					pointAction.Knowledge[index].Label, pointAction.Knowledge[index].Name)
 				time.Sleep(500 * time.Millisecond)
-				continue
+				//continue
+				//if pointAction.Knowledge[index].Label == "6.3" {
+				//	fmt.Println("断点")
+				//}
 			}
 			log.Printf("ID.%d(%s/%s)正在执行任务点\n",
 				item,
 				pointAction.Knowledge[index].Label, pointAction.Knowledge[index].Name)
-			if pointAction.Knowledge[index].Label != "6.5" {
+			if pointAction.Knowledge[index].Label != "6.3" {
 				//fmt.Println("断点")
 				continue
 			}
@@ -553,7 +556,7 @@ func TestXueXiToFlushCourse(t *testing.T) {
 			}
 
 			// 视频刷取
-			if videoDTOs != nil && false {
+			if videoDTOs != nil && true {
 				for _, videoDTO := range videoDTOs {
 					card, enc, err := xuexitong.PageMobileChapterCardAction(
 						&userCache, key, courseId, videoDTO.KnowledgeID, videoDTO.CardIndex, course.Cpi)
