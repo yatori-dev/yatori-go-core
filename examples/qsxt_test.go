@@ -60,35 +60,36 @@ func TestQsxtLogin(t *testing.T) {
 			}
 			fmt.Println(action)
 		}
-		continue
-		for _, node := range videoList {
-			fmt.Println(node)
-			if node.NodeType == "chapter" {
-				continue
-			}
-			startId, err2 := qsxt.StartStudyTimeAction(&cache, node)
-			if err2 != nil {
-				fmt.Println(err2)
-			}
-			studyTime := 0 //当前累计学习了多久
-			maxTime := 600 //最大学习多长时间
-			for {
-				time.Sleep(60 * time.Second)
-				submitResult, err3 := qsxt.SubmitStudyTimeAction(&cache, node, startId, false)
+		if course.CoursewareLearnGainScore < course.CoursewareLearnTotalScore {
+			for _, node := range videoList {
+				fmt.Println(node)
+				if node.NodeType == "chapter" {
+					continue
+				}
+				startId, err2 := qsxt.StartStudyTimeAction(&cache, node)
+				if err2 != nil {
+					fmt.Println(err2)
+				}
+				studyTime := 0 //当前累计学习了多久
+				maxTime := 600 //最大学习多长时间
+				for {
+					time.Sleep(60 * time.Second)
+					submitResult, err3 := qsxt.SubmitStudyTimeAction(&cache, node, startId, false)
+					if err3 != nil {
+						fmt.Println(err3)
+					}
+					fmt.Println(submitResult)
+					studyTime += 60
+					if studyTime >= maxTime {
+						break
+					}
+				}
+				submitResult, err3 := qsxt.SubmitStudyTimeAction(&cache, node, startId, true)
 				if err3 != nil {
 					fmt.Println(err3)
 				}
 				fmt.Println(submitResult)
-				studyTime += 60
-				if studyTime >= maxTime {
-					break
-				}
 			}
-			submitResult, err3 := qsxt.SubmitStudyTimeAction(&cache, node, startId, true)
-			if err3 != nil {
-				fmt.Println(err3)
-			}
-			fmt.Println(submitResult)
 		}
 
 	}

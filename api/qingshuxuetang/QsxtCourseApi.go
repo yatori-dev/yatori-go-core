@@ -168,6 +168,47 @@ func (cache *QsxtUserCache) QsxtPullNodeApi(urlStr string, retry int, lastErr er
 	return string(body), nil
 }
 
+// 拉取对应课程的对应活动分数达标分布
+func (cache *QsxtUserCache) QsxtPullCourseScoreApi(periodId, classId, schoolId, courseId string, retry int, lastErr error) (string, error) {
+	if retry < 0 {
+		return "", lastErr
+	}
+
+	url := "https://api.qingshuxuetang.com/v25_10/score/studentScore?periodId=" + periodId + "&classId=" + classId + "&schoolId=" + schoolId + "&courseId=" + courseId
+	method := "GET"
+
+	client := &http.Client{}
+	req, err := http.NewRequest(method, url, nil)
+
+	if err != nil {
+		fmt.Println(err)
+		return "", err
+	}
+	req.Header.Add("User-Agent", "okhttp/4.2.2")
+	req.Header.Add("Connection", "Keep-Alive")
+	req.Header.Add("Authorization-QS", cache.Token)
+	req.Header.Add("Device-Trace-Id-QS", "b0afcf7e-a8ae-48f2-b438-66982a13dc16")
+	req.Header.Add("Device-Info-QS", "{\"appType\":1,\"appVersion\":\"25.10.0\",\"clientType\":2,\"deviceName\":\"xiaomi MI 5X\",\"netType\":1,\"osVersion\":\"8.1.0\"}")
+	req.Header.Add("User-Agent-QS", "QSXT")
+	req.Header.Add("Accept", "*/*")
+	req.Header.Add("Host", "api.qingshuxuetang.com")
+
+	res, err := client.Do(req)
+	if err != nil {
+		fmt.Println(err)
+		return "", err
+	}
+	defer res.Body.Close()
+
+	body, err := ioutil.ReadAll(res.Body)
+	if err != nil {
+		fmt.Println(err)
+		return "", err
+	}
+	//fmt.Println(string(body))
+	return string(body), nil
+}
+
 // 拉取课程任务点学习时间记录
 func (cache *QsxtUserCache) PullStudyRecordApi(periodId, classId, schoolId, courseId string, retry int, lastErr error) (string, error) {
 	if retry < 0 {

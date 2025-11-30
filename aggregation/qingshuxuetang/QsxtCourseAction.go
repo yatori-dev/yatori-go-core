@@ -9,22 +9,26 @@ import (
 )
 
 type QsxtCourse struct {
-	ClassId         string  `json:"classId"`
-	ProjectName     string  `json:"projectName"`
-	SchoolId        string  `json:"schoolId"`
-	SchoolName      string  `json:"schoolName"`
-	SemesterId      string  `json:"semesterId"` //学期ID
-	SemesterYear    string  `json:"semesterYear"`
-	SemesterName    string  `json:"semesterName"`
-	CourseId        string  `json:"courseId"`
-	CourseName      string  `json:"courseName"`
-	CourseCoverImg  string  `json:"courseCoverImg"`
-	HasCourseWare   bool    `json:"hasCourseWare"`
-	HasNewCourse    bool    `json:"hasNewCourse"`
-	StudyStatus     int     `json:"studyStatus"`
-	StudyStatusName string  `json:"studyStatusName"`
-	AllowLearn      bool    `json:"allowLearn"`
-	ClassCredit     float32 `json:"classCredit"`
+	ClassId                   string  `json:"classId"`
+	ProjectName               string  `json:"projectName"`
+	SchoolId                  string  `json:"schoolId"`
+	SchoolName                string  `json:"schoolName"`
+	SemesterId                string  `json:"semesterId"` //学期ID
+	SemesterYear              string  `json:"semesterYear"`
+	SemesterName              string  `json:"semesterName"`
+	CourseId                  string  `json:"courseId"`
+	CourseName                string  `json:"courseName"`
+	CourseCoverImg            string  `json:"courseCoverImg"`
+	HasCourseWare             bool    `json:"hasCourseWare"`
+	HasNewCourse              bool    `json:"hasNewCourse"`
+	StudyStatus               int     `json:"studyStatus"`
+	StudyStatusName           string  `json:"studyStatusName"`
+	AllowLearn                bool    `json:"allowLearn"`
+	ClassCredit               float32 `json:"classCredit"`
+	CoursewareLearnGainScore  float64 `json:"coursewareGainLearnScore"`  //课件学习当前获分
+	CoursewareLearnTotalScore float64 `json:"coursewareLearnTotalScore"` //课件学习总分
+	CourseWorkGainScore       float64 `json:"courseWorkGainScore"`       //课程作业获得的分数
+	CourseWorkTotalScore      float64 `json:"courseWorkTotalScore"`      //课程作业总分
 }
 
 type QsxtNode struct {
@@ -86,7 +90,7 @@ func PullCourseListAction(cache *qingshuxuetang.QsxtUserCache) ([]QsxtCourse, er
 										studyStatus := int(courseJson["studyStatus"].(float64))
 										studyStatusName := courseJson["studyStatusName"].(string)
 										allowLearn := courseJson["allowLearn"].(bool)
-										courseList = append(courseList, QsxtCourse{
+										course := QsxtCourse{
 											ClassId:         classId,
 											ProjectName:     projectName,
 											SchoolId:        schoolId,
@@ -100,7 +104,15 @@ func PullCourseListAction(cache *qingshuxuetang.QsxtUserCache) ([]QsxtCourse, er
 											StudyStatus:     studyStatus,
 											StudyStatusName: studyStatusName,
 											AllowLearn:      allowLearn,
-										})
+										}
+										//更新分数数据
+										_, err1 := UpdateCourseScore(cache, &course)
+										if err1 != nil {
+											return nil, err1
+										}
+
+										courseList = append(courseList, course)
+
 									}
 								}
 							}
@@ -228,6 +240,52 @@ func pullChapterAction(nodes []interface{}, course QsxtCourse, bigId, bigName, c
 		}
 	}
 	return nodeList
+}
+
+// 更新获取对应课程的分数信息
+func UpdateCourseScore(cache *qingshuxuetang.QsxtUserCache, course *QsxtCourse) (string, error) {
+	scoreJson, err := cache.QsxtPullCourseScoreApi(course.SemesterId, course.ClassId, course.SchoolId, course.CourseId, 3, nil)
+	if err != nil {
+		return "", err
+	}
+	pullStatus := gojsonq.New().JSONString(scoreJson).Find("hr")
+	if pullStatus == nil {
+		return "", fmt.Errorf(scoreJson)
+	}
+	if int(pullStatus.(float64)) != 0 {
+		return "", fmt.Errorf(scoreJson)
+	}
+	if scoresArrayJson, ok := gojsonq.New().JSONString(scoreJson).Find("data.rows").([]interface{}); ok {
+		for _, courseJson := range scoresArrayJson {
+			if courseObj, ok1 := courseJson.(map[string]interface{}); ok1 {
+				//过滤对应不上的课程
+				if fmt.Sprintf("%d", int(courseObj["id"].(float64))) != course.CourseId ||
+					fmt.Sprintf("%d", int(courseObj["periodId"].(float64))) != course.SemesterId {
+					continue
+				}
+				if usualScoresListJson, ok2 := courseObj["usualScores"].([]interface{}); ok2 {
+					for _, usualScoreJson := range usualScoresListJson {
+						if usualScoreObj, ok3 := usualScoreJson.(map[string]interface{}); ok3 {
+							usualScoreType := int(usualScoreObj["type"].(float64))
+							maxScore := usualScoreObj["maxScore"].(float64)
+							score := usualScoreObj["score"].(float64)
+							switch usualScoreType {
+							case 2: //课件观看
+								course.CoursewareLearnTotalScore = maxScore
+								course.CoursewareLearnGainScore = score
+								break
+							case 4: //作业
+								course.CourseWorkTotalScore = maxScore
+								course.CourseWorkGainScore = score
+							}
+						}
+					}
+				}
+
+			}
+		}
+	}
+	return scoreJson, nil
 }
 
 // 开始学习
