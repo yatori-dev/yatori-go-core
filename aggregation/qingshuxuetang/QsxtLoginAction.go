@@ -34,7 +34,7 @@ func QsxtLoginAction(cache *qingshuxuetang.QsxtUserCache) (string, error) {
 			if err != nil {
 				return "", err
 			}
-			utils.SaveImageAsJPEG(image, "./qsxt_code.png")
+			//utils.SaveImageAsJPEG(image, "./qsxt_code.png")
 			//verification := ddddocr.AutoOCRVerification(image)
 			dets, err := ddddocr.AutoDetectionForCalc(image, 7)
 			if err != nil {
