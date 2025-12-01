@@ -333,7 +333,7 @@ func (cache *XueXiTUserCache) PullWorkListHtmlApi(courseId string, classId strin
 	return string(body), nil
 }
 
-// PullExamEnterInformHtmlApi 拉取进入考试页面的html（这里面会有携带考试是否有滑块验证码等信息）
+// PullWorkEnterInformHtmlApi 拉取进入作业页面的html
 func (cache *XueXiTUserCache) PullWorkEnterInformHtmlApi(
 	taskrefId, msgId, courseId, userId, clazzId, enterType, encTask string,
 	retry int, lastErr error,
@@ -410,7 +410,7 @@ func (cache *XueXiTUserCache) PullWorkEnterInformHtmlApi(
 	return string(body), finalURL, nil
 }
 
-// 拉取试卷（注意需要先过滑块验证码获取到验证码参数）
+// 拉取试卷
 func (cache *XueXiTUserCache) PullWorkPaperHtmlApi(courseId, classId, workId, source, msgId, cpi, enc, keyboardDisplayRequiresUserAction string, retry int, lastErr error) (string, error) {
 	//url := "https://mooc1-api.chaoxing.com/mooc-ans/work/phone/doHomeWork?courseId=258101827&workId=48731428&classId=134204187&oldWorkId&cpi=411545273&mooc=1&msgId=0&source=0&checkIntegrity=true&enc=737ad94cd5529ffa3ba68606eb91a124&keyboardDisplayRequiresUserAction=1"
 	urlStr := "https://mooc1-api.chaoxing.com/mooc-ans/work/phone/doHomeWork?courseId=" + courseId + "&workId=" + workId + "&classId=" + classId + "&oldWorkId&cpi=" + cpi + "&mooc=1&msgId=" + msgId + "&source=" + source + "&checkIntegrity=true&enc=" + enc + "&keyboardDisplayRequiresUserAction=" + keyboardDisplayRequiresUserAction
@@ -428,7 +428,48 @@ func (cache *XueXiTUserCache) PullWorkPaperHtmlApi(courseId, classId, workId, so
 	req.Header.Add("Upgrade-Insecure-Requests", "1")
 	req.Header.Add("accept-language", "zh_CN")
 	req.Header.Add("X-Requested-With", "com.chaoxing.mobile")
+	req.Header.Add("Host", "mooc1-api.chaoxing.com")
+	req.Header.Add("Connection", "keep-alive")
+	for _, cookie := range cache.cookies {
+		req.AddCookie(cookie)
+	}
+	res, err := client.Do(req)
+	if err != nil {
+		fmt.Println(err)
+		return "", err
+	}
+	defer res.Body.Close()
 
+	body, err := ioutil.ReadAll(res.Body)
+	if err != nil {
+		fmt.Println(err)
+		return "", err
+	}
+	//fmt.Println(string(body))
+	return string(body), nil
+}
+
+// 提交作业
+func (cache *XueXiTUserCache) SubmitWorkApi() (string, error) {
+
+	urlStr := "https://mooc1-api.chaoxing.com/mooc-ans/work/phone/doNormalHomeWorkSubmit?tempSave=false"
+	method := "POST"
+
+	payload := strings.NewReader("workExamUploadUrl=&workExamUploadCrcUrl=&workRelationAnswerId=54657628&knowledgeid=0&enc=737ad94cd5529ffa3ba68606eb91a124&source=0&encWork=ace56cb8a1c65f68339d3cd452757caa&courseId=258101827&workRelationId=48731428&classId=134204187&workTimesEnc=&courseId=258101827&workRelationId=48731428&classId=134204187&answer405139692=A&type405139692=0&score405139692=100.0&questionId=405139692&index=0&tempSave=false")
+
+	client := &http.Client{}
+	req, err := http.NewRequest(method, urlStr, payload)
+
+	if err != nil {
+		fmt.Println(err)
+		return "", err
+	}
+	req.Header.Add("User-Agent", GetUA("mobile"))
+	req.Header.Add("Accept", "application/json, text/javascript, */*; q=0.01")
+	req.Header.Add("Origin", "https://mooc1-api.chaoxing.com")
+	req.Header.Add("X-Requested-With", "XMLHttpRequest")
+	req.Header.Add("Accept-Language", "zh-CN,en-US;q=0.9")
+	req.Header.Add("Content-Type", "application/x-www-form-urlencoded; charset=UTF-8")
 	req.Header.Add("Host", "mooc1-api.chaoxing.com")
 	req.Header.Add("Connection", "keep-alive")
 	for _, cookie := range cache.cookies {
