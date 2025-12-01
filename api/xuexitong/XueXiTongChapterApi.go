@@ -45,7 +45,7 @@ func (cache *XueXiTUserCache) PullChapter(cpi int, key int, retry int, lastErr e
 	client := &http.Client{
 		Transport: tr,
 	}
-	req, err := http.NewRequest(method, ApiPullChapter+"?"+params.Encode(), nil)
+	req, err := http.NewRequest(method, "https://mooc1-api.chaoxing.com/gas/clazz"+"?"+params.Encode(), nil)
 
 	if err != nil {
 		fmt.Println(err)
@@ -118,7 +118,7 @@ func (cache *XueXiTUserCache) FetchChapterPointStatus(nodes []int, clazzID, user
 	client := &http.Client{
 		Transport: tr,
 	}
-	req, err := http.NewRequest(method, ApiChapterPoint, payload)
+	req, err := http.NewRequest(method, "https://mooc1-api.chaoxing.com/job/myjobsnodesmap", payload)
 
 	if err != nil {
 		fmt.Println(err)
@@ -184,7 +184,7 @@ func (cache *XueXiTUserCache) FetchChapterCords(nodes []int, index, courseId int
 	client := &http.Client{
 		Transport: tr,
 	}
-	req, err := http.NewRequest(method, ApiChapterCards+"?"+values.Encode(), nil)
+	req, err := http.NewRequest(method, "https://mooc1-api.chaoxing.com/gas/knowledge"+"?"+values.Encode(), nil)
 
 	if err != nil {
 		fmt.Println(err)

@@ -131,7 +131,7 @@ func (cache *XueXiTUserCache) VideoDtoFetch(p *entity.PointVideoDto, retry int, 
 	client := &http.Client{
 		Transport: tr,
 	}
-	resp, err := http.NewRequest(method, fmt.Sprintf("%s/%s?%s", APIChapterCardResource, p.ObjectID, params.Encode()), nil)
+	resp, err := http.NewRequest(method, fmt.Sprintf("%s/%s?%s", "https://mooc1-api.chaoxing.com/ananas/status", p.ObjectID, params.Encode()), nil)
 	// resp, err := p.Session.Client.Get(fmt.Sprintf("%s/%s?%s", APIChapterCardResource, p.ObjectID, params.Encode()))
 	if err != nil {
 		return "", err
@@ -384,7 +384,7 @@ func (cache *XueXiTUserCache) VideoDtoPlayReport(p *entity.PointVideoDto, playin
 	encodedParams := encodeWithSafeChars(params)
 	method := "GET"
 
-	resp, err := http.NewRequest(method, fmt.Sprintf("%s/%s/%s?%s", APIVideoPlayReport, p.Cpi, p.DToken, encodedParams), nil)
+	resp, err := http.NewRequest(method, fmt.Sprintf("%s/%s/%s?%s", "https://mooc1.chaoxing.com/mooc-ans/multimedia/log/a", p.Cpi, p.DToken, encodedParams), nil)
 	if err != nil {
 		return "", err
 	}
@@ -478,7 +478,7 @@ func (cache *XueXiTUserCache) WorkFetchQuestion(p *entity.PointWorkDto, retry in
 	client := &http.Client{
 		Transport: tr,
 	}
-	req, err := http.NewRequest(method, PageMobileWork+"?"+params.Encode(), nil)
+	req, err := http.NewRequest(method, "https://mooc1-api.chaoxing.com/android/mworkspecial"+"?"+params.Encode(), nil)
 
 	if err != nil {
 		fmt.Println(err)
@@ -562,7 +562,7 @@ func (cache *XueXiTUserCache) WorkFetch1Question(p *entity.PointWorkDto, retry i
 	client := &http.Client{
 		Transport: tr,
 	}
-	req, err := http.NewRequest(method, PageMobileWorkY+"?"+params.Encode(), nil)
+	req, err := http.NewRequest(method, "https://mooc1-api.chaoxing.com/mooc-ans/work/phone/doHomeWork"+"?"+params.Encode(), nil)
 
 	if err != nil {
 		fmt.Println(err)
@@ -689,7 +689,7 @@ func (cache *XueXiTUserCache) WorkCommit(p *entity.PointWorkDto, fields []entity
 	client := &http.Client{
 		Transport: tr,
 	}
-	req, err := http.NewRequest(method, ApiWorkCommit, payload)
+	req, err := http.NewRequest(method, "https://mooc1-api.chaoxing.com/work/addStudentWorkNew", payload)
 
 	if err != nil {
 		fmt.Println(err)
@@ -753,7 +753,7 @@ func (cache *XueXiTUserCache) DocumentDtoReadingReport(p *entity.PointDocumentDt
 	params.Add("jtoken", p.Jtoken)
 	params.Add("_dc", strconv.FormatInt(time.Now().UnixMilli(), 10))
 
-	resp, err := http.NewRequest(method, ApiDocumentReadingReport+"?"+params.Encode(), nil)
+	resp, err := http.NewRequest(method, "https://mooc1.chaoxing.com/ananas/job/document"+"?"+params.Encode(), nil)
 	if err != nil {
 		return "", err
 	}

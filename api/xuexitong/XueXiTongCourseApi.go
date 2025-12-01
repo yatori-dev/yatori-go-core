@@ -36,7 +36,7 @@ func (cache *XueXiTUserCache) CourseListApi(retry int, lastErr error) (string, e
 	client := &http.Client{
 		Transport: tr,
 	}
-	req, err := http.NewRequest(method, ApiPullCourses, nil)
+	req, err := http.NewRequest(method, "https://mooc1-api.chaoxing.com/mycourse/backclazzdata", nil)
 
 	if err != nil {
 		return "", err

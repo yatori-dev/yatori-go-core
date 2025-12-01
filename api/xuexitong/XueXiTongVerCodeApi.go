@@ -308,3 +308,41 @@ func (cache *XueXiTUserCache) PullSliderImgApi(imgUrl string) (image.Image, erro
 
 	return img, nil
 }
+
+// 过滑块接口
+func (cache *XueXiTUserCache) PassSliderApi(captchaId, token, xPoint, runEnv string, retry int, lastErr error) (string, error) {
+
+	urlStr := "https://captcha.chaoxing.com/captcha/check/verification/result?callback=cx_captcha_function&captchaId=" + captchaId + "&type=slide&token=" + token + "&textClickArr=" + url.QueryEscape(`[{"x":`+xPoint+`}]`) + "&coordinate=" + url.QueryEscape(`[]`) + "&runEnv=10&version=1.1.20&t=a&iv=cdd9bfb9e7805d0d2d5f1ad4498f70e1&_=1764584636040"
+	method := "GET"
+
+	client := &http.Client{}
+	req, err := http.NewRequest(method, urlStr, nil)
+
+	if err != nil {
+		fmt.Println(err)
+		return "", err
+	}
+	req.Header.Add("User-Agent", "Mozilla/5.0 (Linux; Android 8.1.0; MI 5X Build/OPM1.171019.019; wv) AppleWebKit/537.36 (KHTML, like Gecko) Version/4.0 Chrome/71.0.3578.99 Mobile Safari/537.36 (schild:ce5175d20950c8ee955fb03246f762da) (device:MI 5X) Language/zh_CN com.chaoxing.mobile/ChaoXingStudy_3_6.7.2_android_phone_10936_311 (@Kalimdor)_76c82452584d47e39ab79aa54ea86554")
+	req.Header.Add("Referer", "https://mooc1-api.chaoxing.com/exam-ans/exam/phone/task-exam?taskrefId=8186945&courseId=258101827&classId=134204187&userId=346635955&role=&source=0&enc_task=e8a0e0f5b2faa978194ba2b19eef6371&cpi=411545273&vx=0")
+	req.Header.Add("Accept-Language", "zh-CN,en-US;q=0.9")
+	req.Header.Add("X-Requested-With", "com.chaoxing.mobile")
+	req.Header.Add("Cookie", "fid=10596; _uid=346635955; UID=346635955; xxtenc=f8c84ceb53bc45f40b7d9bfaaa413810; fidsCount=1; _industry=5; sso_role=3; _d=1764581587129; vc3=SAXTH83nW82I24XNPrYxTR5%2BqWzeoa5H0RVk%2Fx33Z349hIyGpA9YUXqdlIlSNELZLQDkdvX%2Bxt1tdBHmkWnKDnZe8uS9KNflmJeA%2BB2B%2BoFMHh4l2y7a%2BzavXJWhld5uy13Sp5sheSfr4YFX1L4HD3IDmP7CYaFudc1OIyBYFps%3D6f67ebf861ea9e237b52948f53712450; uf=b2d2c93beefa90dc495549838143a13b264677447b1a2384b8cd17c4874b05f5c7f0fc7ea8ee15fce6a8763e149e6bebc7ea6fb664318d21c49d67c0c30ca5043ad701c8b4cc548c0234d89f51c3dccfb0f1a1db51ab43f5fb98ce0e6210c3884a878d0a9a7b05da6103a97f8cd189bc7a1043b040b4578d56e259a2b85e0a6e3b2582f374bcb84576e6e30a0f14e5c5da9735baa04d8d5fce71fc6e59483dd39b16e3a7097306134bafd738ca9e0a89814fcc5587ad448be9fdc681bdf07734; cx_p_token=f0a5c5753305b13f72a633b249e68414; p_auth_token=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1aWQiOiIzNDY2MzU5NTUiLCJsb2dpblRpbWUiOjE3NjQ1ODE1ODcxMzEsImV4cCI6MTc2NTE4NjM4N30.3DTJuexTRsnpEjqvRMVENDTkzbDNZ5gQh2nD3zRMpSc; DSSTASH_LOG=C_38-UN_10038-US_346635955-T_1764581587132; sso_t=1764581587129; sso_v=6297276a0398c6cad732ad984a3edd46; KI4SO_SERVER_EC=RERFSWdRQWdsckJiQXZ5ZmdkWW10dG5IcktUZWdhbVU4b2FRY0NrVkVzQm1TME55eG5ya2NpR3J2%0ATW5ZQXhUK0RtU2djWlRjU2NTVQp1NG13bWtscWxlNXl4ZGk3WUJZckF5OVlCZjBBUTUwN3dlclJt%0ARDFtdWE0OVd4bXBHSTZoZFFXNy9qQlRKb2wzY1V2R0dNNjFTRWxPCjhKbkRyZHlUQjNPT1pld0pz%0ANjhyZFR3TFlKaDViZk5OU3pNajNvY29hcU12bVBycExsckV6TWJLYkEvdFhVaTgwMTYzRHRKZUd2%0ARUgKaW55cFE3ZW1aNW9oUGRsVWp6SHVORHFmVXE1ZFdlRXMxaUw1L05DNHhqSllPL3Q1STBLbUxW%0ASTBDK0ZjdUlETU1FSFVXTEJGeWpmQQpVbGo3MVc4K1F5STI1cFFaTTN1VGh6VmJrblFqRXNucjB4%0ANmxoQnNwdjJGNkhQcXcvdE5QWGhidVBpWmIxeEIvZ1F1NCtMaUF6REJCCjFGaXdSY28zd0ZKWSs5%0AVnZQa01pTnVhVUdkS0Y0RlI4bFpQcy9nQ2dHcHc2MTVQandySXhEY1BUSGIxMkpkUEN5VUxVTkNP%0AR3VhaEsKR05NPT9hcHBJZD0xJmtleUlkPTE%3D; _tid=300631019; sso_puid=346635955; route=c873910f23fdbb50ba156beee2b1b2db")
+	req.Header.Add("Accept", "*/*")
+	req.Header.Add("Host", "captcha.chaoxing.com")
+	req.Header.Add("Connection", "keep-alive")
+
+	res, err := client.Do(req)
+	if err != nil {
+		fmt.Println(err)
+		return "", err
+	}
+	defer res.Body.Close()
+
+	body, err := ioutil.ReadAll(res.Body)
+	if err != nil {
+		fmt.Println(err)
+		return "", err
+	}
+	//fmt.Println(string(body))
+	return string(body), nil
+}

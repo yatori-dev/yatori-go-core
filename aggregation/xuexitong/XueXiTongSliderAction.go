@@ -1,9 +1,11 @@
 package xuexitong
 
 import (
+	"bytes"
 	"encoding/json"
 	"fmt"
 	"image"
+	"image/png"
 	"regexp"
 
 	xuexitongApi "github.com/yatori-dev/yatori-go-core/api/xuexitong"
@@ -78,67 +80,96 @@ func (slider *XueXiTSlider) Pass(cache *xuexitongApi.XueXiTUserCache) error {
 		return err
 	}
 	//识别
-	offset, f, err := DetectSlideOffset(shapeImg, cutoutImg)
+	x := DetectSlideOffset(shapeImg, cutoutImg)
 	if err != nil {
 		return err
 	}
-	fmt.Println("offset:", offset)
-	fmt.Println("f:", f)
+	fmt.Println("x:", x)
+	//runEnv参数中，web=10,android=20,ios=30,miniprogram=40
+	passResult, err := cache.PassSliderApi(slider.CaptchaId, resp.Token, fmt.Sprintf("%d", x), "10", 3, nil)
+	if err != nil {
+		return err
+	}
+	fmt.Println(passResult)
 	return nil
 }
 
 // image.Image → gocv.Mat
-func ImageToMatSafe(img image.Image) gocv.Mat {
-	bounds := img.Bounds()
-	w := bounds.Dx()
-	h := bounds.Dy()
-
-	// BGR 3 通道 Mat
-	mat := gocv.NewMatWithSize(h, w, gocv.MatTypeCV8UC3)
-
-	for y := 0; y < h; y++ {
-		for x := 0; x < w; x++ {
-
-			// Safe 获取像素
-			r32, g32, b32, _ := img.At(x+bounds.Min.X, y+bounds.Min.Y).RGBA()
-
-			r := uint8(r32 >> 8)
-			g := uint8(g32 >> 8)
-			b := uint8(b32 >> 8)
-
-			// ⭐ 使用正确的 SetUCharAt (1D)，避免 SetUCharAt3 崩溃
-			mat.SetUCharAt(y, x*3+0, b) // B
-			mat.SetUCharAt(y, x*3+1, g) // G
-			mat.SetUCharAt(y, x*3+2, r) // R
-		}
+func ImageToMat(img image.Image) (gocv.Mat, error) {
+	var buf bytes.Buffer
+	err := png.Encode(&buf, img) // 统一编码为 PNG
+	if err != nil {
+		return gocv.NewMat(), err
 	}
-
-	return mat
+	mat, err := gocv.IMDecode(buf.Bytes(), gocv.IMReadColor)
+	return mat, err
 }
 
-func DetectSlideOffset(bgImg, cutImg image.Image) (int, float32, error) {
-	bg := ImageToMatSafe(bgImg)
-	defer bg.Close()
+func DetectSlideOffset(bgImg, cutImg image.Image) int {
+	// --- Convert to Mat ---
+	shadeMat, err := ImageToMat(bgImg)
+	if err != nil {
+		return 0
+	}
+	defer shadeMat.Close()
 
-	cut := ImageToMatSafe(cutImg)
-	defer cut.Close()
+	cutoutMat, err := ImageToMat(cutImg)
+	if err != nil {
+		return 0
+	}
+	defer cutoutMat.Close()
 
-	if bg.Empty() || cut.Empty() {
-		return 0, 0, fmt.Errorf("图片为空")
+	// --- Convert cutout to gray ---
+	cutoutGray := gocv.NewMat()
+	defer cutoutGray.Close()
+	gocv.CvtColor(cutoutMat, &cutoutGray, gocv.ColorBGRToGray)
+
+	// --- Find contours ---
+	contours := gocv.FindContours(cutoutGray, gocv.RetrievalExternal, gocv.ChainApproxSimple)
+	defer contours.Close()
+
+	if contours.Size() == 0 {
+		return 0
 	}
 
-	result := gocv.NewMatWithSize(
-		bg.Rows()-cut.Rows()+1,
-		bg.Cols()-cut.Cols()+1,
-		gocv.MatTypeCV32F)
+	// 获取第一个 contour 的 boundingRect
+	firstContour := contours.At(0)
+	rect := gocv.BoundingRect(firstContour)
+	cutoutY := rect.Min.Y
+
+	// --- Crop cutout part: cutout_image[cutout_y+2 : cutout_y+44, 8:48] ---
+	cutoutTeil := cutoutMat.Region(image.Rect(
+		8, cutoutY+2,
+		48, cutoutY+44,
+	))
+	defer cutoutTeil.Close()
+
+	// --- Crop shade part: shade_image[cutout_y-2 : cutout_y+50] ---
+	shadeTeil := shadeMat.Region(image.Rect(
+		0, cutoutY-2,
+		shadeMat.Cols(), cutoutY+50,
+	))
+	defer shadeTeil.Close()
+
+	// ---------- 模板匹配 ----------
+	result := gocv.NewMat()
 	defer result.Close()
 
-	// 你提供的签名：必须 5 个参数
-	err := gocv.MatchTemplate(bg, cut, &result, gocv.TmCcoeffNormed, gocv.NewMat())
+	mask := gocv.NewMat() // 空 mask
+	defer mask.Close()
+
+	err = gocv.MatchTemplate(
+		shadeTeil,           // image
+		cutoutTeil,          // templ
+		&result,             // result
+		gocv.TmCcoeffNormed, // method
+		mask,                // mask
+	)
 	if err != nil {
-		return 0, 0, err
+		return 0
 	}
 
-	_, maxVal, _, maxLoc := gocv.MinMaxLoc(result)
-	return maxLoc.X, maxVal, nil
+	_, _, _, maxLoc := gocv.MinMaxLoc(result)
+
+	return maxLoc.X - 5
 }
