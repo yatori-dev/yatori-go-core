@@ -52,8 +52,8 @@ const (
 	APP_VERSION = "6.7.2"
 	//APP_VERSION   = "6.6.4"
 	DEVICE_VENDOR = "MI10"
-	//BUILD         = "10831_263"
-	BUILD           = "10936_311"
+	BUILD         = "10831_263" //这个对应6.6.4版本
+	//BUILD           = "10936_311"
 	ANDROID_VERSION = "Android 11"
 )
 

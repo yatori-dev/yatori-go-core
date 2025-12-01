@@ -2,17 +2,23 @@ package xuexitong
 
 import (
 	"bytes"
+	"crypto/md5"
 	"crypto/tls"
+	"encoding/hex"
 	"fmt"
+	"image"
 	"io"
+	"io/ioutil"
 	"log"
 	"math/rand"
 	"mime/multipart"
 	"net/http"
 	"net/url"
 	"os"
+	"strconv"
 	"time"
 
+	"github.com/google/uuid"
 	"github.com/yatori-dev/yatori-go-core/utils"
 )
 
@@ -172,4 +178,133 @@ func (cache *XueXiTUserCache) XueXiTPassVerificationCode(code string, retry int,
 		return true, nil
 	}
 	return false, nil
+}
+
+// XueXiTSliderVerificationCodeApi 获取学习通滑块验证码相关信息，返回信息cx_captcha_function({"t":1764584640340,"captchaId":"Ew0z9skxsLzVKQjmeObQiRVLxkxbPkRF"})
+func (cache *XueXiTUserCache) XueXiTSliderVerificationCodeApi(captchaId string, retry int, lastErr error) (string, error) {
+
+	urlStr := "https://captcha.chaoxing.com/captcha/get/conf?callback=cx_captcha_function&captchaId=" + captchaId + "&_=" + fmt.Sprintf("%d", time.Now().UnixMilli())
+	method := "GET"
+
+	client := &http.Client{}
+	req, err := http.NewRequest(method, urlStr, nil)
+
+	if err != nil {
+		fmt.Println(err)
+		return "", err
+	}
+	req.Header.Add("User-Agent", GetUA("mobile"))
+	req.Header.Add("Accept-Language", "zh-CN,en-US;q=0.9")
+	req.Header.Add("X-Requested-With", "com.chaoxing.mobile")
+	for _, cookie := range cache.cookies {
+		req.AddCookie(cookie)
+	}
+	req.Header.Add("Accept", "*/*")
+	req.Header.Add("Host", "captcha.chaoxing.com")
+	req.Header.Add("Connection", "keep-alive")
+
+	res, err := client.Do(req)
+	if err != nil {
+		fmt.Println(err)
+		return "", err
+	}
+	defer res.Body.Close()
+
+	body, err := ioutil.ReadAll(res.Body)
+	if err != nil {
+		fmt.Println(err)
+		return "", err
+	}
+	//fmt.Println(string(body))
+	return string(body), nil
+}
+
+// 拉取验证码图片等信息
+func (cache *XueXiTUserCache) XueXiTSliderVerificationImgApi(captchaId, serverTime, referer string, retry int, lastErr error) (string, error) {
+	// 计算 MD5
+	captchaKeyHash := md5.Sum([]byte(serverTime + uuid.New().String()))
+	captchaKey := hex.EncodeToString(captchaKeyHash[:])
+
+	//ivHash := md5.Sum([]byte(fmt.Sprintf("%s%s%d%s", captchaId, "slide", time.Now().UnixMilli(), uuid.New().String())))
+	//iv := hex.EncodeToString(ivHash[:])
+
+	// 计算token
+	sum := md5.Sum([]byte(fmt.Sprintf("%s%s%s%s", serverTime, captchaId, "slide", captchaKey)))
+	md5hex := hex.EncodeToString(sum[:])
+	serverTimeInt, _ := strconv.ParseInt(serverTime, 10, 64)
+	token := fmt.Sprintf("%s:%d", md5hex, serverTimeInt+300000)
+	version := "1.1.20"
+	urlStr := "https://captcha.chaoxing.com/captcha/get/verification/image?callback=cx_captcha_function&captchaId=" + captchaId + "&type=slide&version=" + version + "&captchaKey=" + captchaKey + "&token=" + token + "&referer=" + url.QueryEscape(referer)
+	method := "GET"
+
+	client := &http.Client{}
+	req, err := http.NewRequest(method, urlStr, nil)
+
+	if err != nil {
+		fmt.Println(err)
+		return "", err
+	}
+	req.Header.Add("User-Agent", GetUA("mobile"))
+	req.Header.Add("Accept-Language", "zh-CN,en-US;q=0.9")
+	req.Header.Add("X-Requested-With", "com.chaoxing.mobile")
+	for _, cookie := range cache.cookies {
+		req.AddCookie(cookie)
+	}
+	req.Header.Add("Accept", "*/*")
+	req.Header.Add("Host", "captcha.chaoxing.com")
+	req.Header.Add("Connection", "keep-alive")
+
+	res, err := client.Do(req)
+	if err != nil {
+		fmt.Println(err)
+		return "", err
+	}
+	defer res.Body.Close()
+
+	body, err := ioutil.ReadAll(res.Body)
+	if err != nil {
+		fmt.Println(err)
+		return "", err
+	}
+	//fmt.Println(string(body))
+	return string(body), nil
+}
+
+// 请求并获取图片
+func (cache *XueXiTUserCache) PullSliderImgApi(imgUrl string) (image.Image, error) {
+	method := "GET"
+
+	client := &http.Client{}
+	req, err := http.NewRequest(method, imgUrl, nil)
+
+	if err != nil {
+		fmt.Println(err)
+		return nil, err
+	}
+	req.Header.Add("User-Agent", GetUA("mobile"))
+	req.Header.Add("Accept-Language", "zh-CN,en-US;q=0.9")
+	req.Header.Add("X-Requested-With", "com.chaoxing.mobile")
+	for _, cookie := range cache.cookies {
+		req.AddCookie(cookie)
+	}
+	req.Header.Add("Accept", "*/*")
+	req.Header.Add("Host", "captcha.chaoxing.com")
+	req.Header.Add("Connection", "keep-alive")
+
+	resp, err := client.Do(req)
+	if err != nil {
+		return nil, fmt.Errorf("请求失败: %v", err)
+	}
+	defer resp.Body.Close()
+
+	if resp.StatusCode != 200 {
+		return nil, fmt.Errorf("HTTP 状态码异常: %d", resp.StatusCode)
+	}
+
+	img, _, err := image.Decode(resp.Body)
+	if err != nil {
+		return nil, fmt.Errorf("图片解码失败: %v", err)
+	}
+
+	return img, nil
 }

@@ -761,6 +761,43 @@ func TestXueXiToFlushCourse(t *testing.T) {
 	}
 }
 
+// 考试测试
+func TestXueXiToExam(t *testing.T) {
+	utils.YatoriCoreInit()
+	//测试账号
+	setup()
+	user := global.Config.Users[68]
+
+	userCache := xuexitongApi.XueXiTUserCache{
+		Name:     user.Account,
+		Password: user.Password,
+	}
+
+	err := xuexitong.XueXiTLoginAction(&userCache)
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	courseList, err := xuexitong.XueXiTPullCourseAction(&userCache) //拉取所有课程
+	for _, course := range courseList {                             //遍历课程
+
+		if course.CourseName != "大学教育" {
+			continue
+		}
+		examList, err1 := xuexitong.PullExamListAction(&userCache, course)
+		if err1 != nil {
+			log.Fatal(err1)
+		}
+		// 打印结果
+		for _, exam := range examList {
+			err2 := xuexitong.EnterExamAction(&userCache, &exam)
+			if err2 != nil {
+				log.Fatal(err2)
+			}
+		}
+	}
+}
+
 // 测试拉取人脸照片
 func TestPullFaceImg(t *testing.T) {
 	utils.YatoriCoreInit()
