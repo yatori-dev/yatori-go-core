@@ -664,6 +664,74 @@ func (cache *XueXiTUserCache) PassFaceQrPlanPhoneNewApi(classId, courseId, knowl
 	return string(body), nil
 }
 
+// 手机端过人脸另一套新接口
+func (cache *XueXiTUserCache) PassFaceQrPlanPhoneNew2Api(classId, courseId, knowledgeId, cpi, objectId /*人脸上传id*/ string) (string, error) {
+
+	urlStr := "https://mooc1-api.chaoxing.com/mooc-ans/facephoto/clientfacecheckstatus?" + "courseId2=" + courseId
+	// 构造 POST 表单数据
+	form := url.Values{}
+	form.Set("courseId", courseId)
+	form.Set("clazzId", classId)
+	form.Set("cpi", cpi)
+	form.Set("liveDetectionStatus", "0")
+	form.Set("objectId", objectId)
+	form.Set("signt", "")
+	form.Set("signk", "")
+	form.Set("cxtime", "")
+	form.Set("cxcid", "")
+	form.Set("type", "0")
+
+	tr := &http.Transport{
+		TLSClientConfig: &tls.Config{
+			InsecureSkipVerify: true, // 跳过证书验证，仅用于开发环境
+		},
+	}
+
+	//如果开启了IP代理，那么就直接添加代理
+	if cache.IpProxySW {
+		tr.Proxy = func(req *http.Request) (*url.URL, error) {
+			return url.Parse(cache.ProxyIP) // 设置代理
+		}
+	}
+	client := &http.Client{
+		Transport: tr,
+	}
+	req, err := http.NewRequest("POST", urlStr, bytes.NewBufferString(form.Encode()))
+
+	if err != nil {
+		fmt.Println(err)
+		return "", nil
+	}
+	req.Header.Add("User-Agent", GetUA("mobile"))
+	for _, cookie := range cache.cookies {
+		req.AddCookie(cookie)
+	}
+	req.Header.Add("Accept", "application/json, text/javascript, */*; q=0.01")
+	req.Header.Add("X-Requested-With", "XMLHttpRequest")
+	req.Header.Add("Origin", "https://mooc1-api.chaoxing.com")
+	req.Header.Add("Sec-Fetch-Site", "same-origin")
+	req.Header.Add("Sec-Fetch-Mode", "cors")
+	req.Header.Add("Sec-Fetch-Dest", "empty")
+	req.Header.Add("Accept-Language", "zh-CN,zh;q=0.9,en-US;q=0.8,en;q=0.7")
+	req.Header.Add("Content-Type", "application/x-www-form-urlencoded; charset=UTF-8")
+	req.Header.Add("Host", "mooc1-api.chaoxing.com")
+	req.Header.Add("Connection", "keep-alive")
+	res, err := client.Do(req)
+	if err != nil {
+		fmt.Println(err)
+		return "", nil
+	}
+	defer res.Body.Close()
+
+	body, err := ioutil.ReadAll(res.Body)
+	if err != nil {
+		fmt.Println(err)
+		return "", nil
+	}
+	utils.CookiesAddNoRepetition(&cache.cookies, res.Cookies()) //赋值cookie
+	return string(body), nil
+}
+
 // 手机端过人脸接口（老接口）
 func (cache *XueXiTUserCache) PassFaceQrPlanPhoneOldApi(classId, courseId, knowledgeId, cpi, objectId string) (string, error) {
 
