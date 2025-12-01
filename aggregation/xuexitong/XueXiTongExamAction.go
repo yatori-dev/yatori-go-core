@@ -8,22 +8,63 @@ import (
 
 	"github.com/PuerkitoBio/goquery"
 	"github.com/yatori-dev/yatori-go-core/api/xuexitong"
+	"github.com/yatori-dev/yatori-go-core/que-core/qentity"
+	"github.com/yatori-dev/yatori-go-core/que-core/qtype"
 )
 
 // 学习通考试
 type XXTExam struct {
-	Name       string `json:"name"`
-	Status     string `json:"status"`
-	RemainTime string `json:"remain_time"`
-	RawURL     string `json:"raw_url"`
-	Params     map[string]string
-	CourseId   string `json:"course_id"`
-	UserId     string `json:"user_id"`
-	ClazzId    string `json:"clazz_id"`
-	Type       string `json:"type"`
-	EncTask    string `json:"enc_task"`
-	TaskRefId  string `json:"taskrefId"`
-	msgId      string `json:"msgId"`
+	Name             string `json:"name"`
+	Status           string `json:"status"`
+	RemainTime       string `json:"remain_time"`
+	RawURL           string `json:"raw_url"`
+	Params           map[string]string
+	CourseId         string `json:"course_id"`
+	UserId           string `json:"user_id"`
+	ClazzId          string `json:"clazz_id"`
+	Type             string `json:"type"`
+	EncTask          string `json:"enc_task"`
+	TaskRefId        string `json:"taskrefId"`
+	MsgId            string `json:"msgId"`
+	CaptchaCaptchaId string
+	ExamRelationId   string
+	AnswerId         string `json:"answerId"`
+	Cpi              string
+	Validate         string //过验证码用的
+	Paper            XXTExamPaper
+}
+
+// 考试试卷信息
+type XXTExamPaper struct {
+	CourseId           string
+	TestPaperId        string
+	TestUserRelationId string
+	ClassId            string
+	Type               string
+	IsPhone            string
+	Imei               string
+	SubCount           string
+	RemainTime         string
+	TempSave           string
+	TimeOver           string
+	EncRemainTime      string
+	EncLastUpdateTime  string
+	Cpi                string
+	Enc                string
+	Source             string
+	UserId             string
+	EnterPageTime      string
+	AnsweredView       string
+	ExitdTime          string
+	PaperGroupId       string
+	XXTQuestion        []XXTQuestion //题目
+}
+
+// 学习通题目
+type XXTQuestion struct {
+	Id       string      //题目ID
+	QType    qtype.QType //题目类型
+	question qentity.Question
 }
 
 // 拉取考试列表
@@ -75,7 +116,7 @@ func PullExamListAction(cache *xuexitong.XueXiTUserCache, course XueXiTCourse) (
 			ClazzId:    params["clazzId"],
 			Type:       params["type"],
 			EncTask:    params["enc_task"],
-			msgId:      params["msgId"],
+			MsgId:      params["msgId"],
 		}
 		examList = append(examList, exam)
 	})
@@ -86,7 +127,7 @@ func PullExamListAction(cache *xuexitong.XueXiTUserCache, course XueXiTCourse) (
 // EnterExamAction 进入考试
 func EnterExamAction(cache *xuexitong.XueXiTUserCache, exam *XXTExam) error {
 	//这一步拉取必要的参数，比如滑块验证码参数等,注意这里的refererUrl会在后面的滑块验证码中用到
-	enterHtml, refererUrl, err := cache.PullExamEnterInformHtmlApi(exam.TaskRefId, exam.msgId, exam.CourseId, exam.UserId, exam.ClazzId, exam.Type, exam.EncTask, 3, nil)
+	enterHtml, refererUrl, err := cache.PullExamEnterInformHtmlApi(exam.TaskRefId, exam.MsgId, exam.CourseId, exam.UserId, exam.ClazzId, exam.Type, exam.EncTask, 3, nil)
 	if err != nil {
 		fmt.Println(refererUrl)
 		return err
@@ -116,21 +157,48 @@ func EnterExamAction(cache *xuexitong.XueXiTUserCache, exam *XXTExam) error {
 		})
 	})
 
-	var captchaCaptchaId HiddenField //寄存验证码ID参数
 	// 输出结果
 	for _, f := range fields {
 		if f.ID == "captchaCaptchaId" {
-			captchaCaptchaId = f
+			exam.CaptchaCaptchaId = f.Value
+		}
+		if f.ID == "testPaperId" {
+			exam.ExamRelationId = f.Value
+		}
+		if f.ID == "testUserRelationId" {
+			exam.AnswerId = f.Value
+		}
+		if f.ID == "cpi" {
+			exam.Cpi = f.Value
 		}
 		fmt.Printf("ID: %-35s Name: %-20s Value: %s\n", f.ID, f.Name, f.Value)
 	}
-	if captchaCaptchaId.Value != "" {
+	if exam.CaptchaCaptchaId != "" {
 		slider := XueXiTSlider{
-			CaptchaId: captchaCaptchaId.Value,
+			CaptchaId: exam.CaptchaCaptchaId,
 			Referer:   refererUrl,
 		}
-		slider.Pass(cache)
+		for {
+			validate, passErr := slider.Pass(cache)
+			if passErr != nil {
+				if strings.Contains(passErr.Error(), `"result":false`) {
+					continue
+				}
+			}
+			exam.Validate = validate
+			break //如果成功了那么直接退出循环
+		}
 	}
 
+	return nil
+}
+
+// 拉取考试试卷
+func PullExamPaperAction(cache *xuexitong.XueXiTUserCache, exam *XXTExam) error {
+	pullPaperHtml, err := cache.PullExamPaperHtmlApi(exam.CourseId, exam.ClazzId, exam.ExamRelationId, "0", exam.AnswerId, exam.Cpi, "1", xuexitong.IMEI, exam.Validate, "0", 3, nil)
+	if err != nil {
+		return err
+	}
+	fmt.Println(pullPaperHtml)
 	return nil
 }

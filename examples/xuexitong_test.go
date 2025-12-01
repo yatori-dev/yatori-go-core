@@ -790,10 +790,18 @@ func TestXueXiToExam(t *testing.T) {
 		}
 		// 打印结果
 		for _, exam := range examList {
+			if exam.Status != "待做" {
+				continue
+			}
 			err2 := xuexitong.EnterExamAction(&userCache, &exam)
 			if err2 != nil {
 				log.Fatal(err2)
 			}
+			_, err3 := xuexitong.PullExamPaperAction(&userCache, &exam)
+			if err3 != nil {
+				log.Fatal(err3)
+			}
+
 		}
 	}
 }

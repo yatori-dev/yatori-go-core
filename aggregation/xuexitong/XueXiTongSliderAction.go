@@ -3,11 +3,13 @@ package xuexitong
 import (
 	"bytes"
 	"encoding/json"
+	"errors"
 	"fmt"
 	"image"
 	"image/png"
 	"regexp"
 
+	"github.com/thedevsaddam/gojsonq"
 	xuexitongApi "github.com/yatori-dev/yatori-go-core/api/xuexitong"
 	"gocv.io/x/gocv"
 )
@@ -18,12 +20,12 @@ type XueXiTSlider struct {
 	serverTime string
 }
 
-// 过验证码
-func (slider *XueXiTSlider) Pass(cache *xuexitongApi.XueXiTUserCache) error {
+// 过滑块验证码
+func (slider *XueXiTSlider) Pass(cache *xuexitongApi.XueXiTUserCache) (string, error) {
 	//第一步:拉取关键信息-----------------------------------------
 	captchaInfo, err := cache.XueXiTSliderVerificationCodeApi(slider.CaptchaId, 3, nil)
 	if err != nil {
-		return err
+		return "", err
 	}
 	re := regexp.MustCompile(`"t":(\d+).*?"captchaId":"([^"]+)"`)
 	matches := re.FindStringSubmatch(captchaInfo)
@@ -37,7 +39,7 @@ func (slider *XueXiTSlider) Pass(cache *xuexitongApi.XueXiTUserCache) error {
 	//第二步:拉取相关验证码图片等----------------------------------------
 	captchaImgResult, err := cache.XueXiTSliderVerificationImgApi(slider.CaptchaId, slider.serverTime, slider.Referer, 3, nil)
 	if err != nil {
-		return err
+		return "", err
 	}
 	// ⭐ 正则提取括号中的 JSON 部分
 	imgRe := regexp.MustCompile(`cx_captcha_function\((\{.*\})\)`)
@@ -63,35 +65,60 @@ func (slider *XueXiTSlider) Pass(cache *xuexitongApi.XueXiTUserCache) error {
 		panic(err)
 	}
 
-	fmt.Println("Token:", resp.Token)
-	fmt.Println("Type:", resp.ImageVerificationVo.Type)
-	fmt.Println("ShadeImage:", resp.ImageVerificationVo.ShadeImage)
-	fmt.Println("CutoutImage:", resp.ImageVerificationVo.CutoutImage)
-	fmt.Println("captchaImgResult:", captchaImgResult)
+	//fmt.Println("Token:", resp.Token)
+	//fmt.Println("Type:", resp.ImageVerificationVo.Type)
+	//fmt.Println("ShadeImage:", resp.ImageVerificationVo.ShadeImage)
+	//fmt.Println("CutoutImage:", resp.ImageVerificationVo.CutoutImage)
+	//fmt.Println("captchaImgResult:", captchaImgResult)
 	//第三步:过验证码-----------------------------------------------------
 	//拉取背景图
 	shapeImg, err := cache.PullSliderImgApi(resp.ImageVerificationVo.ShadeImage)
 	if err != nil {
-		return err
+		return "", err
 	}
 	//拉取裁剪图
 	cutoutImg, err := cache.PullSliderImgApi(resp.ImageVerificationVo.CutoutImage)
 	if err != nil {
-		return err
+		return "", err
 	}
 	//识别
 	x := DetectSlideOffset(shapeImg, cutoutImg)
 	if err != nil {
-		return err
+		return "", err
 	}
-	fmt.Println("x:", x)
+	//fmt.Println("x:", x)
 	//runEnv参数中，web=10,android=20,ios=30,miniprogram=40
 	passResult, err := cache.PassSliderApi(slider.CaptchaId, resp.Token, fmt.Sprintf("%d", x), "10", 3, nil)
 	if err != nil {
-		return err
+		return "", err
 	}
-	fmt.Println(passResult)
-	return nil
+	//fmt.Println(passResult)
+	// ⭐ 正则提取括号中的 JSON 部分
+	passResultRe := regexp.MustCompile(`cx_captcha_function\((\{.*\})\)`)
+	submatchPass := passResultRe.FindStringSubmatch(passResult)
+	if len(submatchPass) < 2 {
+		panic("JSON not found")
+	}
+
+	passJsonStr := submatchPass[1]
+	if passStatus, ok := gojsonq.New().JSONString(passJsonStr).Find("result").(bool); ok {
+		if passStatus == true {
+			// 第一层：解析整个 JSON
+			extra := gojsonq.New().JSONString(passJsonStr).Find("extraData")
+			if extra == nil {
+				panic("extraData 为空")
+			}
+			// extra 是一个 string，需要再解析一遍
+			extraJson := extra.(string)
+			// 第二层：从 extraJson 里取 validate
+			validate := gojsonq.New().JSONString(extraJson).Find("validate")
+			if validate == nil {
+				panic("validate 为空")
+			}
+			return validate.(string), nil
+		}
+	}
+	return "", errors.New(passResult)
 }
 
 // image.Image → gocv.Mat
@@ -105,6 +132,7 @@ func ImageToMat(img image.Image) (gocv.Mat, error) {
 	return mat, err
 }
 
+// 识别验证码缺口
 func DetectSlideOffset(bgImg, cutImg image.Image) int {
 	// --- Convert to Mat ---
 	shadeMat, err := ImageToMat(bgImg)
