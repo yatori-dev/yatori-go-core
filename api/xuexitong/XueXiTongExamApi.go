@@ -151,7 +151,14 @@ func (cache *XueXiTUserCache) PullExamPaperHtmlApi(courseId, classId, examId, so
 	url := "https://mooc1-api.chaoxing.com/exam-ans/exam/phone/start?courseId=" + courseId + "&classId=" + classId + "&examId=" + examId + "&source=" + source + "&examAnswerId=" + examAnswerId + "&cpi=" + cpi + "&keyboardDisplayRequiresUserAction=" + keyboardDisplayRequiresUserAction + "&imei=" + imei + "&faceDetectionResult&captchavalidate=" + captchavalidate + "&jt=" + jt + "&_v=0.3868294515418076&cxcid&cxtime&signt&_signcode=3&_signc=0&_signe=3-1&signk"
 	method := "GET"
 
-	client := &http.Client{}
+	tr := &http.Transport{
+		TLSClientConfig: &tls.Config{
+			InsecureSkipVerify: true, // 跳过证书验证，仅用于开发环境
+		},
+	}
+	client := &http.Client{
+		Transport: tr,
+	}
 	req, err := http.NewRequest(method, url, nil)
 
 	if err != nil {

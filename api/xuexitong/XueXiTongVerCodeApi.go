@@ -274,7 +274,14 @@ func (cache *XueXiTUserCache) XueXiTSliderVerificationImgApi(captchaId, serverTi
 func (cache *XueXiTUserCache) PullSliderImgApi(imgUrl string) (image.Image, error) {
 	method := "GET"
 
-	client := &http.Client{}
+	tr := &http.Transport{
+		TLSClientConfig: &tls.Config{
+			InsecureSkipVerify: true, // 跳过证书验证，仅用于开发环境
+		},
+	}
+	client := &http.Client{
+		Transport: tr,
+	}
 	req, err := http.NewRequest(method, imgUrl, nil)
 
 	if err != nil {
@@ -315,7 +322,14 @@ func (cache *XueXiTUserCache) PassSliderApi(captchaId, token, xPoint, runEnv str
 	urlStr := "https://captcha.chaoxing.com/captcha/check/verification/result?callback=cx_captcha_function&captchaId=" + captchaId + "&type=slide&token=" + token + "&textClickArr=" + url.QueryEscape(`[{"x":`+xPoint+`}]`) + "&coordinate=" + url.QueryEscape(`[]`) + "&runEnv=10&version=1.1.20&t=a&iv=cdd9bfb9e7805d0d2d5f1ad4498f70e1&_=1764584636040"
 	method := "GET"
 
-	client := &http.Client{}
+	tr := &http.Transport{
+		TLSClientConfig: &tls.Config{
+			InsecureSkipVerify: true, // 跳过证书验证，仅用于开发环境
+		},
+	}
+	client := &http.Client{
+		Transport: tr,
+	}
 	req, err := http.NewRequest(method, urlStr, nil)
 
 	if err != nil {

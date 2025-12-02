@@ -68,8 +68,14 @@ func (cache *XueXiTUserCache) CourseCompleteStatusApi(courseListData string, ret
 	urlStr := "https://mooc2-ans.chaoxing.com/mooc2-ans/mycourse/stu-job-info?clazzPersonStr=" + url.QueryEscape(courseListData)
 	//urlStr := "https://mooc2-ans.chaoxing.com/mooc2-ans/mycourse/stu-job-info?clazzPersonStr=134350229_407555221%252C125743273_407555221%252C127063689_407555221%252C126701067_407555221%252C125755386_407555221%252C125888882_407555221%252C125783661_454194591%252C124859308_454194591%252C124554421_454194591%252C116272688_407555221%252C117108284_407555221%252C117784832_407555221%252C116370785_407555221%252C116370660_407555221%252C117687599_407555221"
 	method := "GET"
-
-	client := &http.Client{}
+	tr := &http.Transport{
+		TLSClientConfig: &tls.Config{
+			InsecureSkipVerify: true, // 跳过证书验证，仅用于开发环境
+		},
+	}
+	client := &http.Client{
+		Transport: tr,
+	}
 	req, err := http.NewRequest(method, urlStr, nil)
 
 	if err != nil {
@@ -81,7 +87,7 @@ func (cache *XueXiTUserCache) CourseCompleteStatusApi(courseListData string, ret
 	req.Header.Add("Cache-Control", "no-cache")
 	req.Header.Add("Connection", "keep-alive")
 	req.Header.Add("Pragma", "no-cache")
-	req.Header.Add("Referer", "https://mooc2-ans.chaoxing.com/mooc2-ans/visit/interaction?moocDomain=https://mooc1-1.chaoxing.com/mooc-ans")
+	//req.Header.Add("Referer", "https://mooc2-ans.chaoxing.com/mooc2-ans/visit/interaction?moocDomain=https://mooc1-1.chaoxing.com/mooc-ans")
 	req.Header.Add("Sec-Fetch-Dest", "empty")
 	req.Header.Add("Sec-Fetch-Mode", "cors")
 	req.Header.Add("Sec-Fetch-Site", "same-origin")
