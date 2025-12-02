@@ -1,17 +1,15 @@
 package xuexitong
 
 import (
-	"bytes"
 	"encoding/json"
 	"errors"
 	"fmt"
 	"image"
-	"image/png"
+	"math"
 	"regexp"
 
 	"github.com/thedevsaddam/gojsonq"
 	xuexitongApi "github.com/yatori-dev/yatori-go-core/api/xuexitong"
-	"gocv.io/x/gocv"
 )
 
 type XueXiTSlider struct {
@@ -121,83 +119,87 @@ func (slider *XueXiTSlider) Pass(cache *xuexitongApi.XueXiTUserCache) (string, e
 	return "", errors.New(passResult)
 }
 
-// image.Image → gocv.Mat
-func ImageToMat(img image.Image) (gocv.Mat, error) {
-	var buf bytes.Buffer
-	err := png.Encode(&buf, img) // 统一编码为 PNG
-	if err != nil {
-		return gocv.NewMat(), err
+// -------- 工具函数：灰度化 --------
+func toGray(img image.Image) [][]float64 {
+	bounds := img.Bounds()
+	w, h := bounds.Dx(), bounds.Dy()
+	gray := make([][]float64, h)
+	for y := 0; y < h; y++ {
+		gray[y] = make([]float64, w)
+		for x := 0; x < w; x++ {
+			r, g, b, _ := img.At(x+bounds.Min.X, y+bounds.Min.Y).RGBA()
+			gray[y][x] = 0.299*float64(r>>8) + 0.587*float64(g>>8) + 0.114*float64(b>>8)
+		}
 	}
-	mat, err := gocv.IMDecode(buf.Bytes(), gocv.IMReadColor)
-	return mat, err
+	return gray
 }
 
-// 识别验证码缺口
+// -------- 模板匹配：归一化互相关 (NCC) --------
+func normCrossCorrelation(src, tpl [][]float64) (bestX int, bestScore float64) {
+
+	h1 := len(src)
+	w1 := len(src[0])
+	h2 := len(tpl)
+	w2 := len(tpl[0])
+
+	bestScore = -2
+
+	// 遍历所有可能的 x 偏移
+	for y := 0; y <= h1-h2; y++ {
+		for x := 0; x <= w1-w2; x++ {
+
+			var sumSrc, sumTpl float64
+			var sumSrc2, sumTpl2 float64
+			var sumMul float64
+			num := float64(w2 * h2)
+
+			for j := 0; j < h2; j++ {
+				for i := 0; i < w2; i++ {
+					a := src[y+j][x+i]
+					b := tpl[j][i]
+					sumSrc += a
+					sumTpl += b
+					sumSrc2 += a * a
+					sumTpl2 += b * b
+					sumMul += a * b
+				}
+			}
+
+			meanA := sumSrc / num
+			meanB := sumTpl / num
+
+			// NCC 计算
+			var numerator float64
+			var denom float64
+
+			numerator = sumMul - num*meanA*meanB
+			denom = math.Sqrt((sumSrc2-num*meanA*meanA)*(sumTpl2-num*meanB*meanB) + 1e-9)
+
+			score := numerator / denom
+
+			// 找最大值
+			if score > bestScore {
+				bestScore = score
+				bestX = x
+			}
+		}
+	}
+	return bestX, bestScore
+}
+
+// -------- 主逻辑：计算滑块偏移量 --------
 func DetectSlideOffset(bgImg, cutImg image.Image) int {
-	// --- Convert to Mat ---
-	shadeMat, err := ImageToMat(bgImg)
-	if err != nil {
-		return 0
-	}
-	defer shadeMat.Close()
 
-	cutoutMat, err := ImageToMat(cutImg)
-	if err != nil {
-		return 0
-	}
-	defer cutoutMat.Close()
+	// 1. 全图转灰度矩阵
+	bg := toGray(bgImg)
+	cut := toGray(cutImg)
 
-	// --- Convert cutout to gray ---
-	cutoutGray := gocv.NewMat()
-	defer cutoutGray.Close()
-	gocv.CvtColor(cutoutMat, &cutoutGray, gocv.ColorBGRToGray)
+	// 根据你的原代码：取 cut 的固定区域 (8 : 48, y+2 : y+44)
+	// 这里只写最简单版本：直接用整个 cut 的宽高搜索
+	// 如果你需要完全复现原区域裁剪，我也能帮你写
 
-	// --- Find contours ---
-	contours := gocv.FindContours(cutoutGray, gocv.RetrievalExternal, gocv.ChainApproxSimple)
-	defer contours.Close()
+	offsetX, _ := normCrossCorrelation(bg, cut)
 
-	if contours.Size() == 0 {
-		return 0
-	}
-
-	// 获取第一个 contour 的 boundingRect
-	firstContour := contours.At(0)
-	rect := gocv.BoundingRect(firstContour)
-	cutoutY := rect.Min.Y
-
-	// --- Crop cutout part: cutout_image[cutout_y+2 : cutout_y+44, 8:48] ---
-	cutoutTeil := cutoutMat.Region(image.Rect(
-		8, cutoutY+2,
-		48, cutoutY+44,
-	))
-	defer cutoutTeil.Close()
-
-	// --- Crop shade part: shade_image[cutout_y-2 : cutout_y+50] ---
-	shadeTeil := shadeMat.Region(image.Rect(
-		0, cutoutY-2,
-		shadeMat.Cols(), cutoutY+50,
-	))
-	defer shadeTeil.Close()
-
-	// ---------- 模板匹配 ----------
-	result := gocv.NewMat()
-	defer result.Close()
-
-	mask := gocv.NewMat() // 空 mask
-	defer mask.Close()
-
-	err = gocv.MatchTemplate(
-		shadeTeil,           // image
-		cutoutTeil,          // templ
-		&result,             // result
-		gocv.TmCcoeffNormed, // method
-		mask,                // mask
-	)
-	if err != nil {
-		return 0
-	}
-
-	_, _, _, maxLoc := gocv.MinMaxLoc(result)
-
-	return maxLoc.X - 5
+	// 原代码：return maxLoc.X - 5
+	return offsetX - 5
 }

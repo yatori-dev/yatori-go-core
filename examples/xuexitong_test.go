@@ -797,7 +797,7 @@ func TestXueXiToExam(t *testing.T) {
 			if err2 != nil {
 				log.Fatal(err2)
 			}
-			_, err3 := xuexitong.PullExamPaperAction(&userCache, &exam)
+			err3 := xuexitong.PullExamPaperAction(&userCache, &exam)
 			if err3 != nil {
 				log.Fatal(err3)
 			}

@@ -16,7 +16,6 @@ require (
 	github.com/thedevsaddam/gojsonq v1.9.1
 	github.com/tjfoc/gmsm v1.4.1
 	github.com/yalue/onnxruntime_go v1.12.1
-	gocv.io/x/gocv v0.42.0
 	golang.org/x/net v0.38.0
 	gopkg.in/gomail.v2 v2.0.0-20160411212932-81ebce5c23df
 	gorm.io/driver/sqlite v1.5.6
