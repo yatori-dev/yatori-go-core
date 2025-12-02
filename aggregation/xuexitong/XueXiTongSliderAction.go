@@ -119,7 +119,7 @@ func (slider *XueXiTSlider) Pass(cache *xuexitongApi.XueXiTUserCache) (string, e
 	return "", errors.New(passResult)
 }
 
-// -------- 工具函数：灰度化 --------
+// 灰度化
 func toGray(img image.Image) [][]float64 {
 	bounds := img.Bounds()
 	w, h := bounds.Dx(), bounds.Dy()
@@ -134,7 +134,7 @@ func toGray(img image.Image) [][]float64 {
 	return gray
 }
 
-// -------- 模板匹配：归一化互相关 (NCC) --------
+// 验证码模板匹配，归一化互相关(NCC)
 func normCrossCorrelation(src, tpl [][]float64) (bestX int, bestScore float64) {
 
 	h1 := len(src)
@@ -187,19 +187,14 @@ func normCrossCorrelation(src, tpl [][]float64) (bestX int, bestScore float64) {
 	return bestX, bestScore
 }
 
-// -------- 主逻辑：计算滑块偏移量 --------
+// 计算滑块偏移量
 func DetectSlideOffset(bgImg, cutImg image.Image) int {
 
-	// 1. 全图转灰度矩阵
+	//全图转灰度矩阵
 	bg := toGray(bgImg)
 	cut := toGray(cutImg)
 
-	// 根据你的原代码：取 cut 的固定区域 (8 : 48, y+2 : y+44)
-	// 这里只写最简单版本：直接用整个 cut 的宽高搜索
-	// 如果你需要完全复现原区域裁剪，我也能帮你写
-
 	offsetX, _ := normCrossCorrelation(bg, cut)
 
-	// 原代码：return maxLoc.X - 5
 	return offsetX - 5
 }
