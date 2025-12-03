@@ -806,6 +806,20 @@ func TestXueXiToExam(t *testing.T) {
 	}
 }
 
+func TestXXTExamPaperPull(t *testing.T) {
+	utils.YatoriCoreInit()
+	//测试账号
+	setup()
+	paperHtml, err := utils.ReadFileAsString("./学习通考试试题页面.html")
+	if err != nil {
+		log.Fatal(err)
+	}
+	_, err1 := xuexitong.HtmlPaperTurnEntity(paperHtml)
+	if err1 != nil {
+		log.Fatal(err1)
+	}
+}
+
 // 测试拉取人脸照片
 func TestPullFaceImg(t *testing.T) {
 	utils.YatoriCoreInit()
