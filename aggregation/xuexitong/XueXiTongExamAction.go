@@ -1,6 +1,7 @@
 package xuexitong
 
 import (
+	"bytes"
 	"fmt"
 	"log"
 	"net/url"
@@ -199,6 +200,30 @@ func PullExamPaperAction(cache *xuexitong.XueXiTUserCache, exam *XXTExam) error 
 	if err != nil {
 		return err
 	}
+	HtmlPaperTurnEntity(pullPaperHtml)
 	fmt.Println(pullPaperHtml)
 	return nil
+}
+
+// html转Exam实体
+func HtmlPaperTurnEntity(paperHtml string) (XXTExamPaper, error) {
+	xxtExamPaper := XXTExamPaper{}
+	// 使用 goquery 解析 HTML
+	paperDoc, err := goquery.NewDocumentFromReader(bytes.NewReader([]byte(paperHtml)))
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	paperDoc.Find("div.questionWrap").Each(func(i int, sel *goquery.Selection) {
+		questionId, exists := sel.Attr("data") //题目id
+		if exists {
+			fmt.Println("question:", questionId)
+		}
+		questionType, exists := sel.Find(`input[name="` + `type` + questionId + `"]`).Attr("value")
+		if exists {
+			fmt.Println("questionType:", questionType)
+		}
+
+	})
+	return xxtExamPaper, nil
 }
