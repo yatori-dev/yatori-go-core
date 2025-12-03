@@ -86,7 +86,7 @@ func XueXiTPullCourseAction(cache *xuexitong.XueXiTUserCache) ([]XueXiTCourse, e
 		//panic(err)
 		return nil, err
 	}
-	log2.Print(log2.INFO, "["+cache.Name+"] "+" 课程数量："+strconv.Itoa(len(xueXiTCourse.ChannelList)))
+	log2.Print(log2.DEBUG, "["+cache.Name+"] "+" 课程数量："+strconv.Itoa(len(xueXiTCourse.ChannelList)))
 	// log2.Print(log2.INFO, "["+cache.Name+"] "+courses)
 
 	var courseList = make([]XueXiTCourse, 0)
