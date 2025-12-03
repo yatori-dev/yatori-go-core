@@ -97,7 +97,7 @@ func TongYiChatReplyApi(
 		return "", lastErr
 	}
 	if model == "" {
-		model = "qwen-plus"
+		model = "qwen-plus-latest"
 	}
 	tr := &http.Transport{
 		TLSClientConfig: &tls.Config{
