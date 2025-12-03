@@ -66,6 +66,15 @@ func DeleteFile(path string) {
 	}
 }
 
+// ReadFileAsString 读取文本文件并以 string 返回
+func ReadFileAsString(path string) (string, error) {
+	data, err := os.ReadFile(path)
+	if err != nil {
+		return "", err
+	}
+	return string(data), nil
+}
+
 // SaveTextToFile 将 content 写入到 path 指定的文件。
 // 如果 appendMode 为 true，则以追加模式写入（文件不存在会创建）；
 // 否则以覆盖模式写入（会创建或截断已有文件）。
