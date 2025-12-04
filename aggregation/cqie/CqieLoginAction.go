@@ -1,7 +1,9 @@
 package cqie
 
 import (
+	"encoding/json"
 	"errors"
+	"fmt"
 	"strconv"
 	"strings"
 	"time"
@@ -28,17 +30,58 @@ type CqieCourse struct {
 }
 
 type CqieVideo struct {
-	VideoId         string //视屏Id
-	CourseId        string //课程Id
-	UnitId          string //单元Id
-	VideoName       string //视屏名称
-	TimeLength      int    //视屏时长
-	StudentCourseId string //学时课程ID
-	CoursewareId    string //某个和课程相关的ID
-	StudyId         string //学习视屏临时生成的ID
-	MaxCurrentPos   int    //当前观看进度
-	StudyTime       int    //以及学习到的时间点
-	Version         string
+	VideoId          string //视屏Id
+	CourseId         string //课程Id
+	UnitId           string //单元Id
+	VideoName        string //视屏名称
+	TimeLength       int    //视屏时长
+	StudentCourseId  string //学时课程ID
+	CoursewareId     string //某个和课程相关的ID
+	StudyId          string //学习视屏临时生成的ID
+	MaxCurrentPos    int    //当前观看进度
+	StudyTime        int    //以及学习到的时间点
+	Version          string
+	VideoSegmentNode []VideoSegmentNode
+}
+
+// 视屏中的段任务
+type VideoSegmentNode struct {
+	Id              string
+	SegmentId       string
+	KnowledgeNodeId string
+	CourseId        string
+	UnitId          string
+	SegmentName     string
+	StartTimeStr    string
+	EndTimeStr      string
+}
+
+// 试卷
+type WorkPaper struct {
+	questions []WorkQuestion //题目列表
+}
+
+// 题目
+type WorkQuestion struct {
+	Id              string
+	CourseId        string
+	RootUnitId      string
+	UnitId          string
+	KnowledgeNodeId string
+	QuestionType    int
+	Content         string
+	Thinking        string
+	ReferenceAnswer string
+	Status          int
+	OptionsVos      []OptionsVos
+}
+
+// 选择题选项
+type OptionsVos struct {
+	Id            string
+	ExercisesId   string
+	OptionContent string
+	AnswerFlag    int
 }
 
 // CqieLoginAction 登录API聚合整理
@@ -98,7 +141,9 @@ func CqieLoginTokenAction(cache *cqieApi.CqieUserCache, token string) error {
 	cache.SetUserName(gojsonq.New().JSONString(userJson).Find("data.userName").(string))
 	cache.SetOrgId(gojsonq.New().JSONString(userJson).Find("data.orgId").(string))
 	cache.SetUserId(gojsonq.New().JSONString(userJson).Find("data.userId").(string))
-	cache.SetMobile(gojsonq.New().JSONString(userJson).Find("data.mobile").(string))
+	if mobile, ok := gojsonq.New().JSONString(userJson).Find("data.mobile").(string); ok {
+		cache.SetMobile(mobile)
+	}
 	cache.SetOrgMajorId(gojsonq.New().JSONString(userJson).Find("data.orgMajorId").(string))
 
 	log.Print(log.DEBUG, "["+cache.Account+"] "+" 登录成功")
@@ -215,16 +260,48 @@ func PullCourseVideoListAndProgress(cache *cqieApi.CqieUserCache, course *CqieCo
 											second, _ := strconv.Atoi(timeSplit[2])
 											studyTime += hour*60*60 + minute*60 + second
 										}
+
+										//如果有分段视频
+										videSegmentList := []VideoSegmentNode{}
+										if videoSegmentsList, ok := obj1["courseCatalogVideoSegments"].([]interface{}); ok {
+											for _, videoSegment := range videoSegmentsList {
+												if videoSegmentObj, ok := videoSegment.(map[string]interface{}); ok {
+													if videoSegmentKnowledgeTimeRangesVos, ok := videoSegmentObj["videoSegmentKnowledgeTimeRangesVos"].([]interface{}); ok {
+														for _, videoSegmentKnowledgeTimeRangesVosList := range videoSegmentKnowledgeTimeRangesVos {
+															if videoSegmentKnowledgeTimeRangesVosObj, ok := videoSegmentKnowledgeTimeRangesVosList.(map[string]interface{}); ok {
+																//fmt.Println(videoSegmentKnowledgeTimeRangesVosObj)
+																segmentNode := VideoSegmentNode{
+																	Id:           videoSegmentKnowledgeTimeRangesVosObj["id"].(string),
+																	SegmentId:    videoSegmentKnowledgeTimeRangesVosObj["segmentId"].(string),
+																	CourseId:     videoSegmentObj["courseId"].(string),
+																	UnitId:       videoSegmentObj["unitId"].(string),
+																	SegmentName:  videoSegmentObj["segmentName"].(string),
+																	StartTimeStr: videoSegmentKnowledgeTimeRangesVosObj["startTimeStr"].(string),
+																	EndTimeStr:   videoSegmentKnowledgeTimeRangesVosObj["endTimeStr"].(string),
+																}
+																if knowledgeId, ok1 := videoSegmentKnowledgeTimeRangesVosObj["knowledgeNodeId"].(string); ok1 {
+																	segmentNode.KnowledgeNodeId = knowledgeId
+																}
+																videSegmentList = append(videSegmentList, segmentNode)
+															}
+														}
+													}
+
+												}
+											}
+										}
+
 										videoList = append(videoList, CqieVideo{
-											VideoId:         obj1["id"].(string),
-											CourseId:        obj1["courseId"].(string),
-											UnitId:          obj1["unitId"].(string),
-											VideoName:       obj1["name"].(string),
-											TimeLength:      int(obj1["timeLength"].(float64)),
-											StudentCourseId: course.StudentCourseId,
-											CoursewareId:    course.CoursewareId,
-											StudyTime:       studyTime,
-											Version:         course.Version,
+											VideoId:          obj1["id"].(string),
+											CourseId:         obj1["courseId"].(string),
+											UnitId:           obj1["unitId"].(string),
+											VideoName:        obj1["name"].(string),
+											TimeLength:       int(obj1["timeLength"].(float64)),
+											StudentCourseId:  course.StudentCourseId,
+											CoursewareId:     course.CoursewareId,
+											StudyTime:        studyTime,
+											Version:          course.Version,
+											VideoSegmentNode: videSegmentList,
 										})
 									}
 								}
@@ -270,6 +347,7 @@ func StartStudyVideoAction(cache *cqieApi.CqieUserCache, video *CqieVideo) error
 	if err != nil {
 		return err
 	}
+
 	if gojsonq.New().JSONString(api).Find("msg") != "操作成功" {
 		return errors.New("获取数据失败：" + api)
 	}
@@ -299,7 +377,121 @@ func SubmitStudyTimeAction(cache *cqieApi.CqieUserCache, video *CqieVideo, study
 
 // 保存视屏学习时间点，学习完一个视屏就保存一次
 func SaveVideoStudyTimeAction(cache *cqieApi.CqieUserCache, video *CqieVideo, startPos, stopPos int) error {
-	api, err := cache.SaveStudyTimeApi(video.CourseId, video.StudentCourseId, video.UnitId, video.VideoId, video.CoursewareId, video.Version, startPos, stopPos, 5, nil)
+	var api string
+	var err error
+
+	api, err = cache.SaveStudyTimeApi(video.CourseId, video.StudentCourseId, video.UnitId, video.VideoId, video.CoursewareId, video.Version, startPos, stopPos, 5, nil)
+	//如果有段节点
+	for _, segmentNode := range video.VideoSegmentNode {
+		api, err = cache.SaveSegmentStudyTimeApi(segmentNode.CourseId, video.StudentCourseId, segmentNode.UnitId, video.VideoId, video.CoursewareId, segmentNode.Id, fmt.Sprintf("%d", video.MaxCurrentPos), video.Version, startPos, stopPos, 5, nil)
+		if segmentNode.KnowledgeNodeId != "" { //如果有作业，那么就写
+			paperJson, err1 := cache.PullVideoWorkPaperApi(segmentNode.Id, video.StudentCourseId, segmentNode.UnitId)
+			if err1 != nil {
+				return err1
+			}
+			questionList := []WorkQuestion{}
+			if paperListObj, ok := gojsonq.New().JSONString(paperJson).Find("data").([]interface{}); ok {
+				for _, questionJson := range paperListObj {
+					if questionObj, ok := questionJson.(map[string]interface{}); ok {
+						options := []OptionsVos{}
+						if optionVosListObj, ok := questionObj["optionVos"].([]interface{}); ok {
+							for _, optionVo := range optionVosListObj {
+								if optionVoObj, ok := optionVo.(map[string]interface{}); ok {
+									vos := OptionsVos{
+										Id:            optionVoObj["id"].(string),
+										ExercisesId:   optionVoObj["exercisesId"].(string),
+										OptionContent: optionVoObj["optionContent"].(string),
+										AnswerFlag:    int(optionVoObj["answerFlag"].(float64)),
+									}
+									options = append(options, vos)
+								}
+							}
+						}
+						question := WorkQuestion{
+							Id:              questionObj["id"].(string),
+							CourseId:        questionObj["courseId"].(string),
+							UnitId:          questionObj["unitId"].(string),
+							KnowledgeNodeId: questionObj["knowledgeNodeId"].(string),
+							QuestionType:    int(questionObj["questionType"].(float64)),
+							Content:         questionObj["content"].(string),
+							ReferenceAnswer: questionObj["referenceAnswer"].(string),
+							Status:          int(questionObj["status"].(float64)),
+							OptionsVos:      options,
+						}
+
+						if thinkContent, ok1 := questionObj["thinking"].(string); ok1 {
+							question.Thinking = thinkContent
+						}
+						questionList = append(questionList, question)
+					}
+				}
+			}
+			//提交答案----------------------------------------------
+			type Po struct {
+				SubmitAnswer       string `json:"submitAnswer"`
+				ExercisesId        string `json:"exercisesId"`
+				QuestionType       int    `json:"questionType"`
+				ReferenceAnswer    string `json:"referenceAnswer"`
+				RecordId           string `json:"recordId"`
+				SegmentKnowledgeId string `json:"segmentKnowledgeId"`
+				UpdateCount        int    `json:"updateCount"`
+			}
+			type Answer struct {
+				PoList             []Po   `json:"poList"`
+				StudentCourseId    string `json:"studentCourseId"`
+				UnitId             string `json:"unitId"`
+				CourseId           string `json:"courseId"`
+				SegmentKnowledgeId string `json:"segmentKnowledgeId"`
+				StudentId          string `json:"studentId"`
+				VideoId            string `json:"videoId"`
+				DeptId             string `json:"deptId"`
+				MajorId            string `json:"majorId"`
+				Version            string `json:"version"`
+				OrgId              string `json:"orgId"`
+			}
+			answer := Answer{
+				StudentCourseId:    video.StudentCourseId,
+				UnitId:             segmentNode.UnitId,
+				CourseId:           segmentNode.CourseId,
+				SegmentKnowledgeId: segmentNode.Id,
+				StudentId:          cache.GetStudentId(),
+				VideoId:            video.VideoId,
+				DeptId:             cache.GetDeptId(),
+				MajorId:            cache.GetOrgMajorId(),
+				Version:            video.Version,
+				OrgId:              cache.GetOrgId(),
+			}
+			poList := []Po{}
+			for _, question := range questionList {
+				po := Po{
+					SubmitAnswer:       question.ReferenceAnswer,
+					ExercisesId:        question.Id,
+					QuestionType:       question.QuestionType,
+					ReferenceAnswer:    question.ReferenceAnswer,
+					SegmentKnowledgeId: segmentNode.KnowledgeNodeId,
+					UpdateCount:        0,
+				}
+				poList = append(poList, po)
+			}
+			answer.PoList = poList
+			//提交答案
+			answerJson, err1 := json.Marshal(answer)
+			if err1 != nil {
+				return err1
+			}
+			answerApi, err1 := cache.SubmitWorkAnswerApi(string(answerJson))
+			if err1 != nil {
+				return err1
+			}
+			if code, ok := gojsonq.New().JSONString(answerApi).Find("code").(float64); ok {
+				if int(code) != 200 {
+					log.Print(log.INFO, "自动写作业提交答案错误：", answerApi)
+				}
+			}
+
+		}
+	}
+
 	if err != nil {
 		return err
 	}

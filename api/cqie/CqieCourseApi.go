@@ -1,6 +1,7 @@
 package cqie
 
 import (
+	"fmt"
 	"io/ioutil"
 	"net/http"
 	"strconv"
@@ -215,9 +216,10 @@ func (cache *CqieUserCache) SubmitStudyTimeApi(
 	   "studyTime": "` + studyTime.Format("2006-01-02 15:04:05") + `",
 	   "startPos":` + strconv.Itoa(startPos) + `,
 	   "stopPos": ` + strconv.Itoa(stopPos) + `,
-	   "studyTime": "` + studyTime.Format("2006-01-02 15:04:05") + `",
+	   "createTime": "` + studyTime.Format("2006-01-02 15:04:05") + `",
 	   "maxCurrentPos": ` + strconv.Itoa(maxPos) + `,
-	   "coursewareId": "` + coursewareId + `"
+	   "coursewareId": "` + coursewareId + `",
+       "segmentKnowledgeId": null
 	 }`)
 	client := &http.Client{}
 	req, err := http.NewRequest(method, url, payload)
@@ -255,15 +257,67 @@ func (cache *CqieUserCache) SaveStudyTimeApi(courseId, studentCourseId, unitId, 
 	method := "POST"
 
 	payload := strings.NewReader(`{
+		"courseId": "` + courseId + `",
+		"majorId": "` + cache.orgMajorId + `",
+		"startPos": "` + strconv.Itoa(startPos) + `",
+		"stopPos": "` + strconv.Itoa(stopPos) + `",
+		"studentCourseId": "` + studentCourseId + `",
+		"studentId": "` + cache.studentId + `",
+		"unitId": "` + unitId + `",
+		"videoId": "` + videoId + `",
+		"coursewareId": "` + coursewareId + `",
+		"version": "` + version + `"
+	}`)
+
+	client := &http.Client{}
+	req, err := http.NewRequest(method, url, payload)
+
+	if err != nil {
+		time.Sleep(time.Millisecond * 150)
+		return cache.SaveStudyTimeApi(courseId, studentCourseId, unitId, videoId, coursewareId, version, startPos, stopPos, retry-1, err)
+	}
+	req.Header.Add("Authorization", cache.access_token)
+	req.Header.Add("User-Agent", utils.DefaultUserAgent)
+	req.Header.Add("Content-Type", "application/json")
+
+	res, err := client.Do(req)
+	if err != nil {
+		time.Sleep(time.Millisecond * 150)
+		return cache.SaveStudyTimeApi(courseId, studentCourseId, unitId, videoId, coursewareId, version, startPos, stopPos, retry-1, err)
+	}
+	defer res.Body.Close()
+
+	body, err := ioutil.ReadAll(res.Body)
+	if err != nil {
+		time.Sleep(time.Millisecond * 150)
+		return cache.SaveStudyTimeApi(courseId, studentCourseId, unitId, videoId, coursewareId, version, startPos, stopPos, retry-1, err)
+	}
+	return string(body), nil
+}
+
+// 用于保存学习点时间
+func (cache *CqieUserCache) SaveSegmentStudyTimeApi(courseId, studentCourseId, unitId, videoId, coursewareId, segmentKnowledgeId, maxCurrentPos, version string, startPos, stopPos int, retry int, lastErr error) (string, error) {
+	if retry < 0 {
+		return "", lastErr
+	}
+	url := "https://study.cqie.edu.cn/gateway/system/orgStudent/segment/saveStudyVideoPlan"
+	method := "POST"
+
+	payload := strings.NewReader(`{
+	"id": "",
+    "orgId":"1",
+	"deptId":"` + cache.deptId + `",
+	"majorId": "` + cache.orgMajorId + `",	
 	"courseId": "` + courseId + `",
-	"majorId": "` + cache.orgMajorId + `",
 	"startPos": "` + strconv.Itoa(startPos) + `",
 	"stopPos": "` + strconv.Itoa(stopPos) + `",
 	"studentCourseId": "` + studentCourseId + `",
 	"studentId": "` + cache.studentId + `",
 	"unitId": "` + unitId + `",
 	"videoId": "` + videoId + `",
-	"coursewareId": "` + coursewareId + `",
+	"knowledgeId": null,
+	"segmentKnowledgeId": "` + segmentKnowledgeId + `",
+	"maxCurrentPos": ` + maxCurrentPos + `,
 	"version": "` + version + `"
 }`)
 
@@ -356,5 +410,110 @@ func (cache *CqieUserCache) PullProgressDetailApi(courseId, studentCourseId, ver
 		time.Sleep(time.Millisecond * 150)
 		return cache.PullProgressDetailApi(courseId, studentCourseId, version, retry-1, lastErr)
 	}
+	return string(body), nil
+}
+
+// 拉取视屏作业试卷接口
+func (cache *CqieUserCache) PullVideoWorkPaperApi(knowledgeNodeId, studentCourseId, unitId string) (string, error) {
+
+	url := "https://study.cqie.edu.cn/gateway/study/studyKnowledgeExerciseRecord/exercisesList"
+	method := "POST"
+
+	payload := strings.NewReader(`{
+		"knowledgeNodeId": "` + knowledgeNodeId + `",
+		"studentCourseId": "` + studentCourseId + `",
+		"unitId": "` + unitId + `"
+		}`)
+
+	client := &http.Client{}
+	req, err := http.NewRequest(method, url, payload)
+
+	if err != nil {
+		fmt.Println(err)
+		return "", err
+	}
+	req.Header.Add("accept", "application/json, text/plain, */*")
+	req.Header.Add("accept-language", "zh-CN,zh;q=0.9,en;q=0.8,en-GB;q=0.7,en-US;q=0.6")
+	req.Header.Add("authorization", cache.access_token)
+	req.Header.Add("cache-control", "no-cache")
+	req.Header.Add("origin", "https://study.cqie.edu.cn")
+	req.Header.Add("pragma", "no-cache")
+	req.Header.Add("priority", "u=1, i")
+
+	req.Header.Add("sec-ch-ua", "\"Chromium\";v=\"142\", \"Microsoft Edge\";v=\"142\", \"Not_A Brand\";v=\"99\"")
+	req.Header.Add("sec-ch-ua-mobile", "?0")
+	req.Header.Add("sec-ch-ua-platform", "\"Windows\"")
+	req.Header.Add("sec-fetch-dest", "empty")
+	req.Header.Add("sec-fetch-mode", "cors")
+	req.Header.Add("sec-fetch-site", "same-origin")
+	req.Header.Add("user-agent", "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/142.0.0.0 Safari/537.36 Edg/142.0.0.0")
+	req.Header.Add("content-type", "application/json;charset=UTF-8;")
+	req.Header.Add("Host", "study.cqie.edu.cn")
+	req.Header.Add("Connection", "keep-alive")
+
+	res, err := client.Do(req)
+	if err != nil {
+		fmt.Println(err)
+		return "", err
+	}
+	defer res.Body.Close()
+
+	body, err := ioutil.ReadAll(res.Body)
+	if err != nil {
+		fmt.Println(err)
+		return "", err
+	}
+	//fmt.Println(string(body))
+	return string(body), nil
+}
+
+// 提交答案
+func (cache *CqieUserCache) SubmitWorkAnswerApi(answerJson string) (string, error) {
+
+	url := "https://study.cqie.edu.cn/gateway/study/studyKnowledgeExerciseSummaryRecord/createList"
+	method := "POST"
+
+	payload := strings.NewReader(answerJson)
+
+	client := &http.Client{}
+	req, err := http.NewRequest(method, url, payload)
+
+	if err != nil {
+		fmt.Println(err)
+		return "", err
+	}
+	req.Header.Add("accept", "application/json, text/plain, */*")
+	req.Header.Add("accept-language", "zh-CN,zh;q=0.9,en;q=0.8,en-GB;q=0.7,en-US;q=0.6")
+	req.Header.Add("authorization", cache.access_token)
+	req.Header.Add("cache-control", "no-cache")
+	req.Header.Add("origin", "https://study.cqie.edu.cn")
+	req.Header.Add("pragma", "no-cache")
+	req.Header.Add("priority", "u=1, i")
+
+	req.Header.Add("sec-ch-ua", "\"Chromium\";v=\"142\", \"Microsoft Edge\";v=\"142\", \"Not_A Brand\";v=\"99\"")
+	req.Header.Add("sec-ch-ua-mobile", "?0")
+	req.Header.Add("sec-ch-ua-platform", "\"Windows\"")
+	req.Header.Add("sec-fetch-dest", "empty")
+	req.Header.Add("sec-fetch-mode", "cors")
+	req.Header.Add("sec-fetch-site", "same-origin")
+	req.Header.Add("user-agent", "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/142.0.0.0 Safari/537.36 Edg/142.0.0.0")
+
+	req.Header.Add("content-type", "application/json;charset=UTF-8;")
+	req.Header.Add("Host", "study.cqie.edu.cn")
+	req.Header.Add("Connection", "keep-alive")
+
+	res, err := client.Do(req)
+	if err != nil {
+		fmt.Println(err)
+		return "", err
+	}
+	defer res.Body.Close()
+
+	body, err := ioutil.ReadAll(res.Body)
+	if err != nil {
+		fmt.Println(err)
+		return "", err
+	}
+	//fmt.Println(string(body))
 	return string(body), nil
 }

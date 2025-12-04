@@ -139,11 +139,14 @@ func TestCqieVideosBrushFast(t *testing.T) {
 	users := global.Config.Users[69]
 
 	cache := cqieApi.CqieUserCache{Account: users.Account, Password: users.Password} //构建用户
-	cqie.CqieLoginAction(&cache)
-	//token := "eyJhbGciOiJIUzUxMiJ9.eyIwIjoiMSIsInVzZXJfaWQiOiJiODc5N2FkNjdhMGNmZDk2N2ViNGJhOWM4ODBkOWY5MCIsImFwcElkIjoiMjAyNTA5MDYwMTA3NTczNzYwNCIsInVzZXJfa2V5IjoiMGI3YWU3NmUtZDhiOC00YzFkLThhYmYtMjdhODJjZjVkYjY2IiwidXNlcm5hbWUiOiLlrovlhYPlhbUifQ.vb2B9szsu1uYV9vgPIknkJ518jWblujfzqJaV2zedXdbl2RLWwzAFgI4_8mKQ09y-ikZ8vjbGXC29Xaf58QJXA"
-	//cqie.CqieLoginTokenAction(&cache, token)               //登录
+	//cqie.CqieLoginAction(&cache)
+	token := "eyJhbGciOiJIUzUxMiJ9.eyIwIjoiMSIsInVzZXJfaWQiOiI1MTY4MmNjMGVhMjk3MWJiNjI3Nzg5NTQ5NzJmNjYxMyIsImFwcElkIjoiMjAyNTEyMDQwMTc0MjY5ODMxNiIsInVzZXJfa2V5IjoiOGNhZmMzNzAtN2Y2ZC00OWQyLTgzZTctNTcyYTY1MWYxODA2IiwidXNlcm5hbWUiOiLlrovnqIvplKYifQ.1gYFFMTq7dJRwPVXVEIXthNRL3YQAuaokrkrZUk6A3ppuR4Azxm_6VeHVGYABmiGkc17Lc6JuNJbyqsDPFGQbg"
+	cqie.CqieLoginTokenAction(&cache, token)               //登录
 	courseList, _ := cqie.CqiePullCourseListAction(&cache) //拉取课程列表
 	for _, course := range courseList {
+		if course.CourseName != "数据结构与算法" {
+			continue
+		}
 		//videos, err := cqie.PullCourseVideoListAction(&cache, &course)
 		videos, err := cqie.PullCourseVideoListAndProgress(&cache, &course)
 		fmt.Println("正在学习课程：" + course.CourseName)
@@ -151,15 +154,16 @@ func TestCqieVideosBrushFast(t *testing.T) {
 			panic(err)
 		}
 		for _, video := range videos {
+			//if !strings.Contains(video.VideoName, "909") {
+			//	//fmt.Println("断点")
+			//	continue
+			//}
 			cqie.PullCourseVideoListAction(&cache, &course) //每刷一次课就拉一次视屏
-			if video.VideoName == "303-修改表结构" {
-				fmt.Println("断点")
-			}
 			nowTime := time.Now()
-			if video.StudyTime >= video.TimeLength {
-				fmt.Println(video.VideoName, "刷课完毕")
-				continue
-			}
+			//if video.StudyTime >= video.TimeLength {
+			//	fmt.Println(video.VideoName, "刷课完毕")
+			//	continue
+			//}
 			startPos := video.TimeLength
 			stopPos := video.TimeLength
 			maxPos := video.TimeLength + 3
