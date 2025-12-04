@@ -72,10 +72,12 @@ func CqieLoginAction(cache *cqieApi.CqieUserCache) error {
 		cache.SetUserName(gojsonq.New().JSONString(userJson).Find("data.userName").(string))
 		cache.SetOrgId(gojsonq.New().JSONString(userJson).Find("data.orgId").(string))
 		cache.SetUserId(gojsonq.New().JSONString(userJson).Find("data.userId").(string))
-		cache.SetMobile(gojsonq.New().JSONString(userJson).Find("data.mobile").(string))
+		if mobile, ok := gojsonq.New().JSONString(userJson).Find("data.mobile").(string); ok {
+			cache.SetMobile(mobile)
+		}
 		cache.SetOrgMajorId(gojsonq.New().JSONString(userJson).Find("data.orgMajorId").(string))
 
-		log.Print(log.INFO, "["+cache.Account+"] "+" 登录成功")
+		log.Print(log.DEBUG, "["+cache.Account+"] "+" 登录成功")
 		break
 	}
 	return nil
@@ -97,7 +99,7 @@ func CqieLoginTokenAction(cache *cqieApi.CqieUserCache, token string) error {
 	cache.SetMobile(gojsonq.New().JSONString(userJson).Find("data.mobile").(string))
 	cache.SetOrgMajorId(gojsonq.New().JSONString(userJson).Find("data.orgMajorId").(string))
 
-	log.Print(log.INFO, "["+cache.Account+"] "+" 登录成功")
+	log.Print(log.DEBUG, "["+cache.Account+"] "+" 登录成功")
 	return nil
 }
 
