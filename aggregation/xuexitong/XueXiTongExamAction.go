@@ -213,17 +213,48 @@ func HtmlPaperTurnEntity(paperHtml string) (XXTExamPaper, error) {
 	if err != nil {
 		log.Fatal(err)
 	}
+	questionId, exists := paperDoc.Attr("data") //题目id
+	if exists {
+		fmt.Println("question:", questionId)
+	}
+	questionType, exists := paperDoc.Find(`input[name="` + `type` + questionId + `"]`).Attr("value")
+	if exists {
+		fmt.Println("questionType:", questionType)
+	}
 
+	switch questionType {
+	case "0": //单选题
+		turn, err1 := singleTurn(paperDoc)
+		if err1 != nil {
+			fmt.Println(err1)
+		}
+		fmt.Println(turn)
+	}
+
+	return xxtExamPaper, nil
+}
+
+func singleTurn(paperDoc *goquery.Document) (XXTQuestion, error) {
+	question := XXTQuestion{}
+	question.QType = qtype.SingleChoice
 	paperDoc.Find("div.questionWrap").Each(func(i int, sel *goquery.Selection) {
-		questionId, exists := sel.Attr("data") //题目id
+		questionId, exists := paperDoc.Attr("data") //题目id
 		if exists {
+			question.Id = questionId
 			fmt.Println("question:", questionId)
 		}
-		questionType, exists := sel.Find(`input[name="` + `type` + questionId + `"]`).Attr("value")
-		if exists {
-			fmt.Println("questionType:", questionType)
-		}
+
+		//题目
+		title := strings.TrimSpace(sel.Find(`.tit p`).First().Text())
+		fmt.Println(title)
+		question.question.Content = title
+		sel.Find(`.singleChoice`).Each(func(i int, sel *goquery.Selection) {
+			letter := strings.TrimSpace(sel.Find(`.No`).Text())
+			text := strings.TrimSpace(sel.Find(`.answerInfo cc`).Text())
+			fmt.Println(letter, text)
+			question.question.Options = append(question.question.Options, letter+text)
+		})
 
 	})
-	return xxtExamPaper, nil
+	return question, nil
 }

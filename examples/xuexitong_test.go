@@ -806,6 +806,7 @@ func TestXueXiToExam(t *testing.T) {
 	}
 }
 
+// 试卷题目截取测试
 func TestXXTExamPaperPull(t *testing.T) {
 	utils.YatoriCoreInit()
 	//测试账号
