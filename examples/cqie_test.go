@@ -136,11 +136,12 @@ func TestCqieVideosBrushFast(t *testing.T) {
 	utils.YatoriCoreInit()
 	//测试账号
 	setup()
-	users := global.Config.Users[4]
+	users := global.Config.Users[69]
 
 	cache := cqieApi.CqieUserCache{Account: users.Account, Password: users.Password} //构建用户
-	token := "eyJhbGciOiJIUzUxMiJ9.eyIwIjoiMSIsInVzZXJfaWQiOiJiODc5N2FkNjdhMGNmZDk2N2ViNGJhOWM4ODBkOWY5MCIsImFwcElkIjoiMjAyNTA5MDYwMTA3NTczNzYwNCIsInVzZXJfa2V5IjoiMGI3YWU3NmUtZDhiOC00YzFkLThhYmYtMjdhODJjZjVkYjY2IiwidXNlcm5hbWUiOiLlrovlhYPlhbUifQ.vb2B9szsu1uYV9vgPIknkJ518jWblujfzqJaV2zedXdbl2RLWwzAFgI4_8mKQ09y-ikZ8vjbGXC29Xaf58QJXA"
-	cqie.CqieLoginTokenAction(&cache, token)               //登录
+	cqie.CqieLoginAction(&cache)
+	//token := "eyJhbGciOiJIUzUxMiJ9.eyIwIjoiMSIsInVzZXJfaWQiOiJiODc5N2FkNjdhMGNmZDk2N2ViNGJhOWM4ODBkOWY5MCIsImFwcElkIjoiMjAyNTA5MDYwMTA3NTczNzYwNCIsInVzZXJfa2V5IjoiMGI3YWU3NmUtZDhiOC00YzFkLThhYmYtMjdhODJjZjVkYjY2IiwidXNlcm5hbWUiOiLlrovlhYPlhbUifQ.vb2B9szsu1uYV9vgPIknkJ518jWblujfzqJaV2zedXdbl2RLWwzAFgI4_8mKQ09y-ikZ8vjbGXC29Xaf58QJXA"
+	//cqie.CqieLoginTokenAction(&cache, token)               //登录
 	courseList, _ := cqie.CqiePullCourseListAction(&cache) //拉取课程列表
 	for _, course := range courseList {
 		//videos, err := cqie.PullCourseVideoListAction(&cache, &course)

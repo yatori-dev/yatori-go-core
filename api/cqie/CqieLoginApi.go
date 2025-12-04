@@ -33,6 +33,7 @@ type CqieUserCache struct {
 	orgMajorId   string //专业Id
 	IpProxySW    bool   // 是否开启代理
 	ProxyIP      string //代理IP
+	Version      string //平台版本
 }
 
 var randChar = []string{"0", "1", "2", "3", "4", "5", "6", "7", "8", "9", "a", "b", "c", "d", "e", "f", "A", "B", "C", "D", "E", "F"}

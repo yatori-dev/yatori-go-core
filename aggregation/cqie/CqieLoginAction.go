@@ -24,6 +24,7 @@ type CqieCourse struct {
 	HaveTime        time.Time //以学时长
 	Learned         string    //已学进度
 	CoursewareId    string    //某个和课程相关的ID
+	Version         string
 }
 
 type CqieVideo struct {
@@ -37,6 +38,7 @@ type CqieVideo struct {
 	StudyId         string //学习视屏临时生成的ID
 	MaxCurrentPos   int    //当前观看进度
 	StudyTime       int    //以及学习到的时间点
+	Version         string
 }
 
 // CqieLoginAction 登录API聚合整理
@@ -132,6 +134,7 @@ func CqiePullCourseListAction(cache *cqieApi.CqieUserCache) ([]CqieCourse, error
 					Learned:         obj["learned"].(string),
 					StudentCourseId: obj["studentCourseId"].(string),
 					CoursewareId:    obj["coursewareId"].(string),
+					Version:         obj["version"].(string),
 				})
 			}
 		}
@@ -142,7 +145,7 @@ func CqiePullCourseListAction(cache *cqieApi.CqieUserCache) ([]CqieCourse, error
 // 拉取对应课程的所有视屏
 func PullCourseVideoListAction(cache *cqieApi.CqieUserCache, course *CqieCourse) ([]CqieVideo, error) {
 	var videoList []CqieVideo
-	courseApi, err := cache.PullCourseDetailApi(course.Id, course.StudentCourseId, 5, nil)
+	courseApi, err := cache.PullCourseDetailApi(course.Id, course.StudentCourseId, course.Version, 5, nil)
 	if err != nil {
 		return videoList, err
 	}
@@ -169,6 +172,7 @@ func PullCourseVideoListAction(cache *cqieApi.CqieUserCache, course *CqieCourse)
 											TimeLength:      int(obj1["timeLength"].(float64)),
 											StudentCourseId: course.StudentCourseId,
 											CoursewareId:    course.CoursewareId,
+											Version:         course.Version,
 										})
 									}
 								}
@@ -184,7 +188,7 @@ func PullCourseVideoListAction(cache *cqieApi.CqieUserCache, course *CqieCourse)
 
 func PullCourseVideoListAndProgress(cache *cqieApi.CqieUserCache, course *CqieCourse) ([]CqieVideo, error) {
 	var videoList []CqieVideo
-	courseApi, err := cache.PullProgressDetailApi(course.Id, course.StudentCourseId, 5, nil)
+	courseApi, err := cache.PullProgressDetailApi(course.Id, course.StudentCourseId, course.Version, 5, nil)
 	if err != nil {
 		return videoList, err
 	}
@@ -220,6 +224,7 @@ func PullCourseVideoListAndProgress(cache *cqieApi.CqieUserCache, course *CqieCo
 											StudentCourseId: course.StudentCourseId,
 											CoursewareId:    course.CoursewareId,
 											StudyTime:       studyTime,
+											Version:         course.Version,
 										})
 									}
 								}
@@ -248,6 +253,7 @@ func PullCourseVideoListAndProgress(cache *cqieApi.CqieUserCache, course *CqieCo
 								StudentCourseId: course.StudentCourseId,
 								CoursewareId:    course.CoursewareId,
 								StudyTime:       studyTime,
+								Version:         course.Version,
 							})
 						}
 					}
@@ -260,7 +266,7 @@ func PullCourseVideoListAndProgress(cache *cqieApi.CqieUserCache, course *CqieCo
 
 // 学习视屏前一定要先调用这个函数才能开始学习
 func StartStudyVideoAction(cache *cqieApi.CqieUserCache, video *CqieVideo) error {
-	api, err := cache.GetVideoStudyIdApi(video.StudentCourseId, video.VideoId, 5, nil)
+	api, err := cache.GetVideoStudyIdApi(video.StudentCourseId, video.VideoId, video.Version, 5, nil)
 	if err != nil {
 		return err
 	}
@@ -281,7 +287,7 @@ func StartStudyVideoAction(cache *cqieApi.CqieUserCache, video *CqieVideo) error
 
 // 提交学时
 func SubmitStudyTimeAction(cache *cqieApi.CqieUserCache, video *CqieVideo, studyTime time.Time, startPos int, stopPos int, maxPos int) error {
-	api, err := cache.SubmitStudyTimeApi(video.StudyId, video.CourseId, video.StudentCourseId, video.UnitId, video.VideoId, studyTime, video.CoursewareId, startPos, stopPos, maxPos, 5, nil)
+	api, err := cache.SubmitStudyTimeApi(video.StudyId, video.Version, video.CourseId, video.StudentCourseId, video.UnitId, video.VideoId, studyTime, video.CoursewareId, startPos, stopPos, maxPos, 5, nil)
 	if err != nil {
 		return err
 	}
@@ -293,7 +299,7 @@ func SubmitStudyTimeAction(cache *cqieApi.CqieUserCache, video *CqieVideo, study
 
 // 保存视屏学习时间点，学习完一个视屏就保存一次
 func SaveVideoStudyTimeAction(cache *cqieApi.CqieUserCache, video *CqieVideo, startPos, stopPos int) error {
-	api, err := cache.SaveStudyTimeApi(video.CourseId, video.StudentCourseId, video.UnitId, video.VideoId, video.CoursewareId, startPos, stopPos, 5, nil)
+	api, err := cache.SaveStudyTimeApi(video.CourseId, video.StudentCourseId, video.UnitId, video.VideoId, video.CoursewareId, video.Version, startPos, stopPos, 5, nil)
 	if err != nil {
 		return err
 	}

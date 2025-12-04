@@ -6,7 +6,7 @@ import (
 	"strconv"
 	"strings"
 	"time"
-	
+
 	"github.com/yatori-dev/yatori-go-core/utils"
 )
 
@@ -148,11 +148,11 @@ func (cache *CqieUserCache) PullCourseListApiNew(retry int, lastErr error) (stri
 }
 
 // GetVideoStudyIdApi 学习视屏前需要先调用此接口获取id才能学习
-func (cache *CqieUserCache) GetVideoStudyIdApi(studentCourseId, videoId string, retry int, lastErr error) (string, error) {
+func (cache *CqieUserCache) GetVideoStudyIdApi(studentCourseId, videoId, version string, retry int, lastErr error) (string, error) {
 	if retry < 0 {
 		return "", lastErr
 	}
-	url := "https://study.cqie.edu.cn/gateway/system/orgStudent/studyVideo?studentCourseId=" + studentCourseId + "&videoId=" + videoId + "&studentId=" + cache.studentId + "&majorId=" + cache.orgMajorId + "&version=ZSB_DSJ_24"
+	url := "https://study.cqie.edu.cn/gateway/system/orgStudent/studyVideo?studentCourseId=" + studentCourseId + "&videoId=" + videoId + "&studentId=" + cache.studentId + "&majorId=" + cache.orgMajorId + "&version=" + version
 	method := "GET"
 
 	client := &http.Client{}
@@ -160,7 +160,7 @@ func (cache *CqieUserCache) GetVideoStudyIdApi(studentCourseId, videoId string, 
 
 	if err != nil {
 		time.Sleep(time.Millisecond * 150)
-		return cache.GetVideoStudyIdApi(studentCourseId, videoId, retry-1, lastErr)
+		return cache.GetVideoStudyIdApi(studentCourseId, videoId, version, retry-1, lastErr)
 	}
 	req.Header.Add("Authorization", cache.access_token)
 	req.Header.Add("User-Agent", utils.DefaultUserAgent)
@@ -168,14 +168,14 @@ func (cache *CqieUserCache) GetVideoStudyIdApi(studentCourseId, videoId string, 
 	res, err := client.Do(req)
 	if err != nil {
 		time.Sleep(time.Millisecond * 150)
-		return cache.GetVideoStudyIdApi(studentCourseId, videoId, retry-1, lastErr)
+		return cache.GetVideoStudyIdApi(studentCourseId, videoId, version, retry-1, lastErr)
 	}
 	defer res.Body.Close()
 
 	body, err := ioutil.ReadAll(res.Body)
 	if err != nil {
 		time.Sleep(time.Millisecond * 150)
-		return cache.GetVideoStudyIdApi(studentCourseId, videoId, retry-1, lastErr)
+		return cache.GetVideoStudyIdApi(studentCourseId, videoId, version, retry-1, lastErr)
 	}
 	return string(body), nil
 }
@@ -183,6 +183,7 @@ func (cache *CqieUserCache) GetVideoStudyIdApi(studentCourseId, videoId string, 
 // SubmitStudyTimeApi 提交学时
 func (cache *CqieUserCache) SubmitStudyTimeApi(
 	id string, //不知道是啥
+	version string,
 	courseId string,
 	studentCourseId string,
 	unitId string,
@@ -204,7 +205,7 @@ func (cache *CqieUserCache) SubmitStudyTimeApi(
 	   "orgId": "` + cache.orgId + `",
 	   "deptId": "` + cache.deptId + `",
 	   "majorId": "` + cache.orgMajorId + `",
-	   "version": "` + "ZSB_DSJ_24" + `",
+	   "version": "` + version + `",
 	   "courseId": "` + courseId + `",
 	   "studentCourseId": "` + studentCourseId + `",
 	   "unitId": "` + unitId + `",
@@ -223,7 +224,7 @@ func (cache *CqieUserCache) SubmitStudyTimeApi(
 
 	if err != nil {
 		time.Sleep(time.Millisecond * 150)
-		return cache.SubmitStudyTimeApi(id, courseId, studentCourseId, unitId, videoId, studyTime, courseId, startPos, stopPos, maxPos, retry-1, err)
+		return cache.SubmitStudyTimeApi(id, version, courseId, studentCourseId, unitId, videoId, studyTime, courseId, startPos, stopPos, maxPos, retry-1, err)
 	}
 	req.Header.Add("Authorization", cache.GetAccess_Token())
 	req.Header.Add("Cookie", cache.GetCookie())
@@ -233,20 +234,20 @@ func (cache *CqieUserCache) SubmitStudyTimeApi(
 	res, err := client.Do(req)
 	if err != nil {
 		time.Sleep(time.Millisecond * 150)
-		return cache.SubmitStudyTimeApi(id, courseId, studentCourseId, unitId, videoId, studyTime, courseId, startPos, stopPos, maxPos, retry-1, err)
+		return cache.SubmitStudyTimeApi(id, version, courseId, studentCourseId, unitId, videoId, studyTime, courseId, startPos, stopPos, maxPos, retry-1, err)
 	}
 	defer res.Body.Close()
 
 	body, err := ioutil.ReadAll(res.Body)
 	if err != nil {
 		time.Sleep(time.Millisecond * 150)
-		return cache.SubmitStudyTimeApi(id, courseId, studentCourseId, unitId, videoId, studyTime, courseId, startPos, stopPos, maxPos, retry-1, err)
+		return cache.SubmitStudyTimeApi(id, version, courseId, studentCourseId, unitId, videoId, studyTime, courseId, startPos, stopPos, maxPos, retry-1, err)
 	}
 	return string(body), nil
 }
 
 // 用于保存学习点时间
-func (cache *CqieUserCache) SaveStudyTimeApi(courseId, studentCourseId, unitId, videoId, coursewareId string, startPos, stopPos int, retry int, lastErr error) (string, error) {
+func (cache *CqieUserCache) SaveStudyTimeApi(courseId, studentCourseId, unitId, videoId, coursewareId, version string, startPos, stopPos int, retry int, lastErr error) (string, error) {
 	if retry < 0 {
 		return "", lastErr
 	}
@@ -263,7 +264,7 @@ func (cache *CqieUserCache) SaveStudyTimeApi(courseId, studentCourseId, unitId, 
 	"unitId": "` + unitId + `",
 	"videoId": "` + videoId + `",
 	"coursewareId": "` + coursewareId + `",
-	"version": "ZSB_DSJ_24"
+	"version": "` + version + `"
 }`)
 
 	client := &http.Client{}
@@ -271,7 +272,7 @@ func (cache *CqieUserCache) SaveStudyTimeApi(courseId, studentCourseId, unitId, 
 
 	if err != nil {
 		time.Sleep(time.Millisecond * 150)
-		return cache.SaveStudyTimeApi(courseId, studentCourseId, unitId, videoId, coursewareId, startPos, stopPos, retry-1, err)
+		return cache.SaveStudyTimeApi(courseId, studentCourseId, unitId, videoId, coursewareId, version, startPos, stopPos, retry-1, err)
 	}
 	req.Header.Add("Authorization", cache.access_token)
 	req.Header.Add("User-Agent", utils.DefaultUserAgent)
@@ -280,25 +281,24 @@ func (cache *CqieUserCache) SaveStudyTimeApi(courseId, studentCourseId, unitId, 
 	res, err := client.Do(req)
 	if err != nil {
 		time.Sleep(time.Millisecond * 150)
-		return cache.SaveStudyTimeApi(courseId, studentCourseId, unitId, videoId, coursewareId, startPos, stopPos, retry-1, err)
+		return cache.SaveStudyTimeApi(courseId, studentCourseId, unitId, videoId, coursewareId, version, startPos, stopPos, retry-1, err)
 	}
 	defer res.Body.Close()
 
 	body, err := ioutil.ReadAll(res.Body)
 	if err != nil {
 		time.Sleep(time.Millisecond * 150)
-		return cache.SaveStudyTimeApi(courseId, studentCourseId, unitId, videoId, coursewareId, startPos, stopPos, retry-1, err)
+		return cache.SaveStudyTimeApi(courseId, studentCourseId, unitId, videoId, coursewareId, version, startPos, stopPos, retry-1, err)
 	}
 	return string(body), nil
 }
 
 // PullCourseDetailApi 拉取对应课程详细信息，一般用于获取对应视屏列表的
-func (cache *CqieUserCache) PullCourseDetailApi(courseId, studentCourseId string, retry int, lastErr error) (string, error) {
+func (cache *CqieUserCache) PullCourseDetailApi(courseId, studentCourseId, version string, retry int, lastErr error) (string, error) {
 	if retry < 0 {
 		return "", lastErr
 	}
-	url := "https://study.cqie.edu.cn/gateway/system/orgStudent/myCourseDetails?studentId=" + cache.studentId + "&id=" + courseId + "&majorId=" + cache.orgMajorId + "&studentCourseId=" + studentCourseId + "&version=ZSB_DSJ_24"
-	//url := "https://study.cqie.edu.cn/gateway/system/orgStudent/myCourseDetails?studentId=" + cache.studentId + "&courseId=" + courseId + "&majorId=" + cache.orgMajorId + "&studentCourseId=" + studentCourseId + "&version=ZSB_DSJ_24"
+	url := "https://study.cqie.edu.cn/gateway/system/orgStudent/myCourseDetails?studentId=" + cache.studentId + "&id=" + courseId + "&majorId=" + cache.orgMajorId + "&studentCourseId=" + studentCourseId + "&version=" + version
 	method := "GET"
 
 	client := &http.Client{}
@@ -306,7 +306,7 @@ func (cache *CqieUserCache) PullCourseDetailApi(courseId, studentCourseId string
 
 	if err != nil {
 		time.Sleep(time.Millisecond * 150)
-		return cache.PullCourseDetailApi(courseId, studentCourseId, retry-1, lastErr)
+		return cache.PullCourseDetailApi(courseId, studentCourseId, version, retry-1, lastErr)
 	}
 	req.Header.Add("Authorization", cache.access_token)
 	req.Header.Add("User-Agent", utils.DefaultUserAgent)
@@ -314,24 +314,24 @@ func (cache *CqieUserCache) PullCourseDetailApi(courseId, studentCourseId string
 	res, err := client.Do(req)
 	if err != nil {
 		time.Sleep(time.Millisecond * 150)
-		return cache.PullCourseDetailApi(courseId, studentCourseId, retry-1, lastErr)
+		return cache.PullCourseDetailApi(courseId, studentCourseId, version, retry-1, lastErr)
 	}
 	defer res.Body.Close()
 
 	body, err := ioutil.ReadAll(res.Body)
 	if err != nil {
 		time.Sleep(time.Millisecond * 150)
-		return cache.PullCourseDetailApi(courseId, studentCourseId, retry-1, lastErr)
+		return cache.PullCourseDetailApi(courseId, studentCourseId, version, retry-1, lastErr)
 	}
 	return string(body), nil
 }
 
 // PullProgressDetailApi 拉取进度
-func (cache *CqieUserCache) PullProgressDetailApi(courseId, studentCourseId string, retry int, lastErr error) (string, error) {
+func (cache *CqieUserCache) PullProgressDetailApi(courseId, studentCourseId, version string, retry int, lastErr error) (string, error) {
 	if retry < 0 {
 		return "", lastErr
 	}
-	url := "https://study.cqie.edu.cn/gateway/system/orgStudent/progressDetails?studentId=" + cache.studentId + "&id=" + courseId + "&majorId=" + cache.orgMajorId + "&studentCourseId=" + studentCourseId + "&version=ZSB_DSJ_24"
+	url := "https://study.cqie.edu.cn/gateway/system/orgStudent/progressDetails?studentId=" + cache.studentId + "&id=" + courseId + "&majorId=" + cache.orgMajorId + "&studentCourseId=" + studentCourseId + "&version=" + version
 	method := "GET"
 
 	client := &http.Client{}
@@ -339,7 +339,7 @@ func (cache *CqieUserCache) PullProgressDetailApi(courseId, studentCourseId stri
 
 	if err != nil {
 		time.Sleep(time.Millisecond * 150)
-		return cache.PullProgressDetailApi(courseId, studentCourseId, retry-1, lastErr)
+		return cache.PullProgressDetailApi(courseId, studentCourseId, version, retry-1, lastErr)
 	}
 	req.Header.Add("Authorization", cache.access_token)
 	req.Header.Add("User-Agent", utils.DefaultUserAgent)
@@ -347,14 +347,14 @@ func (cache *CqieUserCache) PullProgressDetailApi(courseId, studentCourseId stri
 	res, err := client.Do(req)
 	if err != nil {
 		time.Sleep(time.Millisecond * 150)
-		return cache.PullProgressDetailApi(courseId, studentCourseId, retry-1, lastErr)
+		return cache.PullProgressDetailApi(courseId, studentCourseId, version, retry-1, lastErr)
 	}
 	defer res.Body.Close()
 
 	body, err := ioutil.ReadAll(res.Body)
 	if err != nil {
 		time.Sleep(time.Millisecond * 150)
-		return cache.PullProgressDetailApi(courseId, studentCourseId, retry-1, lastErr)
+		return cache.PullProgressDetailApi(courseId, studentCourseId, version, retry-1, lastErr)
 	}
 	return string(body), nil
 }
