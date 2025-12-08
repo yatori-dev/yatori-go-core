@@ -419,12 +419,15 @@ func ParseWorkQuestionAction(cache *xuexitong.XueXiTUserCache, workPoint *entity
 			choiceQue.Type = qtype.SingleChoice
 			choiceQue.Qid = qs.ID
 			choiceQue.Text = quesText
-
 			//用于临时存储选项，后面进行排序，因为学习通可能会打乱答题顺序
 			resOptions := make(map[string]string)
 			// 提取选项
 			qdoc.Find(".answerList.singleChoice li").Each(func(i int, s *goquery.Selection) {
 				optionLetter := s.Find("em.choose-opt").Text()
+				trueOptionLetter, _ := s.Find("em.choose-opt").Attr("id-param") //如果这个不是空的说明这个才是正确的选项参数
+				if trueOptionLetter != "" {
+					optionLetter = trueOptionLetter
+				}
 				// 查找 <cc> 内的内容
 				ccContent := s.Find("cc").Contents().First()
 				text := ccContent.Text()
@@ -467,7 +470,10 @@ func ParseWorkQuestionAction(cache *xuexitong.XueXiTUserCache, workPoint *entity
 			//qdoc.Find(".answerList li").Each(func(i int, s *goquery.Selection) {
 			qdoc.Find(".answerList.multiChoice li").Each(func(i int, s *goquery.Selection) {
 				optionLetter := s.Find("em.choose-opt").Text()
-
+				trueOptionLetter, _ := s.Find("em.choose-opt").Attr("id-param") //如果这个不是空的说明这个才是正确的选项参数
+				if trueOptionLetter != "" {
+					optionLetter = trueOptionLetter
+				}
 				// 查找 <cc> 内的内容
 				ccContent := s.Find("cc").Contents().First()
 				//fmt.Println(s.Html())
@@ -510,6 +516,12 @@ func ParseWorkQuestionAction(cache *xuexitong.XueXiTUserCache, workPoint *entity
 			// 提取选项
 			qdoc.Find(".answerList.panduan li").Each(func(i int, s *goquery.Selection) {
 				optionLetter := s.Find("em").Text()
+				trueoption, _ := s.Attr("val-param")
+				if trueoption == "true" {
+					optionLetter = "对"
+				} else if trueoption == "false" {
+					optionLetter = "错"
+				}
 
 				// 查找 <p> 内的内容
 				ccContent := s.Find("p").Contents().First()
