@@ -93,6 +93,9 @@ func (cache *XueXiTUserCache) PageMobileChapterCard(
 		fmt.Println(err)
 		return "", nil
 	}
+	if strings.Contains(string(body), "请输入验证码") || strings.Contains(string(body), "请输入图片中的验证码") {
+		return "", errors.New("触发验证码")
+	}
 	utils.CookiesAddNoRepetition(&cache.cookies, res.Cookies()) //赋值cookie
 
 	return string(body), nil

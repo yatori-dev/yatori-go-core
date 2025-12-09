@@ -5,14 +5,10 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
-	"log"
-	"regexp"
-	"strconv"
-	"strings"
-	"time"
-
+	ddddocr "github.com/Changbaiqi/ddddocr-go/utils"
 	"github.com/PuerkitoBio/goquery"
 	"github.com/thedevsaddam/gojsonq"
+	ort "github.com/yalue/onnxruntime_go"
 	"github.com/yatori-dev/yatori-go-core/api/entity"
 	"github.com/yatori-dev/yatori-go-core/api/xuexitong"
 	que_core "github.com/yatori-dev/yatori-go-core/que-core/aiq"
@@ -20,6 +16,11 @@ import (
 	"github.com/yatori-dev/yatori-go-core/utils"
 	log2 "github.com/yatori-dev/yatori-go-core/utils/log"
 	"golang.org/x/net/html"
+	"log"
+	"regexp"
+	"strconv"
+	"strings"
+	"time"
 )
 
 // ChapterNotOpened 是未打开章节时的错误类型
@@ -43,6 +44,33 @@ func PageMobileChapterCardAction(
 	cache *xuexitong.XueXiTUserCache,
 	classId, courseId, knowledgeId, cardIndex, cpi int) (interface{}, string, error) {
 	cardHtml, err := cache.PageMobileChapterCard(classId, courseId, knowledgeId, cardIndex, cpi, 3, nil)
+	if err != nil {
+		if err.Error() == "触发验证码" {
+			log2.Print(log2.DEBUG, utils.RunFuncName(), "触发验证码，正在进行AI智能识别绕过.....")
+			for {
+				codePath, err1 := cache.XueXiTVerificationCodeApi(5, nil)
+				if err1 != nil {
+					return nil, "", err1
+				}
+				if codePath == "" { //如果path为空，那么可能是账号问题
+					return nil, "", errors.New("无法正常获取对应网站验证码，请检查对应url是否正常")
+				}
+				img, _ := utils.ReadImg(codePath) //读取验证码图片
+				//codeResult := utils.AutoVerification(img, ort.NewShape(1, 23)) //自动识别
+				codeResult := ddddocr.SemiOCRVerification(img, ort.NewShape(1, 23))
+				utils.DeleteFile(codePath) //删除验证码文件
+				status, err1 := cache.XueXiTPassVerificationCode(codeResult, 5, nil)
+				//fmt.Println(codeResult)
+				//fmt.Println(status)
+				if status {
+					break
+				}
+			}
+			cardHtml, err = cache.PageMobileChapterCard(classId, courseId, knowledgeId, cardIndex, cpi, 3, nil) //尝试重新拉取卡片信息
+			log2.Print(log2.DEBUG, utils.RunFuncName(), "绕过成功")
+		}
+	}
+
 	if strings.Contains(cardHtml, `<p class="blankTips">章节未开放</p>`) {
 		return nil, "", errors.New("章节未开放")
 	}
