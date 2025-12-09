@@ -401,7 +401,7 @@ func ParseWorkQuestionAction(cache *xuexitong.XueXiTUserCache, workPoint *entity
 
 		// 提取题目文本和图片
 		// TODO 这里获取图片怎么都拿不到 不会了ಠ_ಠ
-		var quesTextBuilder strings.Builder
+		var quesTextBuilder strings.Builder //文本题目
 		quesText := qdoc.Find(".Py-m1-title .workTextWrap").Contents().Each(func(i int, n *goquery.Selection) {
 			if n.Get(0).Type == html.ElementNode || n.Get(0).Type == html.TextNode && n.Text() != "" {
 				quesTextBuilder.WriteString(n.Text())
