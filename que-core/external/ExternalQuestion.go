@@ -11,8 +11,14 @@ import (
 	"github.com/yatori-dev/yatori-go-core/que-core/qentity"
 )
 
+var ExternalSem = make(chan struct{}, 2)
+
 // 用于请求外部题库接口使用
 func ApiQueRequest(problem qentity.Question, url string, retry int, lastErr error) (*qentity.ResultQuestion, error) {
+	ExternalSem <- struct{}{}
+	defer func() {
+		<-ExternalSem
+	}()
 	if retry <= 0 {
 		return nil, lastErr
 	}

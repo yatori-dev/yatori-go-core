@@ -12,7 +12,6 @@ import (
 	"log"
 	"net/http"
 	"strings"
-	"sync"
 	"time"
 
 	"github.com/yatori-dev/yatori-go-core/models/ctype"
@@ -29,8 +28,8 @@ type Message struct {
 	Content string `json:"content"`
 }
 
-// AiMut AI锁，防止同时过多调用
-var AiMut sync.Mutex
+// AiSem 限制同时并发的 AI 调用数量（容量=2）
+var AiSem = make(chan struct{}, 2)
 
 // AggregationAIApi 聚合所有AI接口，直接通过aiType判断然后返回内容
 func AggregationAIApi(url,
@@ -38,8 +37,13 @@ func AggregationAIApi(url,
 	aiType ctype.AiType,
 	aiChatMessages AIChatMessages,
 	apiKey string) (string, error) {
-	AiMut.Lock()
-	defer AiMut.Unlock()
+
+	// 获取信号量（阻塞，直到有空位）
+	AiSem <- struct{}{}
+	defer func() {
+		<-AiSem // 释放信号量
+	}()
+
 	switch aiType {
 	case ctype.ChatGLM:
 		return ChatGLMChatReplyApi(model, apiKey, aiChatMessages, 5, nil)
@@ -60,7 +64,7 @@ func AggregationAIApi(url,
 	case ctype.Other:
 		return OtherChatReplyApi(url, model, apiKey, aiChatMessages, 5, nil)
 	default:
-		return "", errors.New(string("AI Type: " + aiType))
+		return "", errors.New("AI Type: " + string(aiType))
 	}
 }
 
