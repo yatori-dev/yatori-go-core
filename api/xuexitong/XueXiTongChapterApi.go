@@ -216,7 +216,7 @@ func (cache *XueXiTUserCache) FetchChapterCords(nodes []int, index, courseId int
 		fmt.Println(err)
 		return "", nil
 	}
-	if strings.Contains(string(body), "请输入验证码") {
+	if strings.Contains(string(body), "请输入验证码") || strings.Contains(string(body), "请输入图片中的验证码") {
 		return "", errors.New("触发验证码")
 	}
 	defer res.Body.Close()

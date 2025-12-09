@@ -4,17 +4,19 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
-	"log"
-	"regexp"
-
+	ddddocr "github.com/Changbaiqi/ddddocr-go/utils"
 	"github.com/thedevsaddam/gojsonq"
+	ort "github.com/yalue/onnxruntime_go"
 	xuexitong2 "github.com/yatori-dev/yatori-go-core/aggregation/xuexitong"
 	"github.com/yatori-dev/yatori-go-core/api/entity"
 	"github.com/yatori-dev/yatori-go-core/api/xuexitong"
 	"github.com/yatori-dev/yatori-go-core/config"
 	"github.com/yatori-dev/yatori-go-core/models/ctype"
-
 	"github.com/yatori-dev/yatori-go-core/que-core/qtype"
+	"github.com/yatori-dev/yatori-go-core/utils"
+	log2 "github.com/yatori-dev/yatori-go-core/utils/log"
+	"log"
+	"regexp"
 )
 
 type BBsTopic struct {
@@ -63,6 +65,29 @@ type BBsTopic struct {
 // 拉取讨论任务点信息
 func PullBbsInfoAction(cache *xuexitong.XueXiTUserCache, p *entity.PointBBsDto) (*BBsTopic, error) {
 	utEnc, err2 := cache.PullUtEnc(p.CourseID, p.ClassID, fmt.Sprintf("%d", p.KnowledgeID), p.Enc)
+	if err2.Error() == "触发验证码" {
+		log2.Print(log2.DEBUG, utils.RunFuncName(), "触发验证码，正在进行AI智能识别绕过.....")
+		for {
+			codePath, err1 := cache.XueXiTVerificationCodeApi(5, nil)
+			if err1 != nil {
+				return nil, err1
+			}
+			if codePath == "" { //如果path为空，那么可能是账号问题
+				return nil, errors.New("无法正常获取对应网站验证码，请检查对应url是否正常")
+			}
+			img, _ := utils.ReadImg(codePath) //读取验证码图片
+			//codeResult := utils.AutoVerification(img, ort.NewShape(1, 23)) //自动识别
+			codeResult := ddddocr.SemiOCRVerification(img, ort.NewShape(1, 23))
+			utils.DeleteFile(codePath) //删除验证码文件
+			status, err1 := cache.XueXiTPassVerificationCode(codeResult, 5, nil)
+			//fmt.Println(codeResult)
+			//fmt.Println(status)
+			if status {
+				break
+			}
+		}
+		utEnc, err2 = cache.PullUtEnc(p.CourseID, p.ClassID, fmt.Sprintf("%d", p.KnowledgeID), p.Enc)
+	}
 	if err2 != nil {
 		return nil, err2
 	}
