@@ -60,7 +60,7 @@ func (cache *XueXiTUserCache) XueXiTVerificationCodeApi(retry int, lastErr error
 
 	res, err := client.Do(req)
 	if err != nil {
-		return nil, err
+		return cache.XueXiTChapterVerificationCodeApi(retry-1, err)
 	}
 	defer res.Body.Close()
 
@@ -186,7 +186,7 @@ func (cache *XueXiTUserCache) XueXiTPassVerificationCode(code string, retry int,
 	res, err := client.Do(req)
 	if err != nil {
 		fmt.Println(err)
-		return false, err
+		return cache.XueXiTPassVerificationCode(code, retry-1, fmt.Errorf("failed to create HTTP request: %v", err))
 	}
 	defer res.Body.Close()
 

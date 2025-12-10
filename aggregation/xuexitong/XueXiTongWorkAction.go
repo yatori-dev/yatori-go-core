@@ -31,7 +31,7 @@ func WorkNewSubmitAnswerAction(userCache *xuexitong.XueXiTUserCache, question en
 		if err.Error() == "触发验证码" {
 			log2.Print(log2.DEBUG, utils.RunFuncName(), "触发验证码，正在进行AI智能识别绕过.....")
 			for {
-				img, err1 := userCache.XueXiTVerificationCodeApi(5, nil)
+				img, err1 := usercache.XueXiTVerificationCodeApi(7, nil)
 				if err1 != nil {
 					return "", err1
 				}
@@ -45,7 +45,7 @@ func WorkNewSubmitAnswerAction(userCache *xuexitong.XueXiTUserCache, question en
 					shape = ort.NewShape(1, 30)
 				}
 				codeResult := ddddocr.SemiOCRVerification(img, shape)
-				status, err1 := userCache.XueXiTPassVerificationCode(codeResult, 5, nil)
+				status, err1 := usercache.XueXiTPassVerificationCode(codeResult, 7, nil)
 				//fmt.Println(codeResult)
 				//fmt.Println(status)
 				if status {

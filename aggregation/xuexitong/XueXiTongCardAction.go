@@ -49,7 +49,7 @@ func PageMobileChapterCardAction(
 		if err.Error() == "触发验证码" {
 			log2.Print(log2.DEBUG, utils.RunFuncName(), "触发验证码，正在进行AI智能识别绕过.....")
 			for {
-				img, err1 := cache.XueXiTVerificationCodeApi(5, nil)
+				img, err1 := cache.XueXiTVerificationCodeApi(7, nil)
 				if err1 != nil {
 					return nil, "", err1
 				}
@@ -63,7 +63,7 @@ func PageMobileChapterCardAction(
 					shape = ort.NewShape(1, 30)
 				}
 				codeResult := ddddocr.SemiOCRVerification(img, shape)
-				status, err1 := cache.XueXiTPassVerificationCode(codeResult, 5, nil)
+				status, err1 := cache.XueXiTPassVerificationCode(codeResult, 7, nil)
 				//fmt.Println(codeResult)
 				//fmt.Println(status)
 				if status {

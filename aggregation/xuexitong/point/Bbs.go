@@ -79,14 +79,14 @@ func PullBbsInfoAction(cache *xuexitong.XueXiTUserCache, p *entity.PointBBsDto) 
 		if err2.Error() == "触发验证码" {
 			log2.Print(log2.DEBUG, utils.RunFuncName(), "触发验证码，正在进行AI智能识别绕过.....")
 			for {
-				//codePath, err1 := cache.XueXiTVerificationCodeApi(5, nil)
+				//codePath, err1 := cache.XueXiTVerificationCodeApi(7, nil)
 				img, err1 := cache.XueXiTChapterVerificationCodeApi(5, nil)
 				if err1 != nil {
 					return nil, err1
 				}
 				//codeResult := utils.AutoVerification(img, ort.NewShape(1, 23)) //自动识别
 				codeResult := ddddocr.SemiOCRVerification(img, ort.NewShape(1, 30))
-				//status, err1 := cache.XueXiTPassVerificationCode(codeResult, 5, nil)
+				//status, err1 := cache.XueXiTPassVerificationCode(codeResult, 7, nil)
 				status, err1 := cache.XueXiTPassCahpterVerificationCode(codeResult, 5, nil)
 				//fmt.Println(codeResult)
 				//fmt.Println(status)
