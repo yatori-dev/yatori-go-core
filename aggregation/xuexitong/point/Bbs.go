@@ -5,6 +5,9 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+	"log"
+	"regexp"
+
 	ddddocr "github.com/Changbaiqi/ddddocr-go/utils"
 	"github.com/PuerkitoBio/goquery"
 	"github.com/thedevsaddam/gojsonq"
@@ -17,8 +20,6 @@ import (
 	"github.com/yatori-dev/yatori-go-core/que-core/qtype"
 	"github.com/yatori-dev/yatori-go-core/utils"
 	log2 "github.com/yatori-dev/yatori-go-core/utils/log"
-	"log"
-	"regexp"
 )
 
 type BBsTopic struct {
@@ -212,6 +213,53 @@ func (bbsTopic *BBsTopic) AIAnswer(cache *xuexitong.XueXiTUserCache, p *entity.P
 		XueXEssayQue: que,
 	})
 	que.AnswerAIGet("", aiUrl, model, aiType, message, apiKey)
+	for _, answer := range que.OpFromAnswer {
+		if bbsTopic.Platform == "web" {
+			answerResult, err := cache.AnswerBbsApi(bbsTopic.Uuid, p.CourseID, p.ClassID, answer[0], bbsTopic.UrlToken, bbsTopic.Bbsid, 3, nil)
+			if err != nil {
+				return "", err
+			}
+			statusJson := gojsonq.New().JSONString(answerResult).Find("status")
+			if status, ok := statusJson.(bool); ok {
+				if status {
+					return answerResult, nil
+				} else {
+					return "", errors.New(answerResult)
+				}
+			} else {
+				return "", errors.New(answerResult)
+			}
+		} else if bbsTopic.Platform == "phone" {
+			answerResult, err := cache.AnswerPhoneBbsApi(bbsTopic.ClassId, bbsTopic.Uuid, answer[0])
+			if err != nil {
+				return "", err
+			}
+			statusJson := gojsonq.New().JSONString(answerResult).Find("result")
+			if status, ok := statusJson.(float64); ok {
+				if int(status) == 1 {
+					return answerResult, nil
+				} else {
+					return "", errors.New(answerResult)
+				}
+			} else {
+				return "", errors.New(answerResult)
+			}
+			//fmt.Println(answerResult)
+		}
+
+	}
+	return "", errors.New("AI未找到回复内容如")
+}
+
+// 外置题库回复讨论
+func (bbsTopic *BBsTopic) ExternalAnswer(cache *xuexitong.XueXiTUserCache, p *entity.PointBBsDto, exUrl string) (string, error) {
+	que := entity.EssayQue{
+		Type:         qtype.Essay,
+		OpFromAnswer: make(map[string][]string),
+	}
+	que.Text = bbsTopic.Title + "\n" + bbsTopic.Content //将题目数据加入到题目中
+
+	que.AnswerExternalGet(exUrl)
 	for _, answer := range que.OpFromAnswer {
 		if bbsTopic.Platform == "web" {
 			answerResult, err := cache.AnswerBbsApi(bbsTopic.Uuid, p.CourseID, p.ClassID, answer[0], bbsTopic.UrlToken, bbsTopic.Bbsid, 3, nil)
