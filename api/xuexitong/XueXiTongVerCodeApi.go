@@ -116,7 +116,7 @@ func (cache *XueXiTUserCache) XueXiTChapterVerificationCodeApi(retry int, lastEr
 
 	res, err := client.Do(req)
 	if err != nil {
-		return nil, err
+		return cache.XueXiTChapterVerificationCodeApi(retry-1, err)
 	}
 	defer res.Body.Close()
 
@@ -259,7 +259,7 @@ func (cache *XueXiTUserCache) XueXiTPassCahpterVerificationCode(code string, ret
 	res, err := client.Do(req)
 	if err != nil {
 		fmt.Println(err)
-		return false, err
+		return cache.XueXiTPassCahpterVerificationCode(code, retry-1, err)
 	}
 	defer res.Body.Close()
 
@@ -301,7 +301,7 @@ func (cache *XueXiTUserCache) XueXiTSliderVerificationCodeApi(captchaId string, 
 	res, err := client.Do(req)
 	if err != nil {
 		fmt.Println(err)
-		return "", err
+		return cache.XueXiTSliderVerificationCodeApi(captchaId, retry-1, err)
 	}
 	defer res.Body.Close()
 
@@ -359,14 +359,17 @@ func (cache *XueXiTUserCache) XueXiTSliderVerificationImgApi(captchaId, serverTi
 	body, err := ioutil.ReadAll(res.Body)
 	if err != nil {
 		fmt.Println(err)
-		return "", err
+		return cache.XueXiTSliderVerificationImgApi(captchaId, serverTime, referer, retry-1, err)
 	}
 	//fmt.Println(string(body))
 	return string(body), nil
 }
 
 // 请求并获取图片
-func (cache *XueXiTUserCache) PullSliderImgApi(imgUrl string) (image.Image, error) {
+func (cache *XueXiTUserCache) PullSliderImgApi(imgUrl string, retry int, lastErr error) (image.Image, error) {
+	if retry < 0 {
+		return nil, lastErr
+	}
 	method := "GET"
 
 	tr := &http.Transport{
@@ -395,7 +398,7 @@ func (cache *XueXiTUserCache) PullSliderImgApi(imgUrl string) (image.Image, erro
 
 	resp, err := client.Do(req)
 	if err != nil {
-		return nil, fmt.Errorf("请求失败: %v", err)
+		return cache.PullSliderImgApi(imgUrl, retry-1, fmt.Errorf("请求失败: %v", err))
 	}
 	defer resp.Body.Close()
 
@@ -413,7 +416,9 @@ func (cache *XueXiTUserCache) PullSliderImgApi(imgUrl string) (image.Image, erro
 
 // 过滑块接口
 func (cache *XueXiTUserCache) PassSliderApi(captchaId, token, xPoint, runEnv string, retry int, lastErr error) (string, error) {
-
+	if retry < 0 {
+		return "", lastErr
+	}
 	urlStr := "https://captcha.chaoxing.com/captcha/check/verification/result?callback=cx_captcha_function&captchaId=" + captchaId + "&type=slide&token=" + token + "&textClickArr=" + url.QueryEscape(`[{"x":`+xPoint+`}]`) + "&coordinate=" + url.QueryEscape(`[]`) + "&runEnv=10&version=1.1.20&t=a&iv=cdd9bfb9e7805d0d2d5f1ad4498f70e1&_=1764584636040"
 	method := "GET"
 
@@ -443,7 +448,7 @@ func (cache *XueXiTUserCache) PassSliderApi(captchaId, token, xPoint, runEnv str
 	res, err := client.Do(req)
 	if err != nil {
 		fmt.Println(err)
-		return "", err
+		return cache.PassSliderApi(captchaId, token, xPoint, runEnv, retry-1, err)
 	}
 	defer res.Body.Close()
 
