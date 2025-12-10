@@ -4,13 +4,14 @@ import (
 	"bytes"
 	"encoding/json"
 	"fmt"
-	ddddocr "github.com/Changbaiqi/ddddocr-go/utils"
-	"github.com/thedevsaddam/gojsonq"
-	ort "github.com/yalue/onnxruntime_go"
 	"net/url"
 	"regexp"
 	"strconv"
 	"strings"
+
+	ddddocr "github.com/Changbaiqi/ddddocr-go/utils"
+	"github.com/thedevsaddam/gojsonq"
+	ort "github.com/yalue/onnxruntime_go"
 
 	"github.com/yatori-dev/yatori-go-core/api/entity"
 	"github.com/yatori-dev/yatori-go-core/api/xuexitong"
@@ -487,7 +488,15 @@ func EnterChapterForwardCallAction(cache *xuexitong.XueXiTUserCache, courseId, c
 				if err1 != nil {
 					return err1
 				}
-				codeResult := ddddocr.SemiOCRVerification(img, ort.NewShape(1, 23))
+				_, width, _ := utils.GetImageShape(img)
+
+				var shape ort.Shape
+				if width == 140 {
+					shape = ort.NewShape(1, 23)
+				} else {
+					shape = ort.NewShape(1, 30)
+				}
+				codeResult := ddddocr.SemiOCRVerification(img, shape)
 				status, err1 := cache.XueXiTPassVerificationCode(codeResult, 5, nil)
 				if status {
 					break
