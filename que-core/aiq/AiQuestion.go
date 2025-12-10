@@ -46,23 +46,23 @@ func AggregationAIApi(url,
 
 	switch aiType {
 	case ctype.ChatGLM:
-		return ChatGLMChatReplyApi(model, apiKey, aiChatMessages, 5, nil)
+		return ChatGLMChatReplyApi(model, apiKey, aiChatMessages, 7, nil)
 	case ctype.XingHuo:
-		return XingHuoChatReplyApi(model, apiKey, aiChatMessages, 5, nil)
+		return XingHuoChatReplyApi(model, apiKey, aiChatMessages, 7, nil)
 	case ctype.TongYi:
-		return TongYiChatReplyApi(model, apiKey, aiChatMessages, 5, nil)
+		return TongYiChatReplyApi(model, apiKey, aiChatMessages, 7, nil)
 	case ctype.DouBao:
-		return DouBaoChatReplyApi(model, apiKey, aiChatMessages, 5, nil)
+		return DouBaoChatReplyApi(model, apiKey, aiChatMessages, 7, nil)
 	case ctype.OpenAi:
-		return OpenAiReplyApi(model, apiKey, aiChatMessages, 5, nil)
+		return OpenAiReplyApi(model, apiKey, aiChatMessages, 7, nil)
 	case ctype.MetaAi:
-		return MetaAIReplyApi(model, apiKey, aiChatMessages, 5, nil)
+		return MetaAIReplyApi(model, apiKey, aiChatMessages, 7, nil)
 	case ctype.DeepSeek:
-		return DeepSeekChatReplyApi(model, apiKey, aiChatMessages, 5, nil)
+		return DeepSeekChatReplyApi(model, apiKey, aiChatMessages, 7, nil)
 	case ctype.Silicon:
-		return SiliconFlowReplyApi(model, apiKey, aiChatMessages, 5, nil)
+		return SiliconFlowReplyApi(model, apiKey, aiChatMessages, 7, nil)
 	case ctype.Other:
-		return OtherChatReplyApi(url, model, apiKey, aiChatMessages, 5, nil)
+		return OtherChatReplyApi(url, model, apiKey, aiChatMessages, 7, nil)
 	default:
 		return "", errors.New("AI Type: " + string(aiType))
 	}
@@ -762,7 +762,7 @@ func MetaAIReplyApi(model, apiKey string, aiChatMessages AIChatMessages, retryNu
 
 	res, err := client.Do(req)
 	if err != nil {
-		return MetaAIReplyApi(model, apiKey, aiChatMessages, retryNum-1, lastErr)
+		return MetaAIReplyApi(model, apiKey, aiChatMessages, retryNum-1, fmt.Errorf("failed to create HTTP request: %v", err))
 	}
 	defer res.Body.Close()
 
