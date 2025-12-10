@@ -7,27 +7,24 @@ import (
 	"encoding/hex"
 	"fmt"
 	"image"
-	"io"
+
 	"io/ioutil"
-	"log"
-	"math/rand"
+
 	"mime/multipart"
 	"net/http"
 	"net/url"
-	"os"
 	"strconv"
 	"time"
 
 	"github.com/google/uuid"
-	"github.com/yatori-dev/yatori-go-core/utils"
 )
 
 var randChar []string = []string{"0", "1", "2", "3", "4", "5", "6", "7", "8", "9", "a", "b", "c", "d", "e", "f", "A", "B", "C", "D", "E", "F"}
 
 // 获取学习通验证码
-func (cache *XueXiTUserCache) XueXiTVerificationCodeApi(retry int, lastErr error) (string, error) {
+func (cache *XueXiTUserCache) XueXiTVerificationCodeApi(retry int, lastErr error) (image.Image, error) {
 	if retry < 0 {
-		return "", lastErr
+		return nil, lastErr
 	}
 
 	urlStr := "https://mooc1-api.chaoxing.com/processVerifyPng.ac?t=" + fmt.Sprintf("%d", time.Now().UnixMilli())
@@ -51,7 +48,7 @@ func (cache *XueXiTUserCache) XueXiTVerificationCodeApi(retry int, lastErr error
 
 	if err != nil {
 		fmt.Println(err)
-		return "", nil
+		return nil, err
 	}
 	for _, cookie := range cache.cookies {
 		req.AddCookie(cookie)
@@ -63,49 +60,18 @@ func (cache *XueXiTUserCache) XueXiTVerificationCodeApi(retry int, lastErr error
 
 	res, err := client.Do(req)
 	if err != nil {
-		fmt.Println(err)
-		return "", err
+		return nil, err
 	}
 	defer res.Body.Close()
 
-	//body, err := ioutil.ReadAll(res.Body)
+	// 直接 decode 图片
+	img, _, err := image.Decode(res.Body)
 	if err != nil {
-		fmt.Println(err)
-		return "", err
-	}
-	//utils.SaveImageAsJPEG(body,"")
-	codeFileName := "code" + randChar[rand.Intn(len(randChar))] //生成验证码文件名称
-	for i := 0; i < 10; i++ {
-		codeFileName += randChar[rand.Intn(len(randChar))]
-	}
-	codeFileName += ".png"
-	utils.PathExistForCreate("./assets/code/") //检测是否存在路径，如果不存在则创建
-	filepath := fmt.Sprintf("./assets/code/%s", codeFileName)
-	file, err := os.Create(filepath)
-	if err != nil {
-		res.Body.Close() //立即释放
-		log.Println(err)
-		//return "", ""
-		return "", err
+		// 可能是坏图，尝试重试
+		return cache.XueXiTChapterVerificationCodeApi(retry-1, err)
 	}
 
-	_, err = io.Copy(file, res.Body)
-	if err != nil {
-		res.Body.Close() //立即释放
-		log.Println(err)
-		//return "", ""
-		return "", err
-	}
-
-	file.Close()
-	if utils.IsBadImg(filepath) {
-		res.Body.Close()           //立即释放
-		utils.DeleteFile(filepath) //删除坏的文件
-		//return ""
-		return cache.XueXiTVerificationCodeApi(retry-1, err)
-	}
-	//fmt.Println(string(body))
-	return filepath, nil
+	return img, nil
 }
 
 // 获取学习通验证码

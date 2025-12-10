@@ -335,3 +335,20 @@ func Base64ToImage(base64Str string) (image.Image, error) {
 
 	return img, nil
 }
+func GetImageShape(img image.Image) (height, width, channels int) {
+	b := img.Bounds()
+	width = b.Dx()
+	height = b.Dy()
+
+	switch img.(type) {
+	case *image.RGBA, *image.NRGBA, *image.NRGBA64, *image.RGBA64:
+		channels = 3 // 或 4——看你模型是否使用 RGB 或 RGBA
+	case *image.Gray, *image.Gray16:
+		channels = 1
+	default:
+		// 无法确定 → 默认按 RGB 处理
+		channels = 3
+	}
+
+	return
+}

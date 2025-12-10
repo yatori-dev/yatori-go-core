@@ -3,7 +3,6 @@ package xuexitong
 import (
 	"bytes"
 	"encoding/json"
-	"errors"
 	"fmt"
 	ddddocr "github.com/Changbaiqi/ddddocr-go/utils"
 	"github.com/thedevsaddam/gojsonq"
@@ -79,17 +78,20 @@ func ChapterFetchCardsAction(
 		} else if err.Error() == "触发验证码" {
 			log2.Print(log2.DEBUG, utils.RunFuncName(), "触发验证码，正在进行AI智能识别绕过.....")
 			for {
-				codePath, err1 := cache.XueXiTVerificationCodeApi(5, nil)
+				img, err1 := cache.XueXiTVerificationCodeApi(5, nil)
 				if err1 != nil {
 					return nil, nil, err1
 				}
-				if codePath == "" { //如果path为空，那么可能是账号问题
-					return nil, nil, errors.New("无法正常获取对应网站验证码，请检查对应url是否正常")
+
+				_, width, _ := utils.GetImageShape(img)
+
+				var shape ort.Shape
+				if width == 140 {
+					shape = ort.NewShape(1, 23)
+				} else {
+					shape = ort.NewShape(1, 30)
 				}
-				img, _ := utils.ReadImg(codePath) //读取验证码图片
-				//codeResult := utils.AutoVerification(img, ort.NewShape(1, 23)) //自动识别
-				codeResult := ddddocr.SemiOCRVerification(img, ort.NewShape(1, 23))
-				utils.DeleteFile(codePath) //删除验证码文件
+				codeResult := ddddocr.SemiOCRVerification(img, shape)
 				status, err1 := cache.XueXiTPassVerificationCode(codeResult, 5, nil)
 				//fmt.Println(codeResult)
 				//fmt.Println(status)
@@ -481,16 +483,11 @@ func EnterChapterForwardCallAction(cache *xuexitong.XueXiTUserCache, courseId, c
 		} else if err.Error() == "触发验证码" {
 			log2.Print(log2.DEBUG, utils.RunFuncName(), "触发验证码，正在进行AI智能识别绕过.....")
 			for {
-				codePath, err1 := cache.XueXiTVerificationCodeApi(5, nil)
+				img, err1 := cache.XueXiTVerificationCodeApi(5, nil)
 				if err1 != nil {
 					return err1
 				}
-				if codePath == "" { //如果path为空，那么可能是账号问题
-					return errors.New("无法正常获取对应网站验证码，请检查对应url是否正常")
-				}
-				img, _ := utils.ReadImg(codePath) //读取验证码图片
 				codeResult := ddddocr.SemiOCRVerification(img, ort.NewShape(1, 23))
-				utils.DeleteFile(codePath) //删除验证码文件
 				status, err1 := cache.XueXiTPassVerificationCode(codeResult, 5, nil)
 				if status {
 					break
