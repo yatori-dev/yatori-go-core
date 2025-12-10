@@ -4,7 +4,7 @@
 
 <div align="center"><h2>Yatori-go-core</h2></div>
 
-<div align="center"><img width="125px" src="https://img.shields.io/badge/GO1.23.4-building-r.svg?logo=go"></img> <img width="80px" src="https://img.shields.io/github/stars/yatori-dev/yatori-go-core.svg"></img> <img width="90px" src="https://img.shields.io/github/downloads/yatori-dev/yatori-go-core/total.svg"></img> <img width="70px" src="https://img.shields.io/github/license/yatori-dev/yatori-go-core.svg"></img></div>
+<div align="center"><img width="125px" src="https://img.shields.io/badge/GO1.24.0-building-r.svg?logo=go"></img> <img width="80px" src="https://img.shields.io/github/stars/yatori-dev/yatori-go-core.svg"></img> <img width="90px" src="https://img.shields.io/github/downloads/yatori-dev/yatori-go-core/total.svg"></img> <img width="70px" src="https://img.shields.io/github/license/yatori-dev/yatori-go-core.svg"></img></div>
 
 
 * 这是一个yatori-core系列的yatori-go-core核心，其他所有go衍生的yatori系列产品都会通过这个core核心进行衍生开发
