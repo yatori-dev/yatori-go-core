@@ -378,7 +378,7 @@ func DouBaoChatReplyApi(model,
 		Timeout:   60 * time.Second, // Set connection and read timeout
 	}
 
-	url := "https://ark.cn-beijing.volces.com/api/v3/chat/completions"
+	urlStr := "https://ark.cn-beijing.volces.com/api/v3/chat/completions"
 	requestBody := map[string]interface{}{
 		"model":       model,
 		"temperature": 0.2,
@@ -391,7 +391,7 @@ func DouBaoChatReplyApi(model,
 		return "", fmt.Errorf("failed to marshal JSON data: %v", err)
 	}
 
-	req, err := http.NewRequest("POST", url, bytes.NewBuffer(jsonData))
+	req, err := http.NewRequest("POST", urlStr, bytes.NewBuffer(jsonData))
 	if err != nil {
 		return "", fmt.Errorf("failed to create HTTP request: %v", err)
 	}
@@ -487,7 +487,7 @@ func OpenAiReplyApi(model,
 	resp, err := client.Do(req)
 	if err != nil {
 		time.Sleep(100 * time.Millisecond)
-		return DouBaoChatReplyApi(model, apiKey, aiChatMessages, retryNum-1, fmt.Errorf("failed to execute HTTP request: %v", err))
+		return OpenAiReplyApi(model, apiKey, aiChatMessages, retryNum-1, fmt.Errorf("failed to execute HTTP request: %v", err))
 
 	}
 	defer resp.Body.Close()
@@ -495,13 +495,13 @@ func OpenAiReplyApi(model,
 	body, err := ioutil.ReadAll(resp.Body)
 	if err != nil {
 		time.Sleep(100 * time.Millisecond)
-		return DouBaoChatReplyApi(model, apiKey, aiChatMessages, retryNum-1, fmt.Errorf("failed to read response body: %v", err))
+		return OpenAiReplyApi(model, apiKey, aiChatMessages, retryNum-1, fmt.Errorf("failed to read response body: %v", err))
 	}
 
 	var responseMap map[string]interface{}
 	if err := json.Unmarshal(body, &responseMap); err != nil {
 		time.Sleep(100 * time.Millisecond)
-		return DouBaoChatReplyApi(model, apiKey, aiChatMessages, retryNum-1, fmt.Errorf("failed to parse JSON response: %v    response body: %s", err, body))
+		return OpenAiReplyApi(model, apiKey, aiChatMessages, retryNum-1, fmt.Errorf("failed to parse JSON response: %v    response body: %s", err, body))
 	}
 	//处理异常
 	resultMsg, ok := responseMap["message"].(string)
@@ -574,7 +574,7 @@ func DeepSeekChatReplyApi(model,
 	resp, err := client.Do(req)
 	if err != nil {
 		time.Sleep(100 * time.Millisecond)
-		return DouBaoChatReplyApi(model, apiKey, aiChatMessages, retryNum-1, fmt.Errorf("failed to execute HTTP request: %v", err))
+		return DeepSeekChatReplyApi(model, apiKey, aiChatMessages, retryNum-1, fmt.Errorf("failed to execute HTTP request: %v", err))
 
 	}
 	defer resp.Body.Close()
@@ -582,13 +582,13 @@ func DeepSeekChatReplyApi(model,
 	body, err := ioutil.ReadAll(resp.Body)
 	if err != nil {
 		time.Sleep(100 * time.Millisecond)
-		return DouBaoChatReplyApi(model, apiKey, aiChatMessages, retryNum-1, fmt.Errorf("failed to read response body: %v", err))
+		return DeepSeekChatReplyApi(model, apiKey, aiChatMessages, retryNum-1, fmt.Errorf("failed to read response body: %v", err))
 	}
 
 	var responseMap map[string]interface{}
 	if err := json.Unmarshal(body, &responseMap); err != nil {
 		time.Sleep(100 * time.Millisecond)
-		return DouBaoChatReplyApi(model, apiKey, aiChatMessages, retryNum-1, fmt.Errorf("failed to parse JSON response: %v    response body: %s", err, body))
+		return DeepSeekChatReplyApi(model, apiKey, aiChatMessages, retryNum-1, fmt.Errorf("failed to parse JSON response: %v    response body: %s", err, body))
 	}
 	//处理异常
 	resultMsg, ok := responseMap["message"].(string)
@@ -635,7 +635,7 @@ func SiliconFlowReplyApi(model,
 		Timeout:   60 * time.Second, // Set connection and read timeout
 	}
 	if model == "" {
-		model = "deepseek-chat" //默认模型
+		model = "Qwen/Qwen2.5-7B-Instruct" //默认模型
 	}
 	url := "https://api.siliconflow.cn/v1/chat/completions"
 	requestBody := map[string]interface{}{
@@ -661,7 +661,7 @@ func SiliconFlowReplyApi(model,
 	resp, err := client.Do(req)
 	if err != nil {
 		time.Sleep(100 * time.Millisecond)
-		return DouBaoChatReplyApi(model, apiKey, aiChatMessages, retryNum-1, fmt.Errorf("failed to execute HTTP request: %v", err))
+		return SiliconFlowReplyApi(model, apiKey, aiChatMessages, retryNum-1, fmt.Errorf("failed to execute HTTP request: %v", err))
 
 	}
 	defer resp.Body.Close()
@@ -669,25 +669,28 @@ func SiliconFlowReplyApi(model,
 	body, err := ioutil.ReadAll(resp.Body)
 	if err != nil {
 		time.Sleep(100 * time.Millisecond)
-		return DouBaoChatReplyApi(model, apiKey, aiChatMessages, retryNum-1, fmt.Errorf("failed to read response body: %v", err))
+		return SiliconFlowReplyApi(model, apiKey, aiChatMessages, retryNum-1, fmt.Errorf("failed to read response body: %v", err))
 	}
 
 	var responseMap map[string]interface{}
 	if err := json.Unmarshal(body, &responseMap); err != nil {
 		time.Sleep(100 * time.Millisecond)
-		return DouBaoChatReplyApi(model, apiKey, aiChatMessages, retryNum-1, fmt.Errorf("failed to parse JSON response: %v    response body: %s", err, body))
+		return SiliconFlowReplyApi(model, apiKey, aiChatMessages, retryNum-1, fmt.Errorf("failed to parse JSON response: %v    response body: %s", err, body))
 	}
 	//处理异常
 	resultMsg, ok := responseMap["message"].(string)
 	if ok {
 		if strings.Contains(resultMsg, "Request processing has failed") {
-			return DeepSeekChatReplyApi(model, apiKey, aiChatMessages, retryNum-1, fmt.Errorf("AI回复内容未找到，AI返回信息：%s", string(body)))
+			return SiliconFlowReplyApi(model, apiKey, aiChatMessages, retryNum-1, fmt.Errorf("AI回复内容未找到，AI返回信息：%s", string(body)))
 		} else if strings.Contains(resultMsg, `The API key format is incorrect`) { //有时候硅基流动会抽风
-			return DeepSeekChatReplyApi(model, apiKey, aiChatMessages, retryNum-1, fmt.Errorf("AI回复内容未找到，AI返回信息：%s", string(body)))
+			return SiliconFlowReplyApi(model, apiKey, aiChatMessages, retryNum-1, fmt.Errorf("AI回复内容未找到，AI返回信息：%s", string(body)))
 		}
 	}
 	choices, ok := responseMap["choices"].([]interface{})
 	if !ok || len(choices) == 0 {
+		//if strings.Contains(string(body),`"message":"The API key format is incorrect. Request id`){
+		//	return SiliconFlowReplyApi(model,)
+		//}
 		log.Printf("unexpected response structure: %v", responseMap)
 		return "", fmt.Errorf("AI回复内容未找到，AI返回信息：" + string(body))
 	}
@@ -772,7 +775,6 @@ func MetaAIReplyApi(model, apiKey string, aiChatMessages AIChatMessages, retryNu
 	var responseMap map[string]interface{}
 	if err := json.Unmarshal(body, &responseMap); err != nil {
 		time.Sleep(100 * time.Millisecond)
-		return MetaAIReplyApi(model, apiKey, aiChatMessages, retryNum-1, lastErr)
 		return MetaAIReplyApi(model, apiKey, aiChatMessages, retryNum-1, lastErr)
 	}
 	//处理异常
