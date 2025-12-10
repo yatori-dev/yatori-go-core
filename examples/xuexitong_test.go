@@ -1,13 +1,17 @@
 package examples
 
 import (
+	"crypto/md5"
+	"encoding/hex"
 	"fmt"
 	"log"
+	"net/url"
 	"strconv"
 	"strings"
 	"testing"
 	"time"
 
+	"github.com/google/uuid"
 	"github.com/thedevsaddam/gojsonq"
 	"github.com/yatori-dev/yatori-go-core/aggregation/xuexitong"
 	"github.com/yatori-dev/yatori-go-core/aggregation/xuexitong/point"
@@ -886,4 +890,77 @@ func TestXXTQuestionSelect(t *testing.T) {
 	for k, v := range options {
 		fmt.Println(k, v)
 	}
+}
+
+// inf_enc加密参数
+func TestXXTBBsInf_enc(t *testing.T) {
+	sign := InfEncSign(map[string]string{
+		"token":     "4faa8662c59590c6f43ae9fe5b002b42",
+		"_time":     "1765296675494",
+		"_c_0_":     "7dd0787e7a0f4b9c93f14fa26e9728cb",
+		"puid":      "346635955",
+		"uuid":      "fa1968e2-b717-4547-bdab-4d2d1fe37bf4",
+		"tag":       "classId134204187",
+		"maxW":      "1080",
+		"topicUUID": "da22aad94ce2410a99984067d25eeb10",
+		"anonymous": "0",
+	}, []string{"token", "_time", "_c_0_", "puid", "uuid", "tag", "maxW", "topicUUID", "anonymous"})
+	jmstr := `token=4faa8662c59590c6f43ae9fe5b002b42&_time=1765296675494&_c_0_=7dd0787e7a0f4b9c93f14fa26e9728cb&puid=346635955&uuid=fa1968e2-b717-4547-bdab-4d2d1fe37bf4&tag=classId134204187&maxW=1080&topicUUID=da22aad94ce2410a99984067d25eeb10&anonymous=0&DESKey=Z(AfY@XS`
+	sum := md5.Sum([]byte(jmstr))
+	fmt.Println(hex.EncodeToString(sum[:]))
+	fmt.Println(sign)
+}
+
+//func dfs(strs []string,res []string){
+//	sign := InfEncSign()
+//	if
+//}
+
+// InfEncSign 移动端为参数添加 inf_enc 签名
+func InfEncSign(params map[string]string, order []string) string {
+	const DESKey = "Z(AfY@XS"
+
+	parts := make([]string, 0, len(order))
+	for _, k := range order {
+		// 跳过不存在的 key（或你也可以要求都存在）
+		v, ok := params[k]
+		if !ok {
+			continue
+		}
+		// 使用 url.QueryEscape 与 Python urlencode 行为兼容（空格 -> +）
+		parts = append(parts, k+"="+url.QueryEscape(v))
+	}
+
+	// 拼接并加上 DESKey
+	query := strings.Join(parts, "&") + "&DESKey=" + DESKey
+
+	// md5
+	sum := md5.Sum([]byte(query))
+	return hex.EncodeToString(sum[:])
+}
+
+// 移动端_c_0参数生成
+func ParamFor_c_0_Generete() string {
+	u := uuid.New()
+	c0 := strings.ReplaceAll(u.String(), "-", "")
+	return c0
+}
+func MakeParams(orig map[string]string) map[string]string {
+	params := make(map[string]string)
+	for k, v := range orig {
+		params[k] = v
+	}
+
+	// 生成 _c_0_：UUID，无 “-”
+	u := uuid.New()
+	c0 := strings.ReplaceAll(u.String(), "-", "")
+	params["_c_0_"] = c0
+
+	// time
+	params["_time"] = fmt.Sprintf("%d", time.Now().UnixMilli())
+
+	// 然后计算 inf_enc（按 key 排序 urlencode + DESKey 拼接 MD5）
+	// ... (你之前实现 inf_enc 的逻辑) ...
+
+	return params
 }

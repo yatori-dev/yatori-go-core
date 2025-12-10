@@ -108,6 +108,62 @@ func (cache *XueXiTUserCache) XueXiTVerificationCodeApi(retry int, lastErr error
 	return filepath, nil
 }
 
+// 获取学习通验证码
+// 获取学习通验证码（直接返回 image.Image）
+func (cache *XueXiTUserCache) XueXiTChapterVerificationCodeApi(retry int, lastErr error) (image.Image, error) {
+	if retry < 0 {
+		return nil, lastErr
+	}
+
+	urlStr := "https://mooc1.chaoxing.com/mooc-ans/kaptcha-img/code?" +
+		fmt.Sprintf("%d", time.Now().UnixMilli())
+
+	tr := &http.Transport{
+		TLSClientConfig: &tls.Config{
+			InsecureSkipVerify: true,
+		},
+	}
+
+	// 代理
+	if cache.IpProxySW {
+		tr.Proxy = func(req *http.Request) (*url.URL, error) {
+			return url.Parse(cache.ProxyIP)
+		}
+	}
+
+	client := &http.Client{Transport: tr}
+
+	req, err := http.NewRequest("GET", urlStr, nil)
+	if err != nil {
+		return nil, err
+	}
+
+	// cookie
+	for _, cookie := range cache.cookies {
+		req.AddCookie(cookie)
+	}
+
+	req.Header.Add("User-Agent", GetUA("mobile"))
+	req.Header.Add("Accept", "*/*")
+	req.Header.Add("Host", "mooc1-api.chaoxing.com")
+	req.Header.Add("Connection", "keep-alive")
+
+	res, err := client.Do(req)
+	if err != nil {
+		return nil, err
+	}
+	defer res.Body.Close()
+
+	// 直接 decode 图片
+	img, _, err := image.Decode(res.Body)
+	if err != nil {
+		// 可能是坏图，尝试重试
+		return cache.XueXiTChapterVerificationCodeApi(retry-1, err)
+	}
+
+	return img, nil
+}
+
 // 提交学习通验证码
 func (cache *XueXiTUserCache) XueXiTPassVerificationCode(code string, retry int, lastErr error) (bool, error) {
 	if retry < 0 {
@@ -175,6 +231,79 @@ func (cache *XueXiTUserCache) XueXiTPassVerificationCode(code string, retry int,
 	//}
 	//fmt.Println(string(body))
 	if res.StatusCode == 302 {
+		return true, nil
+	}
+	return false, nil
+}
+
+// 提交学习通验证码(章节内）
+func (cache *XueXiTUserCache) XueXiTPassCahpterVerificationCode(code string, retry int, lastErr error) (bool, error) {
+	if retry < 0 {
+		return false, lastErr
+	}
+	//urlStr := "https://mooc1.chaoxing.com/mooc-ans/kaptcha-img/ajaxValidate2"
+	urlStr := "https://mooc1.chaoxing.com/mooc-ans/verifyCode/studychapter"
+	method := "POST"
+
+	payload := &bytes.Buffer{}
+	writer := multipart.NewWriter(payload)
+	//_ = writer.WriteField("app", "0")
+	_ = writer.WriteField("code", code)
+	err := writer.Close()
+	if err != nil {
+		fmt.Println(err)
+		return false, err
+	}
+
+	tr := &http.Transport{
+		TLSClientConfig: &tls.Config{
+			InsecureSkipVerify: true,
+		},
+	}
+	//如果开启了IP代理，那么就直接添加代理
+	if cache.IpProxySW {
+		tr.Proxy = func(req *http.Request) (*url.URL, error) {
+			return url.Parse(cache.ProxyIP) // 设置代理
+		}
+	}
+	client := &http.Client{
+		Transport: tr,
+		// 禁止自动重定向
+		CheckRedirect: func(req *http.Request, via []*http.Request) error {
+			// 返回 http.ErrUseLastResponse 表示不要跟随重定向
+			return http.ErrUseLastResponse
+		},
+	}
+	req, err := http.NewRequest(method, urlStr, payload)
+
+	if err != nil {
+		fmt.Println(err)
+		return false, err
+	}
+	for _, cookie := range cache.cookies {
+		req.AddCookie(cookie)
+	}
+	req.Header.Add("User-Agent", GetUA("mobile"))
+	req.Header.Add("Accept", "*/*")
+	req.Header.Add("Host", "mooc1-api.chaoxing.com")
+	req.Header.Add("Connection", "keep-alive")
+	req.Header.Add("Content-Type", "multipart/form-data; boundary=--------------------------114712911338779046453834")
+
+	req.Header.Set("Content-Type", writer.FormDataContentType())
+	res, err := client.Do(req)
+	if err != nil {
+		fmt.Println(err)
+		return false, err
+	}
+	defer res.Body.Close()
+
+	body, err := ioutil.ReadAll(res.Body)
+	if err != nil {
+		fmt.Println(err)
+		return false, err
+	}
+	fmt.Println(string(body))
+	if string(body) != `{"status":true}` {
 		return true, nil
 	}
 	return false, nil

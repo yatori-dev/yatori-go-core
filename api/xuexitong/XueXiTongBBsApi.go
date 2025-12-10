@@ -1,18 +1,20 @@
 package xuexitong
 
 import (
+	"crypto/md5"
 	"crypto/tls"
+	"encoding/hex"
 	"errors"
 	"fmt"
+	"github.com/google/uuid"
+	"github.com/yatori-dev/yatori-go-core/utils"
 	"io/ioutil"
 	"net/http"
 	"net/url"
 	"regexp"
 	"strconv"
 	"strings"
-
-	"github.com/google/uuid"
-	"github.com/yatori-dev/yatori-go-core/utils"
+	"time"
 )
 
 // 拉取任务点链接数据
@@ -175,6 +177,109 @@ func (cache *XueXiTUserCache) PullBbsInfoApi(id1, id2, courseId, classId string,
 	return string(body), nil
 }
 
+// 拉取讨论关键参数手机端。其中mtopid就是mid
+func (cache *XueXiTUserCache) PullPhoneBbsInfoApi(mtopid, jobid, knowledgeid, courseId, clazzId string, retry int, lastErr error) (string, error) {
+	if retry < 0 {
+		return "", lastErr
+	}
+
+	//url := "https://mooc1-api.chaoxing.com/mooc-ans/bbscircle/chapter?mtopicid=6126910848511765298213523&jobid=1765298213522842&isPortal=false&knowledgeid=1088037085&ut=s&clazzId=134204187&enc&utenc=undefined&courseid=258101827&isJob=true&isMobile=true"
+	url := "https://mooc1-api.chaoxing.com/mooc-ans/bbscircle/chapter?mtopicid=" + mtopid + "&jobid=" + jobid + "&isPortal=false&knowledgeid=" + knowledgeid + "&ut=s&clazzId=" + clazzId + "&enc&utenc=undefined&courseid=" + courseId + "&isJob=true&isMobile=true"
+	method := "GET"
+
+	client := &http.Client{}
+	req, err := http.NewRequest(method, url, nil)
+
+	if err != nil {
+		fmt.Println(err)
+		return "", err
+	}
+	req.Header.Add("User-Agent", GetUA("mobile"))
+	req.Header.Add("Accept", "text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,image/apng,*/*;q=0.8")
+	req.Header.Add("Upgrade-Insecure-Requests", "1")
+	//req.Header.Add("Referer", "https://mooc1-api.chaoxing.com/ananas/modules/insertbbs/index.html?v=2025-1128-0958")
+	req.Header.Add("Accept-Language", "zh-CN,en-US;q=0.9")
+	req.Header.Add("X-Requested-With", "com.chaoxing.mobile")
+	req.Header.Add("Host", "mooc1-api.chaoxing.com")
+	req.Header.Add("Connection", "keep-alive")
+	for _, cookie := range cache.cookies {
+		req.AddCookie(cookie)
+	}
+
+	res, err := client.Do(req)
+	if err != nil {
+		fmt.Println(err)
+		return "", err
+	}
+	defer res.Body.Close()
+
+	body, err := ioutil.ReadAll(res.Body)
+	if err != nil {
+		fmt.Println(err)
+		return "", err
+	}
+	//fmt.Println(string(body))
+
+	return string(body), nil
+}
+
+// 拉取讨论任务点详细关键信息
+func (cache *XueXiTUserCache) PullPhoneBbsDetailApi(topicId string) (string, error) {
+	_c_0 := ParamFor_c_0_Generete()
+	_time := fmt.Sprintf("%d", time.Now().UnixMilli())
+	puid := ""
+	//获取puid
+	if puid == "" {
+		for _, cookie := range cache.cookies {
+			if cookie.Name == "UID" { //获取puid
+				puid = cookie.Value
+				break
+			}
+		}
+	}
+	inf_enc := InfEncSign(map[string]string{
+		"_c_0_": _c_0,
+		"token": "4faa8662c59590c6f43ae9fe5b002b42",
+		"_time": _time,
+	}, []string{"_c_0_", "token", "_time"})
+	url := "https://groupyd.chaoxing.com/apis/topic/getTopic?_c_0_=" + _c_0 + "&token=4faa8662c59590c6f43ae9fe5b002b42&_time=" + _time + "&inf_enc=" + inf_enc
+	method := "POST"
+
+	payload := strings.NewReader("puid=" + puid + "&maxW=1080&topicId=" + topicId)
+
+	client := &http.Client{}
+	req, err := http.NewRequest(method, url, payload)
+
+	if err != nil {
+		fmt.Println(err)
+		return "", err
+	}
+	req.Header.Add("User-Agent", GetUA("mobile"))
+	req.Header.Add("Connection", "Keep-Alive")
+	req.Header.Add("Accept-Language", "zh_CN")
+	req.Header.Add("Content-Type", "application/x-www-form-urlencoded")
+	req.Header.Add("Accept", "*/*")
+	req.Header.Add("Host", "groupyd.chaoxing.com")
+	for _, cookie := range cache.cookies {
+		req.AddCookie(cookie)
+	}
+
+	res, err := client.Do(req)
+	if err != nil {
+		fmt.Println(err)
+		return "", err
+	}
+	defer res.Body.Close()
+
+	body, err := ioutil.ReadAll(res.Body)
+	if err != nil {
+		fmt.Println(err)
+		return "", err
+	}
+	//fmt.Println(string(body))
+	return string(body), nil
+}
+
 // 回复讨论
 func (cache *XueXiTUserCache) AnswerBbsApi(topicUUid, courseId, classId, topic_content, urlToken, bbsid string, retry int, lastErr error) (string, error) {
 	if retry < 0 {
@@ -224,4 +329,112 @@ func (cache *XueXiTUserCache) AnswerBbsApi(topicUUid, courseId, classId, topic_c
 		return "", err
 	}
 	return string(body), nil
+}
+
+// 手机端回复讨论任务点
+func (cache *XueXiTUserCache) AnswerPhoneBbsApi(classId, topicUUID, content string) (string, error) {
+	_c_0 := ParamFor_c_0_Generete()
+	_time := fmt.Sprintf("%d", time.Now().UnixMilli())
+	puid := ""
+	//获取puid
+	if puid == "" {
+		for _, cookie := range cache.cookies {
+			if cookie.Name == "UID" { //获取puid
+				puid = cookie.Value
+				break
+			}
+		}
+	}
+	newUUID, _ := uuid.NewUUID()
+	uuidV := newUUID.String()
+	inf_enc := InfEncSign(map[string]string{
+		"token":     "4faa8662c59590c6f43ae9fe5b002b42",
+		"_time":     _time,
+		"_c_0_":     _c_0,
+		"puid":      puid,
+		"uuid":      uuidV,
+		"tag":       "classId" + classId,
+		"maxW":      "1080",
+		"topicUUID": topicUUID,
+		"anonymous": "0",
+	}, []string{"token", "_time", "_c_0_", "puid", "uuid", "tag", "maxW", "topicUUID", "anonymous"})
+	urlStr := "https://groupyd.chaoxing.com/apis/invitation/addReply?token=4faa8662c59590c6f43ae9fe5b002b42&_time=" + _time + "&_c_0_=" + _c_0 + "&puid=" + puid + "&uuid=" + uuidV + "&tag=classId" + classId + "&maxW=1080&topicUUID=" + topicUUID + "&anonymous=0&inf_enc=" + inf_enc
+	method := "POST"
+
+	payload := strings.NewReader("content=" + url.QueryEscape(content))
+
+	tr := &http.Transport{
+		TLSClientConfig: &tls.Config{
+			InsecureSkipVerify: true,
+		},
+	}
+	//如果开启了IP代理，那么就直接添加代理
+	if cache.IpProxySW {
+		tr.Proxy = func(req *http.Request) (*url.URL, error) {
+			return url.Parse(cache.ProxyIP) // 设置代理
+		}
+	}
+	client := &http.Client{
+		Transport: tr,
+	}
+	req, err := http.NewRequest(method, urlStr, payload)
+
+	if err != nil {
+		fmt.Println(err)
+		return "", err
+	}
+	req.Header.Add("User-Agent", GetUA("mobile"))
+	req.Header.Add("Connection", "Keep-Alive")
+	req.Header.Add("Accept-Language", "zh_CN")
+	req.Header.Add("Content-Type", "application/x-www-form-urlencoded")
+	req.Header.Add("Accept", "*/*")
+	req.Header.Add("Host", "groupyd.chaoxing.com")
+	for _, cookie := range cache.cookies {
+		req.AddCookie(cookie)
+	}
+
+	res, err := client.Do(req)
+	if err != nil {
+		fmt.Println(err)
+		return "", err
+	}
+	defer res.Body.Close()
+
+	body, err := ioutil.ReadAll(res.Body)
+	if err != nil {
+		fmt.Println(err)
+		return "", err
+	}
+	//fmt.Println(string(body))
+	return string(body), nil
+}
+
+// InfEncSign 移动端为参数添加 inf_enc 签名
+func InfEncSign(params map[string]string, order []string) string {
+	const DESKey = "Z(AfY@XS"
+
+	parts := make([]string, 0, len(order))
+	for _, k := range order {
+		// 跳过不存在的 key（或你也可以要求都存在）
+		v, ok := params[k]
+		if !ok {
+			continue
+		}
+		// 使用 url.QueryEscape 与 Python urlencode 行为兼容（空格 -> +）
+		parts = append(parts, k+"="+url.QueryEscape(v))
+	}
+
+	// 拼接并加上 DESKey
+	query := strings.Join(parts, "&") + "&DESKey=" + DESKey
+
+	// md5
+	sum := md5.Sum([]byte(query))
+	return hex.EncodeToString(sum[:])
+}
+
+// 移动端_c_0参数生成
+func ParamFor_c_0_Generete() string {
+	u := uuid.New()
+	c0 := strings.ReplaceAll(u.String(), "-", "")
+	return c0
 }
