@@ -5,6 +5,12 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+	"log"
+	"regexp"
+	"strconv"
+	"strings"
+	"time"
+
 	ddddocr "github.com/Changbaiqi/ddddocr-go/utils"
 	"github.com/PuerkitoBio/goquery"
 	"github.com/thedevsaddam/gojsonq"
@@ -16,11 +22,6 @@ import (
 	"github.com/yatori-dev/yatori-go-core/utils"
 	log2 "github.com/yatori-dev/yatori-go-core/utils/log"
 	"golang.org/x/net/html"
-	"log"
-	"regexp"
-	"strconv"
-	"strings"
-	"time"
 )
 
 // ChapterNotOpened 是未打开章节时的错误类型
