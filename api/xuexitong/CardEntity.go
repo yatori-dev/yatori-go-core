@@ -174,14 +174,14 @@ type PointDocumentDto struct {
 	ClassID     string
 	KnowledgeID int
 	Cpi         string
-
-	ObjectID string
-	Title    string
-	JobID    string
-	Jtoken   string
-	IsJob    bool //是否是任务点(看完的文档也算在非任务点里面)，如果是任务点则为true，不是则为false
-	Type     ctype.CardType
-	IsSet    bool
+	Read        bool
+	ObjectID    string
+	Title       string
+	JobID       string
+	Jtoken      string
+	IsJob       bool //是否是任务点(看完的文档也算在非任务点里面)，如果是任务点则为true，不是则为false
+	Type        ctype.CardType
+	IsSet       bool
 }
 type Session struct {
 	Client *http.Client
@@ -559,6 +559,29 @@ func (p *PointDocumentDto) AttachmentsDetection(attachment interface{}) (bool, e
 				p.Jtoken = att["jtoken"].(string)
 			}
 			if (p.ObjectID != "" && objectid == p.ObjectID) || (jobid != nil && p.JobID == jobid) {
+				break
+			}
+		} else if typeStr == "read" {
+			property, ok := att["property"].(map[string]interface{})
+			//if strings.Contains(p.Title, "二进制的由来.pdf") || p.KnowledgeID == 1008383209 {
+			//	fmt.Println("断点")
+			//}
+			if !ok {
+				return false, errors.New("invalid property structure")
+			}
+			if att["job"] != nil {
+				p.IsJob = att["job"].(bool)
+			}
+			jobid := property["jobid"]
+
+			if jobid == p.JobID {
+				p.Title = property["title"].(string)
+				//if property["jobid"] != nil {
+				//	p.JobID = property["jobid"].(string)
+				//}
+				p.Jtoken = att["jtoken"].(string)
+			}
+			if jobid != nil && p.JobID == jobid {
 				break
 			}
 		}

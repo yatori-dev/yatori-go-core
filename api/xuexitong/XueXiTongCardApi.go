@@ -167,6 +167,7 @@ func (cache *XueXiTUserCache) VideoDtoFetch(p *PointVideoDto, retry int, lastErr
 	return string(body), nil
 }
 
+// CP端视频学时提交
 func (cache *XueXiTUserCache) VideoSubmitStudyTimeApi(p *PointVideoDto, playingTime int, isdrag int /*提交模式，0代表正常视屏播放提交，2代表暂停播放状态，3代表着点击开始播放状态*/, retry int, lastErr error) (string, error) {
 	if retry < 0 {
 		return "", lastErr
@@ -726,6 +727,7 @@ func (cache *XueXiTUserCache) WorkCommit(p *PointWorkDto, fields []WorkInputFiel
 	return string(body), nil
 }
 
+// 文档任务点完成
 func (cache *XueXiTUserCache) DocumentDtoReadingReport(p *PointDocumentDto, retry int, lastErr error) (string, error) {
 	if retry < 0 {
 		return "", lastErr
@@ -849,6 +851,94 @@ func (cache *XueXiTUserCache) DocumentDtoReadingBookReport(p *PointDocumentDto, 
 
 	body, err := ioutil.ReadAll(res.Body)
 	utils.CookiesAddNoRepetition(&cache.cookies, res.Cookies()) //赋值cookie
+	return string(body), nil
+}
+
+// Web端阅读任务点完成
+func (cache *XueXiTUserCache) ReadV2PointWebReport(p *PointDocumentDto, retry int, lastErr error) (string, error) {
+	if retry < 0 {
+		return "", lastErr
+	}
+	//url := "https://mooc1-1.chaoxing.com/ananas/job/readv2?jobid=read-223987417&knowledgeid=1054242600&courseid=256268467&clazzid=132232726&jtoken=1a1deb5f80dba33cbb149350b4e2a985&checkMicroTopic=true&microTopicId=0&_dc=1765279877417"
+	urlStr := "https://mooc1-1.chaoxing.com/ananas/job/readv2?jobid=" + p.JobID + "&knowledgeid=" + fmt.Sprintf("%d", p.KnowledgeID) + "&courseid=" + p.CourseID + "&clazzid=" + p.ClassID + "&jtoken=" + p.Jtoken + "&checkMicroTopic=true&microTopicId=0&_dc=" + fmt.Sprintf("%d", time.Now().UnixMilli())
+	method := "GET"
+
+	client := &http.Client{}
+	req, err := http.NewRequest(method, urlStr, nil)
+
+	if err != nil {
+		fmt.Println(err)
+		return "", err
+	}
+	req.Header.Add("Accept", "*/*")
+	req.Header.Add("Accept-Language", "zh-CN,zh;q=0.9,en;q=0.8,en-GB;q=0.7,en-US;q=0.6")
+	req.Header.Add("Cache-Control", "no-cache")
+	req.Header.Add("Connection", "keep-alive")
+	req.Header.Add("Pragma", "no-cache")
+	req.Header.Add("Sec-Fetch-Dest", "empty")
+	req.Header.Add("Sec-Fetch-Mode", "cors")
+	req.Header.Add("Sec-Fetch-Site", "same-origin")
+	req.Header.Add("User-Agent", utils.DefaultUserAgent)
+	req.Header.Add("X-Requested-With", "XMLHttpRequest")
+	req.Header.Add("sec-ch-ua", "\"Microsoft Edge\";v=\"143\", \"Chromium\";v=\"143\", \"Not A(Brand\";v=\"24\"")
+	req.Header.Add("sec-ch-ua-mobile", "?0")
+	req.Header.Add("sec-ch-ua-platform", "\"Windows\"")
+	req.Header.Add("Host", "mooc1-1.chaoxing.com")
+	for _, cookie := range cache.cookies {
+		req.AddCookie(cookie)
+	}
+	res, err := client.Do(req)
+	if err != nil {
+		fmt.Println(err)
+		return "", err
+	}
+	defer res.Body.Close()
+
+	body, err := ioutil.ReadAll(res.Body)
+	if err != nil {
+		fmt.Println(err)
+		return "", err
+	}
+	//fmt.Println(string(body))
+	return string(body), nil
+}
+
+// 手机端阅读任务点完成
+func (cache *XueXiTUserCache) ReadV2PointPeReport(p *PointDocumentDto, retry int, lastErr error) (string, error) {
+
+	//urlStr := "https://mooc1-api.chaoxing.com/ananas/job/readv2?jobid=read-218403954&knowledgeid=1054242600&courseid=256268467&clazzid=132232726&jtoken=94a743877599a6aa7396943845dd38d7&checkMicroTopic=true&microTopicId=0&_dc=1765456749365"
+	urlStr := "https://mooc1-api.chaoxing.com/ananas/job/readv2?jobid=" + p.JobID + "&knowledgeid=" + fmt.Sprintf("%d", p.KnowledgeID) + "&courseid=" + p.CourseID + "&clazzid=" + p.ClassID + "&jtoken=" + p.Jtoken + "&checkMicroTopic=true&microTopicId=0&_dc=" + fmt.Sprintf("%d", time.Now().UnixMilli())
+	method := "GET"
+
+	client := &http.Client{}
+	req, err := http.NewRequest(method, urlStr, nil)
+
+	if err != nil {
+		fmt.Println(err)
+		return "", err
+	}
+	req.Header.Add("User-Agent", GetUA("mobile"))
+	req.Header.Add("X-Requested-With", "XMLHttpRequest")
+	req.Header.Add("Accept-Language", "zh-CN,en-US;q=0.9")
+	req.Header.Add("Accept", "*/*")
+	req.Header.Add("Host", "mooc1-api.chaoxing.com")
+	req.Header.Add("Connection", "keep-alive")
+	for _, cookie := range cache.cookies {
+		req.AddCookie(cookie)
+	}
+	res, err := client.Do(req)
+	if err != nil {
+		fmt.Println(err)
+		return "", err
+	}
+	defer res.Body.Close()
+
+	body, err := ioutil.ReadAll(res.Body)
+	if err != nil {
+		fmt.Println(err)
+		return "", err
+	}
+	//fmt.Println(string(body))
 	return string(body), nil
 }
 

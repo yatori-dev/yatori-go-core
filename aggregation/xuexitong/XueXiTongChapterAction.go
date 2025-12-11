@@ -290,6 +290,26 @@ func ChapterFetchCardsAction(
 					log2.Print(log2.DEBUG, "(%d, %d) 任务点 'objectid' 不存在或为空 %+v", cardIndex, pointIndex, point)
 					continue
 				}
+			case string(ctype.InsertReadV2):
+				jobID, ok3 := point.Data["_jobid"].(string)
+
+				if ok3 && jobID != "" {
+					pointObj.PointDocumentDto = xuexitong.PointDocumentDto{
+						CardIndex:   cardIndex,
+						Title:       point.Data["title"].(string),
+						CourseID:    strconv.Itoa(courseId),
+						ClassID:     strconv.Itoa(classId),
+						KnowledgeID: card.KnowledgeID,
+						Read:        point.Data["read"].(bool),
+						Cpi:         strconv.Itoa(cpi),
+						JobID:       jobID,
+						Type:        ctype.InsertReadV2,
+						IsSet:       ok,
+					}
+				} else {
+					log2.Print(log2.DEBUG, "(%d, %d) 任务点 'jobId' 不存在或为空 %+v", cardIndex, pointIndex, point)
+					continue
+				}
 			case string(ctype.InsertBook):
 				//InserBoot类型直接当文档处理
 				jobID, ok3 := point.Data["_jobid"].(string)
@@ -451,8 +471,8 @@ func ChapterFetchCardsAction(
 					continue
 				}
 			default:
-				log2.Print(log2.DEBUG, "未知的任务点类型: %s\n", pointType)
-				log2.Print(log2.DEBUG, "%+v", point)
+				log2.Print(log2.INFO, "未知的任务点类型: %s\n", pointType)
+				log2.Print(log2.INFO, "%+v", point)
 				continue
 			}
 

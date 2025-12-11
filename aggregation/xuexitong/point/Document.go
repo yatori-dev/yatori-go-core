@@ -15,6 +15,8 @@ func ExecuteDocument(cache *xuexitong.XueXiTUserCache, p *xuexitong.PointDocumen
 	var err error
 	if p.Type == ctype.InsertBook {
 		report, err = cache.DocumentDtoReadingBookReport(p, 3, nil)
+	} else if p.Type == ctype.InsertReadV2 {
+		report, err = cache.ReadV2PointPeReport(p, 3, nil)
 	} else {
 		report, err = cache.DocumentDtoReadingReport(p, 3, nil)
 	}
