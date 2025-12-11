@@ -5,13 +5,12 @@ import (
 
 	"github.com/thedevsaddam/gojsonq"
 	xuexitong2 "github.com/yatori-dev/yatori-go-core/aggregation/xuexitong"
-	"github.com/yatori-dev/yatori-go-core/api/entity"
 	"github.com/yatori-dev/yatori-go-core/api/xuexitong"
 	"github.com/yatori-dev/yatori-go-core/models/ctype"
 	log2 "github.com/yatori-dev/yatori-go-core/utils/log"
 )
 
-func ExecuteDocument(cache *xuexitong.XueXiTUserCache, p *entity.PointDocumentDto) (string, error) {
+func ExecuteDocument(cache *xuexitong.XueXiTUserCache, p *xuexitong.PointDocumentDto) (string, error) {
 	var report string
 	var err error
 	if p.Type == ctype.InsertBook {

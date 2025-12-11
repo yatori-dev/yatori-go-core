@@ -13,7 +13,6 @@ import (
 	"strings"
 	"time"
 
-	"github.com/yatori-dev/yatori-go-core/api/entity"
 	"github.com/yatori-dev/yatori-go-core/utils"
 	log2 "github.com/yatori-dev/yatori-go-core/utils/log"
 )
@@ -110,7 +109,7 @@ func (e *APIError) Error() string {
 }
 
 // VideoDtoFetch 视频数据
-func (cache *XueXiTUserCache) VideoDtoFetch(p *entity.PointVideoDto, retry int, lastErr error) (string, error) {
+func (cache *XueXiTUserCache) VideoDtoFetch(p *PointVideoDto, retry int, lastErr error) (string, error) {
 	if retry < 0 {
 		return "", lastErr
 	}
@@ -168,7 +167,7 @@ func (cache *XueXiTUserCache) VideoDtoFetch(p *entity.PointVideoDto, retry int, 
 	return string(body), nil
 }
 
-func (cache *XueXiTUserCache) VideoSubmitStudyTimeApi(p *entity.PointVideoDto, playingTime int, isdrag int /*提交模式，0代表正常视屏播放提交，2代表暂停播放状态，3代表着点击开始播放状态*/, retry int, lastErr error) (string, error) {
+func (cache *XueXiTUserCache) VideoSubmitStudyTimeApi(p *PointVideoDto, playingTime int, isdrag int /*提交模式，0代表正常视屏播放提交，2代表暂停播放状态，3代表着点击开始播放状态*/, retry int, lastErr error) (string, error) {
 	if retry < 0 {
 		return "", lastErr
 	}
@@ -251,7 +250,7 @@ func (cache *XueXiTUserCache) VideoSubmitStudyTimeApi(p *entity.PointVideoDto, p
 }
 
 // VideoSubmitStudyTimePE 手机端学时提交
-func (cache *XueXiTUserCache) VideoSubmitStudyTimePEApi(p *entity.PointVideoDto, playingTime int, isdrag int /*提交模式，0代表正常视屏播放提交，2代表暂停播放状态，3代表着点击开始播放状态*/, retry int, lastErr error) (string, error) {
+func (cache *XueXiTUserCache) VideoSubmitStudyTimePEApi(p *PointVideoDto, playingTime int, isdrag int /*提交模式，0代表正常视屏播放提交，2代表暂停播放状态，3代表着点击开始播放状态*/, retry int, lastErr error) (string, error) {
 	if retry < 0 {
 		return "", lastErr
 	}
@@ -337,7 +336,7 @@ func (cache *XueXiTUserCache) VideoSubmitStudyTimePEApi(p *entity.PointVideoDto,
 }
 
 // Deprecated: 此方法有BUG不推荐使用，将会在未来版本删除
-func (cache *XueXiTUserCache) VideoDtoPlayReport(p *entity.PointVideoDto, playingTime int, isdrag int /*提交模式，0代表正常视屏播放提交，2代表暂停播放状态，3代表着点击开始播放状态，4代表播放结束*/, retry int, lastErr error) (string, error) {
+func (cache *XueXiTUserCache) VideoDtoPlayReport(p *PointVideoDto, playingTime int, isdrag int /*提交模式，0代表正常视屏播放提交，2代表暂停播放状态，3代表着点击开始播放状态，4代表播放结束*/, retry int, lastErr error) (string, error) {
 	if retry < 0 {
 		return "", lastErr
 	}
@@ -441,7 +440,7 @@ func replaceSpecialChars(s string) string {
 }
 
 // WorkFetchQuestion 获取作业题目
-func (cache *XueXiTUserCache) WorkFetchQuestion(p *entity.PointWorkDto, retry int, lastErr error) (string, error) {
+func (cache *XueXiTUserCache) WorkFetchQuestion(p *PointWorkDto, retry int, lastErr error) (string, error) {
 	if retry < 0 {
 		return "", lastErr
 	}
@@ -521,7 +520,7 @@ func (cache *XueXiTUserCache) WorkFetchQuestion(p *entity.PointWorkDto, retry in
 }
 
 // 另外一个获取作业题目
-func (cache *XueXiTUserCache) WorkFetch1Question(p *entity.PointWorkDto, retry int, lastErr error) (string, error) {
+func (cache *XueXiTUserCache) WorkFetch1Question(p *PointWorkDto, retry int, lastErr error) (string, error) {
 	if retry < 0 {
 		return "", lastErr
 	}
@@ -601,7 +600,7 @@ func (cache *XueXiTUserCache) WorkFetch1Question(p *entity.PointWorkDto, retry i
 }
 
 // 第三个获取作业题目接口
-func (cache *XueXiTUserCache) WorkFetch2Question(p *entity.PointWorkDto, retry int, lastErr error) (string, error) {
+func (cache *XueXiTUserCache) WorkFetch2Question(p *PointWorkDto, retry int, lastErr error) (string, error) {
 	if retry < 0 {
 		return "", lastErr
 	}
@@ -668,7 +667,7 @@ func (cache *XueXiTUserCache) WorkFetch2Question(p *entity.PointWorkDto, retry i
 	return string(body), nil
 }
 
-func (cache *XueXiTUserCache) WorkCommit(p *entity.PointWorkDto, fields []entity.WorkInputField, retry int, lastErr error) (string, error) {
+func (cache *XueXiTUserCache) WorkCommit(p *PointWorkDto, fields []WorkInputField, retry int, lastErr error) (string, error) {
 	if retry < 0 {
 		return "", lastErr
 	}
@@ -727,7 +726,7 @@ func (cache *XueXiTUserCache) WorkCommit(p *entity.PointWorkDto, fields []entity
 	return string(body), nil
 }
 
-func (cache *XueXiTUserCache) DocumentDtoReadingReport(p *entity.PointDocumentDto, retry int, lastErr error) (string, error) {
+func (cache *XueXiTUserCache) DocumentDtoReadingReport(p *PointDocumentDto, retry int, lastErr error) (string, error) {
 	if retry < 0 {
 		return "", lastErr
 	}
@@ -790,7 +789,7 @@ func (cache *XueXiTUserCache) DocumentDtoReadingReport(p *entity.PointDocumentDt
 }
 
 // 另一个文档完成接口
-func (cache *XueXiTUserCache) DocumentDtoReadingBookReport(p *entity.PointDocumentDto, retry int, lastErr error) (string, error) {
+func (cache *XueXiTUserCache) DocumentDtoReadingBookReport(p *PointDocumentDto, retry int, lastErr error) (string, error) {
 	if retry < 0 {
 		return "", lastErr
 	}
@@ -854,7 +853,7 @@ func (cache *XueXiTUserCache) DocumentDtoReadingBookReport(p *entity.PointDocume
 }
 
 // 外链完成接口
-func (cache *XueXiTUserCache) HyperlinkDtoCompleteReport(p *entity.PointHyperlinkDto, retry int, lastErr error) (string, error) {
+func (cache *XueXiTUserCache) HyperlinkDtoCompleteReport(p *PointHyperlinkDto, retry int, lastErr error) (string, error) {
 	if retry < 0 {
 		return "", lastErr
 	}
@@ -965,7 +964,7 @@ func (cache *XueXiTUserCache) HyperlinkDtoCompleteReport(p *entity.PointHyperlin
 //}
 
 // 拉取直播数据
-func (cache *XueXiTUserCache) PullLiveInfoApi(p *entity.PointLiveDto, retry int, lastErr error) (string, error) {
+func (cache *XueXiTUserCache) PullLiveInfoApi(p *PointLiveDto, retry int, lastErr error) (string, error) {
 	if retry < 0 {
 		return "", lastErr
 	}
@@ -1022,7 +1021,7 @@ func (cache *XueXiTUserCache) PullLiveInfoApi(p *entity.PointLiveDto, retry int,
 }
 
 // 看直播前先建立连接
-func (cache *XueXiTUserCache) LiveRelationReport(p *entity.PointLiveDto, retry int, lastErr error) (string, error) {
+func (cache *XueXiTUserCache) LiveRelationReport(p *PointLiveDto, retry int, lastErr error) (string, error) {
 	if retry < 0 {
 		return "", lastErr
 	}
@@ -1080,7 +1079,7 @@ func (cache *XueXiTUserCache) LiveRelationReport(p *entity.PointLiveDto, retry i
 }
 
 // 直播上报接口学时存储接口
-func (cache *XueXiTUserCache) LiveWatchMomentReport(p *entity.PointLiveDto, UParam string, watchMoment float64, retry int, lastErr error) (string, error) {
+func (cache *XueXiTUserCache) LiveWatchMomentReport(p *PointLiveDto, UParam string, watchMoment float64, retry int, lastErr error) (string, error) {
 	urlStr := "https://zhibo.chaoxing.com/apis/live/put/watchMoment?liveId=" + p.LiveId + "&streamName=" + p.StreamName + "&vdoid=" + p.Vdoid + "&watchMoment=" + fmt.Sprintf("%.6f", watchMoment) + "&t=" + strconv.FormatInt(time.Now().UnixMilli(), 10) + "&u=" + UParam
 	method := "GET"
 
@@ -1133,7 +1132,7 @@ func (cache *XueXiTUserCache) LiveWatchMomentReport(p *entity.PointLiveDto, UPar
 }
 
 // 直播尚博接口学时提交接口
-func (cache *XueXiTUserCache) LiveSaveTimePcReport(p *entity.PointLiveDto, retry int, lastErr error) (string, error) {
+func (cache *XueXiTUserCache) LiveSaveTimePcReport(p *PointLiveDto, retry int, lastErr error) (string, error) {
 
 	urlStr := "https://zhibo.chaoxing.com/saveTimePc?streamName=" + p.StreamName + "&vdoid=" + p.Vdoid + "&userId=" + p.UserId + "&isStart=1&t=" + strconv.FormatInt(time.Now().UnixMilli(), 10) + "&courseId=" + p.CourseID
 	method := "GET"

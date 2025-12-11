@@ -15,7 +15,6 @@ import (
 	"github.com/PuerkitoBio/goquery"
 	"github.com/thedevsaddam/gojsonq"
 	ort "github.com/yalue/onnxruntime_go"
-	"github.com/yatori-dev/yatori-go-core/api/entity"
 	"github.com/yatori-dev/yatori-go-core/api/xuexitong"
 	que_core "github.com/yatori-dev/yatori-go-core/que-core/aiq"
 	"github.com/yatori-dev/yatori-go-core/que-core/qtype"
@@ -209,7 +208,7 @@ func PageMobileChapterCardAction(
 	return att, enc, nil
 }
 
-func VideoDtoFetchAction(cache *xuexitong.XueXiTUserCache, p *entity.PointVideoDto) (bool, error) {
+func VideoDtoFetchAction(cache *xuexitong.XueXiTUserCache, p *xuexitong.PointVideoDto) (bool, error) {
 	fetch, err := cache.VideoDtoFetch(p, 5, nil)
 	//500处理
 	if err != nil && strings.Contains(err.Error(), "status code: 500") {
@@ -252,7 +251,7 @@ func VideoDtoFetchAction(cache *xuexitong.XueXiTUserCache, p *entity.PointVideoD
 	return false, errors.New("fetch failed")
 }
 
-func WorkPageFromAction(cache *xuexitong.XueXiTUserCache, workPoint *entity.PointWorkDto) ([]entity.WorkInputField, error) {
+func WorkPageFromAction(cache *xuexitong.XueXiTUserCache, workPoint *xuexitong.PointWorkDto) ([]xuexitong.WorkInputField, error) {
 	questionHtml, err := cache.WorkFetchQuestion(workPoint, 3, nil)
 	if err != nil {
 		return nil, fmt.Errorf("failed to fetch WorkFetchQuestion: %w", err)
@@ -261,12 +260,12 @@ func WorkPageFromAction(cache *xuexitong.XueXiTUserCache, workPoint *entity.Poin
 	inputPattern := regexp.MustCompile(`<input\s+[^>]*>`)
 	attributePattern := regexp.MustCompile(`\b(name|value|type|id)\s*=\s*["']([^"']+)["']`)
 
-	var inputs []entity.WorkInputField
+	var inputs []xuexitong.WorkInputField
 
 	// Find all matches of <input> tags in the HTML content.
 	inputTags := inputPattern.FindAllStringSubmatch(questionHtml, -1)
 	for _, tag := range inputTags {
-		var inputField entity.WorkInputField
+		var inputField xuexitong.WorkInputField
 		attributes := attributePattern.FindAllStringSubmatch(tag[0], -1)
 
 		for _, attr := range attributes {
@@ -307,7 +306,7 @@ func cleanText(text string) string {
 }
 
 // WorkInformInputWorkDTO workDTO赋值
-func WorkInformInputWorkDTO(informMap map[string]interface{}, question *entity.Question) {
+func WorkInformInputWorkDTO(informMap map[string]interface{}, question *xuexitong.Question) {
 	if v, ok := informMap["title"]; ok {
 		question.Title = v.(string)
 	}
@@ -363,16 +362,16 @@ func WorkInformInputWorkDTO(informMap map[string]interface{}, question *entity.Q
 
 // ParseWorkQuestionAction 用于解析作业题目，包括题目类型和题目文本
 // TODO 同Question结构体问题 暂时返回未做 全部题目初始化
-func ParseWorkQuestionAction(cache *xuexitong.XueXiTUserCache, workPoint *entity.PointWorkDto) (entity.Question, error) {
-	var questionEntity entity.Question
-	var workQuestion []entity.ChoiceQue
-	var judgeQuestion []entity.JudgeQue
-	var fillQuestion []entity.FillQue
-	var shortQuestion []entity.ShortQue
-	var termQuestion []entity.TermExplanationQue
-	var essayQuestion []entity.EssayQue
-	var matchingQuestion []entity.MatchingQue
-	var otherQuestion []entity.OtherQue
+func ParseWorkQuestionAction(cache *xuexitong.XueXiTUserCache, workPoint *xuexitong.PointWorkDto) (xuexitong.Question, error) {
+	var questionEntity xuexitong.Question
+	var workQuestion []xuexitong.ChoiceQue
+	var judgeQuestion []xuexitong.JudgeQue
+	var fillQuestion []xuexitong.FillQue
+	var shortQuestion []xuexitong.ShortQue
+	var termQuestion []xuexitong.TermExplanationQue
+	var essayQuestion []xuexitong.EssayQue
+	var matchingQuestion []xuexitong.MatchingQue
+	var otherQuestion []xuexitong.OtherQue
 
 	question, err := cache.WorkFetchQuestion(workPoint, 3, nil)
 
@@ -447,7 +446,7 @@ func ParseWorkQuestionAction(cache *xuexitong.XueXiTUserCache, workPoint *entity
 		// 单选
 		case qtype.SingleChoice.String():
 			options := make(map[string]string)
-			choiceQue := entity.ChoiceQue{}
+			choiceQue := xuexitong.ChoiceQue{}
 			choiceQue.Type = qtype.SingleChoice
 			choiceQue.Qid = qs.ID
 			choiceQue.Text = quesText
@@ -492,7 +491,7 @@ func ParseWorkQuestionAction(cache *xuexitong.XueXiTUserCache, workPoint *entity
 			// 多选
 		case qtype.MultipleChoice.String():
 			options := make(map[string]string)
-			choiceQue := entity.ChoiceQue{}
+			choiceQue := xuexitong.ChoiceQue{}
 			choiceQue.Type = qtype.MultipleChoice
 			choiceQue.Qid = qs.ID
 			choiceQue.Text = quesText
@@ -541,7 +540,7 @@ func ParseWorkQuestionAction(cache *xuexitong.XueXiTUserCache, workPoint *entity
 			break
 		case qtype.TrueOrFalse.String():
 			options := make(map[string]string)
-			judgeQue := entity.JudgeQue{}
+			judgeQue := xuexitong.JudgeQue{}
 			judgeQue.Type = qtype.TrueOrFalse
 			judgeQue.Qid = qs.ID
 			judgeQue.Text = quesText
@@ -566,7 +565,7 @@ func ParseWorkQuestionAction(cache *xuexitong.XueXiTUserCache, workPoint *entity
 		case qtype.FillInTheBlank.String():
 			//options := make(map[string][]string)
 			options := []string{}
-			fillQue := entity.FillQue{}
+			fillQue := xuexitong.FillQue{}
 			fillQue.Type = qtype.FillInTheBlank
 			fillQue.Qid = qs.ID
 			fillQue.Text = quesText
@@ -589,7 +588,7 @@ func ParseWorkQuestionAction(cache *xuexitong.XueXiTUserCache, workPoint *entity
 			fillQuestion = append(fillQuestion, fillQue)
 		case qtype.ShortAnswer.String():
 			options := make(map[string][]string)
-			shortQue := entity.ShortQue{}
+			shortQue := xuexitong.ShortQue{}
 			shortQue.Type = qtype.ShortAnswer
 			shortQue.Qid = qs.ID
 			shortQue.Text = quesText
@@ -599,7 +598,7 @@ func ParseWorkQuestionAction(cache *xuexitong.XueXiTUserCache, workPoint *entity
 			shortQuestion = append(shortQuestion, shortQue)
 		case qtype.TermExplanation.String(): //名词解释
 			options := make(map[string][]string)
-			termExplanationQue := entity.TermExplanationQue{}
+			termExplanationQue := xuexitong.TermExplanationQue{}
 			termExplanationQue.Type = qtype.TermExplanation
 			termExplanationQue.Qid = qs.ID
 			termExplanationQue.Text = quesText
@@ -609,7 +608,7 @@ func ParseWorkQuestionAction(cache *xuexitong.XueXiTUserCache, workPoint *entity
 			termQuestion = append(termQuestion, termExplanationQue)
 		case qtype.Essay.String(): //论述题
 			options := make(map[string][]string)
-			essayQue := entity.EssayQue{}
+			essayQue := xuexitong.EssayQue{}
 			essayQue.Type = qtype.Essay
 			essayQue.Qid = qs.ID
 			essayQue.Text = quesText
@@ -619,7 +618,7 @@ func ParseWorkQuestionAction(cache *xuexitong.XueXiTUserCache, workPoint *entity
 			essayQuestion = append(essayQuestion, essayQue)
 		case qtype.Matching.String():
 
-			matchingQue := entity.MatchingQue{}
+			matchingQue := xuexitong.MatchingQue{}
 			matchingQue.Qid = qs.ID
 			matchingQue.Type = qtype.Matching
 			matchingQue.Text = quesText
@@ -644,7 +643,7 @@ func ParseWorkQuestionAction(cache *xuexitong.XueXiTUserCache, workPoint *entity
 			matchingQuestion = append(matchingQuestion, matchingQue)
 		case qtype.QueOther.String():
 			options := make(map[string][]string)
-			otherQue := entity.OtherQue{}
+			otherQue := xuexitong.OtherQue{}
 			otherQue.Type = qtype.QueOther
 			otherQue.Qid = qs.ID
 			otherQue.Text = quesText
@@ -670,7 +669,7 @@ func ParseWorkQuestionAction(cache *xuexitong.XueXiTUserCache, workPoint *entity
 		case qtype.JournalEntry.String(): //分录题，暂时按照填空题处理
 			//options := make(map[string][]string)
 			options := []string{}
-			fillQue := entity.FillQue{}
+			fillQue := xuexitong.FillQue{}
 			fillQue.Type = qtype.FillInTheBlank
 			fillQue.Qid = qs.ID
 			fillQue.Text = quesText
@@ -694,7 +693,7 @@ func ParseWorkQuestionAction(cache *xuexitong.XueXiTUserCache, workPoint *entity
 		default:
 			log2.Print(log2.INFO, "[", cache.Name, "] ", "未知题目类型，类型为：", quesType, "默认采用论述题方式")
 			options := make(map[string][]string)
-			essayQue := entity.EssayQue{}
+			essayQue := xuexitong.EssayQue{}
 			essayQue.Type = qtype.Essay
 			essayQue.Qid = qs.ID
 			essayQue.Text = quesText
@@ -718,7 +717,7 @@ func ParseWorkQuestionAction(cache *xuexitong.XueXiTUserCache, workPoint *entity
 
 // Deprecated: 此方法将在未来版本中删除
 // 定义题型处理策略函数类型
-type problemMessageStrategy func(paperTitle, context string, topic entity.ExamTurn) que_core.AIChatMessages
+type problemMessageStrategy func(paperTitle, context string, topic xuexitong.ExamTurn) que_core.AIChatMessages
 
 // Deprecated: 此方法将在未来版本中删除
 // 策略映射表：题型 -> 处理函数
@@ -734,7 +733,7 @@ var problemStrategies = map[string]problemMessageStrategy{
 }
 
 // 构建AI问答消息
-func AIProblemMessage(paperTitle, typeStr string, topic entity.ExamTurn) que_core.AIChatMessages {
+func AIProblemMessage(paperTitle, typeStr string, topic xuexitong.ExamTurn) que_core.AIChatMessages {
 
 	//context := buildProblemContext(typeStr, topic)
 	//
@@ -773,7 +772,7 @@ func AIProblemMessage(paperTitle, typeStr string, topic entity.ExamTurn) que_cor
 
 // Deprecated: 此方法将在未来版本中删除
 // buildProblemContext 构建通用的题目上下文
-func buildProblemContext(problemTypeStr string, topic entity.ExamTurn) (context string) {
+func buildProblemContext(problemTypeStr string, topic xuexitong.ExamTurn) (context string) {
 	switch problemTypeStr {
 	case qtype.SingleChoice.String():
 		context += topic.XueXChoiceQue.Text + "\n"
@@ -820,7 +819,7 @@ func buildProblemContext(problemTypeStr string, topic entity.ExamTurn) (context 
 
 // Deprecated: 此方法将在未来版本中删除
 // 单选题处理策略
-func handleSingleChoice(paperTitle, content string, topic entity.ExamTurn) que_core.AIChatMessages {
+func handleSingleChoice(paperTitle, content string, topic xuexitong.ExamTurn) que_core.AIChatMessages {
 	problem := buildProblemHeader(paperTitle, topic.XueXChoiceQue.Type.String(), content)
 	return que_core.AIChatMessages{Messages: []que_core.Message{
 		{Role: "system", Content: "接下来你只需要以json格式回答选项对应内容即可，比如：[\"选项1\"]"},
@@ -832,7 +831,7 @@ func handleSingleChoice(paperTitle, content string, topic entity.ExamTurn) que_c
 
 // Deprecated: 此方法将在未来版本中删除
 // 多选题处理策略
-func handleMultipleChoice(paperTitle, context string, topic entity.ExamTurn) que_core.AIChatMessages {
+func handleMultipleChoice(paperTitle, context string, topic xuexitong.ExamTurn) que_core.AIChatMessages {
 	problem := buildProblemHeader(paperTitle, topic.XueXChoiceQue.Type.String(), context)
 	return que_core.AIChatMessages{Messages: []que_core.Message{
 		{Role: "system", Content: "接下来你只需要以json格式回答选项对应内容即可，比如：[\"选项1\",\"选项2\"]"},
@@ -844,7 +843,7 @@ func handleMultipleChoice(paperTitle, context string, topic entity.ExamTurn) que
 
 // Deprecated: 此方法将在未来版本中删除
 // 判断题处理策略
-func handleTrueFalse(paperTitle, content string, topic entity.ExamTurn) que_core.AIChatMessages {
+func handleTrueFalse(paperTitle, content string, topic xuexitong.ExamTurn) que_core.AIChatMessages {
 	problem := buildProblemHeader(paperTitle, topic.XueXJudgeQue.Type.String(), content)
 	return que_core.AIChatMessages{Messages: []que_core.Message{
 		{Role: "system", Content: "接下来你只能利用json格式回答“正确”或者“错误”这两个选项，比如：[\"正确\"]，不要回答A、B选项字母！！！"},
@@ -855,7 +854,7 @@ func handleTrueFalse(paperTitle, content string, topic entity.ExamTurn) que_core
 
 // Deprecated: 此方法将在未来版本中删除
 // 填空题处理策略
-func handleFillInTheBlank(paperTitle, content string, topic entity.ExamTurn) que_core.AIChatMessages {
+func handleFillInTheBlank(paperTitle, content string, topic xuexitong.ExamTurn) que_core.AIChatMessages {
 	problem := buildProblemHeader(paperTitle, topic.XueXFillQue.Type.String(), content)
 	return que_core.AIChatMessages{Messages: []que_core.Message{
 		{Role: "system", Content: "其中，“（answer_数字）”相关字样的地方是你需要填写答案的地方...格式：[\"答案1\",\"答案2\"]"},
@@ -867,7 +866,7 @@ func handleFillInTheBlank(paperTitle, content string, topic entity.ExamTurn) que
 
 // Deprecated: 此方法将在未来版本中删除
 // 简答题处理策略
-func handleShortAnswer(paperTitle, content string, topic entity.ExamTurn) que_core.AIChatMessages {
+func handleShortAnswer(paperTitle, content string, topic xuexitong.ExamTurn) que_core.AIChatMessages {
 	problem := buildProblemHeader(paperTitle, topic.XueXShortQue.Type.String(), content)
 	return que_core.AIChatMessages{Messages: []que_core.Message{
 		{Role: "system", Content: "这是一个简答题，接下来你只需要以json格式回复答案即可，比如：[\"答案\"]，注意不要拆分答案！！！"},
@@ -878,7 +877,7 @@ func handleShortAnswer(paperTitle, content string, topic entity.ExamTurn) que_co
 
 // Deprecated: 此方法将在未来版本中删除
 // 名词解释处理策略
-func handleTermExplanationAnswer(paperTitle, content string, topic entity.ExamTurn) que_core.AIChatMessages {
+func handleTermExplanationAnswer(paperTitle, content string, topic xuexitong.ExamTurn) que_core.AIChatMessages {
 	problem := buildProblemHeader(paperTitle, topic.XueXTermExplanationQue.Type.String(), content)
 	return que_core.AIChatMessages{Messages: []que_core.Message{
 		{Role: "system", Content: "这是一个名词解释题，回答时请严格遵循json格式：[\"答案\"]，注意不要拆分答案！！！"},
@@ -889,7 +888,7 @@ func handleTermExplanationAnswer(paperTitle, content string, topic entity.ExamTu
 
 // Deprecated: 此方法将在未来版本中删除
 // 论述题处理策略
-func handleEssayAnswer(paperTitle, content string, topic entity.ExamTurn) que_core.AIChatMessages {
+func handleEssayAnswer(paperTitle, content string, topic xuexitong.ExamTurn) que_core.AIChatMessages {
 	problem := buildProblemHeader(paperTitle, topic.XueXEssayQue.Type.String(), content)
 	return que_core.AIChatMessages{Messages: []que_core.Message{
 		{Role: "system", Content: `这是一个论述题，回答时请严格遵循json格式：["答案"]，注意不要拆分答案！！！`},
@@ -900,7 +899,7 @@ func handleEssayAnswer(paperTitle, content string, topic entity.ExamTurn) que_co
 
 // Deprecated: 此方法将在未来版本中删除
 // 连线题处理策略
-func handleMatchingAnswer(paperTitle, context string, topic entity.ExamTurn) que_core.AIChatMessages {
+func handleMatchingAnswer(paperTitle, context string, topic xuexitong.ExamTurn) que_core.AIChatMessages {
 	problem := buildProblemHeader(paperTitle, topic.XueXChoiceQue.Type.String(), context)
 	return que_core.AIChatMessages{Messages: []que_core.Message{
 		{Role: "system", Content: "接下来你只需要以json格式回答选项对应内容即可，比如：[\"xxx->xxx\",\"xxx->xxx\"]"},

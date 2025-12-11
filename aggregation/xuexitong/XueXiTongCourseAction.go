@@ -13,7 +13,6 @@ import (
 	ddddocr "github.com/Changbaiqi/ddddocr-go/utils"
 	"github.com/thedevsaddam/gojsonq"
 	ort "github.com/yalue/onnxruntime_go"
-	"github.com/yatori-dev/yatori-go-core/api/entity"
 	"github.com/yatori-dev/yatori-go-core/api/xuexitong"
 	"github.com/yatori-dev/yatori-go-core/utils"
 	log2 "github.com/yatori-dev/yatori-go-core/utils/log"
@@ -80,7 +79,7 @@ func XueXiTPullCourseAction(cache *xuexitong.XueXiTUserCache) ([]XueXiTCourse, e
 		log2.Print(log2.DEBUG, utils.RunFuncName(), "绕过成功")
 	}
 
-	var xueXiTCourse entity.XueXiTCourseJson
+	var xueXiTCourse xuexitong.XueXiTCourseJson
 	err = json.Unmarshal([]byte(courses), &xueXiTCourse)
 	if err != nil {
 		log2.Print(log2.INFO, "["+cache.Name+"] "+" 解析失败", courses)

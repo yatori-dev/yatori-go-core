@@ -6,7 +6,7 @@ import (
 	"testing"
 
 	"github.com/yatori-dev/yatori-go-core/aggregation/xuexitong"
-	"github.com/yatori-dev/yatori-go-core/api/entity"
+	xuexitong2 "github.com/yatori-dev/yatori-go-core/api/xuexitong"
 	"github.com/yatori-dev/yatori-go-core/global"
 	"github.com/yatori-dev/yatori-go-core/que-core/aiq"
 	"github.com/yatori-dev/yatori-go-core/que-core/qtype"
@@ -18,8 +18,8 @@ func TestSingleChoiceAIQuestion(t *testing.T) {
 	utils.YatoriCoreInit()
 	setup()
 	aiSetting := global.Config.Setting.AiSetting
-	matchingTurn := entity.ExamTurn{
-		XueXChoiceQue: entity.ChoiceQue{
+	matchingTurn := xuexitong2.ExamTurn{
+		XueXChoiceQue: xuexitong2.ChoiceQue{
 			Type:    qtype.SingleChoice,
 			Qid:     "",
 			Text:    "21.[单选题] 下列国民党右派制造的反革命活动（事变），其先后顺序是(       )①“七·一五”反革命政变②“四·一二”反革命政变③中山舰事件④西山会议",
@@ -45,8 +45,8 @@ func TestXXTAIQuestion(t *testing.T) {
 	utils.YatoriCoreInit()
 	setup()
 	aiSetting := global.Config.Setting.AiSetting
-	matchingTurn := entity.ExamTurn{
-		XueXEssayQue: entity.EssayQue{
+	matchingTurn := xuexitong2.ExamTurn{
+		XueXEssayQue: xuexitong2.EssayQue{
 			Type: qtype.Essay,
 			Qid:  "",
 			Text: "电影《八佰》是展现1937年沪会战期间四行仓库保卫战的一部历史战争片！电影中表现了国防动员的重要性。请在本讨论主题中谈谈你对电影中展示出的，国防动员各要素重要性的认识！！",

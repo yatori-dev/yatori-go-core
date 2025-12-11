@@ -8,13 +8,12 @@ import (
 
 	"github.com/thedevsaddam/gojsonq"
 	xuexitong2 "github.com/yatori-dev/yatori-go-core/aggregation/xuexitong"
-	"github.com/yatori-dev/yatori-go-core/api/entity"
 	"github.com/yatori-dev/yatori-go-core/api/xuexitong"
 	log2 "github.com/yatori-dev/yatori-go-core/utils/log"
 )
 
 // 外链任务点学习
-func ExecuteLive(cache *xuexitong.XueXiTUserCache, p *entity.PointLiveDto) (string, error) {
+func ExecuteLive(cache *xuexitong.XueXiTUserCache, p *xuexitong.PointLiveDto) (string, error) {
 
 	report1, err1 := cache.LiveSaveTimePcReport(p, 3, nil)
 
@@ -41,7 +40,7 @@ func ExecuteLive(cache *xuexitong.XueXiTUserCache, p *entity.PointLiveDto) (stri
 // "status": true
 // }
 // 建立直播联系
-func LiveCreateRelationAction(cache *xuexitong.XueXiTUserCache, p *entity.PointLiveDto) (string, error) {
+func LiveCreateRelationAction(cache *xuexitong.XueXiTUserCache, p *xuexitong.PointLiveDto) (string, error) {
 	report, err := cache.LiveRelationReport(p, 3, nil)
 
 	// 触发500
@@ -60,7 +59,7 @@ func LiveCreateRelationAction(cache *xuexitong.XueXiTUserCache, p *entity.PointL
 }
 
 // 获取直播信息
-func PullLiveInfoAction(cache *xuexitong.XueXiTUserCache, p *entity.PointLiveDto) error {
+func PullLiveInfoAction(cache *xuexitong.XueXiTUserCache, p *xuexitong.PointLiveDto) error {
 	liveData, err1 := cache.PullLiveInfoApi(p, 3, nil)
 
 	// 触发500
@@ -93,7 +92,7 @@ func PullLiveInfoAction(cache *xuexitong.XueXiTUserCache, p *entity.PointLiveDto
 }
 
 // 测试用的Live直播学时函数
-func ExecuteLiveTest(cache *xuexitong.XueXiTUserCache, p *entity.PointLiveDto) {
+func ExecuteLiveTest(cache *xuexitong.XueXiTUserCache, p *xuexitong.PointLiveDto) {
 	PullLiveInfoAction(cache, p)
 	var passValue float64 = 90
 	if p.LiveStatusCode == 0 {

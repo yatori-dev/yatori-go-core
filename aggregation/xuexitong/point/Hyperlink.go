@@ -5,13 +5,12 @@ import (
 
 	"github.com/thedevsaddam/gojsonq"
 	xuexitong2 "github.com/yatori-dev/yatori-go-core/aggregation/xuexitong"
-	"github.com/yatori-dev/yatori-go-core/api/entity"
 	"github.com/yatori-dev/yatori-go-core/api/xuexitong"
 	log2 "github.com/yatori-dev/yatori-go-core/utils/log"
 )
 
 // 外链任务点学习
-func ExecuteHyperlink(cache *xuexitong.XueXiTUserCache, p *entity.PointHyperlinkDto) (string, error) {
+func ExecuteHyperlink(cache *xuexitong.XueXiTUserCache, p *xuexitong.PointHyperlinkDto) (string, error) {
 	report, err := cache.HyperlinkDtoCompleteReport(p, 3, nil)
 	if err != nil {
 		// 触发500

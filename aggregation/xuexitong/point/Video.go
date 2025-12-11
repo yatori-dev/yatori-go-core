@@ -8,14 +8,13 @@ import (
 
 	"github.com/thedevsaddam/gojsonq"
 	action "github.com/yatori-dev/yatori-go-core/aggregation/xuexitong"
-	"github.com/yatori-dev/yatori-go-core/api/entity"
 	api "github.com/yatori-dev/yatori-go-core/api/xuexitong"
 	"github.com/yatori-dev/yatori-go-core/utils"
 	log2 "github.com/yatori-dev/yatori-go-core/utils/log"
 )
 
 // 常规刷视屏逻辑
-func ExecuteVideoTest(cache *api.XueXiTUserCache, p *entity.PointVideoDto, key, courseCpi int) {
+func ExecuteVideoTest(cache *api.XueXiTUserCache, p *api.PointVideoDto, key, courseCpi int) {
 	////拉取用户照片
 	//pullJson, img, err2 := cache.GetHistoryFaceImg("")
 	//if err2 != nil {
@@ -140,7 +139,7 @@ func ExecuteVideoTest(cache *api.XueXiTUserCache, p *entity.PointVideoDto, key, 
 }
 
 // 秒刷视屏逻辑
-func ExecuteFastVideoTest(cache *api.XueXiTUserCache, p *entity.PointVideoDto) {
+func ExecuteFastVideoTest(cache *api.XueXiTUserCache, p *api.PointVideoDto) {
 	if state, _ := action.VideoDtoFetchAction(cache, p); state {
 		log.Printf("(%s)开始模拟播放....%d:%d开始\n", p.Title, p.PlayTime, p.Duration)
 		var playingTime = p.PlayTime

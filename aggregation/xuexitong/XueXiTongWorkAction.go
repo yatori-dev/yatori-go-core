@@ -5,7 +5,6 @@ import (
 
 	ddddocr "github.com/Changbaiqi/ddddocr-go/utils"
 	ort "github.com/yalue/onnxruntime_go"
-	"github.com/yatori-dev/yatori-go-core/api/entity"
 	"github.com/yatori-dev/yatori-go-core/api/xuexitong"
 	"github.com/yatori-dev/yatori-go-core/models/ctype"
 	"github.com/yatori-dev/yatori-go-core/utils"
@@ -14,7 +13,7 @@ import (
 )
 
 // WorkNewSubmitAnswerAction 提交答题
-func WorkNewSubmitAnswerAction(userCache *xuexitong.XueXiTUserCache, question entity.Question, isSubmit bool) (string, error) {
+func WorkNewSubmitAnswerAction(userCache *xuexitong.XueXiTUserCache, question xuexitong.Question, isSubmit bool) (string, error) {
 	submitState := "1"
 	if isSubmit {
 		submitState = ""
@@ -65,11 +64,11 @@ func WorkNewSubmitAnswerAction(userCache *xuexitong.XueXiTUserCache, question en
 }
 
 // 开始做题
-func StartAIWorkAction(cache *xuexitong.XueXiTUserCache, userId, aiUrl, model, apiKey string, aiTYpe ctype.AiType, questionAction entity.Question, isSubmit int) string {
+func StartAIWorkAction(cache *xuexitong.XueXiTUserCache, userId, aiUrl, model, apiKey string, aiTYpe ctype.AiType, questionAction xuexitong.Question, isSubmit int) string {
 	//选择题
 	for i := range questionAction.Choice {
 		q := &questionAction.Choice[i] // 获取对应选项
-		message := AIProblemMessage(questionAction.Title, q.Text, entity.ExamTurn{
+		message := AIProblemMessage(questionAction.Title, q.Text, xuexitong.ExamTurn{
 			XueXChoiceQue: *q,
 		})
 		q.AnswerAIGet(userId, aiUrl, model, aiTYpe, message, apiKey)
@@ -77,7 +76,7 @@ func StartAIWorkAction(cache *xuexitong.XueXiTUserCache, userId, aiUrl, model, a
 	//判断题
 	for i := range questionAction.Judge {
 		q := &questionAction.Judge[i] // 获取对应选项
-		message := AIProblemMessage(q.Type.String(), q.Text, entity.ExamTurn{
+		message := AIProblemMessage(q.Type.String(), q.Text, xuexitong.ExamTurn{
 			XueXJudgeQue: *q,
 		})
 
@@ -86,7 +85,7 @@ func StartAIWorkAction(cache *xuexitong.XueXiTUserCache, userId, aiUrl, model, a
 	//填空题
 	for i := range questionAction.Fill {
 		q := &questionAction.Fill[i] // 获取对应选项
-		message := AIProblemMessage(q.Type.String(), q.Text, entity.ExamTurn{
+		message := AIProblemMessage(q.Type.String(), q.Text, xuexitong.ExamTurn{
 			XueXFillQue: *q,
 		})
 
@@ -96,7 +95,7 @@ func StartAIWorkAction(cache *xuexitong.XueXiTUserCache, userId, aiUrl, model, a
 	//简答题
 	for i := range questionAction.Short {
 		q := &questionAction.Short[i]
-		message := AIProblemMessage(q.Type.String(), q.Text, entity.ExamTurn{
+		message := AIProblemMessage(q.Type.String(), q.Text, xuexitong.ExamTurn{
 			XueXShortQue: *q,
 		})
 		q.AnswerAIGet(userId, aiUrl, model, aiTYpe, message, apiKey)
@@ -111,7 +110,7 @@ func StartAIWorkAction(cache *xuexitong.XueXiTUserCache, userId, aiUrl, model, a
 }
 
 // 外部题库答题
-func StartExternalWorkAction(cache *xuexitong.XueXiTUserCache, exUrl string, questionAction entity.Question, isSubmit int) string {
+func StartExternalWorkAction(cache *xuexitong.XueXiTUserCache, exUrl string, questionAction xuexitong.Question, isSubmit int) string {
 	//选择题
 	for i := range questionAction.Choice {
 		q := &questionAction.Choice[i] // 获取对应选项
@@ -149,7 +148,7 @@ func StartExternalWorkAction(cache *xuexitong.XueXiTUserCache, exUrl string, que
 }
 
 // 答案修正匹配
-func AnswerFixedPattern(choices []entity.ChoiceQue, judges []entity.JudgeQue) {
+func AnswerFixedPattern(choices []xuexitong.ChoiceQue, judges []xuexitong.JudgeQue) {
 	//选择题修正
 	for i, choice := range choices {
 		if choice.Answers != nil {

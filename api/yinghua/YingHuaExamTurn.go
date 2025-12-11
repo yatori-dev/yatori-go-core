@@ -5,14 +5,14 @@ import (
 	"regexp"
 	"strings"
 
-	"github.com/yatori-dev/yatori-go-core/api/entity"
+	"github.com/yatori-dev/yatori-go-core/api/xuexitong"
 	"github.com/yatori-dev/yatori-go-core/que-core/aiq"
 	"github.com/yatori-dev/yatori-go-core/que-core/qentity"
 )
 
 // 题目转换
-func TurnExamTopic(examHtml string) []entity.YingHuaExamTopic {
-	var topics = make([]entity.YingHuaExamTopic, 0)
+func TurnExamTopic(examHtml string) []xuexitong.YingHuaExamTopic {
+	var topics = make([]xuexitong.YingHuaExamTopic, 0)
 
 	//exchangeTopics := entity.YingHuaExamTopics{
 	//	YingHuaExamTopics: make(map[string]entity.YingHuaExamTopic),
@@ -144,7 +144,7 @@ func TurnExamTopic(examHtml string) []entity.YingHuaExamTopic {
 		}
 
 		// Construct the ExamTopic
-		examTopic := entity.YingHuaExamTopic{
+		examTopic := xuexitong.YingHuaExamTopic{
 			AnswerId: topicMap[num],
 			Index:    num,
 			Source:   source,

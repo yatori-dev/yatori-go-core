@@ -13,7 +13,6 @@ import (
 	"github.com/thedevsaddam/gojsonq"
 	ort "github.com/yalue/onnxruntime_go"
 	xuexitong2 "github.com/yatori-dev/yatori-go-core/aggregation/xuexitong"
-	"github.com/yatori-dev/yatori-go-core/api/entity"
 	"github.com/yatori-dev/yatori-go-core/api/xuexitong"
 	"github.com/yatori-dev/yatori-go-core/config"
 	"github.com/yatori-dev/yatori-go-core/models/ctype"
@@ -73,7 +72,7 @@ type BBsTopic struct {
 }
 
 // 拉取讨论任务点信息
-func PullBbsInfoAction(cache *xuexitong.XueXiTUserCache, p *entity.PointBBsDto) (*BBsTopic, error) {
+func PullBbsInfoAction(cache *xuexitong.XueXiTUserCache, p *xuexitong.PointBBsDto) (*BBsTopic, error) {
 	utEnc, err2 := cache.PullUtEnc(p.CourseID, p.ClassID, fmt.Sprintf("%d", p.KnowledgeID), p.Enc)
 	if err2 != nil {
 		if err2.Error() == "触发验证码" {
@@ -135,7 +134,7 @@ func PullBbsInfoAction(cache *xuexitong.XueXiTUserCache, p *entity.PointBBsDto) 
 	}
 	return bbsTopic, err2
 }
-func PullPhoneBbsInfoAction(cache *xuexitong.XueXiTUserCache, p *entity.PointBBsDto) (*BBsTopic, error) {
+func PullPhoneBbsInfoAction(cache *xuexitong.XueXiTUserCache, p *xuexitong.PointBBsDto) (*BBsTopic, error) {
 	bbsInfoHtml, err2 := cache.PullPhoneBbsInfoApi(p.Mid, p.JobID, fmt.Sprintf("%d", p.KnowledgeID), p.CourseID, p.ClassID, 3, nil)
 	if err2 != nil {
 		return nil, err2
@@ -202,14 +201,14 @@ func PullPhoneBbsInfoAction(cache *xuexitong.XueXiTUserCache, p *entity.PointBBs
 }
 
 // AI回复讨论
-func (bbsTopic *BBsTopic) AIAnswer(cache *xuexitong.XueXiTUserCache, p *entity.PointBBsDto, aiUrl, model string, aiType ctype.AiType, apiKey string) (string, error) {
-	que := entity.EssayQue{
+func (bbsTopic *BBsTopic) AIAnswer(cache *xuexitong.XueXiTUserCache, p *xuexitong.PointBBsDto, aiUrl, model string, aiType ctype.AiType, apiKey string) (string, error) {
+	que := xuexitong.EssayQue{
 		Type:         qtype.Essay,
 		OpFromAnswer: make(map[string][]string),
 	}
 	que.Text = bbsTopic.Title + "\n" + bbsTopic.Content //将题目数据加入到题目中
 
-	message := xuexitong2.AIProblemMessage(bbsTopic.Title, que.Type.String(), entity.ExamTurn{
+	message := xuexitong2.AIProblemMessage(bbsTopic.Title, que.Type.String(), xuexitong.ExamTurn{
 		XueXEssayQue: que,
 	})
 	que.AnswerAIGet("", aiUrl, model, aiType, message, apiKey)
@@ -252,8 +251,8 @@ func (bbsTopic *BBsTopic) AIAnswer(cache *xuexitong.XueXiTUserCache, p *entity.P
 }
 
 // 外置题库回复讨论
-func (bbsTopic *BBsTopic) ExternalAnswer(cache *xuexitong.XueXiTUserCache, p *entity.PointBBsDto, exUrl string) (string, error) {
-	que := entity.EssayQue{
+func (bbsTopic *BBsTopic) ExternalAnswer(cache *xuexitong.XueXiTUserCache, p *xuexitong.PointBBsDto, exUrl string) (string, error) {
+	que := xuexitong.EssayQue{
 		Type:         qtype.Essay,
 		OpFromAnswer: make(map[string][]string),
 	}
@@ -299,7 +298,7 @@ func (bbsTopic *BBsTopic) ExternalAnswer(cache *xuexitong.XueXiTUserCache, p *en
 }
 
 // 测试用的讨论任务点函数
-func ExecuteBbsTest(cache *xuexitong.XueXiTUserCache, p *entity.PointBBsDto, setting config.AiSetting) {
+func ExecuteBbsTest(cache *xuexitong.XueXiTUserCache, p *xuexitong.PointBBsDto, setting config.AiSetting) {
 	bbsTopic, err := PullBbsInfoAction(cache, p)
 	if err != nil {
 		fmt.Println(err)

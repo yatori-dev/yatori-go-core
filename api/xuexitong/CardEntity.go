@@ -1,4 +1,4 @@
-package entity
+package xuexitong
 
 import (
 	"errors"

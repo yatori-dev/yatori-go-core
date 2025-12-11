@@ -70,12 +70,12 @@ func (slider *XueXiTSlider) Pass(cache *xuexitongApi.XueXiTUserCache) (string, e
 	//fmt.Println("captchaImgResult:", captchaImgResult)
 	//第三步:过验证码-----------------------------------------------------
 	//拉取背景图
-	shapeImg, err := cache.PullSliderImgApi(resp.ImageVerificationVo.ShadeImage)
+	shapeImg, err := cache.PullSliderImgApi(resp.ImageVerificationVo.ShadeImage, 5, nil)
 	if err != nil {
 		return "", err
 	}
 	//拉取裁剪图
-	cutoutImg, err := cache.PullSliderImgApi(resp.ImageVerificationVo.CutoutImage)
+	cutoutImg, err := cache.PullSliderImgApi(resp.ImageVerificationVo.CutoutImage, 5, nil)
 	if err != nil {
 		return "", err
 	}

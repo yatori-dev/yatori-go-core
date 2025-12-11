@@ -15,7 +15,6 @@ import (
 	"github.com/thedevsaddam/gojsonq"
 	"github.com/yatori-dev/yatori-go-core/aggregation/xuexitong"
 	"github.com/yatori-dev/yatori-go-core/aggregation/xuexitong/point"
-	"github.com/yatori-dev/yatori-go-core/api/entity"
 	xuexitongApi "github.com/yatori-dev/yatori-go-core/api/xuexitong"
 	"github.com/yatori-dev/yatori-go-core/global"
 	"github.com/yatori-dev/yatori-go-core/utils"
@@ -203,7 +202,7 @@ func TestXueXiToChapterCord(t *testing.T) {
 	//	videoDTO entity.PointVideoDto
 	//)
 	// 处理返回的任务点对象
-	videoDTOs, _, _, _, _, _ := entity.ParsePointDto(fetchCards)
+	videoDTOs, _, _, _, _, _ := xuexitongApi.ParsePointDto(fetchCards)
 
 	//card3, err := xuexitong.PageMobileChapterCardAction(
 	//	&userCache, key, courseId, videoDTOs[3].KnowledgeID, videoDTOs[3].CardIndex, course[index].Cpi)
@@ -284,7 +283,7 @@ func TestXueXiToChapterCardWork(t *testing.T) {
 	_, fetchCards, err := xuexitong.ChapterFetchCardsAction(&userCache, &action, nodes, 51, courseId,
 		key, course[index].Cpi)
 
-	videoDTOs, workDTOs, documentDTOs, _, _, _ := entity.ParsePointDto(fetchCards)
+	videoDTOs, workDTOs, documentDTOs, _, _, _ := xuexitongApi.ParsePointDto(fetchCards)
 	fmt.Println(videoDTOs)
 	fmt.Println(workDTOs)
 	fmt.Println(documentDTOs)
@@ -320,7 +319,7 @@ func TestXueXiToChapterCardWork(t *testing.T) {
 		for i := range questionAction.Choice {
 			q := &questionAction.Choice[i] // 获取指向切片元素的指针
 
-			message := xuexitong.AIProblemMessage(q.Type.String(), q.Text, entity.ExamTurn{
+			message := xuexitong.AIProblemMessage(q.Type.String(), q.Text, xuexitongApi.ExamTurn{
 				XueXChoiceQue: *q,
 			})
 			aiSetting := global.Config.Setting.AiSetting
@@ -333,7 +332,7 @@ func TestXueXiToChapterCardWork(t *testing.T) {
 
 		for i := range questionAction.Fill {
 			q := &questionAction.Fill[i]
-			message := xuexitong.AIProblemMessage(q.Type.String(), q.Text, entity.ExamTurn{
+			message := xuexitong.AIProblemMessage(q.Type.String(), q.Text, xuexitongApi.ExamTurn{
 				XueXFillQue: *q,
 			})
 			aiSetting := global.Config.Setting.AiSetting
@@ -347,7 +346,7 @@ func TestXueXiToChapterCardWork(t *testing.T) {
 		}
 		for i := range questionAction.Judge {
 			q := &questionAction.Judge[i]
-			message := xuexitong.AIProblemMessage(q.Type.String(), q.Text, entity.ExamTurn{
+			message := xuexitong.AIProblemMessage(q.Type.String(), q.Text, xuexitongApi.ExamTurn{
 				XueXJudgeQue: *q,
 			})
 			aiSetting := global.Config.Setting.AiSetting
@@ -360,7 +359,7 @@ func TestXueXiToChapterCardWork(t *testing.T) {
 
 		for i := range questionAction.Short {
 			q := &questionAction.Short[i]
-			message := xuexitong.AIProblemMessage(q.Type.String(), q.Text, entity.ExamTurn{
+			message := xuexitong.AIProblemMessage(q.Type.String(), q.Text, xuexitongApi.ExamTurn{
 				XueXShortQue: *q,
 			})
 			aiSetting := global.Config.Setting.AiSetting
@@ -437,7 +436,7 @@ func TestXueXiToChapterCardDocument(t *testing.T) {
 			//	log.Println("没有可学习的内容")
 			//}
 
-			documentDTOs := entity.GroupPointDtos[entity.PointDocumentDto](fetchCards, func(dto entity.PointDocumentDto) bool {
+			documentDTOs := xuexitongApi.GroupPointDtos[xuexitongApi.PointDocumentDto](fetchCards, func(dto xuexitongApi.PointDocumentDto) bool {
 				return dto.IsSetted()
 			})
 			// 暂时只测试视频
@@ -473,7 +472,7 @@ func TestXueXiToFlushCourse(t *testing.T) {
 	utils.YatoriCoreInit()
 	//测试账号
 	setup()
-	user := global.Config.Users[67]
+	user := global.Config.Users[70]
 
 	userCache := xuexitongApi.XueXiTUserCache{
 		Name:     user.Account,
@@ -491,7 +490,7 @@ func TestXueXiToFlushCourse(t *testing.T) {
 		//if course.CourseName != "解读中国经济发展的密码" {
 		//	continue
 		//}
-		if course.CourseName != "生命与安全（机工版）" {
+		if course.CourseName != "2.2025年广西职业技术学院学生信息素养能力培训课" {
 			continue
 		}
 		// 6c444b8d5c6203ee2f2aef4b76f5b2ce qrcEnc
@@ -537,7 +536,7 @@ func TestXueXiToFlushCourse(t *testing.T) {
 					item,
 					pointAction.Knowledge[index].Label, pointAction.Knowledge[index].Name)
 				time.Sleep(500 * time.Millisecond)
-				//continue
+				continue
 				//if pointAction.Knowledge[index].Label == "6.3" {
 				//	fmt.Println("断点")
 				//}
@@ -545,22 +544,25 @@ func TestXueXiToFlushCourse(t *testing.T) {
 			log.Printf("ID.%d(%s/%s)正在执行任务点\n",
 				item,
 				pointAction.Knowledge[index].Label, pointAction.Knowledge[index].Name)
-			if pointAction.Knowledge[index].Label != "6.3" {
+			if pointAction.Knowledge[index].Label != "5.2" {
 				//fmt.Println("断点")
 				continue
 			}
+			//if pointAction.Knowledge[index].Name != "学术评价" {
+			//	continue
+			//}
 			_, fetchCards, err := xuexitong.ChapterFetchCardsAction(&userCache, &action, nodes, index, courseId, key, course.Cpi)
 
 			if err != nil {
 				log.Fatal(err)
 			}
-			videoDTOs, workDTOs, documentDTOs, hyperlinkDTOs, liveDTOs, bbsDTOs := entity.ParsePointDto(fetchCards)
+			videoDTOs, workDTOs, documentDTOs, hyperlinkDTOs, liveDTOs, bbsDTOs := xuexitongApi.ParsePointDto(fetchCards)
 			if videoDTOs == nil && workDTOs == nil && documentDTOs == nil && hyperlinkDTOs == nil && liveDTOs == nil && bbsDTOs == nil {
 				log.Println("没有可学习的内容")
 			}
 
 			// 视频刷取
-			if videoDTOs != nil && true {
+			if videoDTOs != nil && false {
 				for _, videoDTO := range videoDTOs {
 					card, enc, err := xuexitong.PageMobileChapterCardAction(
 						&userCache, key, courseId, videoDTO.KnowledgeID, videoDTO.CardIndex, course.Cpi)
@@ -624,57 +626,62 @@ func TestXueXiToFlushCourse(t *testing.T) {
 					fmt.Println(questionAction)
 					for i := range questionAction.Choice {
 						q := &questionAction.Choice[i] // 获取对应选项
-						message := xuexitong.AIProblemMessage(questionAction.Title, q.Type.String(), entity.ExamTurn{
+						message := xuexitong.AIProblemMessage(questionAction.Title, q.Type.String(), xuexitongApi.ExamTurn{
 							XueXChoiceQue: *q,
 						})
 
-						aiSetting := global.Config.Setting.AiSetting //获取AI设置
-						q.AnswerAIGet(userCache.UserID, aiSetting.AiUrl, aiSetting.Model, aiSetting.AiType, message, aiSetting.APIKEY)
+						//aiSetting := global.Config.Setting.AiSetting //获取AI设置
+						//q.AnswerAIGet(userCache.UserID, aiSetting.AiUrl, aiSetting.Model, aiSetting.AiType, message, aiSetting.APIKEY)
+						q.AnswerXXTAIGet(&userCache, questionAction.ClassId, questionAction.CourseId, questionAction.Cpi, message)
 						//q.AnswerExternalGet("http://localhost:8083")
 					}
 					//判断题
 					for i := range questionAction.Judge {
 						q := &questionAction.Judge[i] // 获取对应选项
-						message := xuexitong.AIProblemMessage(questionAction.Title, q.Type.String(), entity.ExamTurn{
+						message := xuexitong.AIProblemMessage(questionAction.Title, q.Type.String(), xuexitongApi.ExamTurn{
 							XueXJudgeQue: *q,
 						})
 
-						aiSetting := global.Config.Setting.AiSetting //获取AI设置
-						q.AnswerAIGet(userCache.UserID, aiSetting.AiUrl, aiSetting.Model, aiSetting.AiType, message, aiSetting.APIKEY)
+						//aiSetting := global.Config.Setting.AiSetting //获取AI设置
+						//q.AnswerAIGet(userCache.UserID, aiSetting.AiUrl, aiSetting.Model, aiSetting.AiType, message, aiSetting.APIKEY)
+						q.AnswerXXTAIGet(&userCache, questionAction.ClassId, questionAction.CourseId, questionAction.Cpi, message)
 					}
 					//填空题
 					for i := range questionAction.Fill {
 						q := &questionAction.Fill[i] // 获取对应选项
-						message := xuexitong.AIProblemMessage(questionAction.Title, q.Type.String(), entity.ExamTurn{
+						message := xuexitong.AIProblemMessage(questionAction.Title, q.Type.String(), xuexitongApi.ExamTurn{
 							XueXFillQue: *q,
 						})
-						aiSetting := global.Config.Setting.AiSetting //获取AI设置
-						q.AnswerAIGet(userCache.UserID, aiSetting.AiUrl, aiSetting.Model, aiSetting.AiType, message, aiSetting.APIKEY)
+						//aiSetting := global.Config.Setting.AiSetting //获取AI设置
+						//q.AnswerAIGet(userCache.UserID, aiSetting.AiUrl, aiSetting.Model, aiSetting.AiType, message, aiSetting.APIKEY)
+						q.AnswerXXTAIGet(&userCache, questionAction.ClassId, questionAction.CourseId, questionAction.Cpi, message)
 						//q.AnswerExternalGet("http://localhost:8083")
 					}
 					//简答题
 					for i := range questionAction.Short {
 						q := &questionAction.Short[i] // 获取对应选项
-						message := xuexitong.AIProblemMessage(questionAction.Title, q.Type.String(), entity.ExamTurn{
+						message := xuexitong.AIProblemMessage(questionAction.Title, q.Type.String(), xuexitongApi.ExamTurn{
 							XueXShortQue: *q,
 						})
-						aiSetting := global.Config.Setting.AiSetting //获取AI设置
-						q.AnswerAIGet(userCache.UserID, aiSetting.AiUrl, aiSetting.Model, aiSetting.AiType, message, aiSetting.APIKEY)
+						//aiSetting := global.Config.Setting.AiSetting //获取AI设置
+						//q.AnswerAIGet(userCache.UserID, aiSetting.AiUrl, aiSetting.Model, aiSetting.AiType, message, aiSetting.APIKEY)
+						q.AnswerXXTAIGet(&userCache, questionAction.ClassId, questionAction.CourseId, questionAction.Cpi, message)
 						//q.AnswerExternalGet("http://localhost:8083")
 					}
 					//名词解释
 					for i := range questionAction.TermExplanation {
 						q := &questionAction.TermExplanation[i] // 获取对应选项
-						message := xuexitong.AIProblemMessage(questionAction.Title, q.Type.String(), entity.ExamTurn{
+						message := xuexitong.AIProblemMessage(questionAction.Title, q.Type.String(), xuexitongApi.ExamTurn{
 							XueXTermExplanationQue: *q,
 						})
-						aiSetting := global.Config.Setting.AiSetting //获取AI设置
-						q.AnswerAIGet(userCache.UserID, aiSetting.AiUrl, aiSetting.Model, aiSetting.AiType, message, aiSetting.APIKEY)
+						//aiSetting := global.Config.Setting.AiSetting //获取AI设置
+						//q.AnswerAIGet(userCache.UserID, aiSetting.AiUrl, aiSetting.Model, aiSetting.AiType, message, aiSetting.APIKEY)
+						q.AnswerXXTAIGet(&userCache, questionAction.ClassId, questionAction.CourseId, questionAction.Cpi, message)
 					}
 					//论述题
 					for i := range questionAction.Essay {
 						q := &questionAction.Essay[i] // 获取对应选项
-						message := xuexitong.AIProblemMessage(questionAction.Title, q.Type.String(), entity.ExamTurn{
+						message := xuexitong.AIProblemMessage(questionAction.Title, q.Type.String(), xuexitongApi.ExamTurn{
 							XueXEssayQue: *q,
 						})
 						aiSetting := global.Config.Setting.AiSetting //获取AI设置
@@ -684,7 +691,7 @@ func TestXueXiToFlushCourse(t *testing.T) {
 					//连线题题
 					for i := range questionAction.Matching {
 						q := &questionAction.Matching[i] // 获取对应选项
-						message := xuexitong.AIProblemMessage(questionAction.Title, q.Type.String(), entity.ExamTurn{
+						message := xuexitong.AIProblemMessage(questionAction.Title, q.Type.String(), xuexitongApi.ExamTurn{
 							XueXMatchingQue: *q,
 						})
 						aiSetting := global.Config.Setting.AiSetting //获取AI设置
@@ -694,7 +701,7 @@ func TestXueXiToFlushCourse(t *testing.T) {
 					//其他题（按论述题方式进行）
 					for i := range questionAction.Other {
 						q := &questionAction.Other[i] // 获取对应选项
-						message := xuexitong.AIProblemMessage(questionAction.Title, q.Type.String(), entity.ExamTurn{
+						message := xuexitong.AIProblemMessage(questionAction.Title, q.Type.String(), xuexitongApi.ExamTurn{
 							XueXOtherQue: *q,
 						})
 						aiSetting := global.Config.Setting.AiSetting //获取AI设置

@@ -1,4 +1,4 @@
-package entity
+package xuexitong
 
 import (
 	"encoding/json"
@@ -6,7 +6,10 @@ import (
 	log2 "log"
 	"regexp"
 	"strconv"
+	"strings"
 
+	"github.com/PuerkitoBio/goquery"
+	//"github.com/yatori-dev/yatori-go-core/api/xuexitong"
 	"github.com/yatori-dev/yatori-go-core/models/ctype"
 	"github.com/yatori-dev/yatori-go-core/que-core/aiq"
 	"github.com/yatori-dev/yatori-go-core/que-core/external"
@@ -317,10 +320,66 @@ func GetAIAnswer(as AnswerSetter, userID string, url, model string, aiType ctype
 	as.SetAnswers(answers)
 }
 
+// 学习通AI答题回复
+func GetXXTAIAnswer(as AnswerSetter, cache *XueXiTUserCache, classId, courseId, cpi string, aiChatMessages aiq.AIChatMessages) {
+	informHtml, err := cache.XXTAiInformApi(classId, courseId, cpi, 3, nil)
+	if err != nil {
+		panic(err)
+	}
+	doc, err := goquery.NewDocumentFromReader(strings.NewReader(informHtml))
+	if err != nil {
+		panic(err)
+	}
+	// 再给你示例获取其它值（你可以按需扩展）
+	get := func(id string) string {
+		v, _ := doc.Find("#" + id).Attr("value")
+		return v
+	}
+	content := ""
+	//去除前后"
+	trimQuotes := func(s string) string {
+		if len(s) >= 2 && s[0] == '"' && s[len(s)-1] == '"' {
+			return s[1 : len(s)-1]
+		}
+		return s
+	}
+	for _, msgEntity := range aiChatMessages.Messages {
+		msg, _ := json.Marshal(msgEntity.Content)
+		content += trimQuotes(string(msg))
+	}
+	re := regexp.MustCompile(`"studentName"\s*:\s*"([^"]+)"`)
+	match := re.FindStringSubmatch(informHtml)
+	studentName := ""
+	if len(match) > 1 {
+		//fmt.Println("courseName:", match[1])
+		studentName = match[1]
+	} else {
+		fmt.Println("未找到 studentName")
+	}
+	aiAnswer, err := cache.XXTAiAnswerApi(get("cozeEnc"), get("userId"), get("courseId"), get("clazzId"), get("conversationId"), get("courseName"), studentName, get("personId"), content, 3, nil)
+	if err != nil {
+		panic(err)
+	}
+	var answers []string
+	err = json.Unmarshal([]byte(aiAnswer), &answers)
+	if err != nil {
+		answers = []string{"A"}
+		//fmt.Println("AI回复解析错误，已采用随机答案:", err, fmt.Sprintf("题目：%v \nAI回复： %v", aiChatMessages, aiAnswer))
+		log.Print(log.INFO, "AI回复解析错误，已采用随机答案:", err.Error(), fmt.Sprintf("题目：%v \nAI回复： %v", aiChatMessages, aiAnswer))
+	}
+
+	as.SetAnswers(answers)
+}
+
 // AnswerAIGet ChoiceQue的AI回答获取方法
 func (q *ChoiceQue) AnswerAIGet(userID,
 	url, model string, aiType ctype.AiType, aiChatMessages aiq.AIChatMessages, apiKey string) {
 	GetAIAnswer(q, userID, url, model, aiType, aiChatMessages, apiKey)
+}
+
+// 调用学习通内部AI答题
+func (q *ChoiceQue) AnswerXXTAIGet(cache *XueXiTUserCache, classId, courseId, cpi string, aiChatMessages aiq.AIChatMessages) {
+	GetXXTAIAnswer(q, cache, classId, courseId, cpi, aiChatMessages)
 }
 
 // AnswerExternalGet ChoiceQue的外挂题库回答获取方法
@@ -360,6 +419,10 @@ func (q *JudgeQue) AnswerAIGet(userID,
 
 }
 
+// 调用学习通内部AI答题
+func (q *JudgeQue) AnswerXXTAIGet(cache *XueXiTUserCache, classId, courseId, cpi string, aiChatMessages aiq.AIChatMessages) {
+	GetXXTAIAnswer(q, cache, classId, courseId, cpi, aiChatMessages)
+}
 func (q *JudgeQue) AnswerExternalGet(exUrl string) {
 	question := qentity.Question{
 		Type:    q.Type.String(),
@@ -395,6 +458,10 @@ func (q *FillQue) AnswerAIGet(userID,
 	GetAIAnswer(q, userID, url, model, aiType, aiChatMessages, apiKey)
 }
 
+// 调用学习通内部AI答题
+func (q *FillQue) AnswerXXTAIGet(cache *XueXiTUserCache, classId, courseId, cpi string, aiChatMessages aiq.AIChatMessages) {
+	GetXXTAIAnswer(q, cache, classId, courseId, cpi, aiChatMessages)
+}
 func (q *FillQue) AnswerExternalGet(exUrl string) {
 	question := qentity.Question{
 		Type:    q.Type.String(),
@@ -424,6 +491,10 @@ func (q *ShortQue) AnswerAIGet(userID,
 	GetAIAnswer(q, userID, url, model, aiType, aiChatMessages, apiKey)
 }
 
+// 调用学习通内部AI答题
+func (q *ShortQue) AnswerXXTAIGet(cache *XueXiTUserCache, classId, courseId, cpi string, aiChatMessages aiq.AIChatMessages) {
+	GetXXTAIAnswer(q, cache, classId, courseId, cpi, aiChatMessages)
+}
 func (q *ShortQue) AnswerExternalGet(exUrl string) {
 	question := qentity.Question{
 		Type:    q.Type.String(),
@@ -448,6 +519,11 @@ func (q *ShortQue) AnswerExternalGet(exUrl string) {
 func (q *TermExplanationQue) AnswerAIGet(userID,
 	url, model string, aiType ctype.AiType, aiChatMessages aiq.AIChatMessages, apiKey string) {
 	GetAIAnswer(q, userID, url, model, aiType, aiChatMessages, apiKey)
+}
+
+// 调用学习通内部AI答题
+func (q *TermExplanationQue) AnswerXXTAIGet(cache *XueXiTUserCache, classId, courseId, cpi string, aiChatMessages aiq.AIChatMessages) {
+	GetXXTAIAnswer(q, cache, classId, courseId, cpi, aiChatMessages)
 }
 
 func (q *TermExplanationQue) AnswerExternalGet(exUrl string) {
@@ -475,6 +551,11 @@ func (q *EssayQue) AnswerAIGet(userID,
 	GetAIAnswer(q, userID, url, model, aiType, aiChatMessages, apiKey)
 }
 
+// 调用学习通内部AI答题
+func (q *EssayQue) AnswerXXTAIGet(cache *XueXiTUserCache, classId, courseId, cpi string, aiChatMessages aiq.AIChatMessages) {
+	GetXXTAIAnswer(q, cache, classId, courseId, cpi, aiChatMessages)
+}
+
 func (q *EssayQue) AnswerExternalGet(exUrl string) {
 	question := qentity.Question{
 		Type:    q.Type.String(),
@@ -500,6 +581,11 @@ func (q *MatchingQue) AnswerAIGet(userID,
 	GetAIAnswer(q, userID, url, model, aiType, aiChatMessages, apiKey)
 }
 
+// 调用学习通内部AI答题
+func (q *MatchingQue) AnswerXXTAIGet(cache *XueXiTUserCache, classId, courseId, cpi string, aiChatMessages aiq.AIChatMessages) {
+	GetXXTAIAnswer(q, cache, classId, courseId, cpi, aiChatMessages)
+}
+
 func (q *MatchingQue) AnswerExternalGet(exUrl string) {
 	question := qentity.Question{
 		Type:    q.Type.String(),
@@ -518,6 +604,11 @@ func (q *MatchingQue) AnswerExternalGet(exUrl string) {
 func (q *OtherQue) AnswerAIGet(userID,
 	url, model string, aiType ctype.AiType, aiChatMessages aiq.AIChatMessages, apiKey string) {
 	GetAIAnswer(q, userID, url, model, aiType, aiChatMessages, apiKey)
+}
+
+// 调用学习通内部AI答题
+func (q *OtherQue) AnswerXXTAIGet(cache *XueXiTUserCache, classId, courseId, cpi string, aiChatMessages aiq.AIChatMessages) {
+	GetXXTAIAnswer(q, cache, classId, courseId, cpi, aiChatMessages)
 }
 
 func (q *OtherQue) AnswerExternalGet(exUrl string) {

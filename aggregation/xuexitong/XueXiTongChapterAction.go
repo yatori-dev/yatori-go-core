@@ -13,7 +13,6 @@ import (
 	"github.com/thedevsaddam/gojsonq"
 	ort "github.com/yalue/onnxruntime_go"
 
-	"github.com/yatori-dev/yatori-go-core/api/entity"
 	"github.com/yatori-dev/yatori-go-core/api/xuexitong"
 	"github.com/yatori-dev/yatori-go-core/models/ctype"
 	"github.com/yatori-dev/yatori-go-core/utils"
@@ -62,7 +61,7 @@ func ChapterFetchCardsAction(
 	cache *xuexitong.XueXiTUserCache,
 	chapters *ChaptersList,
 	nodes []int,
-	index, courseId, classId, cpi int) ([]Card, []entity.PointDto, error) {
+	index, courseId, classId, cpi int) ([]Card, []xuexitong.PointDto, error) {
 	var apiResp APIResponse
 
 	cords, err := cache.FetchChapterCords(nodes, index, courseId, 5, nil)
@@ -131,7 +130,7 @@ func ChapterFetchCardsAction(
 	//	len(cards),
 	//	chapters.Knowledge[index].Label, chapters.Knowledge[index].Name, chapters.Knowledge[index].ID)
 
-	pointObjs := make([]entity.PointDto, 0)
+	pointObjs := make([]xuexitong.PointDto, 0)
 	for cardIndex, card := range cards {
 		if card.Description == "" {
 			log2.Print(log2.DEBUG, "(", fmt.Sprintf("%d", cardIndex), ") 卡片 iframe 不存在 ", fmt.Sprintf("%+v", card))
@@ -145,7 +144,7 @@ func ChapterFetchCardsAction(
 		log2.Print(log2.DEBUG, fmt.Sprintf("%d", cardIndex), "解析卡片成功 共 ", fmt.Sprintf("%d", len(points)), "个任务点")
 
 		for pointIndex, point := range points {
-			var pointObj entity.PointDto //不要乱移动这玩意位置，OK？
+			var pointObj xuexitong.PointDto //不要乱移动这玩意位置，OK？
 			pointType, ok := point.Other["module"]
 			if !ok {
 				log2.Print(log2.DEBUG, "(", fmt.Sprintf("%d", cardIndex), ", ", fmt.Sprintf("%d", pointIndex), ") 任务点 type 不存在 %+v", fmt.Sprintf("%+v", point))
@@ -162,7 +161,7 @@ func ChapterFetchCardsAction(
 			switch pointType {
 			case string(ctype.Video):
 				if objectID, ok := point.Data["objectid"].(string); ok && objectID != "" {
-					pointObj.PointVideoDto = entity.PointVideoDto{
+					pointObj.PointVideoDto = xuexitong.PointVideoDto{
 						CardIndex:   cardIndex,
 						CourseID:    strconv.Itoa(courseId),
 						ClassID:     strconv.Itoa(classId),
@@ -251,7 +250,7 @@ func ChapterFetchCardsAction(
 				}
 
 				if ok1 && workID != "" && ok3 && jobID != "" {
-					pointObj.PointWorkDto = entity.PointWorkDto{
+					pointObj.PointWorkDto = xuexitong.PointWorkDto{
 						CardIndex:   cardIndex,
 						CourseID:    strconv.Itoa(courseId),
 						ClassID:     strconv.Itoa(classId),
@@ -276,7 +275,7 @@ func ChapterFetchCardsAction(
 				jobID, ok3 := point.Data["_jobid"].(string)
 
 				if objectID, ok := point.Data["objectid"].(string); ok && objectID != "" && ok3 && jobID != "" {
-					pointObj.PointDocumentDto = entity.PointDocumentDto{
+					pointObj.PointDocumentDto = xuexitong.PointDocumentDto{
 						CardIndex:   cardIndex,
 						CourseID:    strconv.Itoa(courseId),
 						ClassID:     strconv.Itoa(classId),
@@ -296,7 +295,7 @@ func ChapterFetchCardsAction(
 				jobID, ok3 := point.Data["_jobid"].(string)
 
 				if ok3 && jobID != "" {
-					pointObj.PointDocumentDto = entity.PointDocumentDto{
+					pointObj.PointDocumentDto = xuexitong.PointDocumentDto{
 						CardIndex:   cardIndex,
 						CourseID:    strconv.Itoa(courseId),
 						ClassID:     strconv.Itoa(classId),
@@ -317,7 +316,7 @@ func ChapterFetchCardsAction(
 				linkType, ok4 := point.Data["linkType"].(float64)
 
 				if ok3 && jobID != "" {
-					pointObj.PointHyperlinkDto = entity.PointHyperlinkDto{
+					pointObj.PointHyperlinkDto = xuexitong.PointHyperlinkDto{
 						CardIndex:   cardIndex,
 						CourseID:    strconv.Itoa(courseId),
 						ClassID:     strconv.Itoa(classId),
@@ -345,7 +344,7 @@ func ChapterFetchCardsAction(
 				live, ok8 := point.Data["live"].(bool)
 				vdoid, ok9 := point.Data["vdoid"].(string)
 				if ok3 && jobID != "" {
-					pointObj.PointLiveDto = entity.PointLiveDto{
+					pointObj.PointLiveDto = xuexitong.PointLiveDto{
 						CardIndex:   cardIndex,
 						CourseID:    strconv.Itoa(courseId),
 						ClassID:     strconv.Itoa(classId),
@@ -401,7 +400,7 @@ func ChapterFetchCardsAction(
 				endtime, ok10 := point.Data["endtime"].(string)
 				isJob, ok11 := point.Data["isJob"].(bool)
 				if ok3 && jobID != "" {
-					pointObj.PointBBsDto = entity.PointBBsDto{
+					pointObj.PointBBsDto = xuexitong.PointBBsDto{
 						CardIndex:   cardIndex,
 						CourseID:    strconv.Itoa(courseId),
 						ClassID:     strconv.Itoa(classId),

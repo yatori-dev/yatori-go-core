@@ -12,7 +12,7 @@ import (
 	"time"
 
 	"github.com/thedevsaddam/gojsonq"
-	"github.com/yatori-dev/yatori-go-core/api/entity"
+	"github.com/yatori-dev/yatori-go-core/api/xuexitong"
 	yinghuaApi "github.com/yatori-dev/yatori-go-core/api/yinghua"
 	"github.com/yatori-dev/yatori-go-core/models/ctype"
 	"github.com/yatori-dev/yatori-go-core/que-core/aiq"
@@ -345,7 +345,7 @@ func ExamDetailAction(UserCache *yinghuaApi.YingHuaUserCache, nodeId string) ([]
 }
 
 // randomAnswer 如果AI出问题那么直接随机返回答案x
-func randomAnswer(topic entity.YingHuaExamTopic) string {
+func randomAnswer(topic xuexitong.YingHuaExamTopic) string {
 	if topic.Type == "单选" {
 		sct := rand.Intn(len(topic.Options))
 		return "[" + topic.Question.Answers[sct] + "]"
@@ -388,7 +388,7 @@ func StartExamAction(
 	//html转结构体
 	topics := yinghuaApi.TurnExamTopic(topicHtml)
 	//fmt.Println(topic)
-	var lastProblem entity.YingHuaExamTopic
+	var lastProblem xuexitong.YingHuaExamTopic
 	for _, v := range topics {
 		aiAnswer, err1 := aiq.AggregationAIApi(url, model, aiType, aiq.BuildAiQuestionMessage(v.Question), apiKey)
 		if err1 != nil {
@@ -452,7 +452,7 @@ func StartExamForExternalAction(
 	//html转结构体
 	topic := yinghuaApi.TurnExamTopic(api)
 	//fmt.Println(topic)
-	var lastProblem entity.YingHuaExamTopic
+	var lastProblem xuexitong.YingHuaExamTopic
 	for _, v := range topic {
 		answer, err := external.ApiQueRequest(v.Question, queBankUrl, 5, nil)
 		if err != nil {
@@ -542,7 +542,7 @@ func WorkDetailAction(userCache *yinghuaApi.YingHuaUserCache, nodeId string) ([]
 }
 
 // AI回复转答案
-func aiTurnYingHuaAnswer(cache *yinghuaApi.YingHuaUserCache, aiAnswer string, v entity.YingHuaExamTopic) []string {
+func aiTurnYingHuaAnswer(cache *yinghuaApi.YingHuaUserCache, aiAnswer string, v xuexitong.YingHuaExamTopic) []string {
 	//answer := utils.Answer{Type: v.Type}
 	var answer = make([]string, 0)
 	if v.Type == qtype.SingleChoice.String() || v.Type == qtype.TrueOrFalse.String() || v.Type == qtype.MultipleChoice.String() {
@@ -601,7 +601,7 @@ func StartWorkAction(userCache *yinghuaApi.YingHuaUserCache,
 	//html转结构体
 	topic := yinghuaApi.TurnExamTopic(api)
 	//fmt.Println(topic)
-	var lastProblem entity.YingHuaExamTopic
+	var lastProblem xuexitong.YingHuaExamTopic
 	for _, v := range topic {
 		aiAnswer, err1 := aiq.AggregationAIApi(url, model, aiType, aiq.BuildAiQuestionMessage(v.Question), apiKey)
 		if err1 != nil {
@@ -701,7 +701,7 @@ func StartWorkForExternalAction(userCache *yinghuaApi.YingHuaUserCache,
 	//遍历题目map,并回答问题
 	//var lastAnswer utils.Answer
 	//var lastProblem string
-	var lastProblem entity.YingHuaExamTopic
+	var lastProblem xuexitong.YingHuaExamTopic
 	for _, v := range topics {
 
 		//standardProblem := v.TurnProblem() //转为标准问题结构体

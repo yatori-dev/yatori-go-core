@@ -18,7 +18,6 @@ import (
 	"strings"
 
 	"github.com/PuerkitoBio/goquery"
-	"github.com/yatori-dev/yatori-go-core/api/entity"
 	"github.com/yatori-dev/yatori-go-core/que-core/qtype"
 	"github.com/yatori-dev/yatori-go-core/utils"
 	"github.com/yatori-dev/yatori-go-core/utils/qutils"
@@ -35,7 +34,7 @@ import (
 func (cache *XueXiTUserCache) WorkNewSubmitAnswer(courseId string, classId string, knowledgeid string,
 	cpi string, jobid string, totalQuestionNum string, answerId string,
 	workAnswerId string, api string, fullScore string, oldSchoolId string,
-	oldWorkId string, workRelationId string, enc_work string, question entity.Question, isSubmit string /*""为直接交卷，1为暂存*/) (string, error) {
+	oldWorkId string, workRelationId string, enc_work string, question Question, isSubmit string /*""为直接交卷，1为暂存*/) (string, error) {
 
 	payload := &bytes.Buffer{}
 	writer := multipart.NewWriter(payload)

@@ -1,6 +1,8 @@
-package entity
+package xuexitong
 
-import "github.com/yatori-dev/yatori-go-core/que-core/qentity"
+import (
+	"github.com/yatori-dev/yatori-go-core/que-core/qentity"
+)
 
 // 选择题转换成标准question
 func (q *ChoiceQue) TurnStandardQuestion() qentity.Question {

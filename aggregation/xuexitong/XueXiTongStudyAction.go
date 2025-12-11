@@ -3,13 +3,12 @@ package xuexitong
 import (
 	"strings"
 
-	"github.com/yatori-dev/yatori-go-core/api/entity"
 	"github.com/yatori-dev/yatori-go-core/api/xuexitong"
 )
 
 // VideoSubmitStudyTimeAction 视屏学时提交
 
-func VideoSubmitStudyTimeAction(cache *xuexitong.XueXiTUserCache, p *entity.PointVideoDto, playingTime int, mode /*0为PC模式，1为PE模式*/, isdrag int /*提交模式，0代表正常视屏播放提交，2代表暂停播放状态，3代表着点击开始播放状态*/) (string, error) {
+func VideoSubmitStudyTimeAction(cache *xuexitong.XueXiTUserCache, p *xuexitong.PointVideoDto, playingTime int, mode /*0为PC模式，1为PE模式*/, isdrag int /*提交模式，0代表正常视屏播放提交，2代表暂停播放状态，3代表着点击开始播放状态*/) (string, error) {
 	var playReport string
 	var err error
 	if mode == 0 {
