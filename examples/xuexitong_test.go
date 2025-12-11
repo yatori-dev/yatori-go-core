@@ -1,11 +1,16 @@
 package examples
 
 import (
+	"bytes"
+	"compress/gzip"
 	"crypto/md5"
+	"encoding/base64"
 	"encoding/hex"
+	"encoding/json"
 	"fmt"
 	"log"
 	"net/url"
+	"sort"
 	"strconv"
 	"strings"
 	"testing"
@@ -970,4 +975,161 @@ func MakeParams(orig map[string]string) map[string]string {
 	// ... (你之前实现 inf_enc 的逻辑) ...
 
 	return params
+}
+
+// 手机端阅读Enc参数生成
+func TestReadEncParam(t *testing.T) {
+	jsonBody, err := BuildSpecialReport(
+		"256268467",        // userId
+		"218403954",        // courseId
+		"437042861",        // chapterId
+		"132232726",        // classId
+		"c8f68a62e7ef7fa3", // deviceId
+		1626,               // wordCount
+		11,                 // interactCount
+		271,                // readSeconds
+		map[string]any{ // event 内容（你随便填）
+			"ts":     time.Now().UnixMilli(),
+			"scroll": 1200,
+		},
+	)
+	settings := map[string]any{
+		"f": "readPoint",
+		"u": "339543304",
+		"s": "",
+		"d": url.QueryEscape(`{"a":null,"r":"218403954,437042861","t":"special","l":1,"f":"0","wc":1626,"ic":11,"v":2,"s":2,"h":271,"e":"H4sIAAAAAAAAA32SS5LDIAxET5NtSv/Pdub+dxokHBw7YVhQFH4WrVbHg36RYeyiOXZ48E+cd+Z1tqf1AoYI9vzCqE7Gk4OYhF6MFGNOY6eYkJqkjA+26mQzWIzbk8cSVtDQlMXQyQB3HUdXSkp/MVRKhP29j3knUufs0sxpiWiEi7HFMO565e6SZ80JCRIrK56NVAmVNg1iB8GCFC/lxa4j0LrzuiPeyYrFqO9GgG1dNUmGG3vnCKTfgpvpbZ5vTG+7xfhducxglH48gmEZohoIuqD5Y8ky3XilnR6InvocHwWJgwOvOrYYDPjO9GAOZnjZKdBwE5OQawwCP+MT3tH8LxoSdT7e/6zds9TEdvLqr7YFSLLxoGVNyHUnfXoZl/hgyyoH6a512nrLyx9Cn92TDAQAAA==","ext":"{\"_from_\":\"256268467_132232726_339543304_c8f68a62e7ef7fa3a704d6b031d19697\",\"rtag\":\"1054242600_477554005_read-218403954\"}"}`),
+		"t": "20251211204612158",
+	}
+
+	enc := GenerateEnc(settings)
+
+	fmt.Println(enc)
+
+	if err != nil {
+		fmt.Println(err)
+	}
+	fmt.Println(jsonBody)
+}
+
+// 生成 enc 参数（完全匹配超星 JS）
+func GenerateEnc(g map[string]any) string {
+	// Step 1: key 排序
+	keys := make([]string, 0, len(g))
+	for k := range g {
+		keys = append(keys, k)
+	}
+	sort.Strings(keys)
+
+	// Step 2: 拼接 value
+	var sb strings.Builder
+	for _, k := range keys {
+		sb.WriteString(toString(g[k]))
+	}
+	h := sb.String()
+
+	// Step 3: 加盐 MD5
+	final := h + "NrRzLDpWB2JkeodIVAn4"
+
+	sum := md5.Sum([]byte(final))
+	return strings.ToUpper(hex.EncodeToString(sum[:]))
+}
+
+// 把 interface{} 转换成 JS 里的字符串表现形式
+func toString(v any) string {
+	switch val := v.(type) {
+	case string:
+		return val
+	case int, int32, int64, float32, float64:
+		return fmt.Sprintf("%v", val)
+	default:
+		// JSON.stringify 等效
+		b, _ := json.Marshal(val)
+		return string(b)
+	}
+}
+
+// 生成与 JS 完全一致的时间戳 yyyyMMddHHmmssSSS
+func GenT() string {
+	now := time.Now()
+	return now.Format("20060102150405") + fmt.Sprintf("%03d", now.Nanosecond()/1e6)
+}
+
+// ReportBody 上报 JSON 的结构体
+type ReportBody struct {
+	A   any    `json:"a"`
+	R   string `json:"r"` // courseId,chapterId
+	T   string `json:"t"` // "special"
+	L   int    `json:"l"` // level
+	F   string `json:"f"`
+	Wc  int    `json:"wc"`  // 字数
+	Ic  int    `json:"ic"`  // 行为次数
+	V   int    `json:"v"`   // 协议版本
+	S   int    `json:"s"`   // 状态
+	H   int    `json:"h"`   // 阅读秒数
+	E   string `json:"e"`   // gzip + base64 数据
+	Ext string `json:"ext"` // ext json (string)
+}
+
+// Gzip+Base64
+func gzipBase64(input []byte) (string, error) {
+	var buf bytes.Buffer
+	g := gzip.NewWriter(&buf)
+	_, err := g.Write(input)
+	if err != nil {
+		return "", err
+	}
+	g.Close()
+	return base64.StdEncoding.EncodeToString(buf.Bytes()), nil
+}
+
+// 自动生成 ext 字段
+func buildExt(userId, courseId, classId, device string, chapterId string) string {
+	ext := map[string]string{
+		"_from_": fmt.Sprintf("%s_%s_%s_%s", userId, courseId, classId, device),
+		"rtag":   fmt.Sprintf("%s_%s_read-%s", userId, courseId, chapterId),
+	}
+	b, _ := json.Marshal(ext)
+	return string(b)
+}
+
+// 构建上报 JSON（你以后只用填参数就能生成）
+func BuildSpecialReport(
+	userId string,
+	courseId string,
+	chapterId string,
+	classId string,
+	deviceId string,
+	wordCount int,
+	interactCount int,
+	readSeconds int,
+	event map[string]any,
+) (string, error) {
+
+	// 将 event 做 gzip + base64
+	eventBytes, _ := json.Marshal(event)
+	eStr, err := gzipBase64(eventBytes)
+	if err != nil {
+		return "", err
+	}
+
+	// 打 ext
+	extStr := buildExt(userId, courseId, classId, deviceId, chapterId)
+
+	body := ReportBody{
+		A:   nil,
+		R:   fmt.Sprintf("%s,%s", courseId, chapterId),
+		T:   "special",
+		L:   1,
+		F:   "0",
+		Wc:  wordCount,
+		Ic:  interactCount,
+		V:   2,
+		S:   2,
+		H:   readSeconds,
+		E:   eStr,
+		Ext: extStr,
+	}
+
+	jsonBytes, _ := json.Marshal(body)
+	return string(jsonBytes), nil
 }
