@@ -3,7 +3,7 @@ module github.com/yatori-dev/yatori-go-core
 go 1.24.0
 
 require (
-	github.com/Changbaiqi/ddddocr-go v0.0.9
+	github.com/Changbaiqi/ddddocr-go v0.1.0
 	github.com/PuerkitoBio/goquery v1.10.0
 	github.com/dop251/goja v0.0.0-20250630131328-58d95d85e994
 	github.com/google/uuid v1.6.0
@@ -15,7 +15,7 @@ require (
 	github.com/spf13/viper v1.19.0
 	github.com/thedevsaddam/gojsonq v1.9.1
 	github.com/tjfoc/gmsm v1.4.1
-	github.com/yalue/onnxruntime_go v1.12.1
+	github.com/yalue/onnxruntime_go v1.24.0
 	golang.org/x/net v0.47.0
 	gopkg.in/gomail.v2 v2.0.0-20160411212932-81ebce5c23df
 	gorm.io/driver/sqlite v1.5.6
