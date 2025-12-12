@@ -402,7 +402,7 @@ func StartExamAction(
 		//	os.Exit(0)
 		//}
 		//fmt.Println(aiAnswer)
-		subWorkApi, err1 := yinghuaApi.SubmitExamApi(*userCache, exam.ExamId, v.AnswerId, v.Question, "0", 8, nil)
+		subWorkApi, err1 := yinghuaApi.SubmitExamApi(*userCache, exam.ExamId, v.AnswerId, v.Question, "0", 10, nil)
 		if err1 != nil {
 			log.Print(log.INFO, `[`, userCache.Account, `] `, log.BoldRed, "Ai异常，返回信息：", err1.Error())
 		}
@@ -416,7 +416,7 @@ func StartExamAction(
 	}
 	if isAutoSubExam == 1 {
 		//结束考试
-		subWorkApi, err := yinghuaApi.SubmitExamApi(*userCache, exam.ExamId, lastProblem.AnswerId, lastProblem.Question, "1", 8, nil)
+		subWorkApi, err := yinghuaApi.SubmitExamApi(*userCache, exam.ExamId, lastProblem.AnswerId, lastProblem.Question, "1", 10, nil)
 		//如果结束做题服务器端返回信息异常
 		if gojsonq.New().JSONString(subWorkApi).Find("msg") != "提交试卷成功" || err != nil {
 			log.Print(log.INFO, log.BoldRed, `[`, userCache.Account, `] `, log.BoldRed, "提交试卷异常，返回信息：", subWorkApi)
@@ -462,7 +462,7 @@ func StartExamForExternalAction(
 		v.Question.Answers = answer.Answers
 		v.Question.Answers = answerTurnResult(userCache, v.Question) //转换答案
 
-		subWorkApi, err := yinghuaApi.SubmitExamApi(*userCache, exam.ExamId, v.AnswerId, v.Question, "0", 8, nil)
+		subWorkApi, err := yinghuaApi.SubmitExamApi(*userCache, exam.ExamId, v.AnswerId, v.Question, "0", 10, nil)
 		if err != nil {
 			log.Print(log.INFO, `[`, userCache.Account, `] `, log.BoldRed, "外置题库异常，返回信息：", err.Error())
 		}
@@ -475,7 +475,7 @@ func StartExamForExternalAction(
 
 	if isAutoSubExam == 1 {
 		//结束考试
-		subWorkApi, err1 := yinghuaApi.SubmitExamApi(*userCache, exam.ExamId, lastProblem.AnswerId, lastProblem.Question, "1", 8, nil)
+		subWorkApi, err1 := yinghuaApi.SubmitExamApi(*userCache, exam.ExamId, lastProblem.AnswerId, lastProblem.Question, "1", 10, nil)
 		//如果结束做题服务器端返回信息异常
 		if gojsonq.New().JSONString(subWorkApi).Find("msg") != "提交试卷成功" || err1 != nil {
 			log.Print(log.INFO, log.BoldRed, `[`, userCache.Account, `] `, log.BoldRed, "提交试卷异常，返回信息：", subWorkApi)
