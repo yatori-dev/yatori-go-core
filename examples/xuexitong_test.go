@@ -8,7 +8,12 @@ import (
 	"encoding/hex"
 	"encoding/json"
 	"fmt"
+	"io"
+	"io/ioutil"
 	"log"
+	"math"
+	"math/rand"
+	"net/http"
 	"net/url"
 	"sort"
 	"strconv"
@@ -16,7 +21,6 @@ import (
 	"testing"
 	"time"
 
-	"github.com/google/uuid"
 	"github.com/thedevsaddam/gojsonq"
 	"github.com/yatori-dev/yatori-go-core/aggregation/xuexitong"
 	"github.com/yatori-dev/yatori-go-core/aggregation/xuexitong/point"
@@ -603,6 +607,11 @@ func TestXueXiToFlushCourse(t *testing.T) {
 						log.Printf("(%s)该文档非任务点或已完成，已自动跳过\n", documentDTO.Title)
 						continue
 					}
+					for {
+						report, _ := SendReport(userCache.UserID)
+						fmt.Println(report)
+						time.Sleep(10 * time.Second)
+					}
 					document, err1 := point.ExecuteDocument(&userCache, &documentDTO)
 					if err1 != nil {
 						log.Fatal(err1)
@@ -754,7 +763,7 @@ func TestXueXiToFlushCourse(t *testing.T) {
 				}
 			}
 
-			//直播任务
+			//讨论任务
 			if bbsDTOs != nil && false {
 				for _, bbsDTO := range bbsDTOs {
 					card, _, err := xuexitong.PageMobileChapterCardAction(
@@ -951,38 +960,12 @@ func InfEncSign(params map[string]string, order []string) string {
 	return hex.EncodeToString(sum[:])
 }
 
-// 移动端_c_0参数生成
-func ParamFor_c_0_Generete() string {
-	u := uuid.New()
-	c0 := strings.ReplaceAll(u.String(), "-", "")
-	return c0
-}
-func MakeParams(orig map[string]string) map[string]string {
-	params := make(map[string]string)
-	for k, v := range orig {
-		params[k] = v
-	}
-
-	// 生成 _c_0_：UUID，无 “-”
-	u := uuid.New()
-	c0 := strings.ReplaceAll(u.String(), "-", "")
-	params["_c_0_"] = c0
-
-	// time
-	params["_time"] = fmt.Sprintf("%d", time.Now().UnixMilli())
-
-	// 然后计算 inf_enc（按 key 排序 urlencode + DESKey 拼接 MD5）
-	// ... (你之前实现 inf_enc 的逻辑) ...
-
-	return params
-}
-
 // 手机端阅读Enc参数生成
 func TestReadEncParam(t *testing.T) {
 	jsonBody, err := BuildSpecialReport(
-		"256268467",        // userId
-		"218403954",        // courseId
-		"437042861",        // chapterId
+		"339543304",        // userId
+		"218403608",        // courseId
+		"437039890",        // chapterId
 		"132232726",        // classId
 		"c8f68a62e7ef7fa3", // deviceId
 		1626,               // wordCount
@@ -1011,6 +994,80 @@ func TestReadEncParam(t *testing.T) {
 	fmt.Println(jsonBody)
 }
 
+// 构建完整 URL
+func buildReportUrl(userId string) (string, error) {
+	jsonBody, err := BuildSpecialReport(
+		userId,                             // userId
+		"256268467",                        // courseId
+		"218403608",                        // chapterId
+		"339543304",                        // classId
+		"c8f68a62e7ef7fa3a704d6b031d19697", // deviceId
+		rand.Int()*1000,                    // wordCount
+		11,                                 // interactCount
+		rand.Int()*30,                      // readSeconds
+		map[string]any{ // event 内容（你随便填）
+			"ts":     time.Now().UnixMilli(),
+			"scroll": rand.Int() * 2000,
+		},
+	)
+	if err != nil {
+		return "", err
+	}
+	t := time.Now().Format("20060102150405") + "000" // 伪造毫秒值
+	// d 参数需要进行两次 URL encode（Chaoxing 强制）
+	dLevel1 := url.QueryEscape(jsonBody)
+	dLevel2 := url.QueryEscape(dLevel1)
+	settings := map[string]any{
+		"f": "readPoint",
+		"u": userId, //userId
+		"s": "",
+		"d": url.QueryEscape(jsonBody),
+		"t": t,
+	}
+
+	enc := GenerateEnc(settings)
+
+	finalUrl := fmt.Sprintf(
+		"https://data-xxt.aichaoxing.com/analysis/ac_mark?f=readPoint&u=%s&d=%s&t=%s&enc=%s",
+		userId,
+		dLevel2,
+		t,
+		enc,
+	)
+
+	return finalUrl, nil
+}
+
+// 发起请求
+func SendReport(userId string) (string, error) {
+
+	urlStr, _ := buildReportUrl(userId)
+
+	client := &http.Client{}
+	req, err := http.NewRequest("GET", urlStr, nil)
+	if err != nil {
+		return "", err
+	}
+
+	req.Header.Add("User-Agent", "Mozilla/5.0 (Linux; Android 8.1.0; MI 5X Build/OPM1.171019.019; wv) AppleWebKit/537.36 (KHTML, like Gecko) Version/4.0 Chrome/71.0.3578.99 Mobile Safari/537.36 (schild:ce5175d20950c8ee955fb03246f762da) (device:MI 5X) Language/zh_CN com.chaoxing.mobile/ChaoXingStudy_3_6.7.2_android_phone_10936_311 (@Kalimdor)_76c82452584d47e39ab79aa54ea86554")
+	req.Header.Add("Origin", "https://special.rhky.com")
+	req.Header.Add("Referer", "https://special.rhky.com/mobile/mooc/")
+	req.Header.Add("Accept-Language", "zh-CN,en-US;q=0.9")
+	req.Header.Add("X-Requested-With", "com.chaoxing.mobile")
+	req.Header.Add("Accept", "*/*")
+	req.Header.Add("Host", "data-xxt.aichaoxing.com")
+	req.Header.Add("Connection", "keep-alive")
+
+	res, err := client.Do(req)
+	if err != nil {
+		return "", err
+	}
+	defer res.Body.Close()
+
+	body, err := ioutil.ReadAll(res.Body)
+	return string(body), err
+}
+
 // 生成 enc 参数（完全匹配超星 JS）
 func GenerateEnc(g map[string]any) string {
 	// Step 1: key 排序
@@ -1031,7 +1088,7 @@ func GenerateEnc(g map[string]any) string {
 	final := h + "NrRzLDpWB2JkeodIVAn4"
 
 	sum := md5.Sum([]byte(final))
-	return strings.ToUpper(hex.EncodeToString(sum[:]))
+	return strings.ToLower(hex.EncodeToString(sum[:]))
 }
 
 // 把 interface{} 转换成 JS 里的字符串表现形式
@@ -1104,10 +1161,10 @@ func BuildSpecialReport(
 	readSeconds int,
 	event map[string]any,
 ) (string, error) {
-
+	//其中e参数比较复杂，他是将滑动的坐标(前1000个，少于1000就使用少于1000的移动坐标数目)进行url编码。编码后再进行gzip压缩,gzip压缩后再转base64编码
 	// 将 event 做 gzip + base64
-	eventBytes, _ := json.Marshal(event)
-	eStr, err := gzipBase64(eventBytes)
+	//eventBytes, _ := json.Marshal(event)
+	eStr, err := EncodeUrlEncGzipBase64(generateTrack())
 	if err != nil {
 		return "", err
 	}
@@ -1132,4 +1189,81 @@ func BuildSpecialReport(
 
 	jsonBytes, _ := json.Marshal(body)
 	return string(jsonBytes), nil
+}
+
+// 滑动轨迹生成
+func generateTrack() string {
+	var builder strings.Builder
+
+	// 起始值
+	t := rand.Intn(5) + 300             // 起始时间 300~305
+	x := rand.Intn(3) + 20              // 起始 x
+	y := 380 + rand.Float64()*2         // Y 基本恒定，微扰动
+	targetX := x + rand.Intn(120) + 150 // 横向滑动长度 150-270
+	steps := rand.Intn(40) + 60         // 共 60~100 步
+
+	for i := 0; i < steps; i++ {
+		// 缓动公式：ease-out（拟合人类习惯）
+		progress := float64(i) / float64(steps)
+		eased := 1 - math.Pow(1-progress, 3)
+
+		// 新坐标
+		curX := float64(x) + eased*float64(targetX-x)
+
+		// 随机抖动，让轨迹更像人
+		curX += rand.Float64()*0.8 - 0.4
+		curY := y + rand.Float64()*0.6 - 0.3
+
+		// 时间步进（自然手势的随机抖动）
+		t += rand.Intn(2) + 1 // 每步 1-2 ms
+
+		// 写入： 3,t,x,y;
+		fmt.Fprintf(&builder, "3,%d,%.0f,%.10f;", t, curX, curY)
+	}
+
+	s := builder.String()
+	return s[:len(s)-1] // 去掉最后一个分号
+}
+
+// 数据加密
+func EncodeUrlEncGzipBase64(pointData string) (string, error) {
+	escape := url.QueryEscape(pointData)
+	var buf bytes.Buffer
+
+	// 建立 gzip writer
+	gz := gzip.NewWriter(&buf)
+	gz.Header.ModTime = time.Unix(0, 0)
+	// 写入数据
+	_, err := gz.Write([]byte(escape))
+	if err != nil {
+		return "", err
+	}
+
+	gz.Close()
+
+	// 输出 base64
+	return base64.StdEncoding.EncodeToString(buf.Bytes()), nil
+}
+func GzipDecodeBase64(gzipBase64 string) (string, error) {
+
+	// 1. base64 解码
+	gzData, err := base64.StdEncoding.DecodeString(gzipBase64)
+	if err != nil {
+		return "", err
+	}
+
+	// 2. 解 gzip
+	reader, err := gzip.NewReader(bytes.NewReader(gzData))
+	if err != nil {
+		return "", err
+	}
+	defer reader.Close()
+
+	var out bytes.Buffer
+	_, err = io.Copy(&out, reader)
+	if err != nil {
+		return "", err
+	}
+
+	return out.String(), nil
 }

@@ -197,7 +197,7 @@ func PullPhoneBbsInfoAction(cache *xuexitong.XueXiTUserCache, p *xuexitong.Point
 	if uuid, ok := gojsonq.New().JSONString(detailJson).Find("data.uuid").(string); ok {
 		bbsTopic.Uuid = uuid
 	}
-	return bbsTopic, err2
+	return bbsTopic, nil
 }
 
 // AI回复讨论
@@ -259,6 +259,56 @@ func (bbsTopic *BBsTopic) ExternalAnswer(cache *xuexitong.XueXiTUserCache, p *xu
 	que.Text = bbsTopic.Title + "\n" + bbsTopic.Content //将题目数据加入到题目中
 
 	que.AnswerExternalGet(exUrl)
+	for _, answer := range que.OpFromAnswer {
+		if bbsTopic.Platform == "web" {
+			answerResult, err := cache.AnswerBbsApi(bbsTopic.Uuid, p.CourseID, p.ClassID, answer[0], bbsTopic.UrlToken, bbsTopic.Bbsid, 3, nil)
+			if err != nil {
+				return "", err
+			}
+			statusJson := gojsonq.New().JSONString(answerResult).Find("status")
+			if status, ok := statusJson.(bool); ok {
+				if status {
+					return answerResult, nil
+				} else {
+					return "", errors.New(answerResult)
+				}
+			} else {
+				return "", errors.New(answerResult)
+			}
+		} else if bbsTopic.Platform == "phone" {
+			answerResult, err := cache.AnswerPhoneBbsApi(bbsTopic.ClassId, bbsTopic.Uuid, answer[0])
+			if err != nil {
+				return "", err
+			}
+			statusJson := gojsonq.New().JSONString(answerResult).Find("result")
+			if status, ok := statusJson.(float64); ok {
+				if int(status) == 1 {
+					return answerResult, nil
+				} else {
+					return "", errors.New(answerResult)
+				}
+			} else {
+				return "", errors.New(answerResult)
+			}
+			//fmt.Println(answerResult)
+		}
+
+	}
+	return "", errors.New("AI未找到回复内容如")
+}
+
+// 学习通AI回复讨论
+func (bbsTopic *BBsTopic) XXTAIAnswer(cache *xuexitong.XueXiTUserCache, p *xuexitong.PointBBsDto) (string, error) {
+	que := xuexitong.EssayQue{
+		Type:         qtype.Essay,
+		OpFromAnswer: make(map[string][]string),
+	}
+	que.Text = bbsTopic.Title + "\n" + bbsTopic.Content //将题目数据加入到题目中
+
+	message := xuexitong2.AIProblemMessage(bbsTopic.Title, que.Type.String(), xuexitong.ExamTurn{
+		XueXEssayQue: que,
+	})
+	que.AnswerXXTAIGet(cache, bbsTopic.ClassId, bbsTopic.CourseId, p.Cpi, message)
 	for _, answer := range que.OpFromAnswer {
 		if bbsTopic.Platform == "web" {
 			answerResult, err := cache.AnswerBbsApi(bbsTopic.Uuid, p.CourseID, p.ClassID, answer[0], bbsTopic.UrlToken, bbsTopic.Bbsid, 3, nil)
