@@ -5,6 +5,7 @@ import (
 
 	"github.com/thedevsaddam/gojsonq"
 	"github.com/yatori-dev/yatori-go-core/api/xuexitong"
+	"github.com/yatori-dev/yatori-go-core/utils"
 	log2 "github.com/yatori-dev/yatori-go-core/utils/log"
 )
 
@@ -25,4 +26,11 @@ func XueXiTLoginAction(cache *xuexitong.XueXiTUserCache) error {
 	} else {
 		return errors.New(jsonStr)
 	}
+}
+
+// Cookie登录
+func XueXiTCookieLoginAction(cache *xuexitong.XueXiTUserCache) error {
+	cookies := utils.TurnCookiesFromString(cache.Password)
+	cache.SetCookies(cookies)
+	return nil
 }
