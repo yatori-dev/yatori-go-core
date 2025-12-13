@@ -171,6 +171,7 @@ func ChapterFetchCardsAction(
 						Type:        ctype.Video,
 						IsSet:       ok,
 					}
+
 					//视屏名称获取
 					name := point.Data["name"]
 					if name != nil {
@@ -183,9 +184,20 @@ func ChapterFetchCardsAction(
 							pointObj.PointVideoDto.Title = titleStr
 						}
 					}
-					jobid, ok1 := point.Data["jobid"].(string)
-					if ok1 {
+
+					if jobid, ok1 := point.Data["jobid"].(string); ok1 {
 						pointObj.PointVideoDto.JobID = jobid
+					}
+
+					if jobid, ok1 := point.Data["jobid"].(float64); ok1 {
+						pointObj.PointVideoDto.JobID = fmt.Sprintf("%d", int(jobid))
+					}
+					if jobid, ok1 := point.Data["_jobid"].(string); ok1 {
+						pointObj.PointVideoDto.JobID = jobid
+					}
+
+					if jobid, ok1 := point.Data["_jobid"].(float64); ok1 {
+						pointObj.PointVideoDto.JobID = fmt.Sprintf("%d", int(jobid))
 					}
 
 					cords2, _ := cache.FetchChapterCords2(strconv.Itoa(classId), strconv.Itoa(courseId), strconv.Itoa(card.KnowledgeID), strconv.Itoa(cpi), 3, nil)
@@ -195,7 +207,19 @@ func ChapterFetchCardsAction(
 						if item, ok := list.([]interface{}); ok {
 							for _, item1 := range item {
 								if obj, ok := item1.(map[string]interface{}); ok {
-									resjobid, _ := obj["jobid"].(string)
+									resjobid := ""
+									if jobid, ok1 := obj["jobid"].(string); ok1 {
+										resjobid = jobid
+									}
+									if jobid, ok1 := obj["jobid"].(float64); ok1 {
+										resjobid = fmt.Sprintf("%d", int(jobid))
+									}
+									if jobid, ok1 := obj["_jobid"].(string); ok1 {
+										resjobid = jobid
+									}
+									if jobid, ok1 := obj["_jobid"].(float64); ok1 {
+										resjobid = fmt.Sprintf("%d", int(jobid))
+									}
 									if pointObj.PointVideoDto.JobID != resjobid {
 										continue
 									}
@@ -494,13 +518,20 @@ func ChapterFetchCardsAction(
 							pointObj.PointVideoDto.Title = titleStr
 						}
 					}
-					jobid, ok1 := point.Data["jobid"].(string)
-					if ok1 {
+
+					if jobid, ok1 := point.Data["jobid"].(string); ok1 {
 						pointObj.PointVideoDto.JobID = jobid
 					}
-					jobid1, ok2 := point.Data["jobid"].(float64)
-					if ok2 {
-						pointObj.PointVideoDto.JobID = fmt.Sprintf("%d", int(jobid1))
+
+					if jobid, ok1 := point.Data["jobid"].(float64); ok1 {
+						pointObj.PointVideoDto.JobID = fmt.Sprintf("%d", int(jobid))
+					}
+					if jobid, ok1 := point.Data["_jobid"].(string); ok1 {
+						pointObj.PointVideoDto.JobID = jobid
+					}
+
+					if jobid, ok1 := point.Data["_jobid"].(float64); ok1 {
+						pointObj.PointVideoDto.JobID = fmt.Sprintf("%d", int(jobid))
 					}
 
 					cords2, _ := cache.FetchChapterCords2(strconv.Itoa(classId), strconv.Itoa(courseId), strconv.Itoa(card.KnowledgeID), strconv.Itoa(cpi), 3, nil)
@@ -510,7 +541,19 @@ func ChapterFetchCardsAction(
 						if item, ok := list.([]interface{}); ok {
 							for _, item1 := range item {
 								if obj, ok := item1.(map[string]interface{}); ok {
-									resjobid, _ := obj["jobid"].(string)
+									var resjobid string
+									if jobid, ok1 := obj["jobid"].(string); ok1 {
+										resjobid = jobid
+									}
+									if jobid, ok1 := obj["jobid"].(float64); ok1 {
+										resjobid = fmt.Sprintf("%v", int(jobid))
+									}
+									if jobid, ok1 := obj["_jobid"].(string); ok1 {
+										resjobid = jobid
+									}
+									if jobid, ok1 := obj["_jobid"].(float64); ok1 {
+										resjobid = fmt.Sprintf("%v", int(jobid))
+									}
 									if pointObj.PointVideoDto.JobID != resjobid {
 										continue
 									}

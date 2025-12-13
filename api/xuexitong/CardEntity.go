@@ -306,10 +306,18 @@ func (p *PointVideoDto) AttachmentsDetection(attachment interface{}) (bool, erro
 		if objectid == nil {
 			continue
 		}
-		jobid, ok := property["jobid"].(string)
+		jobid := ""
+		if res, ok1 := property["jobid"].(string); ok1 {
+			jobid = res
+		}
 		if res, ok1 := property["jobid"].(float64); ok1 {
 			jobid = fmt.Sprintf("%d", int(res))
-			ok = ok1
+		}
+		if res, ok1 := property["_jobid"].(string); ok1 {
+			jobid = res
+		}
+		if res, ok1 := property["_jobid"].(float64); ok1 {
+			jobid = fmt.Sprintf("%d", int(res))
 		}
 
 		if objectid == p.ObjectID && p.JobID == jobid {
