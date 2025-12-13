@@ -42,3 +42,7 @@ func ExecuteDocument(cache *xuexitong.XueXiTUserCache, p *xuexitong.PointDocumen
 	}
 	return report, nil
 }
+
+func ExecuteDocumentStudyTime(cache *xuexitong.XueXiTUserCache, p *xuexitong.PointDocumentDto) {
+
+}

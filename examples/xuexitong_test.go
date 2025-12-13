@@ -481,7 +481,7 @@ func TestXueXiToFlushCourse(t *testing.T) {
 	utils.YatoriCoreInit()
 	//测试账号
 	setup()
-	user := global.Config.Users[71]
+	user := global.Config.Users[72]
 
 	userCache := xuexitongApi.XueXiTUserCache{
 		Name:     user.Account,
@@ -499,7 +499,7 @@ func TestXueXiToFlushCourse(t *testing.T) {
 		//if course.CourseName != "解读中国经济发展的密码" {
 		//	continue
 		//}
-		if course.CourseName != "形势与政策" {
+		if course.CourseName != "实用英语（二）" {
 			continue
 		}
 		// 6c444b8d5c6203ee2f2aef4b76f5b2ce qrcEnc
@@ -571,7 +571,7 @@ func TestXueXiToFlushCourse(t *testing.T) {
 			}
 
 			// 视频刷取
-			if videoDTOs != nil && false {
+			if videoDTOs != nil && true {
 				for _, videoDTO := range videoDTOs {
 					card, enc, err := xuexitong.PageMobileChapterCardAction(
 						&userCache, key, courseId, videoDTO.KnowledgeID, videoDTO.CardIndex, course.Cpi)
@@ -588,13 +588,15 @@ func TestXueXiToFlushCourse(t *testing.T) {
 						continue
 					}
 					videoDTO.Enc = enc
+
 					point.ExecuteVideoTest(&userCache, &videoDTO, key, course.Cpi) //常规
 					//point.ExecuteFastVideo(&userCache, &videoDTO) //秒刷
+
 					time.Sleep(5 * time.Second)
 				}
 			}
 			// 文档刷取
-			if documentDTOs != nil && true {
+			if documentDTOs != nil && false {
 				for _, documentDTO := range documentDTOs {
 					card, _, err := xuexitong.PageMobileChapterCardAction(
 						&userCache, key, courseId, documentDTO.KnowledgeID, documentDTO.CardIndex, course.Cpi)

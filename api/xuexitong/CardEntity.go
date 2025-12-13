@@ -2,6 +2,7 @@ package xuexitong
 
 import (
 	"errors"
+	"fmt"
 	"iter"
 	"log"
 	"net/http"
@@ -306,6 +307,10 @@ func (p *PointVideoDto) AttachmentsDetection(attachment interface{}) (bool, erro
 			continue
 		}
 		jobid, ok := property["jobid"].(string)
+		if res, ok1 := property["jobid"].(float64); ok1 {
+			jobid = fmt.Sprintf("%d", int(res))
+			ok = ok1
+		}
 
 		if objectid == p.ObjectID && p.JobID == jobid {
 

@@ -470,9 +470,83 @@ func ChapterFetchCardsAction(
 					log2.Print(log2.DEBUG, "(%d, %d) 任务点 'objectid' 不存在或为空 %+v", cardIndex, pointIndex, point)
 					continue
 				}
+			case string(ctype.InsertAudio):
+				if objectID, ok := point.Data["objectid"].(string); ok && objectID != "" {
+					pointObj.PointVideoDto = xuexitong.PointVideoDto{
+						CardIndex:   cardIndex,
+						CourseID:    strconv.Itoa(courseId),
+						ClassID:     strconv.Itoa(classId),
+						KnowledgeID: card.KnowledgeID,
+						Cpi:         strconv.Itoa(cpi),
+						ObjectID:    objectID,
+						Type:        ctype.InsertAudio,
+						IsSet:       ok,
+					}
+					//视屏名称获取
+					name := point.Data["name"]
+					if name != nil {
+						titleStr, turnErr := url.QueryUnescape(name.(string))
+						//转换
+						if turnErr != nil {
+							log2.Print(log2.DEBUG, titleStr, "解码失败")
+							pointObj.PointVideoDto.Title = titleStr
+						} else {
+							pointObj.PointVideoDto.Title = titleStr
+						}
+					}
+					jobid, ok1 := point.Data["jobid"].(string)
+					if ok1 {
+						pointObj.PointVideoDto.JobID = jobid
+					}
+					jobid1, ok2 := point.Data["jobid"].(float64)
+					if ok2 {
+						pointObj.PointVideoDto.JobID = fmt.Sprintf("%d", int(jobid1))
+					}
+
+					cords2, _ := cache.FetchChapterCords2(strconv.Itoa(classId), strconv.Itoa(courseId), strconv.Itoa(card.KnowledgeID), strconv.Itoa(cpi), 3, nil)
+					find := gojsonq.New().JSONString(cords2).Find("attachments")
+					if find != nil {
+						list := gojsonq.New().JSONString(cords2).Find("attachments")
+						if item, ok := list.([]interface{}); ok {
+							for _, item1 := range item {
+								if obj, ok := item1.(map[string]interface{}); ok {
+									resjobid, _ := obj["jobid"].(string)
+									if pointObj.PointVideoDto.JobID != resjobid {
+										continue
+									}
+									if obj["otherInfo"] != nil {
+										if len(obj["otherInfo"].(string)) > 80 {
+											pointObj.PointVideoDto.OtherInfo = obj["otherInfo"].(string)
+											if obj["jobid"] != nil {
+												pointObj.PointVideoDto.JobID = obj["jobid"].(string)
+											}
+
+										}
+									}
+									if obj["playTime"] != nil {
+										pointObj.PointVideoDto.PlayTime = int(obj["playTime"].(float64)) / 1000
+									}
+								}
+
+							}
+						}
+					}
+					//if pointObj.PointVideoDto.OtherInfo == "" {
+					//	cords2, _ := cache.FetchChapterCords2(strconv.Itoa(classId), strconv.Itoa(courseId), strconv.Itoa(card.KnowledgeID), strconv.Itoa(cardIndex), strconv.Itoa(cpi))
+					//	//fmt.Println(cords2)
+					//	sprintf := fmt.Sprintf(`nodeId_[\d]*-cpi_[\d]*-rt_d-ds_[^&]*`)
+					//	compile := regexp.MustCompile(sprintf)
+					//	find := compile.FindAllStringSubmatch(cords2, -1)
+					//	for _, v := range find {
+					//		pointObj.PointVideoDto.OtherInfo = v[0]
+					//	}
+					//}
+				} else {
+					log2.Print(log2.DEBUG, "(%d, %d) 任务点 'objectid' 不存在或为空 %+v", cardIndex, pointIndex, point)
+					continue
+				}
 			default:
-				log2.Print(log2.INFO, "未知的任务点类型: %s\n", pointType)
-				log2.Print(log2.INFO, "%+v", point)
+				log2.Print(log2.INFO, "未知的任务点类型: ", pointType, fmt.Sprintf("%+v", point))
 				continue
 			}
 

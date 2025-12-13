@@ -12,4 +12,5 @@ const (
 	Insertlive   CardType = "insertlive"   //直播
 	Insertbbs    CardType = "insertbbs"    //讨论
 	InsertReadV2 CardType = "insertreadV2" //阅读任务点
+	InsertAudio  CardType = "insertaudio"  //音频任务点
 )
