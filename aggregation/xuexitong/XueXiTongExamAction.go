@@ -12,7 +12,9 @@ import (
 
 	"github.com/PuerkitoBio/goquery"
 	"github.com/yatori-dev/yatori-go-core/api/xuexitong"
+	"github.com/yatori-dev/yatori-go-core/models/ctype"
 	"github.com/yatori-dev/yatori-go-core/que-core/aiq"
+	"github.com/yatori-dev/yatori-go-core/que-core/external"
 	"github.com/yatori-dev/yatori-go-core/que-core/qtype"
 	log2 "github.com/yatori-dev/yatori-go-core/utils/log"
 )
@@ -242,16 +244,51 @@ func (exam *XXTExam) PullExamQuestionAction(cache *xuexitong.XueXiTUserCache, in
 }
 
 // AI写题
-func (question *XXTExamQuestion) WriteQuestionForAIAction() {
+func (question *XXTExamQuestion) WriteQuestionForAIAction(cache *xuexitong.XueXiTUserCache, aiUrl, model string, aiType ctype.AiType, apiKey string) error {
+	aiChatMessages := aiq.BuildAiQuestionMessage(question.Question)
+
+	aiAnswer, err := aiq.AggregationAIApi(aiUrl, model, aiType, aiChatMessages, apiKey)
+	if err != nil {
+		log2.Print(log2.INFO, `[`, cache.Name, `] `, log2.BoldRed, "Ai异常，返回信息：", err.Error())
+		//os.Exit(0)
+	}
+
+	var answers []string
+	err = json.Unmarshal([]byte(aiAnswer), &answers)
+	if err != nil {
+		answers = []string{"A"}
+		//fmt.Println("AI回复解析错误，已采用随机答案:", err, fmt.Sprintf("题目：%v \nAI回复： %v", aiChatMessages, aiAnswer))
+		log2.Print(log2.INFO, "AI回复解析错误，已采用随机答案:", err.Error(), fmt.Sprintf("题目：%v \nAI回复： %v", aiChatMessages, aiAnswer))
+	}
+	question.Question.Answers = answers
+	return nil
 }
 
 // 外置题库写题
-func (question *XXTExamQuestion) WriteQuestionForExternalAction() {
-
+func (question *XXTExamQuestion) WriteQuestionForExternalAction(exUrl string) {
+	//赋值选项
+	request, err := external.ApiQueRequest(question.Question, exUrl, 5, nil)
+	if err != nil {
+		log.Fatal(err)
+	}
+	//赋值答案
+	var answers []string
+	if request.Code == 404 {
+		answers = []string{"A"}
+		log2.Print(log2.INFO, "外置题库未找到答案，已使用默认答案A:", fmt.Sprintf("题目：%v \n外置题库回复： %v", question.Question, request))
+		request.Question.Answers = answers
+		return
+	}
+	if request.Question.Answers == nil {
+		answers = []string{"A"}
+		fmt.Println("回复解析错误:", err, fmt.Sprintf("题目：%v \n外置题库回复： %v", question.Question, request))
+		request.Question.Answers = answers
+	}
+	question.Question.Answers = request.Question.Answers
 }
 
 // 学习通内置题库写题
-func (question *XXTExamQuestion) WriteQuestionForXXTAIAction(cache *xuexitong.XueXiTUserCache, classId, courseId, cpi string) {
+func (question *XXTExamQuestion) WriteQuestionForXXTAIAction(cache *xuexitong.XueXiTUserCache, classId, courseId, cpi string) error {
 	aiChatMessages := aiq.BuildAiQuestionMessage(question.Question)
 
 	informHtml, err := cache.XXTAiInformApi(classId, courseId, cpi, 3, nil)
@@ -300,6 +337,7 @@ func (question *XXTExamQuestion) WriteQuestionForXXTAIAction(cache *xuexitong.Xu
 		log2.Print(log2.INFO, "AI回复解析错误，已采用随机答案:", err.Error(), fmt.Sprintf("题目：%v \nAI回复： %v", aiChatMessages, aiAnswer))
 	}
 	question.Question.Answers = answers
+	return nil
 }
 
 // 提交学习通考试答案
