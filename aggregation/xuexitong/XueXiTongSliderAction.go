@@ -29,10 +29,10 @@ func (slider *XueXiTSlider) Pass(cache *xuexitongApi.XueXiTUserCache) (string, e
 	matches := re.FindStringSubmatch(captchaInfo)
 	if len(matches) == 3 {
 		tValue := matches[1]
-		captchaId := matches[2]
-		fmt.Println("t:", tValue)
+		//captchaId := matches[2]
+		//fmt.Println("t:", tValue)
 		slider.serverTime = tValue
-		fmt.Println("captchaId:", captchaId)
+		//fmt.Println("captchaId:", captchaId)
 	}
 	//第二步:拉取相关验证码图片等----------------------------------------
 	captchaImgResult, err := cache.XueXiTSliderVerificationImgApi(slider.CaptchaId, slider.serverTime, slider.Referer, 3, nil)

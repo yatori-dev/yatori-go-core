@@ -820,15 +820,26 @@ func TestXueXiToExam(t *testing.T) {
 			if exam.Status != "待做" {
 				continue
 			}
+			//进入考试
 			err2 := xuexitong.EnterExamAction(&userCache, &exam)
 			if err2 != nil {
 				log.Fatal(err2)
 			}
-			err3 := xuexitong.PullExamPaperAction(&userCache, &exam)
-			if err3 != nil {
-				log.Fatal(err3)
+			//拉取题目
+			for i := range exam.QuestionTotal {
+				question, err2 := exam.PullExamQuestionAction(&userCache, i)
+				if err2 != nil {
+					log.Fatal(err2)
+				}
+				//内置AI自动写题
+				question.WriteQuestionForXXTAIAction(&userCache, question.ClassId, question.CourseId, question.Cpi)
+				//提交写的题
+				submitResult, err2 := question.SubmitExamAnswerAction(&userCache, false)
+				if err2 != nil {
+					log.Fatal(err2)
+				}
+				fmt.Println(submitResult)
 			}
-
 		}
 	}
 }
@@ -842,7 +853,7 @@ func TestXXTExamPaperPull(t *testing.T) {
 	if err != nil {
 		log.Fatal(err)
 	}
-	_, err1 := xuexitong.HtmlPaperTurnEntity(paperHtml)
+	_, err1 := xuexitong.HtmlQuestionTurnEntity(paperHtml)
 	if err1 != nil {
 		log.Fatal(err1)
 	}
