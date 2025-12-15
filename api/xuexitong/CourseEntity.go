@@ -322,6 +322,7 @@ func GetAIAnswer(as AnswerSetter, userID string, url, model string, aiType ctype
 
 // 学习通AI答题回复
 func GetXXTAIAnswer(as AnswerSetter, cache *XueXiTUserCache, classId, courseId, cpi string, aiChatMessages aiq.AIChatMessages) {
+
 	informHtml, err := cache.XXTAiInformApi(classId, courseId, cpi, 3, nil)
 	if err != nil {
 		panic(err)

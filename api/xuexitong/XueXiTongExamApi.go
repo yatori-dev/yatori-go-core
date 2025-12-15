@@ -2,13 +2,57 @@ package xuexitong
 
 import (
 	"crypto/tls"
+	"encoding/hex"
 	"errors"
 	"fmt"
 	"io/ioutil"
+	"math"
+	"math/rand"
 	"net/http"
+	"net/url"
+	"strconv"
 	"strings"
 	"time"
+
+	"github.com/yatori-dev/yatori-go-core/que-core/qentity"
+	"github.com/yatori-dev/yatori-go-core/que-core/qtype"
+	"github.com/yatori-dev/yatori-go-core/utils/qutils"
 )
+
+// 考试试卷信息
+type XXTExamPaper struct {
+	CourseId           string
+	TestPaperId        string
+	TestUserRelationId string
+	ClassId            string
+	Type               string
+	IsPhone            string
+	Imei               string
+	SubCount           string
+	RemainTime         string
+	TempSave           string
+	TimeOver           string
+	EncRemainTime      string
+	EncLastUpdateTime  string
+	Cpi                string
+	Enc                string
+	Source             string
+	UserId             string
+	EnterPageTime      string
+	AnsweredView       string
+	ExitdTime          string
+	PaperGroupId       string
+	TypeName           string
+	XXTQuestion        XXTQuestion //题目
+}
+
+// 学习通题目
+type XXTQuestion struct {
+	QuestionId string      //题目ID
+	QType      qtype.QType //题目类型
+	TypeName   string
+	Question   qentity.Question
+}
 
 // PullExamListHtmlApi 拉取邮箱考试列表
 func (cache *XueXiTUserCache) PullExamListHtmlApi(courseId string, classId string, cpi string, retry int, lastErr error) (string, error) {
@@ -196,14 +240,14 @@ func (cache *XueXiTUserCache) PullExamPaperHtmlApi(courseId, classId, examId, so
 }
 
 // 拉取考试题目
-func (cache *XueXiTUserCache) PullExamQuestionApi(courseId, classId, tId, id, cpi, remainTimeParam, enc string) (string, error) {
+func (cache *XueXiTUserCache) PullExamQuestionApi(courseId, classId, tId, id, cpi, remainTimeParam, enc, relationAnswerLastUpdateTime string, index int) (string, error) {
 
 	//url := "https://mooc1-api.chaoxing.com/exam-ans/exam/test/reVersionTestStartNew?keyboardDisplayRequiresUserAction=1&courseId=258101827&classId=134204187&source=0&imei=76c82452584d47e39ab79aa54ea86554&tId=8201158&id=167239306&p=1&start=1&cpi=411545273&isphone=true&monitorStatus=0&monitorOp=-1&remainTimeParam=521941&relationAnswerLastUpdateTime=1764773341430&enc=40c8c154db29fb3ff6f01dfeade8a4fb"
-	url := "https://mooc1-api.chaoxing.com/exam-ans/exam/test/reVersionTestStartNew?keyboardDisplayRequiresUserAction=1&courseId=" + courseId + "&classId=" + classId + "&source=0&imei=" + IMEI + "&tId=" + tId + "&id=" + id + "&p=1&start=1&cpi=" + cpi + "&isphone=true&monitorStatus=0&monitorOp=-1&remainTimeParam=" + remainTimeParam + "&relationAnswerLastUpdateTime=" + fmt.Sprintf("%d", time.Now().UnixMilli()) + "&enc=" + enc
+	urlStr := "https://mooc1-api.chaoxing.com/exam-ans/exam/test/reVersionTestStartNew?keyboardDisplayRequiresUserAction=1&courseId=" + courseId + "&classId=" + classId + "&source=0&imei=" + IMEI + "&tId=" + tId + "&id=" + id + "&p=1&start=" + fmt.Sprintf("%d", index) + "&cpi=" + cpi + "&isphone=true&monitorStatus=0&monitorOp=-1&remainTimeParam=" + remainTimeParam + "&relationAnswerLastUpdateTime=" + relationAnswerLastUpdateTime + "&enc=" + enc
 	method := "GET"
 
 	client := &http.Client{}
-	req, err := http.NewRequest(method, url, nil)
+	req, err := http.NewRequest(method, urlStr, nil)
 
 	if err != nil {
 		fmt.Println(err)
@@ -237,16 +281,68 @@ func (cache *XueXiTUserCache) PullExamQuestionApi(courseId, classId, tId, id, cp
 }
 
 // 提交答题
-func (cache *XueXiTUserCache) SubmitExamAnswerApi(classId, courseId, testPaperId, testUserRelationId, cpi, tempSave, pos, value, qid, edt string) (string, error) {
+func (cache *XueXiTUserCache) SubmitExamAnswerApi(classId, courseId, testPaperId, testUserRelationId, cpi, remainTime, encRemainTime, encLastUpdateTime, tId, examAnswerId, remainTimeParam string, tempSave /*是否交卷*/ bool, enc, enterPageTime, qid, questionTypeCode, questionTypeStr string, paper *XXTExamPaper) (string, error) {
 
 	//url := "https://mooc1-api.chaoxing.com/exam-ans/exam/test/reVersionSubmitTestNew?classId=134204187&courseId=258101827&testPaperId=8186945&testUserRelationId=167217517&cpi=411545273&version=1&tempSave=false&pos=90129888fd267cdf6604435c1b&rd=0.4715233554422915&value=%2528NaN%257CNaN%2529&qid=885532434&_edt=1764581639515265&_csign=1&_signcode=3&_signc=0&_signe=3-1&_signk&_cxcid&_cxtime&_signt"
-	url := "https://mooc1-api.chaoxing.com/exam-ans/exam/test/reVersionSubmitTestNew?classId=" + classId + "&courseId=" + courseId + "&testPaperId=" + testPaperId + "&testUserRelationId=" + testUserRelationId + "&cpi=" + cpi + "&version=1&tempSave=" + tempSave + "&pos=" + pos + "&rd=0.4715233554422915&value=" + value + "&qid=" + qid + "&_edt=" + edt + "&_csign=1&_signcode=3&_signc=0&_signe=3-1&_signk&_cxcid&_cxtime&_signt"
+	sig := GetExamSignature(cache.UserID, qid, rand.Intn(100)+900, rand.Intn(900)+100)
+	urlStr := "https://mooc1-api.chaoxing.com/exam-ans/exam/test/reVersionSubmitTestNew?classId=" + classId + "&courseId=" + courseId + "&testPaperId=" + testPaperId + "&testUserRelationId=" + testUserRelationId + "&cpi=" + cpi + "&version=1&tempSave=" + fmt.Sprintf("%v", tempSave) + "&pos=" + sig["pos"].(string) + "&rd=" + fmt.Sprintf("%.16f", sig["rd"]) + "&value=" + url.QueryEscape(sig["value"].(string)) + "&qid=" + qid + "&_edt=" + sig["_edt"].(string) + "&_csign=1&_signcode=3&_signc=0&_signe=3-1&_signk&_cxcid&_cxtime&_signt"
+
 	method := "POST"
 
-	payload := strings.NewReader("courseId=" + courseId + "&testPaperId=" + testPaperId + "&testUserRelationId=" + testUserRelationId + "&classId=" + classId + "&type=0&isphone=true&imei=" + IMEI + "&subCount=&remainTime=3586&tempSave=false&timeOver=false&encRemainTime=3599&encLastUpdateTime=1764581621536&enc=fb34089d61c53db4caba284f366df017&userId=346635955&score885532434=5.0&questionId=885532434&questionId=885532434&start=0&enterPageTime=1764581621536&monitorforcesubmit=0&answeredView=0&exitdtime=0&paperGroupId=0&type885532434=0&typeName885532434=%E5%8D%95%E9%80%89%E9%A2%98&hidetext=&answer885532434=B")
+	values := url.Values{}
+
+	values.Set("courseId", courseId)
+	values.Set("testPaperId", testPaperId)
+	values.Set("testUserRelationId", testUserRelationId)
+	values.Set("classId", classId)
+	values.Set("type", "0")
+	values.Set("isphone", "true")
+	values.Set("imei", IMEI)
+	values.Set("subCount", "")
+	values.Set("remainTime", remainTime)
+	values.Set("tempSave", strconv.FormatBool(tempSave))
+	values.Set("timeOver", "false")
+	values.Set("encRemainTime", encRemainTime)
+	values.Set("encLastUpdateTime", encLastUpdateTime)
+	values.Set("enc", enc)
+	values.Set("userId", cache.UserID)
+	values.Set("start", "0")
+	values.Set("enterPageTime", enterPageTime)
+
+	values.Set("score"+qid, "5.0")
+	values.Add("questionId", qid) // 这个字段你原来是重复两次
+	values.Add("questionId", qid)
+
+	values.Set("monitorforcesubmit", "0")
+	values.Set("answeredView", "0")
+	values.Set("exitdtime", "0")
+	values.Set("paperGroupId", "0")
+
+	if questionTypeStr == "单选题" || questionTypeStr == "多选题" {
+		values.Set("type"+qid, questionTypeCode)
+		values.Set("typeName"+qid, questionTypeStr)
+		values.Set("hidetext", "")
+		answerStr := ""
+		for _, answer := range paper.XXTQuestion.Question.Answers {
+			answerStr += qutils.SimilarityArraySelect(answer, paper.XXTQuestion.Question.Options)
+		}
+		values.Set("answer"+qid, answerStr)
+	} else if questionTypeStr == "填空题" {
+		values.Set("type"+qid, questionTypeCode)
+		values.Set("typeName"+qid, questionTypeStr)
+		values.Set("hidetext", "")
+		blankNum := ""
+		for i, answer := range paper.XXTQuestion.Question.Answers {
+			values.Set("answerEditor"+qid+fmt.Sprintf("%d", i+1), answer)
+			blankNum += fmt.Sprintf("%d,", i+1)
+		}
+		values.Set("blankNum"+qid, blankNum)
+	}
+
+	payload := strings.NewReader(values.Encode())
 
 	client := &http.Client{}
-	req, err := http.NewRequest(method, url, payload)
+	req, err := http.NewRequest(method, urlStr, payload)
 
 	if err != nil {
 		fmt.Println(err)
@@ -257,6 +353,7 @@ func (cache *XueXiTUserCache) SubmitExamAnswerApi(classId, courseId, testPaperId
 	req.Header.Add("Origin", "https://mooc1-api.chaoxing.com")
 	req.Header.Add("X-Requested-With", "XMLHttpRequest")
 	req.Header.Add("Accept-Language", "zh-CN,en-US;q=0.9")
+	req.Header.Add("Referer", "https://mooc1-api.chaoxing.com/exam-ans/exam/test/reVersionTestStartNew?keyboardDisplayRequiresUserAction=1&courseId="+courseId+"&classId="+classId+"&source=0&imei="+IMEI+"&tId="+tId+"&id="+examAnswerId+"&p=1&start=1&cpi="+cpi+"&isphone=true&monitorStatus=0&monitorOp=-1&remainTimeParam="+remainTimeParam+"&relationAnswerLastUpdateTime="+fmt.Sprintf("%d", time.Now().UnixMilli())+"&enc="+enc)
 	req.Header.Add("Content-Type", "application/x-www-form-urlencoded; charset=UTF-8")
 	req.Header.Add("Host", "mooc1-api.chaoxing.com")
 	req.Header.Add("Connection", "keep-alive")
@@ -278,4 +375,90 @@ func (cache *XueXiTUserCache) SubmitExamAnswerApi(classId, courseId, testPaperId
 	}
 	//fmt.Println(string(body))
 	return string(body), nil
+}
+
+func init() {
+	rand.Seed(time.Now().UnixNano())
+}
+
+// 等价于 Python secrets.token_hex(n)
+func tokenHex(n int) string {
+	b := make([]byte, n)
+	_, _ = rand.Read(b)
+	return hex.EncodeToString(b)
+}
+
+// 等价于 get_ts()
+func getTs() string {
+	return strconv.FormatInt(time.Now().UnixNano()/1e6, 10)
+}
+
+func GetExamSignature(uid string, qid string, x int, y int) map[string]interface{} {
+	ts := getTs()
+
+	r1 := rand.Intn(9)
+	r2 := rand.Intn(9)
+
+	a := fmt.Sprintf("%s%s%d%d",
+		tokenHex(16),
+		ts[4:],
+		r1,
+		r2,
+	)
+	if qid != "" {
+		a += qid
+	}
+
+	var temp int64 = 0
+	for _, ch := range a {
+		temp = (temp << 5) - temp + int64(ch)
+	}
+
+	salt := fmt.Sprintf("%d%d%d",
+		r1,
+		r2,
+		(int64(0x7fffffff)&temp)%10,
+	)
+
+	encVal := uid
+	if qid != "" {
+		encVal += "_" + qid
+	}
+	encVal += "|" + salt
+
+	var sb strings.Builder
+	for _, c := range encVal {
+		sb.WriteString(strconv.Itoa(int(c)))
+	}
+	encVal2 := sb.String()
+
+	b := len(encVal2) / 5
+
+	cStr := string(encVal2[b]) +
+		string(encVal2[2*b]) +
+		string(encVal2[3*b]) +
+		string(encVal2[4*b])
+	c, _ := strconv.Atoi(cStr)
+
+	d := len(encVal)/2 + 1
+
+	first10, _ := strconv.Atoi(encVal2[:10])
+	e := (int64(c)*int64(first10) + int64(d)) % 0x7FFFFFFF
+
+	pos := fmt.Sprintf("(%d|%d)", x, y)
+
+	var result strings.Builder
+	for _, ch := range pos {
+		key := int(math.Floor(float64(e) / float64(0x7FFFFFFF) * 0xFF))
+		v := int(ch) ^ key
+		result.WriteString(fmt.Sprintf("%02x", v))
+		e = (int64(c)*e + int64(d)) % 0x7FFFFFFF
+	}
+
+	return map[string]interface{}{
+		"pos":   result.String() + tokenHex(4),
+		"rd":    rand.Float64(),
+		"value": pos,
+		"_edt":  ts + salt,
+	}
 }

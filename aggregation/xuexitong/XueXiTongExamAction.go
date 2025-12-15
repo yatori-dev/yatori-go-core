@@ -9,11 +9,10 @@ import (
 
 	"github.com/PuerkitoBio/goquery"
 	"github.com/yatori-dev/yatori-go-core/api/xuexitong"
-	"github.com/yatori-dev/yatori-go-core/que-core/qentity"
 	"github.com/yatori-dev/yatori-go-core/que-core/qtype"
 )
 
-// 学习通考试
+// 学习通考试结构体
 type XXTExam struct {
 	Name             string `json:"name"`
 	Status           string `json:"status"`
@@ -32,40 +31,7 @@ type XXTExam struct {
 	AnswerId         string `json:"answerId"`
 	Cpi              string
 	Validate         string //过验证码用的
-	Paper            XXTExamPaper
-}
-
-// 考试试卷信息
-type XXTExamPaper struct {
-	CourseId           string
-	TestPaperId        string
-	TestUserRelationId string
-	ClassId            string
-	Type               string
-	IsPhone            string
-	Imei               string
-	SubCount           string
-	RemainTime         string
-	TempSave           string
-	TimeOver           string
-	EncRemainTime      string
-	EncLastUpdateTime  string
-	Cpi                string
-	Enc                string
-	Source             string
-	UserId             string
-	EnterPageTime      string
-	AnsweredView       string
-	ExitdTime          string
-	PaperGroupId       string
-	XXTQuestion        []XXTQuestion //题目
-}
-
-// 学习通题目
-type XXTQuestion struct {
-	Id       string      //题目ID
-	QType    qtype.QType //题目类型
-	question qentity.Question
+	Paper            xuexitong.XXTExamPaper
 }
 
 // 拉取考试列表
@@ -146,7 +112,6 @@ func EnterExamAction(cache *xuexitong.XueXiTUserCache, exam *XXTExam) error {
 	var fields []HiddenField
 	// 选择所有隐藏字段
 	doc.Find("input[type='hidden']").Each(func(i int, sel *goquery.Selection) {
-
 		id, _ := sel.Attr("id")
 		name, _ := sel.Attr("name")
 		value, _ := sel.Attr("value")
@@ -195,25 +160,60 @@ func EnterExamAction(cache *xuexitong.XueXiTUserCache, exam *XXTExam) error {
 }
 
 // 拉取考试试卷
-func PullExamPaperAction(cache *xuexitong.XueXiTUserCache, exam *XXTExam) error {
+func PullExamPaperAction(cache *xuexitong.XueXiTUserCache, exam *XXTExam, isSubmit bool) error {
 	pullPaperHtml, err := cache.PullExamPaperHtmlApi(exam.CourseId, exam.ClazzId, exam.ExamRelationId, "0", exam.AnswerId, exam.Cpi, "1", xuexitong.IMEI, exam.Validate, "0", 3, nil)
 	if err != nil {
 		return err
 	}
-	HtmlPaperTurnEntity(pullPaperHtml)
-	fmt.Println(pullPaperHtml)
+
+	qsEntity, err := HtmlPaperTurnEntity(pullPaperHtml)
+	exam.Paper = qsEntity
+	if err != nil {
+		return err
+	}
+	for i := 0; ; i++ {
+		pullQuestion, err1 := cache.PullExamQuestionApi(exam.CourseId, exam.ClazzId, exam.ExamRelationId, exam.AnswerId, exam.Cpi, exam.Paper.EncRemainTime, exam.Paper.Enc, exam.Paper.EncLastUpdateTime, i)
+		if err1 != nil {
+			return err1
+		}
+		isLastQuestion := strings.Contains(pullQuestion, `<div class="lastQuestion"> 已经是最后一题了</div>`)
+		qsEntity, err = HtmlPaperTurnEntity(pullQuestion)
+
+		exam.Paper = qsEntity
+		//fmt.Println(pullPaperHtml)
+
+		answerResult, err2 := SubmitExamAnswerAction(cache, exam, isLastQuestion && isSubmit)
+		if err2 != nil {
+			return err2
+		}
+		fmt.Println(answerResult)
+		if isLastQuestion { //如果已经是最后一题则直接退出
+			break
+		}
+	}
+
 	return nil
 }
 
+// 提交学习通考试答案
+func SubmitExamAnswerAction(cache *xuexitong.XueXiTUserCache, exam *XXTExam, isSubmit bool /*是否提交，true为提交，false为暂存*/) (string, error) {
+	api, err := cache.SubmitExamAnswerApi(exam.ClazzId, exam.CourseId, exam.Paper.TestPaperId, exam.Paper.TestUserRelationId, exam.Cpi, exam.Paper.RemainTime, exam.Paper.EncRemainTime, exam.Paper.EncLastUpdateTime, exam.ExamRelationId, exam.AnswerId, exam.RemainTime, !isSubmit, exam.Paper.Enc, exam.Paper.EnterPageTime, exam.Paper.XXTQuestion.QuestionId, exam.Paper.Type, exam.Paper.XXTQuestion.TypeName, &exam.Paper)
+	if err != nil {
+		return "", err
+	}
+	//fmt.Println(api)
+	return api, nil
+}
+
 // html转Exam实体
-func HtmlPaperTurnEntity(paperHtml string) (XXTExamPaper, error) {
-	xxtExamPaper := XXTExamPaper{}
+func HtmlPaperTurnEntity(paperHtml string) (xuexitong.XXTExamPaper, error) {
+	xxtExamPaper := xuexitong.XXTExamPaper{}
 	// 使用 goquery 解析 HTML
 	paperDoc, err := goquery.NewDocumentFromReader(bytes.NewReader([]byte(paperHtml)))
 	if err != nil {
 		log.Fatal(err)
 	}
-	questionId, exists := paperDoc.Attr("data") //题目id
+	questionId, exists := paperDoc.Find("#questionId").Attr("value") //题目id
 	if exists {
 		fmt.Println("question:", questionId)
 	}
@@ -221,6 +221,31 @@ func HtmlPaperTurnEntity(paperHtml string) (XXTExamPaper, error) {
 	if exists {
 		fmt.Println("questionType:", questionType)
 	}
+	get := func(id string) string {
+		v, _ := paperDoc.Find("#" + id).Attr("value")
+		return v
+	}
+	xxtExamPaper.CourseId = get("courseId")
+	xxtExamPaper.TestPaperId = get("testPaperId")
+	xxtExamPaper.TestUserRelationId = get("testUserRelationId")
+	xxtExamPaper.ClassId = get("classId")
+	xxtExamPaper.Type = get("type")
+	xxtExamPaper.IsPhone = get("isphone")
+	xxtExamPaper.Imei = get("imei")
+	xxtExamPaper.SubCount = get("subCount")
+	xxtExamPaper.RemainTime = get("remainTime")
+	xxtExamPaper.TempSave = get("tempSave")
+	xxtExamPaper.TimeOver = get("timeOver")
+	xxtExamPaper.EncRemainTime = get("encRemainTime")
+	xxtExamPaper.EncLastUpdateTime = get("encLastUpdateTime")
+	xxtExamPaper.Cpi = get("cpi")
+	xxtExamPaper.Enc = get("enc")
+	xxtExamPaper.Source = get("source")
+	xxtExamPaper.UserId = get("userId")
+	xxtExamPaper.EnterPageTime = get("enterPageTime")
+	xxtExamPaper.AnsweredView = get("answeredView")
+	xxtExamPaper.ExitdTime = get("exitdtime")
+	xxtExamPaper.PaperGroupId = get("paperGroupId")
 
 	switch questionType {
 	case "0": //单选题
@@ -228,31 +253,215 @@ func HtmlPaperTurnEntity(paperHtml string) (XXTExamPaper, error) {
 		if err1 != nil {
 			fmt.Println(err1)
 		}
+		xxtExamPaper.XXTQuestion = turn
+		fmt.Println(turn)
+	case "1": //多选题
+		turn, err1 := multipleTurn(paperDoc)
+		if err1 != nil {
+			fmt.Println(err1)
+		}
+		xxtExamPaper.XXTQuestion = turn
+		fmt.Println(turn)
+	case "2": //填空题
+		turn, err1 := fillTurn(paperDoc)
+		if err1 != nil {
+			fmt.Println(err1)
+		}
+		xxtExamPaper.XXTQuestion = turn
+		fmt.Println(turn)
+	case "3": //判断题
+		turn, err1 := trueOrFalseTurn(paperDoc)
+		if err1 != nil {
+			fmt.Println(err1)
+		}
+		xxtExamPaper.XXTQuestion = turn
+		fmt.Println(turn)
+	case "4": //简答题
+		turn, err1 := shortAnswerTurn(paperDoc)
+		if err1 != nil {
+			fmt.Println(err1)
+		}
+		xxtExamPaper.XXTQuestion = turn
+		fmt.Println(turn)
+	case "6": //论述题
+		turn, err1 := essayTurn(paperDoc)
+		if err1 != nil {
+			fmt.Println(err1)
+		}
+		xxtExamPaper.XXTQuestion = turn
 		fmt.Println(turn)
 	}
 
 	return xxtExamPaper, nil
 }
 
-func singleTurn(paperDoc *goquery.Document) (XXTQuestion, error) {
-	question := XXTQuestion{}
+// 单选题转换
+func singleTurn(paperDoc *goquery.Document) (xuexitong.XXTQuestion, error) {
+	question := xuexitong.XXTQuestion{}
 	question.QType = qtype.SingleChoice
 	paperDoc.Find("div.questionWrap").Each(func(i int, sel *goquery.Selection) {
-		questionId, exists := paperDoc.Attr("data") //题目id
+		questionId, exists := sel.Attr("data") //题目id
 		if exists {
-			question.Id = questionId
+			question.QuestionId = questionId
 			fmt.Println("question:", questionId)
 		}
 
 		//题目
 		title := strings.TrimSpace(sel.Find(`.tit p`).First().Text())
 		fmt.Println(title)
-		question.question.Content = title
+		question.Question.Content = title
 		sel.Find(`.singleChoice`).Each(func(i int, sel *goquery.Selection) {
 			letter := strings.TrimSpace(sel.Find(`.No`).Text())
 			text := strings.TrimSpace(sel.Find(`.answerInfo cc`).Text())
 			fmt.Println(letter, text)
-			question.question.Options = append(question.question.Options, letter+text)
+			question.Question.Options = append(question.Question.Options, letter+text)
+		})
+
+	})
+	return question, nil
+}
+
+// 多选题转换
+func multipleTurn(paperDoc *goquery.Document) (xuexitong.XXTQuestion, error) {
+	question := xuexitong.XXTQuestion{}
+	question.QType = qtype.MultipleChoice
+	paperDoc.Find("div.questionWrap").Each(func(i int, sel *goquery.Selection) {
+		questionId, exists := sel.Attr("data") //题目id
+		if exists {
+			question.QuestionId = questionId
+			//fmt.Println("question:", questionId)
+		}
+		typeName, exists := paperDoc.Find(`input[name="` + `typeName` + questionId + `"]`).Attr("value")
+		if exists {
+			question.TypeName = typeName
+		}
+
+		//题目
+		title := strings.TrimSpace(sel.Find(`.tit p`).First().Text())
+		fmt.Println(title)
+		question.Question.Content = title
+		sel.Find(`.mulChoice`).Each(func(i int, sel *goquery.Selection) {
+			letter := strings.TrimSpace(sel.Find(`.No`).Text())
+			text := strings.TrimSpace(sel.Find(`.answerInfo cc`).Text())
+			fmt.Println(letter, text)
+			question.Question.Options = append(question.Question.Options, letter+text)
+		})
+
+	})
+	return question, nil
+}
+
+// 填空题转换
+func fillTurn(paperDoc *goquery.Document) (xuexitong.XXTQuestion, error) {
+	question := xuexitong.XXTQuestion{}
+	question.QType = qtype.FillInTheBlank
+	paperDoc.Find("div.questionWrap").Each(func(i int, sel *goquery.Selection) {
+		questionId, exists := sel.Attr("data") //题目id
+		if exists {
+			question.QuestionId = questionId
+			//fmt.Println("question:", questionId)
+		}
+		typeName, exists := paperDoc.Find(`input[name="` + `typeName` + questionId + `"]`).Attr("value")
+		if exists {
+			question.TypeName = typeName
+		}
+
+		//题目
+		title := strings.TrimSpace(sel.Find(`.tit p`).First().Text())
+		fmt.Println(title)
+		question.Question.Content = title
+		sel.Find(`.completionList`).Each(func(i int, sel *goquery.Selection) {
+			letter := strings.TrimSpace(sel.Find(`.grayTit`).Text())
+			fmt.Println(letter)
+			question.Question.Options = append(question.Question.Options, letter)
+		})
+
+	})
+	return question, nil
+}
+
+// 判断题
+func trueOrFalseTurn(paperDoc *goquery.Document) (xuexitong.XXTQuestion, error) {
+	question := xuexitong.XXTQuestion{}
+	question.QType = qtype.TrueOrFalse
+	paperDoc.Find("div.questionWrap").Each(func(i int, sel *goquery.Selection) {
+		questionId, exists := sel.Attr("data") //题目id
+		if exists {
+			question.QuestionId = questionId
+			//fmt.Println("question:", questionId)
+		}
+		typeName, exists := paperDoc.Find(`input[name="` + `typeName` + questionId + `"]`).Attr("value")
+		if exists {
+			question.TypeName = typeName
+		}
+
+		//题目
+		title := strings.TrimSpace(sel.Find(`.tit p`).First().Text())
+		fmt.Println(title)
+		question.Question.Content = title
+		sel.Find(`.answerList`).Each(func(i int, sel *goquery.Selection) {
+			letter := strings.TrimSpace(sel.Find(`.No`).Text())
+			text := strings.TrimSpace(sel.Find(`.answerInfo`).Text())
+			fmt.Println(letter, text)
+			question.Question.Options = append(question.Question.Options, letter+text)
+		})
+
+	})
+	return question, nil
+}
+
+// 简答题
+func shortAnswerTurn(paperDoc *goquery.Document) (xuexitong.XXTQuestion, error) {
+	question := xuexitong.XXTQuestion{}
+	question.QType = qtype.ShortAnswer
+	paperDoc.Find("div.questionWrap").Each(func(i int, sel *goquery.Selection) {
+		questionId, exists := sel.Attr("data") //题目id
+		if exists {
+			question.QuestionId = questionId
+			//fmt.Println("question:", questionId)
+		}
+		typeName, exists := paperDoc.Find(`input[name="` + `typeName` + questionId + `"]`).Attr("value")
+		if exists {
+			question.TypeName = typeName
+		}
+
+		//题目
+		title := strings.TrimSpace(sel.Find(`.tit p`).First().Text())
+		fmt.Println(title)
+		question.Question.Content = title
+		sel.Find(`.completionList`).Each(func(i int, sel *goquery.Selection) {
+			letter := strings.TrimSpace(sel.Find(`.grayTit`).Text())
+			fmt.Println(letter)
+			question.Question.Options = append(question.Question.Options, letter)
+		})
+
+	})
+	return question, nil
+}
+
+// 论述题
+func essayTurn(paperDoc *goquery.Document) (xuexitong.XXTQuestion, error) {
+	question := xuexitong.XXTQuestion{}
+	question.QType = qtype.Essay
+	paperDoc.Find("div.questionWrap").Each(func(i int, sel *goquery.Selection) {
+		questionId, exists := sel.Attr("data") //题目id
+		if exists {
+			question.QuestionId = questionId
+			//fmt.Println("question:", questionId)
+		}
+		typeName, exists := paperDoc.Find(`input[name="` + `typeName` + questionId + `"]`).Attr("value")
+		if exists {
+			question.TypeName = typeName
+		}
+
+		//题目
+		title := strings.TrimSpace(sel.Find(`.tit p`).First().Text())
+		fmt.Println(title)
+		question.Question.Content = title
+		sel.Find(`.completionList`).Each(func(i int, sel *goquery.Selection) {
+			letter := strings.TrimSpace(sel.Find(`.grayTit`).Text())
+			fmt.Println(letter)
+			question.Question.Options = append(question.Question.Options, letter)
 		})
 
 	})

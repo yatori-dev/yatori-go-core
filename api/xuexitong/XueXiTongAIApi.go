@@ -9,12 +9,27 @@ import (
 	"io/ioutil"
 	"net/http"
 	"strings"
+	"sync"
 
 	"github.com/yatori-dev/yatori-go-core/utils"
 )
 
+var courseLocks sync.Map // map[string]*sync.Mutex
+
+func lockByCourse(courseId string) func() {
+	muIface, _ := courseLocks.LoadOrStore(courseId, &sync.Mutex{})
+	mu := muIface.(*sync.Mutex)
+	mu.Lock()
+
+	// 返回 unlock 函数，方便 defer
+	return func() {
+		mu.Unlock()
+	}
+}
+
 // 拉取学习通AI必要参数
 func (cache *XueXiTUserCache) XXTAiInformApi(clazzId, courseId, cpi string, retry int, lastErr error) (string, error) {
+
 	if retry < 0 {
 		return "", lastErr
 	}
@@ -65,6 +80,8 @@ func (cache *XueXiTUserCache) XXTAiInformApi(clazzId, courseId, cpi string, retr
 
 // 请求学习通AI获取答复
 func (cache *XueXiTUserCache) XXTAiAnswerApi(cozeEnc, userId, courseId, classId, conversationId, courseName, studentName, personId, content string, retry int, lastErr error) (string, error) {
+	unlock := lockByCourse(courseId) //对AI加锁
+	defer unlock()
 	//url := "https://stat2-ans.chaoxing.com/stat2/bot/talk-v1?cozeEnc=129ca94f26a7802fd8061ef32f129b4c&botId=7438777570621653018&userId=346635955&appId=1192651262850&courseid=258101827&clazzid=134204187&ut=s"
 	urlStr := "https://stat2-ans.chaoxing.com/stat2/bot/talk-v1?cozeEnc=" + cozeEnc + "&botId=7438777570621653018&userId=" + userId + "&appId=1192651262850&courseid=" + courseId + "&clazzid=" + classId + "&ut=s"
 
