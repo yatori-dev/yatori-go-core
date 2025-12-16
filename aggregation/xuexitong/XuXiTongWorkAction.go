@@ -486,7 +486,12 @@ func singleWorkTurn(paperDoc *goquery.Document) (XXTWorkQuestion, error) {
 		}
 
 		//题目
-		title := strings.TrimSpace(sel.Find(`.workWrap p`).First().Text())
+		//title := strings.TrimSpace(sel.Find(`.workWrap p`).First().Text())
+		title := ""
+		//截取题目
+		sel.Find(`.workWrap`).Each(func(i int, sel *goquery.Selection) {
+			title = extractQuestion(sel)
+		})
 		//fmt.Println(title)
 		question.Question.Content = title
 		resOptions := make(map[string]string)
@@ -521,7 +526,12 @@ func multipleWorkTurn(paperDoc *goquery.Document) (XXTWorkQuestion, error) {
 		}
 
 		//题目
-		title := strings.TrimSpace(sel.Find(`.workWrap p`).First().Text())
+		//title := strings.TrimSpace(sel.Find(`.workWrap p`).First().Text())
+		title := ""
+		//截取题目
+		sel.Find(`.workWrap`).Each(func(i int, sel *goquery.Selection) {
+			title = extractQuestion(sel)
+		})
 		//fmt.Println(title)
 		question.Question.Content = title
 		resOptions := make(map[string]string)
@@ -561,7 +571,12 @@ func fillWorkTurn(paperDoc *goquery.Document) (XXTWorkQuestion, error) {
 		}
 
 		//题目
-		title := strings.TrimSpace(sel.Find(`.workWrap p`).First().Text())
+		//title := strings.TrimSpace(sel.Find(`.workWrap p`).First().Text())
+		title := ""
+		//截取题目
+		sel.Find(`.workWrap`).Each(func(i int, sel *goquery.Selection) {
+			title = extractQuestion(sel)
+		})
 		//fmt.Println(title)
 		question.Question.Content = title
 		sel.Find(`.blankItemName`).Each(func(i int, sel *goquery.Selection) {
@@ -591,7 +606,12 @@ func trueOrFalseWorkTurn(paperDoc *goquery.Document) (XXTWorkQuestion, error) {
 		}
 
 		//题目
-		title := strings.TrimSpace(sel.Find(`.workWrap p`).First().Text())
+		//title := strings.TrimSpace(sel.Find(`.workWrap p`).First().Text())
+		title := ""
+		//截取题目
+		sel.Find(`.workWrap`).Each(func(i int, sel *goquery.Selection) {
+			title = extractQuestion(sel)
+		})
 		//fmt.Println(title)
 		question.Question.Content = title
 		sel.Find(`.Answer`).Each(func(i int, sel *goquery.Selection) {
@@ -623,7 +643,12 @@ func shortAnswerWorkTurn(paperDoc *goquery.Document) (XXTWorkQuestion, error) {
 		}
 
 		//题目
-		title := strings.TrimSpace(sel.Find(`.workWrap p`).First().Text())
+		//title := strings.TrimSpace(sel.Find(`.workWrap p`).First().Text())
+		title := ""
+		//截取题目
+		sel.Find(`.workWrap`).Each(func(i int, sel *goquery.Selection) {
+			title = extractQuestion(sel)
+		})
 		//fmt.Println(title)
 		question.Question.Content = title
 
@@ -648,7 +673,12 @@ func essayWorkTurn(paperDoc *goquery.Document) (XXTWorkQuestion, error) {
 		}
 
 		//题目
-		title := strings.TrimSpace(sel.Find(`.workWrap p`).First().Text())
+		//title := strings.TrimSpace(sel.Find(`.workWrap p`).First().Text())
+		title := ""
+		//截取题目
+		sel.Find(`.workWrap`).Each(func(i int, sel *goquery.Selection) {
+			title = extractQuestion(sel)
+		})
 		//fmt.Println(title)
 		question.Question.Content = title
 
