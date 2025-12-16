@@ -324,11 +324,13 @@ func ChapterFetchCardsAction(
 						CourseID:    strconv.Itoa(courseId),
 						ClassID:     strconv.Itoa(classId),
 						KnowledgeID: card.KnowledgeID,
-						Read:        point.Data["read"].(bool),
 						Cpi:         strconv.Itoa(cpi),
 						JobID:       jobID,
 						Type:        ctype.InsertReadV2,
 						IsSet:       ok,
+					}
+					if read, ok := point.Data["resd"].(bool); ok {
+						pointObj.PointDocumentDto.Read = read
 					}
 				} else {
 					log2.Print(log2.DEBUG, "(%d, %d) 任务点 'jobId' 不存在或为空 %+v", cardIndex, pointIndex, point)
