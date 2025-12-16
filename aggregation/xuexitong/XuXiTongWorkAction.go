@@ -20,7 +20,7 @@ import (
 )
 
 // 学习通考试结构体
-type XXTExam struct {
+type XXTWork struct {
 	Name              string `json:"name"`
 	Status            string `json:"status"`
 	RemainTime        string `json:"remain_time"`
@@ -44,44 +44,14 @@ type XXTExam struct {
 	EncLastUpdateTime string
 }
 
-// 考试试卷信息
-type XXTExamPaper struct {
-	CourseId           string
-	TestPaperId        string
-	TestUserRelationId string
-	ClassId            string
-	Type               string
-	IsPhone            string
-	Imei               string
-	SubCount           string
-	RemainTime         string
-	TempSave           string
-	TimeOver           string
-	EncRemainTime      string
-	EncLastUpdateTime  string
-	Cpi                string
-	Enc                string
-	Source             string
-	UserId             string
-	EnterPageTime      string
-	AnsweredView       string
-	ExitdTime          string
-	PaperGroupId       string
-	TypeName           string
-	QuestionTotal      int //一共几道题
-	ExamRelationId     string
-	AnswerId           string
-	//XXTExamQuestion    xuexitong.XXTExamQuestion //题目
-}
-
-type XXTExamQuestion struct {
-	xuexitong.XXTExamQuestionSubmitEntity
+type XXTWorkQuestion struct {
+	xuexitong.XXTWorkQuestionSubmitEntity
 }
 
 // 拉取考试列表
-func PullExamListAction(cache *xuexitong.XueXiTUserCache, course XueXiTCourse) ([]XXTExam, error) {
-	examList := []XXTExam{}
-	examListHtml, err := cache.PullExamListHtmlApi(course.CourseID, course.Key, fmt.Sprintf("%d", course.Cpi), 3, nil)
+func PullWorkListAction(cache *xuexitong.XueXiTUserCache, course XueXiTCourse) ([]XXTWork, error) {
+	examList := []XXTWork{}
+	examListHtml, err := cache.PullWorkListHtmlApi(course.CourseID, course.Key, fmt.Sprintf("%d", course.Cpi), 3, nil)
 	if err != nil {
 		return examList, err
 	}
@@ -115,7 +85,7 @@ func PullExamListAction(cache *xuexitong.XueXiTUserCache, course XueXiTCourse) (
 			remain = strings.TrimSpace(spanList.Eq(1).Text())
 		}
 
-		exam := XXTExam{
+		exam := XXTWork{
 			Name:       name,
 			Status:     status,
 			RemainTime: remain,
@@ -135,10 +105,10 @@ func PullExamListAction(cache *xuexitong.XueXiTUserCache, course XueXiTCourse) (
 	return examList, nil
 }
 
-// EnterExamAction 进入考试
-func EnterExamAction(cache *xuexitong.XueXiTUserCache, exam *XXTExam) error {
+// EnterWorkAction 进入考试
+func EnterWorkAction(cache *xuexitong.XueXiTUserCache, exam *XXTWork) error {
 	//这一步拉取必要的参数，比如滑块验证码参数等,注意这里的refererUrl会在后面的滑块验证码中用到
-	enterHtml, refererUrl, err := cache.PullExamEnterInformHtmlApi(exam.TaskRefId, exam.MsgId, exam.CourseId, exam.UserId, exam.ClazzId, exam.Type, exam.EncTask, 3, nil)
+	enterHtml, refererUrl, err := cache.PullWorkEnterInformHtmlApi(exam.TaskRefId, exam.MsgId, exam.CourseId, exam.UserId, exam.ClazzId, exam.Type, exam.EncTask, 3, nil)
 	if err != nil {
 		//fmt.Println(refererUrl)
 		return err
@@ -207,12 +177,17 @@ func EnterExamAction(cache *xuexitong.XueXiTUserCache, exam *XXTExam) error {
 			break //如果成功了那么直接退出循环
 		}
 	}
-	pullPaperHtml, err := cache.PullExamPaperHtmlApi(exam.CourseId, exam.ClazzId, exam.ExamRelationId, "0", exam.AnswerId, exam.Cpi, "1", xuexitong.IMEI, exam.Validate, "0", 3, nil)
+	cpi, answerId, enc := extractParams(enterHtml)
+	exam.Cpi = cpi
+	exam.AnswerId = answerId
+	exam.Enc = enc
+	//pullPaperHtml, err := cache.PullExamPaperHtmlApi(exam.CourseId, exam.ClazzId, exam.ExamRelationId, "0", exam.AnswerId, exam.Cpi, "1", xuexitong.IMEI, exam.Validate, "0", 3, nil)
+	pullPaperHtml, err := cache.PullWorkPaperHtmlApi(exam.CourseId, exam.ClazzId, exam.TaskRefId, "0", exam.MsgId, exam.Cpi, exam.AnswerId, exam.Enc, "1", 3, nil)
 	if err != nil {
 		return err
 
 	}
-	qsEntity, err1 := HtmlQuestionTurnEntity(pullPaperHtml)
+	qsEntity, err1 := HtmlWorkQuestionTurnEntity(pullPaperHtml)
 	if err1 != nil {
 		return err1
 	}
@@ -224,17 +199,30 @@ func EnterExamAction(cache *xuexitong.XueXiTUserCache, exam *XXTExam) error {
 	return nil
 }
 
+func extractParams(js string) (cpi, workAnswerId, enc string) {
+	re := regexp.MustCompile(`cpi=(\d+).*?workAnswerId=(\d+).*?enc=([a-fA-F0-9]+)`)
+	match := re.FindStringSubmatch(js)
+
+	if len(match) > 3 {
+		//fmt.Println("workAnswerId:", match[1])
+		//fmt.Println("enc:", match[2])
+		return match[1], match[2], match[3]
+	}
+
+	return "", "", ""
+}
+
 // 拉取题目
-func (exam *XXTExam) PullExamQuestionAction(cache *xuexitong.XueXiTUserCache, index int /*第几道题*/) (XXTExamQuestion, error) {
-	pullQuestion, err1 := cache.PullExamQuestionApi(exam.CourseId, exam.ClazzId, exam.ExamRelationId, exam.AnswerId, exam.Cpi, exam.EncRemainTime, exam.Enc, exam.EncLastUpdateTime, index)
+func (exam *XXTWork) PullWorkQuestionAction(cache *xuexitong.XueXiTUserCache, index int /*第几道题*/) (XXTWorkQuestion, error) {
+	pullQuestion, err1 := cache.PullWorkQuestionApi(exam.CourseId, exam.ClazzId, exam.TaskRefId, "0", exam.MsgId, exam.Cpi, exam.AnswerId, exam.Enc, "1", index, 3, nil)
 	if err1 != nil {
-		return XXTExamQuestion{}, err1
+		return XXTWorkQuestion{}, err1
 	}
 	//isLastQuestion := strings.Contains(pullQuestion, `<div class="lastQuestion"> 已经是最后一题了</div>`)
-	qsEntity, err := HtmlQuestionTurnEntity(pullQuestion)
+	qsEntity, err := HtmlWorkQuestionTurnEntity(pullQuestion)
 	//fmt.Println(pullPaperHtml)
 	if err != nil {
-		return XXTExamQuestion{}, err
+		return XXTWorkQuestion{}, err
 	}
 	qsEntity.ExamRelationId = exam.ExamRelationId
 	qsEntity.AnswerId = exam.AnswerId
@@ -244,7 +232,7 @@ func (exam *XXTExam) PullExamQuestionAction(cache *xuexitong.XueXiTUserCache, in
 }
 
 // AI写题
-func (question *XXTExamQuestion) WriteQuestionForAIAction(cache *xuexitong.XueXiTUserCache, aiUrl, model string, aiType ctype.AiType, apiKey string) error {
+func (question *XXTWorkQuestion) WriteQuestionForAIAction(cache *xuexitong.XueXiTUserCache, aiUrl, model string, aiType ctype.AiType, apiKey string) error {
 	aiChatMessages := aiq.BuildAiQuestionMessage(question.Question)
 
 	aiAnswer, err := aiq.AggregationAIApi(aiUrl, model, aiType, aiChatMessages, apiKey)
@@ -265,7 +253,7 @@ func (question *XXTExamQuestion) WriteQuestionForAIAction(cache *xuexitong.XueXi
 }
 
 // 外置题库写题
-func (question *XXTExamQuestion) WriteQuestionForExternalAction(exUrl string) {
+func (question *XXTWorkQuestion) WriteQuestionForExternalAction(exUrl string) {
 	//赋值选项
 	request, err := external.ApiQueRequest(question.Question, exUrl, 5, nil)
 	if err != nil {
@@ -288,7 +276,7 @@ func (question *XXTExamQuestion) WriteQuestionForExternalAction(exUrl string) {
 }
 
 // 学习通内置题库写题
-func (question *XXTExamQuestion) WriteQuestionForXXTAIAction(cache *xuexitong.XueXiTUserCache, classId, courseId, cpi string) error {
+func (question *XXTWorkQuestion) WriteQuestionForXXTAIAction(cache *xuexitong.XueXiTUserCache, classId, courseId, cpi string) error {
 	aiChatMessages := aiq.BuildAiQuestionMessage(question.Question)
 
 	informHtml, err := cache.XXTAiInformApi(classId, courseId, cpi, 3, nil)
@@ -341,9 +329,9 @@ func (question *XXTExamQuestion) WriteQuestionForXXTAIAction(cache *xuexitong.Xu
 }
 
 // 提交学习通考试答案
-func (question *XXTExamQuestion) SubmitExamAnswerAction(cache *xuexitong.XueXiTUserCache, isSubmit bool /*是否提交，true为提交，false为暂存*/) (string, error) {
+func (question *XXTWorkQuestion) SubmitWorkAnswerAction(cache *xuexitong.XueXiTUserCache, isSubmit bool /*是否提交，true为提交，false为暂存*/) (string, error) {
 	//api, err := cache.SubmitExamAnswerApi(exam.ClazzId, exam.CourseId, exam.Paper.TestPaperId, exam.Paper.TestUserRelationId, exam.Cpi, exam.Paper.RemainTime, exam.Paper.EncRemainTime, exam.Paper.EncLastUpdateTime, exam.ExamRelationId, exam.AnswerId, exam.RemainTime, !isSubmit, exam.Paper.Enc, exam.Paper.EnterPageTime, exam.Paper.XXTExamQuestion.QuestionId, exam.Paper.Type, exam.Paper.XXTExamQuestion.TypeName, &exam.Paper)
-	api, err := cache.SubmitExamAnswerApi(&question.XXTExamQuestionSubmitEntity, !isSubmit)
+	api, err := cache.SubmitWorkAnswerApi(&question.XXTWorkQuestionSubmitEntity, !isSubmit)
 	if err != nil {
 		return "", err
 	}
@@ -352,9 +340,9 @@ func (question *XXTExamQuestion) SubmitExamAnswerAction(cache *xuexitong.XueXiTU
 }
 
 // html转Exam实体
-func HtmlQuestionTurnEntity(paperHtml string) (XXTExamQuestion, error) {
+func HtmlWorkQuestionTurnEntity(paperHtml string) (XXTWorkQuestion, error) {
 	//xxtExamPaper := XXTExamPaper{}
-	question := XXTExamQuestion{}
+	question := XXTWorkQuestion{}
 	// 使用 goquery 解析 HTML
 	paperDoc, err := goquery.NewDocumentFromReader(bytes.NewReader([]byte(paperHtml)))
 	if err != nil {
@@ -371,12 +359,10 @@ func HtmlQuestionTurnEntity(paperHtml string) (XXTExamQuestion, error) {
 		log2.Print(log2.DEBUG, questionTypeCode)
 		//fmt.Println("questionType:", questionTypeCode)
 	}
-	questionTypeStr, exists := paperDoc.Find(`input[name="` + `typeName` + questionId + `"]`).Attr("value")
-	if exists {
-		question.QuestionTypeStr = questionTypeStr
-		log2.Print(log2.DEBUG, questionTypeStr)
-		//fmt.Println("questionType:", questionTypeStr)
-	}
+	questionTypeStr, _ := paperDoc.Find(`span.focusSpan`).Attr("aria-label")
+	// 去除前置题序，如 "1. "、"12. "
+	re := regexp.MustCompile(`^\s*\d+\.\s*`)
+	questionTypeStr = re.ReplaceAllString(questionTypeStr, "")
 
 	get := func(id string) string {
 		v, _ := paperDoc.Find("#" + id).Attr("value")
@@ -388,42 +374,42 @@ func HtmlQuestionTurnEntity(paperHtml string) (XXTExamQuestion, error) {
 	}
 	switch questionTypeCode {
 	case "0": //单选题
-		turn, err1 := singleTurn(paperDoc)
+		turn, err1 := singleWorkTurn(paperDoc)
 		if err1 != nil {
 			fmt.Println(err1)
 		}
 		question = turn
 		//fmt.Println(turn)
 	case "1": //多选题
-		turn, err1 := multipleTurn(paperDoc)
+		turn, err1 := multipleWorkTurn(paperDoc)
 		if err1 != nil {
 			fmt.Println(err1)
 		}
 		question = turn
 		//fmt.Println(turn)
 	case "2": //填空题
-		turn, err1 := fillTurn(paperDoc)
+		turn, err1 := fillWorkTurn(paperDoc)
 		if err1 != nil {
 			fmt.Println(err1)
 		}
 		question = turn
 		//fmt.Println(turn)
 	case "3": //判断题
-		turn, err1 := trueOrFalseTurn(paperDoc)
+		turn, err1 := trueOrFalseWorkTurn(paperDoc)
 		if err1 != nil {
 			fmt.Println(err1)
 		}
 		question = turn
 		//fmt.Println(turn)
 	case "4": //简答题
-		turn, err1 := shortAnswerTurn(paperDoc)
+		turn, err1 := shortAnswerWorkTurn(paperDoc)
 		if err1 != nil {
 			fmt.Println(err1)
 		}
 		question = turn
 		//fmt.Println(turn)
 	case "6": //论述题
-		turn, err1 := essayTurn(paperDoc)
+		turn, err1 := essayWorkTurn(paperDoc)
 		if err1 != nil {
 			fmt.Println(err1)
 		}
@@ -431,7 +417,6 @@ func HtmlQuestionTurnEntity(paperHtml string) (XXTExamQuestion, error) {
 		//fmt.Println(turn)
 	}
 	question.CourseId = get("courseId")
-	question.TestPaperId = get("testPaperId")
 	question.TestUserRelationId = get("testUserRelationId")
 	question.ClassId = get("classId")
 	question.Type = get("type")
@@ -446,23 +431,33 @@ func HtmlQuestionTurnEntity(paperHtml string) (XXTExamQuestion, error) {
 	question.Cpi = get("cpi")
 	question.Enc = get("enc")
 	question.Source = get("source")
+	question.Score = getForName("score" + questionId)
 	question.UserId = get("userId")
 	question.EnterPageTime = get("enterPageTime")
 	question.AnsweredView = get("answeredView")
-	question.ExitdTime = get("exitdtime")
+	question.AnsweredView = get("answeredView")
 	question.PaperGroupId = get("paperGroupId")
-	question.Source = getForName("score" + questionId)
+	question.WordId = get("workId")
+	question.CurrentTime = get("currentTime")
+	question.CurrentCpi = get("currentCpi")
+	question.CurrentUploadEnc = get("currentUploadEnc")
+	question.MatchEnc = get("matchEnc")
+	question.Cfid = get("cfid")
+	question.AddTimes = get("addTimes")
+	question.LimitWorkSubmitTimes = get("limitWorkSubmitTimes")
 	question.QuestionTypeCode = questionTypeCode
 	question.QuestionTypeStr = questionTypeStr
+	question.EncWork = get("encWork")
+	question.Index = get("index")
 	return question, nil
 }
 
 // 单选题转换
-func singleTurn(paperDoc *goquery.Document) (XXTExamQuestion, error) {
-	question := XXTExamQuestion{}
+func singleWorkTurn(paperDoc *goquery.Document) (XXTWorkQuestion, error) {
+	question := XXTWorkQuestion{}
 	question.QType = qtype.SingleChoice
 	question.Question.Type = question.QType.String()
-	paperDoc.Find("div.questionWrap").Each(func(i int, sel *goquery.Selection) {
+	paperDoc.Find("div.singleQuesId").Each(func(i int, sel *goquery.Selection) {
 		questionId, exists := sel.Attr("data") //题目id
 		if exists {
 			question.QuestionId = questionId
@@ -470,16 +465,16 @@ func singleTurn(paperDoc *goquery.Document) (XXTExamQuestion, error) {
 		}
 
 		//题目
-		title := strings.TrimSpace(sel.Find(`.tit p`).First().Text())
+		title := strings.TrimSpace(sel.Find(`.workWrap p`).First().Text())
 		//fmt.Println(title)
 		question.Question.Content = title
 		resOptions := make(map[string]string)
-		sel.Find(`.singleChoice`).Each(func(i int, sel *goquery.Selection) {
-			letter, _ := sel.Attr(`name`)
-			text := strings.TrimSpace(sel.Find(`.answerInfo cc`).Text())
-			//fmt.Println(letter, text)
-			//question.Question.Options = append(question.Question.Options, letter+text)
+		sel.Find(`div.centerSpan`).Each(func(i int, sel *goquery.Selection) {
+			//letter := strings.TrimSpace(sel.Find(`.No`).Text())
+			letter, _ := sel.Attr("id")
+			text := strings.TrimSpace(sel.Find(`p`).Text())
 			resOptions[letter] = letter + text
+			//fmt.Println(letter, text)
 		})
 		resSelect := []string{"A", "B", "C", "D", "E", "F", "G", "H", "I", "J", "K", "L", "M", "N"}
 		for _, slt := range resSelect {
@@ -488,38 +483,33 @@ func singleTurn(paperDoc *goquery.Document) (XXTExamQuestion, error) {
 			}
 			question.Question.Options = append(question.Question.Options, resOptions[slt])
 		}
-
 	})
 	return question, nil
 }
 
 // 多选题转换
-func multipleTurn(paperDoc *goquery.Document) (XXTExamQuestion, error) {
-	question := XXTExamQuestion{}
+func multipleWorkTurn(paperDoc *goquery.Document) (XXTWorkQuestion, error) {
+	question := XXTWorkQuestion{}
 	question.QType = qtype.MultipleChoice
 	question.Question.Type = question.QType.String()
-
-	paperDoc.Find("div.questionWrap").Each(func(i int, sel *goquery.Selection) {
+	paperDoc.Find("div.singleQuesId").Each(func(i int, sel *goquery.Selection) {
 		questionId, exists := sel.Attr("data") //题目id
 		if exists {
 			question.QuestionId = questionId
 			//fmt.Println("question:", questionId)
 		}
-		typeName, exists := paperDoc.Find(`input[name="` + `typeName` + questionId + `"]`).Attr("value")
-		if exists {
-			question.TypeName = typeName
-		}
 
 		//题目
-		title := strings.TrimSpace(sel.Find(`.tit p`).First().Text())
+		title := strings.TrimSpace(sel.Find(`.workWrap p`).First().Text())
+		//fmt.Println(title)
 		question.Question.Content = title
 		resOptions := make(map[string]string)
-		sel.Find(`.mulChoice`).Each(func(i int, sel *goquery.Selection) {
-			letter, _ := sel.Attr(`name`)
-			text := strings.TrimSpace(sel.Find(`.answerInfo cc`).Text())
-			//fmt.Println(letter, text)
-			//question.Question.Options = append(question.Question.Options, letter+text)
+		sel.Find(`div.centerSpan`).Each(func(i int, sel *goquery.Selection) {
+			//letter := strings.TrimSpace(sel.Find(`.No`).Text())
+			letter, _ := sel.Attr("id")
+			text := strings.TrimSpace(sel.Find(`p`).Text())
 			resOptions[letter] = letter + text
+			//fmt.Println(letter, text)
 		})
 		resSelect := []string{"A", "B", "C", "D", "E", "F", "G", "H", "I", "J", "K", "L", "M", "N"}
 		for _, slt := range resSelect {
@@ -528,17 +518,17 @@ func multipleTurn(paperDoc *goquery.Document) (XXTExamQuestion, error) {
 			}
 			question.Question.Options = append(question.Question.Options, resOptions[slt])
 		}
-
 	})
+
 	return question, nil
 }
 
 // 填空题转换
-func fillTurn(paperDoc *goquery.Document) (XXTExamQuestion, error) {
-	question := XXTExamQuestion{}
+func fillWorkTurn(paperDoc *goquery.Document) (XXTWorkQuestion, error) {
+	question := XXTWorkQuestion{}
 	question.QType = qtype.FillInTheBlank
 	question.Question.Type = question.QType.String()
-	paperDoc.Find("div.questionWrap").Each(func(i int, sel *goquery.Selection) {
+	paperDoc.Find("div.singleQuesId").Each(func(i int, sel *goquery.Selection) {
 		questionId, exists := sel.Attr("data") //题目id
 		if exists {
 			question.QuestionId = questionId
@@ -550,11 +540,11 @@ func fillTurn(paperDoc *goquery.Document) (XXTExamQuestion, error) {
 		}
 
 		//题目
-		title := strings.TrimSpace(sel.Find(`.tit p`).First().Text())
+		title := strings.TrimSpace(sel.Find(`.workWrap p`).First().Text())
 		//fmt.Println(title)
 		question.Question.Content = title
-		sel.Find(`.completionList`).Each(func(i int, sel *goquery.Selection) {
-			letter := strings.TrimSpace(sel.Find(`.grayTit`).Text())
+		sel.Find(`.blankItemName`).Each(func(i int, sel *goquery.Selection) {
+			letter, _ := sel.Attr(`aria-label`)
 			//fmt.Println(letter)
 			question.Question.Options = append(question.Question.Options, letter)
 		})
@@ -564,11 +554,11 @@ func fillTurn(paperDoc *goquery.Document) (XXTExamQuestion, error) {
 }
 
 // 判断题
-func trueOrFalseTurn(paperDoc *goquery.Document) (XXTExamQuestion, error) {
-	question := XXTExamQuestion{}
+func trueOrFalseWorkTurn(paperDoc *goquery.Document) (XXTWorkQuestion, error) {
+	question := XXTWorkQuestion{}
 	question.QType = qtype.TrueOrFalse
 	question.Question.Type = question.QType.String()
-	paperDoc.Find("div.questionWrap").Each(func(i int, sel *goquery.Selection) {
+	paperDoc.Find("div.singleQuesId").Each(func(i int, sel *goquery.Selection) {
 		questionId, exists := sel.Attr("data") //题目id
 		if exists {
 			question.QuestionId = questionId
@@ -580,12 +570,13 @@ func trueOrFalseTurn(paperDoc *goquery.Document) (XXTExamQuestion, error) {
 		}
 
 		//题目
-		title := strings.TrimSpace(sel.Find(`.tit p`).First().Text())
+		title := strings.TrimSpace(sel.Find(`.workWrap p`).First().Text())
 		//fmt.Println(title)
 		question.Question.Content = title
-		sel.Find(`.answerList`).Each(func(i int, sel *goquery.Selection) {
-			letter := strings.TrimSpace(sel.Find(`.No`).Text())
-			text := strings.TrimSpace(sel.Find(`.answerInfo`).Text())
+		sel.Find(`.Answer`).Each(func(i int, sel *goquery.Selection) {
+			letter := sel.Find("span.check").Text()
+			text := sel.Find("p.fl").Text()
+
 			//fmt.Println(letter, text)
 			question.Question.Options = append(question.Question.Options, letter+text)
 		})
@@ -595,11 +586,11 @@ func trueOrFalseTurn(paperDoc *goquery.Document) (XXTExamQuestion, error) {
 }
 
 // 简答题
-func shortAnswerTurn(paperDoc *goquery.Document) (XXTExamQuestion, error) {
-	question := XXTExamQuestion{}
+func shortAnswerWorkTurn(paperDoc *goquery.Document) (XXTWorkQuestion, error) {
+	question := XXTWorkQuestion{}
 	question.QType = qtype.ShortAnswer
 	question.Question.Type = question.QType.String()
-	paperDoc.Find("div.questionWrap").Each(func(i int, sel *goquery.Selection) {
+	paperDoc.Find("div.singleQuesId").Each(func(i int, sel *goquery.Selection) {
 		questionId, exists := sel.Attr("data") //题目id
 		if exists {
 			question.QuestionId = questionId
@@ -611,25 +602,20 @@ func shortAnswerTurn(paperDoc *goquery.Document) (XXTExamQuestion, error) {
 		}
 
 		//题目
-		title := strings.TrimSpace(sel.Find(`.tit p`).First().Text())
+		title := strings.TrimSpace(sel.Find(`.workWrap p`).First().Text())
 		//fmt.Println(title)
 		question.Question.Content = title
-		sel.Find(`.completionList`).Each(func(i int, sel *goquery.Selection) {
-			letter := strings.TrimSpace(sel.Find(`.grayTit`).Text())
-			//fmt.Println(letter)
-			question.Question.Options = append(question.Question.Options, letter)
-		})
 
 	})
 	return question, nil
 }
 
 // 论述题
-func essayTurn(paperDoc *goquery.Document) (XXTExamQuestion, error) {
-	question := XXTExamQuestion{}
+func essayWorkTurn(paperDoc *goquery.Document) (XXTWorkQuestion, error) {
+	question := XXTWorkQuestion{}
 	question.QType = qtype.Essay
 	question.Question.Type = question.QType.String()
-	paperDoc.Find("div.questionWrap").Each(func(i int, sel *goquery.Selection) {
+	paperDoc.Find("div.singleQuesId").Each(func(i int, sel *goquery.Selection) {
 		questionId, exists := sel.Attr("data") //题目id
 		if exists {
 			question.QuestionId = questionId
@@ -641,14 +627,9 @@ func essayTurn(paperDoc *goquery.Document) (XXTExamQuestion, error) {
 		}
 
 		//题目
-		title := strings.TrimSpace(sel.Find(`.tit p`).First().Text())
+		title := strings.TrimSpace(sel.Find(`.workWrap p`).First().Text())
 		//fmt.Println(title)
 		question.Question.Content = title
-		sel.Find(`.completionList`).Each(func(i int, sel *goquery.Selection) {
-			letter := strings.TrimSpace(sel.Find(`.grayTit`).Text())
-			//fmt.Println(letter)
-			question.Question.Options = append(question.Question.Options, letter)
-		})
 
 	})
 	return question, nil

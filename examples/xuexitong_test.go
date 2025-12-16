@@ -844,6 +844,63 @@ func TestXueXiToExam(t *testing.T) {
 	}
 }
 
+// 作业测试
+func TestXueXiToWork(t *testing.T) {
+	utils.YatoriCoreInit()
+	//测试账号
+	setup()
+	user := global.Config.Users[68]
+
+	userCache := xuexitongApi.XueXiTUserCache{
+		Name:     user.Account,
+		Password: user.Password,
+	}
+
+	err := xuexitong.XueXiTLoginAction(&userCache)
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	courseList, err := xuexitong.XueXiTPullCourseAction(&userCache) //拉取所有课程
+	isSubmit := true
+	for _, course := range courseList { //遍历课程
+
+		if course.CourseName != "大学教育" {
+			continue
+		}
+		examList, err1 := xuexitong.PullWorkListAction(&userCache, course)
+		if err1 != nil {
+			log.Fatal(err1)
+		}
+		// 打印结果
+		for _, exam := range examList {
+			if !(exam.Status == "待做" || exam.Status == "未交") {
+				continue
+			}
+			//进入作业
+			err2 := xuexitong.EnterWorkAction(&userCache, &exam)
+			if err2 != nil {
+				log.Fatal(err2)
+			}
+			//拉取题目
+			for i := range exam.QuestionTotal {
+				question, err2 := exam.PullWorkQuestionAction(&userCache, i)
+				if err2 != nil {
+					log.Fatal(err2)
+				}
+				//内置AI自动写题
+				question.WriteQuestionForXXTAIAction(&userCache, question.ClassId, question.CourseId, question.Cpi)
+				//提交写的题
+				submitResult, err2 := question.SubmitWorkAnswerAction(&userCache, isSubmit && exam.QuestionTotal == i+1)
+				if err2 != nil {
+					log.Fatal(err2)
+				}
+				fmt.Println(submitResult)
+			}
+		}
+	}
+}
+
 // 试卷题目截取测试
 func TestXXTExamPaperPull(t *testing.T) {
 	utils.YatoriCoreInit()
