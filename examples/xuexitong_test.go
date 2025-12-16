@@ -874,7 +874,7 @@ func TestXueXiToWork(t *testing.T) {
 		}
 		// 打印结果
 		for _, exam := range examList {
-			if !(exam.Status == "待做" || exam.Status == "未交") {
+			if !(exam.Status == "待做" || exam.Status == "未交" || exam.Status == "待重做") {
 				continue
 			}
 			//进入作业

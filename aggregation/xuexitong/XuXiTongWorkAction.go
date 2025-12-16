@@ -105,7 +105,7 @@ func PullWorkListAction(cache *xuexitong.XueXiTUserCache, course XueXiTCourse) (
 	return examList, nil
 }
 
-// EnterWorkAction 进入考试
+// EnterWorkAction 进入作业
 func EnterWorkAction(cache *xuexitong.XueXiTUserCache, exam *XXTWork) error {
 	//这一步拉取必要的参数，比如滑块验证码参数等,注意这里的refererUrl会在后面的滑块验证码中用到
 	enterHtml, refererUrl, err := cache.PullWorkEnterInformHtmlApi(exam.TaskRefId, exam.MsgId, exam.CourseId, exam.UserId, exam.ClazzId, exam.Type, exam.EncTask, 3, nil)
@@ -113,12 +113,23 @@ func EnterWorkAction(cache *xuexitong.XueXiTUserCache, exam *XXTWork) error {
 		//fmt.Println(refererUrl)
 		return err
 	}
+
 	re := regexp.MustCompile(`共包含\s*(\d+)\s*道题目`)
 	match := re.FindStringSubmatch(enterHtml)
 
 	if len(match) > 1 {
 		count, _ := strconv.Atoi(match[1])
 		exam.QuestionTotal = count
+	}
+	//如果是待重做
+	if strings.Contains(enterHtml, "待重做") {
+		re = regexp.MustCompile(`共\s*(\d+)\s*题`)
+		match = re.FindStringSubmatch(enterHtml)
+
+		if len(match) > 1 {
+			count, _ := strconv.Atoi(match[1])
+			exam.QuestionTotal = count
+		}
 	}
 
 	doc, err := goquery.NewDocumentFromReader(strings.NewReader(enterHtml))
@@ -200,16 +211,26 @@ func EnterWorkAction(cache *xuexitong.XueXiTUserCache, exam *XXTWork) error {
 }
 
 func extractParams(js string) (cpi, workAnswerId, enc string) {
-	re := regexp.MustCompile(`cpi=(\d+).*?workAnswerId=(\d+).*?enc=([a-fA-F0-9]+)`)
-	match := re.FindStringSubmatch(js)
-
-	if len(match) > 3 {
-		//fmt.Println("workAnswerId:", match[1])
-		//fmt.Println("enc:", match[2])
-		return match[1], match[2], match[3]
+	//cpiRe := regexp.MustCompile(`cpi=(\d+).*?workAnswerId=(\d+).*?enc=([a-fA-F0-9]+)`)
+	cpiRe := regexp.MustCompile(`cpi=(\d+).*?`)
+	cpiMatch := cpiRe.FindStringSubmatch(js)
+	answerIdRe := regexp.MustCompile(`workAnswerId=(\d+).*?`)
+	answerIdMatch := answerIdRe.FindStringSubmatch(js)
+	encRe := regexp.MustCompile(`enc=([a-fA-F0-9]+)`)
+	encMatch := encRe.FindStringSubmatch(js)
+	cpiC := ""
+	workAnswerIdC := ""
+	encC := ""
+	if len(cpiMatch) > 1 {
+		cpiC = cpiMatch[1]
 	}
-
-	return "", "", ""
+	if len(answerIdMatch) > 1 {
+		workAnswerIdC = answerIdMatch[1]
+	}
+	if len(encMatch) > 1 {
+		encC = encMatch[1]
+	}
+	return cpiC, workAnswerIdC, encC
 }
 
 // 拉取题目
