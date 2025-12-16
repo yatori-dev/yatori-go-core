@@ -295,6 +295,118 @@ func (cache *XueXiTUserCache) PullReDoExamPaperHtmlApi(urlStr string, retry int,
 	return string(body), nil
 }
 
+// 开启重考
+func (cache *XueXiTUserCache) StartReExamApi(examId, examAnswerId, courseId, classId string) (string, error) {
+
+	//url := "https://mooc1-api.chaoxing.com/exam-ans/exam/phone/restartOp?examId=7937785&examAnswerId=168238211&courseId=256999641&classId=131736238&source=0&code="
+	urlStr := "https://mooc1-api.chaoxing.com/exam-ans/exam/phone/restartOp?examId=" + examId + "&examAnswerId=" + examAnswerId + "&courseId=" + courseId + "&classId=" + classId + "&source=0&code="
+	method := "GET"
+
+	tr := &http.Transport{
+		TLSClientConfig: &tls.Config{
+			InsecureSkipVerify: true, // 跳过证书验证，仅用于开发环境
+		},
+	}
+
+	//如果开启了IP代理，那么就直接添加代理
+	if cache.IpProxySW {
+		tr.Proxy = func(req *http.Request) (*url.URL, error) {
+			return url.Parse(cache.ProxyIP) // 设置代理
+		}
+	}
+	client := &http.Client{
+		Transport: tr,
+	}
+	req, err := http.NewRequest(method, urlStr, nil)
+
+	if err != nil {
+		fmt.Println(err)
+		return "", err
+	}
+	req.Header.Add("Accept", "application/json, text/javascript, */*; q=0.01")
+	req.Header.Add("Accept-Language", "zh-CN,zh;q=0.9,en;q=0.8,en-GB;q=0.7,en-US;q=0.6")
+	req.Header.Add("Cache-Control", "no-cache")
+	req.Header.Add("Connection", "keep-alive")
+	req.Header.Add("Pragma", "no-cache")
+	//req.Header.Add("Referer", "https://mooc1-api.chaoxing.com/exam-ans/exam/phone/task-exam?courseId=256999641&classId=131736238&taskrefId=7937785&examAnswerId=168238211&cpi=517393536&ut=s&code=&reset=true&protocol_v=1")
+	req.Header.Add("Sec-Fetch-Dest", "empty")
+	req.Header.Add("Sec-Fetch-Mode", "cors")
+	req.Header.Add("Sec-Fetch-Site", "same-origin")
+	req.Header.Add("User-Agent", GetUA("mobile"))
+	req.Header.Add("X-Requested-With", "XMLHttpRequest")
+	req.Header.Add("sec-ch-ua", "\"\"")
+	req.Header.Add("sec-ch-ua-mobile", "?1")
+	req.Header.Add("sec-ch-ua-platform", "\"\"")
+	//req.Header.Add("Cookie", "k8sexam=1765900728.881.24993.707635; jrose=F2858ED8BC6EA85595A608BD33F1164B.mooc-exam-2486724551-fmknb; tl=1; fanyamoocs=11401F839C536D9E; fid=6787; _uid=429262307; _d=1765899919966; UID=429262307; vc3=aS%2FYSORibX7l8xO%2BujOF8JEe0pBOFjYgDg5OrZyRH%2BoWydxijVw6%2BYrhcKeEyU8TLcnELdiuSifm6sRFmQlkHfxqQv0ziSZxtc%2F%2FngoyZeNmDdrivyoh4dnkDwgPpz9FueXc2JQDyR8ZqcbqUfsCq65eYx8lODGFPp7HypVSEfc%3D4d3c0ba677081916ea02d4cacdee795b; uf=fbe48ba271b0dbbd91cd9a0e960855f7b8ca773eb07e4328b52e7de4225e2fdc073647dc04afa82b9bd3f67c9461cd3281a6c9ddee30899fd807a544f7930b6aed1e6c11a143bb563b0339d97cdac4bac669f25c40cc3fa3713028f1ec42bf71b1188854805578cce2f10ebb6151c97cc98abd27392b42e553e2705741fab8423a2679a989dd9603c60c9ca3aa463e924df7ff280fcb29d10d8a4c92b12beb4b28a0f7dcce9f304154e4b3f39763e56a941095173d43e835e7fafd565af53bf2; cx_p_token=35ecf844d53ba2b4a864977f5defc3cc; p_auth_token=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1aWQiOiI0MjkyNjIzMDciLCJsb2dpblRpbWUiOjE3NjU4OTk5MTk5NjgsImV4cCI6MTc2NjUwNDcxOX0._L9YgTQt4lGPA5KSNCo4RR-cqW5Pm6VyR21C-xG9XR8; xxtenc=017945e4e5c6a6b918d59b906f304ca3; DSSTASH_LOG=C_38-UN_6051-US_429262307-T_1765899919968; source=\"\"; thirdRegist=0; route=f537d772be8122bff9ae56a564b98ff6")
+	req.Header.Add("Host", "mooc1-api.chaoxing.com")
+	for _, cookie := range cache.cookies {
+		req.AddCookie(cookie)
+	}
+
+	res, err := client.Do(req)
+	if err != nil {
+		fmt.Println(err)
+		return "", err
+	}
+	defer res.Body.Close()
+
+	body, err := ioutil.ReadAll(res.Body)
+	if err != nil {
+		fmt.Println(err)
+		return "", err
+	}
+	//fmt.Println(string(body))
+	return string(body), nil
+}
+
+// 重考接口
+func (cache *XueXiTUserCache) PullReExamPaperHtmlApi(urlStr string) (string, error) {
+	///exam-ans/exam/phone/task-exam?courseId=256999641&classId=131736238&taskrefId=7937785&examAnswerId=168238211&cpi=517393536&ut=s&code=&reset=true&protocol_v=1#INNER
+	urlStr = "https://mooc1-api.chaoxing.com" + urlStr
+	method := "GET"
+
+	tr := &http.Transport{
+		TLSClientConfig: &tls.Config{
+			InsecureSkipVerify: true, // 跳过证书验证，仅用于开发环境
+		},
+	}
+	client := &http.Client{
+		Transport: tr,
+	}
+	req, err := http.NewRequest(method, urlStr, nil)
+
+	if err != nil {
+		fmt.Println(err)
+		return "", err
+	}
+	req.Header.Add("User-Agent", GetUA("mobile"))
+	req.Header.Add("Accept", "text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,image/apng,*/*;q=0.8")
+	req.Header.Add("Upgrade-Insecure-Requests", "1")
+	//req.Header.Add("Referer", "https://mooc1-api.chaoxing.com/exam-ans/exam/phone/task-exam?taskrefId=8186945&courseId=258101827&classId=134204187&userId=346635955&role=&source=0&enc_task=e8a0e0f5b2faa978194ba2b19eef6371&cpi=411545273&vx=0")
+	req.Header.Add("Accept-Language", "zh-CN,en-US;q=0.9")
+	req.Header.Add("X-Requested-With", "com.chaoxing.mobile")
+	for _, cookie := range cache.cookies {
+		req.AddCookie(cookie)
+	}
+	req.Header.Add("Host", "mooc1-api.chaoxing.com")
+	req.Header.Add("Connection", "keep-alive")
+
+	res, err := client.Do(req)
+	if err != nil {
+		fmt.Println(err)
+		return "", err
+	}
+	defer res.Body.Close()
+
+	body, err := ioutil.ReadAll(res.Body)
+	if err != nil {
+		fmt.Println(err)
+		return "", err
+	}
+	//fmt.Println(string(body))
+	return string(body), nil
+}
+
 // 拉取考试题目
 func (cache *XueXiTUserCache) PullExamQuestionApi(courseId, classId, tId, id, cpi, remainTimeParam, enc, relationAnswerLastUpdateTime string, index int) (string, error) {
 
@@ -302,7 +414,21 @@ func (cache *XueXiTUserCache) PullExamQuestionApi(courseId, classId, tId, id, cp
 	urlStr := "https://mooc1-api.chaoxing.com/exam-ans/exam/test/reVersionTestStartNew?keyboardDisplayRequiresUserAction=1&courseId=" + courseId + "&classId=" + classId + "&source=0&imei=" + IMEI + "&tId=" + tId + "&id=" + id + "&p=1&start=" + fmt.Sprintf("%d", index) + "&cpi=" + cpi + "&isphone=true&monitorStatus=0&monitorOp=-1&remainTimeParam=" + remainTimeParam + "&relationAnswerLastUpdateTime=" + relationAnswerLastUpdateTime + "&enc=" + enc
 	method := "GET"
 
-	client := &http.Client{}
+	tr := &http.Transport{
+		TLSClientConfig: &tls.Config{
+			InsecureSkipVerify: true, // 跳过证书验证，仅用于开发环境
+		},
+	}
+
+	//如果开启了IP代理，那么就直接添加代理
+	if cache.IpProxySW {
+		tr.Proxy = func(req *http.Request) (*url.URL, error) {
+			return url.Parse(cache.ProxyIP) // 设置代理
+		}
+	}
+	client := &http.Client{
+		Transport: tr,
+	}
 	req, err := http.NewRequest(method, urlStr, nil)
 
 	if err != nil {
@@ -426,7 +552,21 @@ func (cache *XueXiTUserCache) SubmitExamAnswerApi(question *XXTExamQuestionSubmi
 
 	payload := strings.NewReader(values.Encode())
 
-	client := &http.Client{}
+	tr := &http.Transport{
+		TLSClientConfig: &tls.Config{
+			InsecureSkipVerify: true, // 跳过证书验证，仅用于开发环境
+		},
+	}
+
+	//如果开启了IP代理，那么就直接添加代理
+	if cache.IpProxySW {
+		tr.Proxy = func(req *http.Request) (*url.URL, error) {
+			return url.Parse(cache.ProxyIP) // 设置代理
+		}
+	}
+	client := &http.Client{
+		Transport: tr,
+	}
 	req, err := http.NewRequest(method, urlStr, payload)
 
 	if err != nil {

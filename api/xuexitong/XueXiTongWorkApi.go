@@ -207,7 +207,21 @@ func (cache *XueXiTUserCache) PullWorkPaperHtmlApi(courseId, classId, workId, so
 	urlStr := "https://mooc1-api.chaoxing.com/mooc-ans/work/phone/doHomeWork?courseId=" + courseId + "&workId=" + workId + "&cpi=" + cpi + "&workAnswerId=" + workAnswerId + "&classId=" + classId + "&oldWorkId&mooc=1&msgId=" + msgId + "&source=" + source + "&checkIntegrity=true&enc=" + enc + "&keyboardDisplayRequiresUserAction=" + keyboardDisplayRequiresUserAction
 	method := "GET"
 
-	client := &http.Client{}
+	tr := &http.Transport{
+		TLSClientConfig: &tls.Config{
+			InsecureSkipVerify: true, // 跳过证书验证，仅用于开发环境
+		},
+	}
+
+	//如果开启了IP代理，那么就直接添加代理
+	if cache.IpProxySW {
+		tr.Proxy = func(req *http.Request) (*url.URL, error) {
+			return url.Parse(cache.ProxyIP) // 设置代理
+		}
+	}
+	client := &http.Client{
+		Transport: tr,
+	}
 	req, err := http.NewRequest(method, urlStr, nil)
 
 	if err != nil {
@@ -329,7 +343,21 @@ func (cache *XueXiTUserCache) SubmitWorkAnswerApi(question *XXTWorkQuestionSubmi
 
 	//payload := strings.NewReader("workExamUploadUrl=&workExamUploadCrcUrl=&workRelationAnswerId=54657628&knowledgeid=0&enc=737ad94cd5529ffa3ba68606eb91a124&source=0&encWork=ace56cb8a1c65f68339d3cd452757caa&courseId=258101827&workRelationId=48731428&classId=134204187&workTimesEnc=&courseId=258101827&workRelationId=48731428&classId=134204187&answer405139692=A&type405139692=0&score405139692=100.0&questionId=405139692&index=0&tempSave=false")
 
-	client := &http.Client{}
+	tr := &http.Transport{
+		TLSClientConfig: &tls.Config{
+			InsecureSkipVerify: true, // 跳过证书验证，仅用于开发环境
+		},
+	}
+
+	//如果开启了IP代理，那么就直接添加代理
+	if cache.IpProxySW {
+		tr.Proxy = func(req *http.Request) (*url.URL, error) {
+			return url.Parse(cache.ProxyIP) // 设置代理
+		}
+	}
+	client := &http.Client{
+		Transport: tr,
+	}
 	req, err := http.NewRequest(method, urlStr, payload)
 
 	if err != nil {
@@ -368,11 +396,25 @@ func (cache *XueXiTUserCache) PullWorkQuestionApi(courseId, classId, workId, sou
 	//url := "https://mooc1-api.chaoxing.com/mooc-ans/work/phone/doHomeWork?courseId=258101827&workId=48731428&classId=134204187&oldWorkId&cpi=411545273&mooc=1&msgId=0&source=0&checkIntegrity=true&enc=737ad94cd5529ffa3ba68606eb91a124&keyboardDisplayRequiresUserAction=1"
 
 	//url := "https://mooc1-api.chaoxing.com/mooc-ans/work/phone/doHomeWork?courseId=258101827&workId=49156357&cpi=411545273&workAnswerId=54758238&classId=134204187&oldWorkId&mooc=1&msgId=0&source=0&checkIntegrity=true&enc=737ad94cd5529ffa3ba68606eb91a124&keyboardDisplayRequiresUserAction=1"
-	url := "https://mooc1-api.chaoxing.com/mooc-ans/work/phone/doHomeWork?courseId=" + courseId + "&workId=" + workId + "&cpi=" + cpi + "&workAnswerId=" + workAnswerId + "&classId=" + classId + "&mooc=1" + "&source=" + source + "&enc=" + enc + "&keyboardDisplayRequiresUserAction=" + keyboardDisplayRequiresUserAction + "&index=" + fmt.Sprintf("%d", index)
+	urlStr := "https://mooc1-api.chaoxing.com/mooc-ans/work/phone/doHomeWork?courseId=" + courseId + "&workId=" + workId + "&cpi=" + cpi + "&workAnswerId=" + workAnswerId + "&classId=" + classId + "&mooc=1" + "&source=" + source + "&enc=" + enc + "&keyboardDisplayRequiresUserAction=" + keyboardDisplayRequiresUserAction + "&index=" + fmt.Sprintf("%d", index)
 	method := "GET"
 
-	client := &http.Client{}
-	req, err := http.NewRequest(method, url, nil)
+	tr := &http.Transport{
+		TLSClientConfig: &tls.Config{
+			InsecureSkipVerify: true, // 跳过证书验证，仅用于开发环境
+		},
+	}
+
+	//如果开启了IP代理，那么就直接添加代理
+	if cache.IpProxySW {
+		tr.Proxy = func(req *http.Request) (*url.URL, error) {
+			return url.Parse(cache.ProxyIP) // 设置代理
+		}
+	}
+	client := &http.Client{
+		Transport: tr,
+	}
+	req, err := http.NewRequest(method, urlStr, nil)
 
 	if err != nil {
 		fmt.Println(err)

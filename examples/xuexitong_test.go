@@ -793,7 +793,7 @@ func TestXueXiToExam(t *testing.T) {
 	utils.YatoriCoreInit()
 	//测试账号
 	setup()
-	user := global.Config.Users[68]
+	user := global.Config.Users[73]
 
 	userCache := xuexitongApi.XueXiTUserCache{
 		Name:     user.Account,
@@ -808,7 +808,7 @@ func TestXueXiToExam(t *testing.T) {
 	courseList, err := xuexitong.XueXiTPullCourseAction(&userCache) //拉取所有课程
 	for _, course := range courseList {                             //遍历课程
 
-		if course.CourseName != "大学教育" {
+		if course.CourseName != "国家安全教育" {
 			continue
 		}
 		examList, err1 := xuexitong.PullExamListAction(&userCache, course)
@@ -817,9 +817,9 @@ func TestXueXiToExam(t *testing.T) {
 		}
 		// 打印结果
 		for _, exam := range examList {
-			if exam.Status != "待做" {
-				continue
-			}
+			//if exam.Status != "待做" {
+			//	continue
+			//}
 			//进入考试
 			err2 := xuexitong.EnterExamAction(&userCache, &exam)
 			if err2 != nil {
@@ -913,6 +913,31 @@ func TestXXTExamPaperPull(t *testing.T) {
 	_, err1 := xuexitong.HtmlQuestionTurnEntity(paperHtml)
 	if err1 != nil {
 		log.Fatal(err1)
+	}
+}
+
+// 测试刷阅读时长
+func TestXXTBrushReadTime(t *testing.T) {
+	utils.YatoriCoreInit()
+	//测试账号
+	setup()
+	user := global.Config.Users[68]
+
+	userCache := xuexitongApi.XueXiTUserCache{
+		Name:     user.Account,
+		Password: user.Password,
+	}
+
+	err := xuexitong.XueXiTLoginAction(&userCache)
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	courseList, err := xuexitong.XueXiTPullCourseAction(&userCache) //拉取所有课程
+	for _, course := range courseList {                             //遍历课程
+		if course.CourseName != "大学教育" {
+			continue
+		}
 	}
 }
 

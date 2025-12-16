@@ -143,6 +143,22 @@ func EnterExamAction(cache *xuexitong.XueXiTUserCache, exam *XXTExam) error {
 		//fmt.Println(refererUrl)
 		return err
 	}
+	doc, err := goquery.NewDocumentFromReader(strings.NewReader(enterHtml))
+	if err != nil {
+		log.Fatal(err)
+	}
+	isReExam := false
+	//如果可以重考
+	if strings.Contains(enterHtml, `bnt_retake">重考</a>`) {
+		reExamUrl, _ := doc.Find("a.bnt_retake").Attr("data")
+		enterHtml, err = cache.PullReExamPaperHtmlApi(reExamUrl)
+		doc, err = goquery.NewDocumentFromReader(strings.NewReader(enterHtml))
+		if err != nil {
+			log.Fatal(err)
+		}
+		isReExam = true
+	}
+
 	re := regexp.MustCompile(`共包含\s*(\d+)\s*道题目`)
 	match := re.FindStringSubmatch(enterHtml)
 
@@ -151,10 +167,6 @@ func EnterExamAction(cache *xuexitong.XueXiTUserCache, exam *XXTExam) error {
 		exam.QuestionTotal = count
 	}
 
-	doc, err := goquery.NewDocumentFromReader(strings.NewReader(enterHtml))
-	if err != nil {
-		log.Fatal(err)
-	}
 	type HiddenField struct {
 		ID    string
 		Name  string
@@ -206,6 +218,15 @@ func EnterExamAction(cache *xuexitong.XueXiTUserCache, exam *XXTExam) error {
 			exam.Validate = validate
 			break //如果成功了那么直接退出循环
 		}
+	}
+	//如果是重考状态那么就先进行重考请求
+	if isReExam {
+
+		_, err := cache.StartReExamApi(exam.ExamRelationId, exam.AnswerId, exam.CourseId, exam.ClazzId)
+		if err != nil {
+			return err
+		}
+
 	}
 	pullPaperHtml, err := cache.PullExamPaperHtmlApi(exam.CourseId, exam.ClazzId, exam.ExamRelationId, "0", exam.AnswerId, exam.Cpi, "1", xuexitong.IMEI, exam.Validate, "0", 3, nil)
 	if err != nil {
@@ -386,6 +407,7 @@ func HtmlQuestionTurnEntity(paperHtml string) (XXTExamQuestion, error) {
 		v, _ := paperDoc.Find(`input[name="` + id + `"]`).Attr("value")
 		return v
 	}
+
 	switch questionTypeCode {
 	case "0": //单选题
 		turn, err1 := singleTurn(paperDoc)
@@ -457,6 +479,37 @@ func HtmlQuestionTurnEntity(paperHtml string) (XXTExamQuestion, error) {
 	return question, nil
 }
 
+func extractQuestion(tit *goquery.Selection) string {
+	var sb strings.Builder
+
+	tit.Contents().Each(func(i int, s *goquery.Selection) {
+
+		// 1️⃣ 跳过 h3
+		if goquery.NodeName(s) == "h3" {
+			return
+		}
+
+		// 2️⃣ 跳过 span
+		if goquery.NodeName(s) == "span" {
+			return
+		}
+
+		// 3️⃣ 如果是 p，递归处理其内容
+		if goquery.NodeName(s) == "p" {
+			sb.WriteString(extractQuestion(s))
+			return
+		}
+
+		// 4️⃣ 文本节点
+		text := strings.TrimSpace(s.Text())
+		if text != "" {
+			sb.WriteString(text)
+		}
+	})
+
+	return strings.TrimSpace(sb.String())
+}
+
 // 单选题转换
 func singleTurn(paperDoc *goquery.Document) (XXTExamQuestion, error) {
 	question := XXTExamQuestion{}
@@ -470,7 +523,12 @@ func singleTurn(paperDoc *goquery.Document) (XXTExamQuestion, error) {
 		}
 
 		//题目
-		title := strings.TrimSpace(sel.Find(`.tit p`).First().Text())
+		//title := strings.TrimSpace(sel.Find(`.tit`).First().Text())
+		title := ""
+		//截取题目
+		sel.Find(`.tit`).Each(func(i int, sel *goquery.Selection) {
+			title = extractQuestion(sel)
+		})
 		//fmt.Println(title)
 		question.Question.Content = title
 		resOptions := make(map[string]string)
@@ -511,7 +569,12 @@ func multipleTurn(paperDoc *goquery.Document) (XXTExamQuestion, error) {
 		}
 
 		//题目
-		title := strings.TrimSpace(sel.Find(`.tit p`).First().Text())
+		//title := strings.TrimSpace(sel.Find(`.tit p`).First().Text())
+		title := ""
+		//截取题目
+		sel.Find(`.tit`).Each(func(i int, sel *goquery.Selection) {
+			title = extractQuestion(sel)
+		})
 		question.Question.Content = title
 		resOptions := make(map[string]string)
 		sel.Find(`.mulChoice`).Each(func(i int, sel *goquery.Selection) {
@@ -550,7 +613,12 @@ func fillTurn(paperDoc *goquery.Document) (XXTExamQuestion, error) {
 		}
 
 		//题目
-		title := strings.TrimSpace(sel.Find(`.tit p`).First().Text())
+		//title := strings.TrimSpace(sel.Find(`.tit p`).First().Text())
+		title := ""
+		//截取题目
+		sel.Find(`.tit`).Each(func(i int, sel *goquery.Selection) {
+			title = extractQuestion(sel)
+		})
 		//fmt.Println(title)
 		question.Question.Content = title
 		sel.Find(`.completionList`).Each(func(i int, sel *goquery.Selection) {
@@ -580,7 +648,12 @@ func trueOrFalseTurn(paperDoc *goquery.Document) (XXTExamQuestion, error) {
 		}
 
 		//题目
-		title := strings.TrimSpace(sel.Find(`.tit p`).First().Text())
+		//title := strings.TrimSpace(sel.Find(`.tit p`).First().Text())
+		title := ""
+		//截取题目
+		sel.Find(`.tit`).Each(func(i int, sel *goquery.Selection) {
+			title = extractQuestion(sel)
+		})
 		//fmt.Println(title)
 		question.Question.Content = title
 		sel.Find(`.answerList`).Each(func(i int, sel *goquery.Selection) {
@@ -611,7 +684,12 @@ func shortAnswerTurn(paperDoc *goquery.Document) (XXTExamQuestion, error) {
 		}
 
 		//题目
-		title := strings.TrimSpace(sel.Find(`.tit p`).First().Text())
+		//title := strings.TrimSpace(sel.Find(`.tit p`).First().Text())
+		title := ""
+		//截取题目
+		sel.Find(`.tit`).Each(func(i int, sel *goquery.Selection) {
+			title = extractQuestion(sel)
+		})
 		//fmt.Println(title)
 		question.Question.Content = title
 		sel.Find(`.completionList`).Each(func(i int, sel *goquery.Selection) {
@@ -641,7 +719,12 @@ func essayTurn(paperDoc *goquery.Document) (XXTExamQuestion, error) {
 		}
 
 		//题目
-		title := strings.TrimSpace(sel.Find(`.tit p`).First().Text())
+		//title := strings.TrimSpace(sel.Find(`.tit p`).First().Text())
+		title := ""
+		//截取题目
+		sel.Find(`.tit`).Each(func(i int, sel *goquery.Selection) {
+			title = extractQuestion(sel)
+		})
 		//fmt.Println(title)
 		question.Question.Content = title
 		sel.Find(`.completionList`).Each(func(i int, sel *goquery.Selection) {

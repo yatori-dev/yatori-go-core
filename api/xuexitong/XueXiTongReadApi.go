@@ -2,6 +2,7 @@ package xuexitong
 
 import (
 	"crypto/md5"
+	"crypto/tls"
 	"encoding/hex"
 	"encoding/json"
 	"fmt"
@@ -26,7 +27,8 @@ func (cache *XueXiTUserCache) ReadSubmitTimeLog(p *PointDocumentDto, retry int, 
 	d := `{"a":null,"r":"` + p.CourseID + `,` + fmt.Sprintf("%d", p.KnowledgeID) + `","t":"special","l":1,"f":0,"wc":` + fmt.Sprintf("%d", wc) + `,"ic":0,"v":2,"s":2,"h":` + fmt.Sprintf("%d", h) + `,"e":"` + e + `","ext":"{\"_from_\":\"256268467_132232726_339543304_c8f68a62e7ef7fa3a704d6b031d19697\",\"rtag\":\"1054242600_477554005_read-` + p.CourseID + `\"}"}`
 	settings := map[string]any{
 		"f": "readPoint",
-		"u": "339543304", //userId
+		//"u": "339543304", //userId
+		"u": cache.UserID, //userId
 		"s": "",
 		"d": url.QueryEscape(d),
 		"t": t,
@@ -34,10 +36,24 @@ func (cache *XueXiTUserCache) ReadSubmitTimeLog(p *PointDocumentDto, retry int, 
 
 	enc := GenerateReadEnc(settings)
 	//url := "https://data-xxt.aichaoxing.com/analysis/ac_mark?&f=readPoint&u=339543304&d=%257B%2522a%2522%253Anull%252C%2522r%2522%253A%2522218403608%252C437039890%2522%252C%2522t%2522%253A%2522special%2522%252C%2522l%2522%253A1%252C%2522f%2522%253A0%252C%2522wc%2522%253A1457%252C%2522ic%2522%253A1%252C%2522v%2522%253A2%252C%2522s%2522%253A2%252C%2522h%2522%253A168.6666717529297%252C%2522e%2522%253A%2522H4sIAAAAAAAAA43QMQ6AMAgF0NO4GqDAh1XvfycZ6qIMdKDJz4ME7JAbLFVXRFUWyOn1xBJu9R3rsi%252FiCaIBym0CVEO5sr%252BJgcHA%252BMDYwOg25prKSt6YBW1SGXS%252BpwXDJCXRbds10jBjogckSOsm9QEAAA%253D%253D%2522%252C%2522ext%2522%253A%2522%257B%255C%2522_from_%255C%2522%253A%255C%2522256268467_132232726_339543304_c8f68a62e7ef7fa3a704d6b031d19697%255C%2522%252C%255C%2522rtag%255C%2522%253A%255C%25221054242600_477554005_read-218403608%255C%2522%257D%2522%257D&t=20251212142327644&enc=11091c1703d2ba723afdf2338f24b8ae"
-	urlStr := "https://data-xxt.aichaoxing.com/analysis/ac_mark?&f=readPoint&u=339543304&d=" + url.QueryEscape(d) + "&t=" + t + "&enc=" + enc
+	urlStr := "https://data-xxt.aichaoxing.com/analysis/ac_mark?&f=readPoint&u=" + cache.UserID + "&d=" + url.QueryEscape(d) + "&t=" + t + "&enc=" + enc
 	method := "GET"
 
-	client := &http.Client{}
+	tr := &http.Transport{
+		TLSClientConfig: &tls.Config{
+			InsecureSkipVerify: true, // 跳过证书验证，仅用于开发环境
+		},
+	}
+
+	//如果开启了IP代理，那么就直接添加代理
+	if cache.IpProxySW {
+		tr.Proxy = func(req *http.Request) (*url.URL, error) {
+			return url.Parse(cache.ProxyIP) // 设置代理
+		}
+	}
+	client := &http.Client{
+		Transport: tr,
+	}
 	req, err := http.NewRequest(method, urlStr, nil)
 
 	if err != nil {
