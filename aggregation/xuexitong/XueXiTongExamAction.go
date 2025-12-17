@@ -479,6 +479,7 @@ func HtmlQuestionTurnEntity(paperHtml string) (XXTExamQuestion, error) {
 	return question, nil
 }
 
+// 清洗题目数据
 func extractQuestion(tit *goquery.Selection) string {
 	var sb strings.Builder
 

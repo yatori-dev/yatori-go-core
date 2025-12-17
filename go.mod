@@ -3,7 +3,7 @@ module github.com/yatori-dev/yatori-go-core
 go 1.24.0
 
 require (
-	github.com/Changbaiqi/ddddocr-go v0.1.0
+	github.com/Changbaiqi/ddddocr-go v0.1.5-0.20251217103242-1896343369f8 //0.1.4.5
 	github.com/PuerkitoBio/goquery v1.10.0
 	github.com/dop251/goja v0.0.0-20250630131328-58d95d85e994
 	github.com/google/uuid v1.6.0

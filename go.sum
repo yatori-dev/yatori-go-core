@@ -2,6 +2,9 @@ cloud.google.com/go v0.26.0/go.mod h1:aQUYkXzVsufM+DwF1aE+0xfcU+56JwCaLick0ClmMT
 github.com/BurntSushi/toml v0.3.1/go.mod h1:xHWCNGjB5oqiDr8zfno3MHue2Ht5sIBksp03qcyfWMU=
 github.com/Changbaiqi/ddddocr-go v0.1.0 h1:VcS/j7XfOfVVMHCW5AciO3yNEwaD7kqQBMiRb7HSFKE=
 github.com/Changbaiqi/ddddocr-go v0.1.0/go.mod h1:v9LHr9YGWlNZCv3/jOKqEyzWeFaRq8Hfgm2jOeyaJMk=
+github.com/Changbaiqi/ddddocr-go v0.1.1/go.mod h1:v9LHr9YGWlNZCv3/jOKqEyzWeFaRq8Hfgm2jOeyaJMk=
+github.com/Changbaiqi/ddddocr-go v0.1.2/go.mod h1:v9LHr9YGWlNZCv3/jOKqEyzWeFaRq8Hfgm2jOeyaJMk=
+github.com/Changbaiqi/ddddocr-go v0.1.5-0.20251217103242-1896343369f8/go.mod h1:v9LHr9YGWlNZCv3/jOKqEyzWeFaRq8Hfgm2jOeyaJMk=
 github.com/Masterminds/semver/v3 v3.2.1 h1:RN9w6+7QoMeJVGyfmbcgs28Br8cvmnucEXnY0rYXWg0=
 github.com/Masterminds/semver/v3 v3.2.1/go.mod h1:qvl/7zhW3nngYb5+80sSMF+FG2BjYrf8m9wsX0PNOMQ=
 github.com/PuerkitoBio/goquery v1.10.0 h1:6fiXdLuUvYs2OJSvNRqlNPoBm6YABE226xrbavY5Wv4=
