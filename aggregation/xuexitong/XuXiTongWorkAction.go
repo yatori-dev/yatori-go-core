@@ -301,41 +301,8 @@ func (question *XXTWorkQuestion) WriteQuestionForExternalAction(exUrl string) {
 func (question *XXTWorkQuestion) WriteQuestionForXXTAIAction(cache *xuexitong.XueXiTUserCache, classId, courseId, cpi string) error {
 	aiChatMessages := aiq.BuildAiQuestionMessage(question.Question)
 
-	informHtml, err := cache.XXTAiInformApi(classId, courseId, cpi, 3, nil)
-	if err != nil {
-		panic(err)
-	}
-	doc, err := goquery.NewDocumentFromReader(strings.NewReader(informHtml))
-	if err != nil {
-		panic(err)
-	}
-	// 再给你示例获取其它值（你可以按需扩展）
-	get := func(id string) string {
-		v, _ := doc.Find("#" + id).Attr("value")
-		return v
-	}
-	content := ""
-	//去除前后"
-	trimQuotes := func(s string) string {
-		if len(s) >= 2 && s[0] == '"' && s[len(s)-1] == '"' {
-			return s[1 : len(s)-1]
-		}
-		return s
-	}
-	for _, msgEntity := range aiChatMessages.Messages {
-		msg, _ := json.Marshal(msgEntity.Content)
-		content += trimQuotes(string(msg))
-	}
-	re := regexp.MustCompile(`"studentName"\s*:\s*"([^"]+)"`)
-	match := re.FindStringSubmatch(informHtml)
-	studentName := ""
-	if len(match) > 1 {
-		//fmt.Println("courseName:", match[1])
-		studentName = match[1]
-	} else {
-		fmt.Println("未找到 studentName")
-	}
-	aiAnswer, err := cache.XXTAiAnswerApi(get("cozeEnc"), get("userId"), get("courseId"), get("clazzId"), get("conversationId"), get("courseName"), studentName, get("personId"), content, 3, nil)
+	aiAnswer, err := cache.XueXiTongAIAggregation(classId, courseId, cpi, aiChatMessages)
+
 	if err != nil {
 		panic(err)
 	}

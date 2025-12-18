@@ -8,13 +8,62 @@ import (
 	"io"
 	"io/ioutil"
 	"net/http"
+	"regexp"
 	"strings"
 	"sync"
 
+	"github.com/PuerkitoBio/goquery"
+	"github.com/yatori-dev/yatori-go-core/que-core/aiq"
 	"github.com/yatori-dev/yatori-go-core/utils"
 )
 
-var courseLocks sync.Map // map[string]*sync.Mutex
+// 学习通AI包装
+func (cache *XueXiTUserCache) XueXiTongAIAggregation(classId, courseId, cpi string, aiChatMessages aiq.AIChatMessages) (string, error) {
+	unlock := lockByCourse(courseId) //对AI加锁
+	defer unlock()
+
+	informHtml, err := cache.xxtAiInformApi(classId, courseId, cpi, 3, nil)
+	if err != nil {
+		panic(err)
+	}
+	doc, err := goquery.NewDocumentFromReader(strings.NewReader(informHtml))
+	if err != nil {
+		panic(err)
+	}
+	// 再给你示例获取其它值（你可以按需扩展）
+	get := func(id string) string {
+		v, _ := doc.Find("#" + id).Attr("value")
+		return v
+	}
+	content := ""
+	//去除前后"
+	trimQuotes := func(s string) string {
+		if len(s) >= 2 && s[0] == '"' && s[len(s)-1] == '"' {
+			return s[1 : len(s)-1]
+		}
+		return s
+	}
+	for _, msgEntity := range aiChatMessages.Messages {
+		msg, _ := json.Marshal(msgEntity.Content)
+		content += trimQuotes(string(msg))
+	}
+	re := regexp.MustCompile(`"studentName"\s*:\s*"([^"]+)"`)
+	match := re.FindStringSubmatch(informHtml)
+	studentName := ""
+	if len(match) > 1 {
+		//fmt.Println("courseName:", match[1])
+		studentName = match[1]
+	} else {
+		fmt.Println("未找到 studentName")
+	}
+	aiResult, err := cache.xxtAiAnswerApi(get("cozeEnc"), get("userId"), get("courseId"), get("clazzId"), get("conversationId"), get("courseName"), studentName, get("personId"), content, 5, nil)
+	if err != nil {
+		return "", err
+	}
+	return aiResult, nil
+}
+
+var courseLocks sync.Map // map[string]*sync.Mutex 用于给AI上锁，防止过于频繁调用
 
 func lockByCourse(courseId string) func() {
 	muIface, _ := courseLocks.LoadOrStore(courseId, &sync.Mutex{})
@@ -28,7 +77,7 @@ func lockByCourse(courseId string) func() {
 }
 
 // 拉取学习通AI必要参数
-func (cache *XueXiTUserCache) XXTAiInformApi(clazzId, courseId, cpi string, retry int, lastErr error) (string, error) {
+func (cache *XueXiTUserCache) xxtAiInformApi(clazzId, courseId, cpi string, retry int, lastErr error) (string, error) {
 
 	if retry < 0 {
 		return "", lastErr
@@ -65,7 +114,7 @@ func (cache *XueXiTUserCache) XXTAiInformApi(clazzId, courseId, cpi string, retr
 	res, err := client.Do(req)
 	if err != nil {
 		fmt.Println(err)
-		return cache.XXTAiInformApi(clazzId, courseId, cpi, retry-1, lastErr)
+		return cache.xxtAiInformApi(clazzId, courseId, cpi, retry-1, lastErr)
 	}
 	defer res.Body.Close()
 
@@ -79,9 +128,10 @@ func (cache *XueXiTUserCache) XXTAiInformApi(clazzId, courseId, cpi string, retr
 }
 
 // 请求学习通AI获取答复
-func (cache *XueXiTUserCache) XXTAiAnswerApi(cozeEnc, userId, courseId, classId, conversationId, courseName, studentName, personId, content string, retry int, lastErr error) (string, error) {
-	unlock := lockByCourse(courseId) //对AI加锁
-	defer unlock()
+func (cache *XueXiTUserCache) xxtAiAnswerApi(cozeEnc, userId, courseId, classId, conversationId, courseName, studentName, personId, content string, retry int, lastErr error) (string, error) {
+	if retry < 0 {
+		return "", lastErr
+	}
 	//url := "https://stat2-ans.chaoxing.com/stat2/bot/talk-v1?cozeEnc=129ca94f26a7802fd8061ef32f129b4c&botId=7438777570621653018&userId=346635955&appId=1192651262850&courseid=258101827&clazzid=134204187&ut=s"
 	urlStr := "https://stat2-ans.chaoxing.com/stat2/bot/talk-v1?cozeEnc=" + cozeEnc + "&botId=7438777570621653018&userId=" + userId + "&appId=1192651262850&courseid=" + courseId + "&clazzid=" + classId + "&ut=s"
 
@@ -111,7 +161,7 @@ func (cache *XueXiTUserCache) XXTAiAnswerApi(cozeEnc, userId, courseId, classId,
 
 	resp, err := client.Do(req)
 	if err != nil {
-		return cache.XXTAiAnswerApi(cozeEnc, userId, courseId, classId, conversationId, courseName, studentName, personId, content, retry-1, lastErr)
+		return cache.xxtAiAnswerApi(cozeEnc, userId, courseId, classId, conversationId, courseName, studentName, personId, content, retry-1, lastErr)
 		//panic(err)
 	}
 	defer resp.Body.Close()
@@ -171,7 +221,7 @@ func (cache *XueXiTUserCache) XXTAiAnswerApi(cozeEnc, userId, courseId, classId,
 	err = json.Unmarshal([]byte(finalAnswer), &answers)
 	if err != nil {
 		content += "\n\n你刚才生成的回复未严格遵循json格式，我无法正常解析，请你重新生成！！！"
-		finalAnswer, err = cache.XXTAiAnswerApi(cozeEnc, userId, courseId, classId, conversationId, courseName, studentName, personId, content, retry-1, lastErr)
+		finalAnswer, err = cache.xxtAiAnswerApi(cozeEnc, userId, courseId, classId, conversationId, courseName, studentName, personId, content, retry-1, lastErr)
 	}
 
 	//fmt.Println("最终回复内容：", finalAnswer)

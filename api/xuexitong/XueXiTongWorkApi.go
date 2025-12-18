@@ -127,7 +127,9 @@ func (cache *XueXiTUserCache) PullWorkEnterInformHtmlApi(
 	taskrefId, msgId, courseId, userId, clazzId, enterType, encTask string,
 	retry int, lastErr error,
 ) (string, string, error) {
-
+	if retry < 0 {
+		return "", "", lastErr
+	}
 	urlStr := "https://mooc1-api.chaoxing.com/android/mtaskmsgspecial?taskrefId=" +
 		taskrefId + "&msgId=" + msgId + "&courseId=" + courseId + "&userId=" + userId +
 		"&clazzId=" + clazzId + "&type=" + enterType + "&enc_task=" + encTask
@@ -182,7 +184,7 @@ func (cache *XueXiTUserCache) PullWorkEnterInformHtmlApi(
 
 	res, err := client.Do(req)
 	if err != nil {
-		return "", "", err
+		return cache.PullWorkEnterInformHtmlApi(taskrefId, msgId, courseId, userId, clazzId, enterType, encTask, retry-1, err)
 	}
 	defer res.Body.Close()
 
@@ -201,6 +203,9 @@ func (cache *XueXiTUserCache) PullWorkEnterInformHtmlApi(
 
 // 拉取试卷
 func (cache *XueXiTUserCache) PullWorkPaperHtmlApi(courseId, classId, workId, source, msgId, cpi, workAnswerId, enc, keyboardDisplayRequiresUserAction string, retry int, lastErr error) (string, error) {
+	if retry < 0 {
+		return "", lastErr
+	}
 	//url := "https://mooc1-api.chaoxing.com/mooc-ans/work/phone/doHomeWork?courseId=258101827&workId=48731428&classId=134204187&oldWorkId&cpi=411545273&mooc=1&msgId=0&source=0&checkIntegrity=true&enc=737ad94cd5529ffa3ba68606eb91a124&keyboardDisplayRequiresUserAction=1"
 
 	//url := "https://mooc1-api.chaoxing.com/mooc-ans/work/phone/doHomeWork?courseId=258101827&workId=49156357&cpi=411545273&workAnswerId=54758238&classId=134204187&oldWorkId&mooc=1&msgId=0&source=0&checkIntegrity=true&enc=737ad94cd5529ffa3ba68606eb91a124&keyboardDisplayRequiresUserAction=1"
@@ -244,7 +249,7 @@ func (cache *XueXiTUserCache) PullWorkPaperHtmlApi(courseId, classId, workId, so
 	res, err := client.Do(req)
 	if err != nil {
 		fmt.Println(err)
-		return "", err
+		return cache.PullWorkPaperHtmlApi(courseId, classId, workId, source, msgId, cpi, workAnswerId, enc, keyboardDisplayRequiresUserAction, retry-1, err)
 	}
 	defer res.Body.Close()
 
