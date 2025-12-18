@@ -311,6 +311,21 @@ func GetAIAnswer(as AnswerSetter, userID string, url, model string, aiType ctype
 
 	var answers []string
 	err = json.Unmarshal([]byte(aiAnswer), &answers)
+	for i := 0; i < 3; i++ {
+		if err != nil {
+			aiChatMessages.Messages = append(aiChatMessages.Messages, aiq.Message{
+				Role:    "system",
+				Content: aiAnswer,
+			})
+			aiChatMessages.Messages = append(aiChatMessages.Messages, aiq.Message{
+				Role:    "user",
+				Content: "你刚才生成的回复未严格遵循json格式，我无法正常解析，请你重新生成。",
+			})
+			aiAnswer, err = aiq.AggregationAIApi(url, model, aiType, aiChatMessages, apiKey)
+			continue
+		}
+		break
+	}
 	if err != nil {
 		answers = []string{"A"}
 		//fmt.Println("AI回复解析错误，已采用随机答案:", err, fmt.Sprintf("题目：%v \nAI回复： %v", aiChatMessages, aiAnswer))
@@ -363,6 +378,7 @@ func GetXXTAIAnswer(as AnswerSetter, cache *XueXiTUserCache, classId, courseId, 
 	}
 	var answers []string
 	err = json.Unmarshal([]byte(aiAnswer), &answers)
+
 	if err != nil {
 		answers = []string{"A"}
 		//fmt.Println("AI回复解析错误，已采用随机答案:", err, fmt.Sprintf("题目：%v \nAI回复： %v", aiChatMessages, aiAnswer))

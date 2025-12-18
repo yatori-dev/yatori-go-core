@@ -492,7 +492,12 @@ func extractQuestion(tit *goquery.Selection) string {
 
 		// 2️⃣ 跳过 span
 		if goquery.NodeName(s) == "span" {
-			return
+			v, exists := s.Attr("aria-label")
+			if exists {
+				if v == "题干" {
+					return
+				}
+			}
 		}
 
 		// 3️⃣ 如果是 p，递归处理其内容

@@ -500,7 +500,7 @@ func (cache *XueXiTUserCache) SubmitExamAnswerApi(question *XXTExamQuestionSubmi
 	values.Set("exitdtime", "0")
 	values.Set("paperGroupId", "0")
 	values.Set("score"+question.QuestionId, question.Score)
-	if question.QuestionTypeStr == "单选题" {
+	if question.QuestionTypeCode == "0" {
 		values.Set("type"+question.QuestionId, question.QuestionTypeCode)
 		values.Set("typeName"+question.QuestionId, question.QuestionTypeStr)
 		values.Set("hidetext", "")
@@ -509,7 +509,7 @@ func (cache *XueXiTUserCache) SubmitExamAnswerApi(question *XXTExamQuestionSubmi
 			answerStr += qutils.SimilarityArraySelect(answer, question.Question.Options)
 		}
 		values.Set("answer"+question.QuestionId, answerStr)
-	} else if question.QuestionTypeStr == "多选题" {
+	} else if question.QuestionTypeCode == "1" {
 		values.Set("type"+question.QuestionId, question.QuestionTypeCode)
 		values.Set("typeName"+question.QuestionId, question.QuestionTypeStr)
 		values.Set("hidetext", "")
@@ -518,7 +518,7 @@ func (cache *XueXiTUserCache) SubmitExamAnswerApi(question *XXTExamQuestionSubmi
 			answerStr += qutils.SimilarityArraySelect(answer, question.Question.Options)
 		}
 		values.Set("answers"+question.QuestionId, answerStr)
-	} else if question.QuestionTypeStr == "判断题" {
+	} else if question.QuestionTypeCode == "3" {
 		values.Set("type"+question.QuestionId, question.QuestionTypeCode)
 		values.Set("typeName"+question.QuestionId, question.QuestionTypeStr)
 		answerStr := ""
@@ -531,7 +531,7 @@ func (cache *XueXiTUserCache) SubmitExamAnswerApi(question *XXTExamQuestionSubmi
 			}
 		}
 		values.Set("answer"+question.QuestionId, answerStr)
-	} else if question.QuestionTypeStr == "填空题" {
+	} else if question.QuestionTypeCode == "2" {
 		values.Set("type"+question.QuestionId, question.QuestionTypeCode)
 		values.Set("typeName"+question.QuestionId, question.QuestionTypeStr)
 		blankNum := ""
@@ -540,7 +540,7 @@ func (cache *XueXiTUserCache) SubmitExamAnswerApi(question *XXTExamQuestionSubmi
 			blankNum += fmt.Sprintf("%d,", i+1)
 		}
 		values.Set("blankNum"+question.QuestionId, blankNum)
-	} else if question.QuestionTypeStr == "简答题" || question.QuestionTypeStr == "论述题" {
+	} else if question.QuestionTypeCode == "4" || question.QuestionTypeStr == "6" {
 		values.Set("type"+question.QuestionId, question.QuestionTypeCode)
 		values.Set("typeName"+question.QuestionId, question.QuestionTypeStr)
 		answerStr := ""

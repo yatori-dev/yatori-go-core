@@ -166,6 +166,13 @@ func (cache *XueXiTUserCache) XXTAiAnswerApi(cozeEnc, userId, courseId, classId,
 	finalAnswer = strings.ReplaceAll(finalAnswer, "&amp;", `&`)  //替换非法字符
 	finalAnswer = strings.ReplaceAll(finalAnswer, "&lt;", `<`)   //替换非法字符
 	finalAnswer = strings.ReplaceAll(finalAnswer, "&gt;", `>`)   //替换非法字符
+	//json格式检查逻辑
+	var answers []string
+	err = json.Unmarshal([]byte(finalAnswer), &answers)
+	if err != nil {
+		content += "\n\n你刚才生成的回复未严格遵循json格式，我无法正常解析，请你重新生成！！！"
+		finalAnswer, err = cache.XXTAiAnswerApi(cozeEnc, userId, courseId, classId, conversationId, courseName, studentName, personId, content, retry-1, lastErr)
+	}
 
 	//fmt.Println("最终回复内容：", finalAnswer)
 	return finalAnswer, nil

@@ -289,7 +289,8 @@ func (cache *XueXiTUserCache) SubmitWorkAnswerApi(question *XXTWorkQuestionSubmi
 	values.Set("index", question.Index)
 	values.Set("tempSave", fmt.Sprintf("%v", tempSave))
 
-	if question.QuestionTypeStr == "单选题" {
+	//单选题
+	if question.QuestionTypeCode == "0" {
 		values.Set("type"+question.QuestionId, question.QuestionTypeCode)
 		values.Set("score"+question.QuestionId, question.Score)
 		answerStr := ""
@@ -297,7 +298,7 @@ func (cache *XueXiTUserCache) SubmitWorkAnswerApi(question *XXTWorkQuestionSubmi
 			answerStr += qutils.SimilarityArraySelect(answer, question.Question.Options)
 		}
 		values.Set("answer"+question.QuestionId, answerStr)
-	} else if question.QuestionTypeStr == "多选题" {
+	} else if question.QuestionTypeCode == "1" { //多选题
 		values.Set("type"+question.QuestionId, question.QuestionTypeCode)
 		values.Set("score"+question.QuestionId, question.Score)
 		answerStr := ""
@@ -305,7 +306,7 @@ func (cache *XueXiTUserCache) SubmitWorkAnswerApi(question *XXTWorkQuestionSubmi
 			answerStr += qutils.SimilarityArraySelect(answer, question.Question.Options)
 		}
 		values.Set("answers"+question.QuestionId, answerStr)
-	} else if question.QuestionTypeStr == "判断题" {
+	} else if question.QuestionTypeCode == "3" { //判断题
 		values.Set("type"+question.QuestionId, question.QuestionTypeCode)
 		values.Set("score"+question.QuestionId, question.Score)
 		answerStr := ""
@@ -318,7 +319,7 @@ func (cache *XueXiTUserCache) SubmitWorkAnswerApi(question *XXTWorkQuestionSubmi
 			}
 		}
 		values.Set("answer"+question.QuestionId, answerStr)
-	} else if question.QuestionTypeStr == "填空题" {
+	} else if question.QuestionTypeCode == "2" { //填空题
 		values.Set("type"+question.QuestionId, question.QuestionTypeCode)
 		values.Set("score"+question.QuestionId, question.Score)
 		blankNum := ""
@@ -327,7 +328,7 @@ func (cache *XueXiTUserCache) SubmitWorkAnswerApi(question *XXTWorkQuestionSubmi
 			blankNum += fmt.Sprintf("%d,", i+1)
 		}
 		values.Set("blankNum"+question.QuestionId, blankNum)
-	} else if question.QuestionTypeStr == "简答题" || question.QuestionTypeStr == "论述题" {
+	} else if question.QuestionTypeCode == "4" || question.QuestionTypeCode == "6" { //简答题4，论述题6
 		//values.Set("isAccessibleCustomFid","0")
 		values.Set("type"+question.QuestionId, question.QuestionTypeCode)
 		values.Set("score"+question.QuestionId, question.Score)
