@@ -172,7 +172,20 @@ func TongYiChatReplyApi(
 	if !ok {
 		return "", fmt.Errorf("content field missing or not a string in response")
 	}
-
+	//json格式检查逻辑-----------------------------------------
+	var answers []string
+	err = json.Unmarshal([]byte(content), &answers)
+	if err != nil {
+		aiChatMessages.Messages = append(aiChatMessages.Messages, Message{
+			Role:    "system",
+			Content: content,
+		})
+		aiChatMessages.Messages = append(aiChatMessages.Messages, Message{
+			Role:    "user",
+			Content: "你刚才生成的回复未严格遵循json格式，我无法正常解析，请你重新生成。",
+		})
+		return TongYiChatReplyApi(model, apiKey, aiChatMessages, retryNum-1, fmt.Errorf("生成的回复无法正常解析成json:%s", string(body)))
+	}
 	return content, nil
 }
 
@@ -258,6 +271,21 @@ func ChatGLMChatReplyApi(
 	content, ok := message["content"].(string)
 	if !ok {
 		return "", fmt.Errorf("content field missing or not a string in response")
+	}
+
+	//json格式检查逻辑-----------------------------------------
+	var answers []string
+	err = json.Unmarshal([]byte(content), &answers)
+	if err != nil {
+		aiChatMessages.Messages = append(aiChatMessages.Messages, Message{
+			Role:    "system",
+			Content: content,
+		})
+		aiChatMessages.Messages = append(aiChatMessages.Messages, Message{
+			Role:    "user",
+			Content: "你刚才生成的回复未严格遵循json格式，我无法正常解析，请你重新生成。",
+		})
+		return ChatGLMChatReplyApi(model, apiKey, aiChatMessages, retryNum-1, fmt.Errorf("生成的回复无法正常解析成json:%s", string(body)))
 	}
 
 	return content, nil
@@ -353,7 +381,20 @@ func XingHuoChatReplyApi(model,
 	if !ok {
 		return "", fmt.Errorf("content field missing or not a string in response")
 	}
-
+	//json格式检查逻辑-----------------------------------------
+	var answers []string
+	err = json.Unmarshal([]byte(content), &answers)
+	if err != nil {
+		aiChatMessages.Messages = append(aiChatMessages.Messages, Message{
+			Role:    "system",
+			Content: content,
+		})
+		aiChatMessages.Messages = append(aiChatMessages.Messages, Message{
+			Role:    "user",
+			Content: "你刚才生成的回复未严格遵循json格式，我无法正常解析，请你重新生成。",
+		})
+		return XingHuoChatReplyApi(model, apiKey, aiChatMessages, retryNum-1, fmt.Errorf("生成的回复无法正常解析成json:%s", string(body)))
+	}
 	return content, nil
 }
 
@@ -438,7 +479,20 @@ func DouBaoChatReplyApi(model,
 	if !ok {
 		return "", fmt.Errorf("content field missing or not a string in response")
 	}
-
+	//json格式检查逻辑-----------------------------------------
+	var answers []string
+	err = json.Unmarshal([]byte(content), &answers)
+	if err != nil {
+		aiChatMessages.Messages = append(aiChatMessages.Messages, Message{
+			Role:    "system",
+			Content: content,
+		})
+		aiChatMessages.Messages = append(aiChatMessages.Messages, Message{
+			Role:    "user",
+			Content: "你刚才生成的回复未严格遵循json格式，我无法正常解析，请你重新生成。",
+		})
+		return DouBaoChatReplyApi(model, apiKey, aiChatMessages, retryNum-1, fmt.Errorf("生成的回复无法正常解析成json:%s", string(body)))
+	}
 	return content, nil
 }
 
@@ -523,7 +577,20 @@ func OpenAiReplyApi(model,
 	if !ok {
 		return "", fmt.Errorf("content field missing or not a string in response")
 	}
-
+	//json格式检查逻辑-----------------------------------------
+	var answers []string
+	err = json.Unmarshal([]byte(content), &answers)
+	if err != nil {
+		aiChatMessages.Messages = append(aiChatMessages.Messages, Message{
+			Role:    "system",
+			Content: content,
+		})
+		aiChatMessages.Messages = append(aiChatMessages.Messages, Message{
+			Role:    "user",
+			Content: "你刚才生成的回复未严格遵循json格式，我无法正常解析，请你重新生成。",
+		})
+		return OpenAiReplyApi(model, apiKey, aiChatMessages, retryNum-1, fmt.Errorf("生成的回复无法正常解析成json:%s", string(body)))
+	}
 	return content, nil
 }
 
@@ -610,7 +677,20 @@ func DeepSeekChatReplyApi(model,
 	if !ok {
 		return "", fmt.Errorf("content field missing or not a string in response")
 	}
-
+	//json格式检查逻辑-----------------------------------------
+	var answers []string
+	err = json.Unmarshal([]byte(content), &answers)
+	if err != nil {
+		aiChatMessages.Messages = append(aiChatMessages.Messages, Message{
+			Role:    "system",
+			Content: content,
+		})
+		aiChatMessages.Messages = append(aiChatMessages.Messages, Message{
+			Role:    "user",
+			Content: "你刚才生成的回复未严格遵循json格式，我无法正常解析，请你重新生成。",
+		})
+		return DeepSeekChatReplyApi(model, apiKey, aiChatMessages, retryNum-1, fmt.Errorf("生成的回复无法正常解析成json:%s", string(body)))
+	}
 	return content, nil
 }
 
@@ -704,7 +784,20 @@ func SiliconFlowReplyApi(model,
 	if !ok {
 		return "", fmt.Errorf("content field missing or not a string in response")
 	}
-
+	//json格式检查逻辑-----------------------------------------
+	var answers []string
+	err = json.Unmarshal([]byte(content), &answers)
+	if err != nil {
+		aiChatMessages.Messages = append(aiChatMessages.Messages, Message{
+			Role:    "system",
+			Content: content,
+		})
+		aiChatMessages.Messages = append(aiChatMessages.Messages, Message{
+			Role:    "user",
+			Content: "你刚才生成的回复未严格遵循json格式，我无法正常解析，请你重新生成。",
+		})
+		return SiliconFlowReplyApi(model, apiKey, aiChatMessages, retryNum-1, fmt.Errorf("生成的回复无法正常解析成json:%s", string(body)))
+	}
 	return content, nil
 }
 
@@ -786,6 +879,21 @@ func MetaAIReplyApi(model, apiKey string, aiChatMessages AIChatMessages, retryNu
 	if !ok || len(response) == 0 {
 		return "", fmt.Errorf(string(body))
 	}
+
+	//json格式检查逻辑-----------------------------------------
+	var answers []string
+	err = json.Unmarshal([]byte(response), &answers)
+	if err != nil {
+		aiChatMessages.Messages = append(aiChatMessages.Messages, Message{
+			Role:    "system",
+			Content: response,
+		})
+		aiChatMessages.Messages = append(aiChatMessages.Messages, Message{
+			Role:    "user",
+			Content: "你刚才生成的回复未严格遵循json格式，我无法正常解析，请你重新生成。",
+		})
+		return MetaAIReplyApi(model, apiKey, aiChatMessages, retryNum-1, fmt.Errorf("生成的回复无法正常解析成json:%s", string(body)))
+	}
 	return response, nil
 }
 
@@ -866,6 +974,19 @@ func OtherChatReplyApi(url,
 	if !ok {
 		return "", fmt.Errorf("content field missing or not a string in response")
 	}
-
+	//json格式检查逻辑-----------------------------------------
+	var answers []string
+	err = json.Unmarshal([]byte(content), &answers)
+	if err != nil {
+		aiChatMessages.Messages = append(aiChatMessages.Messages, Message{
+			Role:    "system",
+			Content: content,
+		})
+		aiChatMessages.Messages = append(aiChatMessages.Messages, Message{
+			Role:    "user",
+			Content: "你刚才生成的回复未严格遵循json格式，我无法正常解析，请你重新生成。",
+		})
+		return OtherChatReplyApi(url, model, apiKey, aiChatMessages, retryNum-1, fmt.Errorf("生成的回复无法正常解析成json:%s", string(body)))
+	}
 	return content, nil
 }
