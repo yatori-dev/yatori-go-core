@@ -74,7 +74,7 @@ func AICheck(url, model, apiKey string, aiType ctype.AiType) error {
 		Messages: []Message{
 			{
 				Role:    "user",
-				Content: "你好",
+				Content: `请你原模原样输出：["测试成功"]`,
 			},
 		},
 	}
@@ -86,6 +86,7 @@ func AICheck(url, model, apiKey string, aiType ctype.AiType) error {
 		return errors.New("无效apiKey，请检查apiKey是否正确填写，详细情参考对应AI平台的API文档或者对应yatori的官方文档：https://yatori-dev.github.io/yatori-docs/yatori-go-console/docs.html")
 	}
 	_, err := AggregationAIApi(url, model, aiType, aiChatMessages, apiKey)
+
 	return err
 }
 

@@ -13,6 +13,17 @@ import (
 	"github.com/yatori-dev/yatori-go-core/utils"
 )
 
+// AI测试
+func TestAICheck(t *testing.T) {
+	utils.YatoriCoreInit()
+	setup()
+	aiSetting := global.Config.Setting.AiSetting
+	err := aiq.AICheck(aiSetting.AiUrl, aiSetting.Model, aiSetting.APIKEY, aiSetting.AiType)
+	if err != nil {
+		t.Error(err)
+	}
+}
+
 // 学习通AI答题统一转换测试
 func TestSingleChoiceAIQuestion(t *testing.T) {
 	utils.YatoriCoreInit()

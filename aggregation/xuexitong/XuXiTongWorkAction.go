@@ -3,6 +3,7 @@ package xuexitong
 import (
 	"bytes"
 	"encoding/json"
+	"errors"
 	"fmt"
 	"log"
 	"net/url"
@@ -196,7 +197,9 @@ func EnterWorkAction(cache *xuexitong.XueXiTUserCache, exam *XXTWork) error {
 	pullPaperHtml, err := cache.PullWorkPaperHtmlApi(exam.CourseId, exam.ClazzId, exam.TaskRefId, "0", exam.MsgId, exam.Cpi, exam.AnswerId, exam.Enc, "1", 3, nil)
 	if err != nil {
 		return err
-
+	}
+	if strings.Contains(pullPaperHtml, "已过时效，不能操作!") {
+		return errors.New("已过时效，不能操作!")
 	}
 	qsEntity, err1 := HtmlWorkQuestionTurnEntity(pullPaperHtml)
 	if err1 != nil {
