@@ -3,6 +3,7 @@ package weiban
 import (
 	"bytes"
 	"crypto/aes"
+	"crypto/tls"
 	"encoding/base64"
 	"fmt"
 	"io"
@@ -10,6 +11,7 @@ import (
 	"log"
 	"math/rand"
 	"net/http"
+	"net/url"
 	"os"
 	"strings"
 	"time"
@@ -24,6 +26,8 @@ type WeiBanCache struct {
 	VerifyCode string //验证码
 	Account    string //账号
 	Password   string //密码
+	IpProxySW  bool
+	ProxyIP    string
 	Cookies    []*http.Cookie
 }
 
@@ -34,7 +38,21 @@ func (cache *WeiBanCache) PullTenantCodeApi() (string, error) {
 	urlStr := "https://weiban.mycourse.cn/pharos/login/getTenantListWithLetter.do?timestamp=1758343815.004"
 	method := "POST"
 
-	client := &http.Client{}
+	tr := &http.Transport{
+		TLSClientConfig: &tls.Config{
+			InsecureSkipVerify: true, // 跳过证书验证，仅用于开发环境
+		},
+	}
+
+	//如果开启了IP代理，那么就直接添加代理
+	if cache.IpProxySW {
+		tr.Proxy = func(req *http.Request) (*url.URL, error) {
+			return url.Parse(cache.ProxyIP) // 设置代理
+		}
+	}
+	client := &http.Client{
+		Transport: tr,
+	}
 	req, err := http.NewRequest(method, urlStr, nil)
 
 	if err != nil {
@@ -65,13 +83,27 @@ func (cache *WeiBanCache) PullTenantCodeApi() (string, error) {
 // 拉取学校配置
 func (cache *WeiBanCache) PullTenantConfigApi() (string, error) {
 
-	url := "https://weiban.mycourse.cn/pharos/tenantconfig/getSimpleConfig.do?timestamp=1758343997.34"
+	urlStr := "https://weiban.mycourse.cn/pharos/tenantconfig/getSimpleConfig.do?timestamp=1758343997.34"
 	method := "POST"
 
 	payload := strings.NewReader("tenantCode=" + cache.TenantCode)
 
-	client := &http.Client{}
-	req, err := http.NewRequest(method, url, payload)
+	tr := &http.Transport{
+		TLSClientConfig: &tls.Config{
+			InsecureSkipVerify: true, // 跳过证书验证，仅用于开发环境
+		},
+	}
+
+	//如果开启了IP代理，那么就直接添加代理
+	if cache.IpProxySW {
+		tr.Proxy = func(req *http.Request) (*url.URL, error) {
+			return url.Parse(cache.ProxyIP) // 设置代理
+		}
+	}
+	client := &http.Client{
+		Transport: tr,
+	}
+	req, err := http.NewRequest(method, urlStr, payload)
 
 	if err != nil {
 		fmt.Println(err)
@@ -112,7 +144,21 @@ func (cache *WeiBanCache) PullCapterApi(retry int, lastErr error) (string, error
 	urlStr := "https://weiban.mycourse.cn/pharos/login/randLetterImage.do?time=" + randomTime
 	method := "GET"
 
-	client := &http.Client{}
+	tr := &http.Transport{
+		TLSClientConfig: &tls.Config{
+			InsecureSkipVerify: true, // 跳过证书验证，仅用于开发环境
+		},
+	}
+
+	//如果开启了IP代理，那么就直接添加代理
+	if cache.IpProxySW {
+		tr.Proxy = func(req *http.Request) (*url.URL, error) {
+			return url.Parse(cache.ProxyIP) // 设置代理
+		}
+	}
+	client := &http.Client{
+		Transport: tr,
+	}
 	req, err := http.NewRequest(method, urlStr, nil)
 
 	if err != nil {
@@ -172,7 +218,7 @@ func (cache *WeiBanCache) PullCapterApi(retry int, lastErr error) (string, error
 
 // {"code":"0","data":{"token":"3f5872ab-a461-4f76-b04e-b777f065d6d0","userId":"f96f49f8-dde0-46e5-8c0d-7050a5af64d8","userName":"21712aa0b3324cdc9f96df95316ee23a","realName":"魏涛","userNameLabel":"考生号","uniqueValue":"25611030390001","isBind":"1","tenantCode":"710065","batchCode":"012","gender":1,"openid":"oeNCVuNPgOivWXnp83OSMkPMKXl8","unionid":"oQSZgv2oLyEsqmrvMBYYP5k3vlr0","switchGoods":1,"switchDanger":1,"switchNetCase":1,"preBanner":"https://h.mycourse.cn/pharosfile/resources/images/projectbanner/pre.png","normalBanner":"https://h.mycourse.cn/pharosfile/resources/images/projectbanner/normal.png","specialBanner":"https://h.mycourse.cn/pharosfile/resources/images/projectbanner/special.png","militaryBanner":"https://h.mycourse.cn/pharosfile/resources/images/projectbanner/military.png","contestIndexImage":"https://weibanstatic.mycourse.cn/pharos/resource/710065/image/contest/20220413/f03fbbd4-d378-429c-910e-1da389cca7d2.jpg","contestThemeImage":"https://weibanstatic.mycourse.cn/pharos/resource/710065/image/contest/20220413/fe59b829-2124-4969-9691-c23f432ea0f8.jpg","isLoginFromWechat":2,"tenantName":"西安文理学院","tenantType":1,"loginSide":1,"popForcedCompleted":2,"showGender":2,"showOrg":2,"orgLabel":"院系","nickName":"魏涛","imageUrl":"https://resource.mycourse.cn/mercury/resources/mercury/wb/images/portrait.jpg","defensePower":60,"knowledgePower":60,"safetyIndex":99},"detailCode":"0"}
 func (cache *WeiBanCache) LoginApi() (string, error) {
-	url := "https://weiban.mycourse.cn/pharos/login/login.do"
+	urlStr := "https://weiban.mycourse.cn/pharos/login/login.do"
 
 	// 调用你之前写的 AES 加密函数
 	//encryptData, err := Encrypt(string(jsonBytes))
@@ -185,7 +231,7 @@ func (cache *WeiBanCache) LoginApi() (string, error) {
 	formData := []byte("data=" + encryptData)
 
 	// 构造请求
-	req, err := http.NewRequest("POST", url+"?timestamp="+cache.VerifyTime, bytes.NewBuffer(formData))
+	req, err := http.NewRequest("POST", urlStr+"?timestamp="+cache.VerifyTime, bytes.NewBuffer(formData))
 	if err != nil {
 		return "", err
 	}
@@ -199,7 +245,21 @@ func (cache *WeiBanCache) LoginApi() (string, error) {
 	}
 
 	// 发送请求
-	client := &http.Client{}
+	tr := &http.Transport{
+		TLSClientConfig: &tls.Config{
+			InsecureSkipVerify: true, // 跳过证书验证，仅用于开发环境
+		},
+	}
+
+	//如果开启了IP代理，那么就直接添加代理
+	if cache.IpProxySW {
+		tr.Proxy = func(req *http.Request) (*url.URL, error) {
+			return url.Parse(cache.ProxyIP) // 设置代理
+		}
+	}
+	client := &http.Client{
+		Transport: tr,
+	}
 	resp, err := client.Do(req)
 	if err != nil {
 		return "", err

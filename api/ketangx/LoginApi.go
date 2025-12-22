@@ -1,34 +1,52 @@
 package ketangx
 
 import (
+	"crypto/tls"
 	"encoding/base64"
 	"fmt"
 	"io/ioutil"
 	"net/http"
+	"net/url"
 	"strings"
 
 	"github.com/yatori-dev/yatori-go-core/utils"
 )
 
 type KetangxUserCache struct {
-	Account  string         //账号
-	Password string         //用户密码
-	Cookies  []*http.Cookie //验证码用的session
-	UserName string         //用户名称
-	UserId   string         //用户ID，目前不知道能有啥用
-	Id       string         //不知道啥玩意的ID，不过学时提交要用
-	UserUnit string         //单位
+	Account   string //账号
+	Password  string //用户密码
+	IpProxySW bool
+	ProxyIP   string
+	Cookies   []*http.Cookie //验证码用的session
+	UserName  string         //用户名称
+	UserId    string         //用户ID，目前不知道能有啥用
+	Id        string         //不知道啥玩意的ID，不过学时提交要用
+	UserUnit  string         //单位
 }
 
 func (cache *KetangxUserCache) LoginApi() (string, error) {
 
-	url := "https://www.ketangx.cn/Login/AccLogin"
+	urlStr := "https://www.ketangx.cn/Login/AccLogin"
 	method := "POST"
 
 	payload := strings.NewReader("userAccount=" + base64.StdEncoding.EncodeToString([]byte(cache.Account)) + "&password=" + base64.StdEncoding.EncodeToString([]byte(cache.Password)) + "&returnUrl=")
 
-	client := &http.Client{}
-	req, err := http.NewRequest(method, url, payload)
+	tr := &http.Transport{
+		TLSClientConfig: &tls.Config{
+			InsecureSkipVerify: true, // 跳过证书验证，仅用于开发环境
+		},
+	}
+
+	//如果开启了IP代理，那么就直接添加代理
+	if cache.IpProxySW {
+		tr.Proxy = func(req *http.Request) (*url.URL, error) {
+			return url.Parse(cache.ProxyIP) // 设置代理
+		}
+	}
+	client := &http.Client{
+		Transport: tr,
+	}
+	req, err := http.NewRequest(method, urlStr, payload)
 
 	if err != nil {
 		fmt.Println(err)
@@ -65,7 +83,21 @@ func (cache *KetangxUserCache) PullPersonInfoApi() (string, error) {
 	urlStr := "https://www.ketangx.cn/Comment/MyInfo?topicType=2"
 	method := "GET"
 
-	client := &http.Client{}
+	tr := &http.Transport{
+		TLSClientConfig: &tls.Config{
+			InsecureSkipVerify: true, // 跳过证书验证，仅用于开发环境
+		},
+	}
+
+	//如果开启了IP代理，那么就直接添加代理
+	if cache.IpProxySW {
+		tr.Proxy = func(req *http.Request) (*url.URL, error) {
+			return url.Parse(cache.ProxyIP) // 设置代理
+		}
+	}
+	client := &http.Client{
+		Transport: tr,
+	}
 	req, err := http.NewRequest(method, urlStr, nil)
 
 	if err != nil {

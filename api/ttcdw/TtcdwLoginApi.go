@@ -2,9 +2,11 @@ package ttcdw
 
 import (
 	"crypto/md5"
+	"crypto/tls"
 	"fmt"
 	"io/ioutil"
 	"net/http"
+	"net/url"
 	"strings"
 
 	"github.com/yatori-dev/yatori-go-core/utils"
@@ -25,13 +27,27 @@ type TtcdwUserCache struct {
 // TtcdwLoginApi TTCDW学习公社登录
 func (cache *TtcdwUserCache) TtcdwLoginApi() (string, error) {
 
-	url := "https://www.ttcdw.cn/p/uc/userLogin?type=0&pageType=login&service=https%253A%252F%252Fwww.ttcdw.cn"
+	urlStr := "https://www.ttcdw.cn/p/uc/userLogin?type=0&pageType=login&service=https%253A%252F%252Fwww.ttcdw.cn"
 	method := "POST"
 
 	payload := strings.NewReader("username=" + cache.Account + "&password=" + fmt.Sprintf("%x", md5.Sum([]byte(cache.Password))) + "&platformId=13145854983311&key=1f0280d0-a000-43b4-8968-aca3a7180b65&service=https%3A%2F%2Fwww.ttcdw.cn")
 
-	client := &http.Client{}
-	req, err := http.NewRequest(method, url, payload)
+	tr := &http.Transport{
+		TLSClientConfig: &tls.Config{
+			InsecureSkipVerify: true, // 跳过证书验证，仅用于开发环境
+		},
+	}
+
+	//如果开启了IP代理，那么就直接添加代理
+	if cache.IpProxySW {
+		tr.Proxy = func(req *http.Request) (*url.URL, error) {
+			return url.Parse(cache.ProxyIP) // 设置代理
+		}
+	}
+	client := &http.Client{
+		Transport: tr,
+	}
+	req, err := http.NewRequest(method, urlStr, payload)
 
 	if err != nil {
 		fmt.Println(err)

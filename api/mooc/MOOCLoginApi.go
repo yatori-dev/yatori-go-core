@@ -1,9 +1,11 @@
 package mooc
 
 import (
+	"crypto/tls"
 	"fmt"
 	"io/ioutil"
 	"net/http"
+	"net/url"
 	"strings"
 
 	"github.com/thedevsaddam/gojsonq"
@@ -29,11 +31,25 @@ type MOOCUserCache struct {
 // 用于初始化Cookie参数
 func (cache *MOOCUserCache) InitCookiesApi() {
 
-	url := "https://www.icourse163.org/member/login.htm"
+	urlStr := "https://www.icourse163.org/member/login.htm"
 	method := "GET"
 
-	client := &http.Client{}
-	req, err := http.NewRequest(method, url, nil)
+	tr := &http.Transport{
+		TLSClientConfig: &tls.Config{
+			InsecureSkipVerify: true, // 跳过证书验证，仅用于开发环境
+		},
+	}
+
+	//如果开启了IP代理，那么就直接添加代理
+	if cache.IpProxySW {
+		tr.Proxy = func(req *http.Request) (*url.URL, error) {
+			return url.Parse(cache.ProxyIP) // 设置代理
+		}
+	}
+	client := &http.Client{
+		Transport: tr,
+	}
+	req, err := http.NewRequest(method, urlStr, nil)
 
 	if err != nil {
 		fmt.Println(err)
@@ -94,12 +110,26 @@ func (cache *MOOCUserCache) InitCookiesApi() {
 // powGetP 接口
 func (cache *MOOCUserCache) PowGetPApi() {
 
-	url := "https://reg.icourse163.org/dl/zj/yd/powGetP"
+	urlStr := "https://reg.icourse163.org/dl/zj/yd/powGetP"
 	method := "POST"
 	encStr := MOOCEncMS4(BuildPowGetPParams("imooc", "cjJVGQM", "18973485974", "5722fb36-7665-4510-8281-c202f414978c", 1, "https://www.icourse163.org/member/login.htm?returnUrl=aHR0cHM6Ly93d3cuaWNvdXJzZTE2My5vcmcvaW5kZXguaHRt#/webLoginIndex", BuildRtId()))
 	payload := strings.NewReader(`{"encParams":"` + encStr + `"}`)
-	client := &http.Client{}
-	req, err := http.NewRequest(method, url, payload)
+	tr := &http.Transport{
+		TLSClientConfig: &tls.Config{
+			InsecureSkipVerify: true, // 跳过证书验证，仅用于开发环境
+		},
+	}
+
+	//如果开启了IP代理，那么就直接添加代理
+	if cache.IpProxySW {
+		tr.Proxy = func(req *http.Request) (*url.URL, error) {
+			return url.Parse(cache.ProxyIP) // 设置代理
+		}
+	}
+	client := &http.Client{
+		Transport: tr,
+	}
+	req, err := http.NewRequest(method, urlStr, payload)
 
 	if err != nil {
 		fmt.Println(err)
@@ -141,12 +171,26 @@ func (cache *MOOCUserCache) PowGetPApi() {
 
 func (cache *MOOCUserCache) GtApi() {
 
-	url := "https://reg.icourse163.org/dl/zj/yd/gt"
+	urlStr := "https://reg.icourse163.org/dl/zj/yd/gt"
 	method := "POST"
 	encStr := MOOCEncMS4(BuildGTParams(cache.Account, 1, "imooc", "cjJVGQM", "https://www.icourse163.org/member/login.htm", BuildRtId()))
 	payload := strings.NewReader(`{"encParams":"` + encStr + `"}`)
-	client := &http.Client{}
-	req, err := http.NewRequest(method, url, payload)
+	tr := &http.Transport{
+		TLSClientConfig: &tls.Config{
+			InsecureSkipVerify: true, // 跳过证书验证，仅用于开发环境
+		},
+	}
+
+	//如果开启了IP代理，那么就直接添加代理
+	if cache.IpProxySW {
+		tr.Proxy = func(req *http.Request) (*url.URL, error) {
+			return url.Parse(cache.ProxyIP) // 设置代理
+		}
+	}
+	client := &http.Client{
+		Transport: tr,
+	}
+	req, err := http.NewRequest(method, urlStr, payload)
 
 	if err != nil {
 		fmt.Println(err)
@@ -182,7 +226,7 @@ func (cache *MOOCUserCache) GtApi() {
 
 func (cache *MOOCUserCache) LoginApi() {
 
-	url := "https://reg.icourse163.org/dl/zj/yd/pwd/l"
+	urlStr := "https://reg.icourse163.org/dl/zj/yd/pwd/l"
 	method := "POST"
 
 	runTimes, spendTime, T, X, sign := VdfAsync(Data{
@@ -202,8 +246,22 @@ func (cache *MOOCUserCache) LoginApi() {
 	encStr := MOOCEncMS4(buildParams)
 	payload := strings.NewReader(`{"encParams":"` + encStr + `"}`)
 
-	client := &http.Client{}
-	req, err := http.NewRequest(method, url, payload)
+	tr := &http.Transport{
+		TLSClientConfig: &tls.Config{
+			InsecureSkipVerify: true, // 跳过证书验证，仅用于开发环境
+		},
+	}
+
+	//如果开启了IP代理，那么就直接添加代理
+	if cache.IpProxySW {
+		tr.Proxy = func(req *http.Request) (*url.URL, error) {
+			return url.Parse(cache.ProxyIP) // 设置代理
+		}
+	}
+	client := &http.Client{
+		Transport: tr,
+	}
+	req, err := http.NewRequest(method, urlStr, payload)
 
 	if err != nil {
 		fmt.Println(err)

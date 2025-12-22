@@ -3,11 +3,13 @@ package icve
 import (
 	"bytes"
 	"crypto/aes"
+	"crypto/tls"
 	"encoding/base64"
 	"encoding/json"
 	"fmt"
 	"io/ioutil"
 	"net/http"
+	"net/url"
 	"strings"
 
 	"github.com/yatori-dev/yatori-go-core/utils"
@@ -16,13 +18,27 @@ import (
 // CourseListApi 拉取课程
 func (cache *IcveUserCache) CourseListApi() {
 
-	url := "http://www.icve.com.cn/studycenter/MyCourse/studingCourse"
+	urlStr := "http://www.icve.com.cn/studycenter/MyCourse/studingCourse"
 	method := "GET"
 
 	payload := strings.NewReader(`{` + `"isFinished": 0,` + `"page":1,` + `"pageSize": 8` + `}`)
 
-	client := &http.Client{}
-	req, err := http.NewRequest(method, url, payload)
+	tr := &http.Transport{
+		TLSClientConfig: &tls.Config{
+			InsecureSkipVerify: true, // 跳过证书验证，仅用于开发环境
+		},
+	}
+
+	//如果开启了IP代理，那么就直接添加代理
+	if cache.IpProxySW {
+		tr.Proxy = func(req *http.Request) (*url.URL, error) {
+			return url.Parse(cache.ProxyIP) // 设置代理
+		}
+	}
+	client := &http.Client{
+		Transport: tr,
+	}
+	req, err := http.NewRequest(method, urlStr, payload)
 
 	if err != nil {
 		fmt.Println(err)
@@ -54,11 +70,25 @@ func (cache *IcveUserCache) CourseListApi() {
 
 // 资源库课程接口1
 func (cache *IcveUserCache) PullZykCourse1Api() (string, error) {
-	url := "https://www.icve.com.cn/prod-api/zyk/myLearn?pageSize=100&pageNum=1&queryType=2&selectType=1"
+	urlStr := "https://www.icve.com.cn/prod-api/zyk/myLearn?pageSize=100&pageNum=1&queryType=2&selectType=1"
 	method := "GET"
 
-	client := &http.Client{}
-	req, err := http.NewRequest(method, url, nil)
+	tr := &http.Transport{
+		TLSClientConfig: &tls.Config{
+			InsecureSkipVerify: true, // 跳过证书验证，仅用于开发环境
+		},
+	}
+
+	//如果开启了IP代理，那么就直接添加代理
+	if cache.IpProxySW {
+		tr.Proxy = func(req *http.Request) (*url.URL, error) {
+			return url.Parse(cache.ProxyIP) // 设置代理
+		}
+	}
+	client := &http.Client{
+		Transport: tr,
+	}
+	req, err := http.NewRequest(method, urlStr, nil)
 
 	if err != nil {
 		fmt.Println(err)
@@ -92,11 +122,25 @@ func (cache *IcveUserCache) PullZykCourse1Api() (string, error) {
 
 // 资源库课程接口2
 func (cache *IcveUserCache) PullZykCourse2Api() (string, error) {
-	url := "https://zyk.icve.com.cn/prod-api/teacher/courseList/myCourseList?pageSize=100&pageNum=1&flag=1"
+	urlStr := "https://zyk.icve.com.cn/prod-api/teacher/courseList/myCourseList?pageSize=100&pageNum=1&flag=1"
 	method := "GET"
 
-	client := &http.Client{}
-	req, err := http.NewRequest(method, url, nil)
+	tr := &http.Transport{
+		TLSClientConfig: &tls.Config{
+			InsecureSkipVerify: true, // 跳过证书验证，仅用于开发环境
+		},
+	}
+
+	//如果开启了IP代理，那么就直接添加代理
+	if cache.IpProxySW {
+		tr.Proxy = func(req *http.Request) (*url.URL, error) {
+			return url.Parse(cache.ProxyIP) // 设置代理
+		}
+	}
+	client := &http.Client{
+		Transport: tr,
+	}
+	req, err := http.NewRequest(method, urlStr, nil)
 
 	if err != nil {
 		fmt.Println(err)
@@ -131,11 +175,25 @@ func (cache *IcveUserCache) PullZykCourse2Api() (string, error) {
 // 拉取课程根节点列表
 func (cache *IcveUserCache) PullRootNodeListApi(courseInfo string) (string, error) {
 
-	url := "https://zyk.icve.com.cn/prod-api/teacher/courseContent/studyMoudleList?courseInfoId=" + courseInfo
+	urlStr := "https://zyk.icve.com.cn/prod-api/teacher/courseContent/studyMoudleList?courseInfoId=" + courseInfo
 	method := "GET"
 
-	client := &http.Client{}
-	req, err := http.NewRequest(method, url, nil)
+	tr := &http.Transport{
+		TLSClientConfig: &tls.Config{
+			InsecureSkipVerify: true, // 跳过证书验证，仅用于开发环境
+		},
+	}
+
+	//如果开启了IP代理，那么就直接添加代理
+	if cache.IpProxySW {
+		tr.Proxy = func(req *http.Request) (*url.URL, error) {
+			return url.Parse(cache.ProxyIP) // 设置代理
+		}
+	}
+	client := &http.Client{
+		Transport: tr,
+	}
+	req, err := http.NewRequest(method, urlStr, nil)
 
 	if err != nil {
 		fmt.Println(err)
@@ -169,11 +227,25 @@ func (cache *IcveUserCache) PullRootNodeListApi(courseInfo string) (string, erro
 // 拉取课程根节点列表
 func (cache *IcveUserCache) PullZykNodeListApi(level int, parentId, courseInfo string) (string, error) {
 
-	url := "https://zyk.icve.com.cn/prod-api/teacher/courseContent/studyList?level=" + fmt.Sprintf("%d", level) + "&parentId=" + parentId + "&courseInfoId=" + courseInfo
+	urlStr := "https://zyk.icve.com.cn/prod-api/teacher/courseContent/studyList?level=" + fmt.Sprintf("%d", level) + "&parentId=" + parentId + "&courseInfoId=" + courseInfo
 	method := "GET"
 
-	client := &http.Client{}
-	req, err := http.NewRequest(method, url, nil)
+	tr := &http.Transport{
+		TLSClientConfig: &tls.Config{
+			InsecureSkipVerify: true, // 跳过证书验证，仅用于开发环境
+		},
+	}
+
+	//如果开启了IP代理，那么就直接添加代理
+	if cache.IpProxySW {
+		tr.Proxy = func(req *http.Request) (*url.URL, error) {
+			return url.Parse(cache.ProxyIP) // 设置代理
+		}
+	}
+	client := &http.Client{
+		Transport: tr,
+	}
+	req, err := http.NewRequest(method, urlStr, nil)
 
 	if err != nil {
 		fmt.Println(err)
@@ -206,11 +278,25 @@ func (cache *IcveUserCache) PullZykNodeListApi(level int, parentId, courseInfo s
 // 拉取任务点详细信息
 func (cache *IcveUserCache) PullZykNodeInfoApi(sourceId string) (string, error) {
 
-	url := "https://zyk.icve.com.cn/prod-api/teacher/courseContent/" + sourceId
+	urlStr := "https://zyk.icve.com.cn/prod-api/teacher/courseContent/" + sourceId
 	method := "GET"
 
-	client := &http.Client{}
-	req, err := http.NewRequest(method, url, nil)
+	tr := &http.Transport{
+		TLSClientConfig: &tls.Config{
+			InsecureSkipVerify: true, // 跳过证书验证，仅用于开发环境
+		},
+	}
+
+	//如果开启了IP代理，那么就直接添加代理
+	if cache.IpProxySW {
+		tr.Proxy = func(req *http.Request) (*url.URL, error) {
+			return url.Parse(cache.ProxyIP) // 设置代理
+		}
+	}
+	client := &http.Client{
+		Transport: tr,
+	}
+	req, err := http.NewRequest(method, urlStr, nil)
 
 	if err != nil {
 		fmt.Println(err)
@@ -244,11 +330,25 @@ func (cache *IcveUserCache) PullZykNodeInfoApi(sourceId string) (string, error) 
 // 获取时长Api
 func (cache *IcveUserCache) PullZykNodeDurationApi(fileUrl string) (string, error) {
 
-	url := "https://upload.icve.com.cn/" + fileUrl + "/status"
+	urlStr := "https://upload.icve.com.cn/" + fileUrl + "/status"
 	method := "POST"
 
-	client := &http.Client{}
-	req, err := http.NewRequest(method, url, nil)
+	tr := &http.Transport{
+		TLSClientConfig: &tls.Config{
+			InsecureSkipVerify: true, // 跳过证书验证，仅用于开发环境
+		},
+	}
+
+	//如果开启了IP代理，那么就直接添加代理
+	if cache.IpProxySW {
+		tr.Proxy = func(req *http.Request) (*url.URL, error) {
+			return url.Parse(cache.ProxyIP) // 设置代理
+		}
+	}
+	client := &http.Client{
+		Transport: tr,
+	}
+	req, err := http.NewRequest(method, urlStr, nil)
 
 	if err != nil {
 		fmt.Println(err)
@@ -279,7 +379,7 @@ func (cache *IcveUserCache) PullZykNodeDurationApi(fileUrl string) (string, erro
 // 资源库提交学习
 func (cache *IcveUserCache) SubmitZYKStudyTimeApi(courseInfo string, id string, parentId string, studyTime int, sourceId string, studentId string, actualNum int, lastNum int, totalNum int) (string, error) {
 
-	url := "https://zyk.icve.com.cn/prod-api/teacher/studyRecord"
+	urlStr := "https://zyk.icve.com.cn/prod-api/teacher/studyRecord"
 	method := "PUT"
 
 	params := map[string]interface{}{
@@ -301,8 +401,22 @@ func (cache *IcveUserCache) SubmitZYKStudyTimeApi(courseInfo string, id string, 
 	if err != nil {
 		panic(err)
 	}
-	client := &http.Client{}
-	req, err := http.NewRequest(method, url, bytes.NewBuffer([]byte(encData)))
+	tr := &http.Transport{
+		TLSClientConfig: &tls.Config{
+			InsecureSkipVerify: true, // 跳过证书验证，仅用于开发环境
+		},
+	}
+
+	//如果开启了IP代理，那么就直接添加代理
+	if cache.IpProxySW {
+		tr.Proxy = func(req *http.Request) (*url.URL, error) {
+			return url.Parse(cache.ProxyIP) // 设置代理
+		}
+	}
+	client := &http.Client{
+		Transport: tr,
+	}
+	req, err := http.NewRequest(method, urlStr, bytes.NewBuffer([]byte(encData)))
 
 	if err != nil {
 		fmt.Println(err)

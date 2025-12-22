@@ -1,6 +1,7 @@
 package welearn
 
 import (
+	"crypto/tls"
 	"encoding/base64"
 	"encoding/hex"
 	"fmt"
@@ -15,9 +16,11 @@ import (
 )
 
 type WeLearnUserCache struct {
-	Account  string
-	Password string
-	Cookies  []*http.Cookie
+	Account   string
+	Password  string
+	IpProxySW bool
+	ProxyIP   string
+	Cookies   []*http.Cookie
 }
 
 // 生成加密后的密码和时间戳
@@ -63,7 +66,21 @@ func (cache *WeLearnUserCache) WeLearnLoginApi(retry int, lastErr error) (string
 	gePass, ts := GenerateCipherText(cache.Password)
 	payload := strings.NewReader("rturl=%2Fconnect%2Fauthorize%2Fcallback%3Fclient_id%3Dwelearn_web%26redirect_uri%3Dhttps%253A%252F%252Fwelearn.sflep.com%252Fsignin-sflep%26response_type%3Dcode%26scope%3Dopenid%2520profile%2520email%2520phone%2520address%26code_challenge%3Dp18_2UckWpdGfknVKQp6Ang64zAYH6__0Z8eQu2uuZE%26code_challenge_method%3DS256%26state%3DOpenIdConnect.AuthenticationProperties%253DBhc1Qn6lYFZrxO_KhC7UzXZTYACtsAnIVT0PgzDlhtuxIXeSFLwXaNbthEeuwSCbzvhrw2wECCxFTq8tbd7k2OFPfH0_TCnMkuh8oBFmlhEsZ3ZXUYecidfT2h2YpAyAoaBaXfpuQj2SGCIEW3KVRYpnljmx-mso97xCbjz72URywiBJRMqDS9TqY-0vaviUIH1X72u_phfuiBdbR1s-WOyUj21KAPdNPJXi1nQtUd-hRoeI53WBTrv2EC0U4SNFvhivPgE6YseB2fdYbPv4u0NiFeHPD3EBQyqE_iUVI1QrGPG3VvhD5xs8odx21WncybewKIuTQpH3MAfJkTmDeQ%26x-client-SKU%3DID_NET472%26x-client-ver%3D6.32.1.0&account=" + cache.Account + "&pwd=" + gePass + "&ts=" + strconv.FormatInt(ts, 10))
 
-	client := &http.Client{}
+	tr := &http.Transport{
+		TLSClientConfig: &tls.Config{
+			InsecureSkipVerify: true, // 跳过证书验证，仅用于开发环境
+		},
+	}
+
+	//如果开启了IP代理，那么就直接添加代理
+	if cache.IpProxySW {
+		tr.Proxy = func(req *http.Request) (*url.URL, error) {
+			return url.Parse(cache.ProxyIP) // 设置代理
+		}
+	}
+	client := &http.Client{
+		Transport: tr,
+	}
 	req, err := http.NewRequest(method, urlStr, payload)
 
 	if err != nil {

@@ -1,9 +1,11 @@
 package cqie
 
 import (
+	"crypto/tls"
 	"fmt"
 	"io/ioutil"
 	"net/http"
+	"net/url"
 	"strconv"
 	"strings"
 	"time"
@@ -16,11 +18,25 @@ func (cache *CqieUserCache) UserDetailsApi(retry int, lastErr error) (string, er
 	if retry < 0 {
 		return "", lastErr
 	}
-	url := "https://study.cqie.edu.cn/gateway/system/sysUser/nowUserDetails"
+	urlStr := "https://study.cqie.edu.cn/gateway/system/sysUser/nowUserDetails"
 	method := "GET"
 
-	client := &http.Client{}
-	req, err := http.NewRequest(method, url, nil)
+	tr := &http.Transport{
+		TLSClientConfig: &tls.Config{
+			InsecureSkipVerify: true, // 跳过证书验证，仅用于开发环境
+		},
+	}
+
+	//如果开启了IP代理，那么就直接添加代理
+	if cache.IpProxySW {
+		tr.Proxy = func(req *http.Request) (*url.URL, error) {
+			return url.Parse(cache.ProxyIP) // 设置代理
+		}
+	}
+	client := &http.Client{
+		Transport: tr,
+	}
+	req, err := http.NewRequest(method, urlStr, nil)
 
 	if err != nil {
 		time.Sleep(time.Millisecond * 150)
@@ -53,7 +69,7 @@ func (cache *CqieUserCache) PullCourseListApi(retry int, lastErr error) (string,
 	if retry < 0 {
 		return "", lastErr
 	}
-	url := "https://study.cqie.edu.cn/gateway/system/orgStudent/pagedMyCourse"
+	urlStr := "https://study.cqie.edu.cn/gateway/system/orgStudent/pagedMyCourse"
 	method := "POST"
 
 	payload := strings.NewReader(`{
@@ -69,8 +85,22 @@ func (cache *CqieUserCache) PullCourseListApi(retry int, lastErr error) (string,
    "pageSize": 200
  }`)
 
-	client := &http.Client{}
-	req, err := http.NewRequest(method, url, payload)
+	tr := &http.Transport{
+		TLSClientConfig: &tls.Config{
+			InsecureSkipVerify: true, // 跳过证书验证，仅用于开发环境
+		},
+	}
+
+	//如果开启了IP代理，那么就直接添加代理
+	if cache.IpProxySW {
+		tr.Proxy = func(req *http.Request) (*url.URL, error) {
+			return url.Parse(cache.ProxyIP) // 设置代理
+		}
+	}
+	client := &http.Client{
+		Transport: tr,
+	}
+	req, err := http.NewRequest(method, urlStr, payload)
 
 	if err != nil {
 		time.Sleep(time.Millisecond * 150)
@@ -103,7 +133,7 @@ func (cache *CqieUserCache) PullCourseListApiNew(retry int, lastErr error) (stri
 		return "", lastErr
 	}
 	//url := "https://study.cqie.edu.cn/gateway/system/orgStudent/pagedMyCourse"
-	url := "https://study.cqie.edu.cn/gateway/frequent/orgStudent/pagedMyCourse"
+	urlStr := "https://study.cqie.edu.cn/gateway/frequent/orgStudent/pagedMyCourse"
 	method := "POST"
 
 	payload := strings.NewReader(`{
@@ -119,8 +149,22 @@ func (cache *CqieUserCache) PullCourseListApiNew(retry int, lastErr error) (stri
    "pageSize": 200
  }`)
 
-	client := &http.Client{}
-	req, err := http.NewRequest(method, url, payload)
+	tr := &http.Transport{
+		TLSClientConfig: &tls.Config{
+			InsecureSkipVerify: true, // 跳过证书验证，仅用于开发环境
+		},
+	}
+
+	//如果开启了IP代理，那么就直接添加代理
+	if cache.IpProxySW {
+		tr.Proxy = func(req *http.Request) (*url.URL, error) {
+			return url.Parse(cache.ProxyIP) // 设置代理
+		}
+	}
+	client := &http.Client{
+		Transport: tr,
+	}
+	req, err := http.NewRequest(method, urlStr, payload)
 
 	if err != nil {
 		time.Sleep(time.Millisecond * 150)
@@ -153,11 +197,25 @@ func (cache *CqieUserCache) GetVideoStudyIdApi(studentCourseId, videoId, version
 	if retry < 0 {
 		return "", lastErr
 	}
-	url := "https://study.cqie.edu.cn/gateway/system/orgStudent/studyVideo?studentCourseId=" + studentCourseId + "&videoId=" + videoId + "&studentId=" + cache.studentId + "&majorId=" + cache.orgMajorId + "&version=" + version
+	urlStr := "https://study.cqie.edu.cn/gateway/system/orgStudent/studyVideo?studentCourseId=" + studentCourseId + "&videoId=" + videoId + "&studentId=" + cache.studentId + "&majorId=" + cache.orgMajorId + "&version=" + version
 	method := "GET"
 
-	client := &http.Client{}
-	req, err := http.NewRequest(method, url, nil)
+	tr := &http.Transport{
+		TLSClientConfig: &tls.Config{
+			InsecureSkipVerify: true, // 跳过证书验证，仅用于开发环境
+		},
+	}
+
+	//如果开启了IP代理，那么就直接添加代理
+	if cache.IpProxySW {
+		tr.Proxy = func(req *http.Request) (*url.URL, error) {
+			return url.Parse(cache.ProxyIP) // 设置代理
+		}
+	}
+	client := &http.Client{
+		Transport: tr,
+	}
+	req, err := http.NewRequest(method, urlStr, nil)
 
 	if err != nil {
 		time.Sleep(time.Millisecond * 150)
@@ -198,7 +256,7 @@ func (cache *CqieUserCache) SubmitStudyTimeApi(
 		return "", lastErr
 	}
 
-	url := "https://study.cqie.edu.cn/gateway/system/orgStudent/updateStudyVideoPlan"
+	urlStr := "https://study.cqie.edu.cn/gateway/system/orgStudent/updateStudyVideoPlan"
 	method := "POST"
 
 	payload := strings.NewReader(`{
@@ -221,8 +279,22 @@ func (cache *CqieUserCache) SubmitStudyTimeApi(
 	   "coursewareId": "` + coursewareId + `",
        "segmentKnowledgeId": null
 	 }`)
-	client := &http.Client{}
-	req, err := http.NewRequest(method, url, payload)
+	tr := &http.Transport{
+		TLSClientConfig: &tls.Config{
+			InsecureSkipVerify: true, // 跳过证书验证，仅用于开发环境
+		},
+	}
+
+	//如果开启了IP代理，那么就直接添加代理
+	if cache.IpProxySW {
+		tr.Proxy = func(req *http.Request) (*url.URL, error) {
+			return url.Parse(cache.ProxyIP) // 设置代理
+		}
+	}
+	client := &http.Client{
+		Transport: tr,
+	}
+	req, err := http.NewRequest(method, urlStr, payload)
 
 	if err != nil {
 		time.Sleep(time.Millisecond * 150)
@@ -253,7 +325,7 @@ func (cache *CqieUserCache) SaveStudyTimeApi(courseId, studentCourseId, unitId, 
 	if retry < 0 {
 		return "", lastErr
 	}
-	url := "https://study.cqie.edu.cn/gateway/system/orgStudent/saveStudyVideoPlan"
+	urlStr := "https://study.cqie.edu.cn/gateway/system/orgStudent/saveStudyVideoPlan"
 	method := "POST"
 
 	payload := strings.NewReader(`{
@@ -269,8 +341,22 @@ func (cache *CqieUserCache) SaveStudyTimeApi(courseId, studentCourseId, unitId, 
 		"version": "` + version + `"
 	}`)
 
-	client := &http.Client{}
-	req, err := http.NewRequest(method, url, payload)
+	tr := &http.Transport{
+		TLSClientConfig: &tls.Config{
+			InsecureSkipVerify: true, // 跳过证书验证，仅用于开发环境
+		},
+	}
+
+	//如果开启了IP代理，那么就直接添加代理
+	if cache.IpProxySW {
+		tr.Proxy = func(req *http.Request) (*url.URL, error) {
+			return url.Parse(cache.ProxyIP) // 设置代理
+		}
+	}
+	client := &http.Client{
+		Transport: tr,
+	}
+	req, err := http.NewRequest(method, urlStr, payload)
 
 	if err != nil {
 		time.Sleep(time.Millisecond * 150)
@@ -300,7 +386,7 @@ func (cache *CqieUserCache) SaveSegmentStudyTimeApi(courseId, studentCourseId, u
 	if retry < 0 {
 		return "", lastErr
 	}
-	url := "https://study.cqie.edu.cn/gateway/system/orgStudent/segment/saveStudyVideoPlan"
+	urlStr := "https://study.cqie.edu.cn/gateway/system/orgStudent/segment/saveStudyVideoPlan"
 	method := "POST"
 
 	payload := strings.NewReader(`{
@@ -321,8 +407,22 @@ func (cache *CqieUserCache) SaveSegmentStudyTimeApi(courseId, studentCourseId, u
 	"version": "` + version + `"
 }`)
 
-	client := &http.Client{}
-	req, err := http.NewRequest(method, url, payload)
+	tr := &http.Transport{
+		TLSClientConfig: &tls.Config{
+			InsecureSkipVerify: true, // 跳过证书验证，仅用于开发环境
+		},
+	}
+
+	//如果开启了IP代理，那么就直接添加代理
+	if cache.IpProxySW {
+		tr.Proxy = func(req *http.Request) (*url.URL, error) {
+			return url.Parse(cache.ProxyIP) // 设置代理
+		}
+	}
+	client := &http.Client{
+		Transport: tr,
+	}
+	req, err := http.NewRequest(method, urlStr, payload)
 
 	if err != nil {
 		time.Sleep(time.Millisecond * 150)
@@ -352,11 +452,25 @@ func (cache *CqieUserCache) PullCourseDetailApi(courseId, studentCourseId, versi
 	if retry < 0 {
 		return "", lastErr
 	}
-	url := "https://study.cqie.edu.cn/gateway/system/orgStudent/myCourseDetails?studentId=" + cache.studentId + "&id=" + courseId + "&majorId=" + cache.orgMajorId + "&studentCourseId=" + studentCourseId + "&version=" + version
+	urlStr := "https://study.cqie.edu.cn/gateway/system/orgStudent/myCourseDetails?studentId=" + cache.studentId + "&id=" + courseId + "&majorId=" + cache.orgMajorId + "&studentCourseId=" + studentCourseId + "&version=" + version
 	method := "GET"
 
-	client := &http.Client{}
-	req, err := http.NewRequest(method, url, nil)
+	tr := &http.Transport{
+		TLSClientConfig: &tls.Config{
+			InsecureSkipVerify: true, // 跳过证书验证，仅用于开发环境
+		},
+	}
+
+	//如果开启了IP代理，那么就直接添加代理
+	if cache.IpProxySW {
+		tr.Proxy = func(req *http.Request) (*url.URL, error) {
+			return url.Parse(cache.ProxyIP) // 设置代理
+		}
+	}
+	client := &http.Client{
+		Transport: tr,
+	}
+	req, err := http.NewRequest(method, urlStr, nil)
 
 	if err != nil {
 		time.Sleep(time.Millisecond * 150)
@@ -385,11 +499,25 @@ func (cache *CqieUserCache) PullProgressDetailApi(courseId, studentCourseId, ver
 	if retry < 0 {
 		return "", lastErr
 	}
-	url := "https://study.cqie.edu.cn/gateway/system/orgStudent/progressDetails?studentId=" + cache.studentId + "&id=" + courseId + "&majorId=" + cache.orgMajorId + "&studentCourseId=" + studentCourseId + "&version=" + version
+	urlStr := "https://study.cqie.edu.cn/gateway/system/orgStudent/progressDetails?studentId=" + cache.studentId + "&id=" + courseId + "&majorId=" + cache.orgMajorId + "&studentCourseId=" + studentCourseId + "&version=" + version
 	method := "GET"
 
-	client := &http.Client{}
-	req, err := http.NewRequest(method, url, nil)
+	tr := &http.Transport{
+		TLSClientConfig: &tls.Config{
+			InsecureSkipVerify: true, // 跳过证书验证，仅用于开发环境
+		},
+	}
+
+	//如果开启了IP代理，那么就直接添加代理
+	if cache.IpProxySW {
+		tr.Proxy = func(req *http.Request) (*url.URL, error) {
+			return url.Parse(cache.ProxyIP) // 设置代理
+		}
+	}
+	client := &http.Client{
+		Transport: tr,
+	}
+	req, err := http.NewRequest(method, urlStr, nil)
 
 	if err != nil {
 		time.Sleep(time.Millisecond * 150)
@@ -416,7 +544,7 @@ func (cache *CqieUserCache) PullProgressDetailApi(courseId, studentCourseId, ver
 // 拉取视屏作业试卷接口
 func (cache *CqieUserCache) PullVideoWorkPaperApi(knowledgeNodeId, studentCourseId, unitId string) (string, error) {
 
-	url := "https://study.cqie.edu.cn/gateway/study/studyKnowledgeExerciseRecord/exercisesList"
+	urlStr := "https://study.cqie.edu.cn/gateway/study/studyKnowledgeExerciseRecord/exercisesList"
 	method := "POST"
 
 	payload := strings.NewReader(`{
@@ -425,8 +553,22 @@ func (cache *CqieUserCache) PullVideoWorkPaperApi(knowledgeNodeId, studentCourse
 		"unitId": "` + unitId + `"
 		}`)
 
-	client := &http.Client{}
-	req, err := http.NewRequest(method, url, payload)
+	tr := &http.Transport{
+		TLSClientConfig: &tls.Config{
+			InsecureSkipVerify: true, // 跳过证书验证，仅用于开发环境
+		},
+	}
+
+	//如果开启了IP代理，那么就直接添加代理
+	if cache.IpProxySW {
+		tr.Proxy = func(req *http.Request) (*url.URL, error) {
+			return url.Parse(cache.ProxyIP) // 设置代理
+		}
+	}
+	client := &http.Client{
+		Transport: tr,
+	}
+	req, err := http.NewRequest(method, urlStr, payload)
 
 	if err != nil {
 		fmt.Println(err)
@@ -470,13 +612,27 @@ func (cache *CqieUserCache) PullVideoWorkPaperApi(knowledgeNodeId, studentCourse
 // 提交答案
 func (cache *CqieUserCache) SubmitWorkAnswerApi(answerJson string) (string, error) {
 
-	url := "https://study.cqie.edu.cn/gateway/study/studyKnowledgeExerciseSummaryRecord/createList"
+	urlStr := "https://study.cqie.edu.cn/gateway/study/studyKnowledgeExerciseSummaryRecord/createList"
 	method := "POST"
 
 	payload := strings.NewReader(answerJson)
 
-	client := &http.Client{}
-	req, err := http.NewRequest(method, url, payload)
+	tr := &http.Transport{
+		TLSClientConfig: &tls.Config{
+			InsecureSkipVerify: true, // 跳过证书验证，仅用于开发环境
+		},
+	}
+
+	//如果开启了IP代理，那么就直接添加代理
+	if cache.IpProxySW {
+		tr.Proxy = func(req *http.Request) (*url.URL, error) {
+			return url.Parse(cache.ProxyIP) // 设置代理
+		}
+	}
+	client := &http.Client{
+		Transport: tr,
+	}
+	req, err := http.NewRequest(method, urlStr, payload)
 
 	if err != nil {
 		fmt.Println(err)

@@ -9,11 +9,9 @@ import (
 	"encoding/json"
 	"fmt"
 	"io"
-	"io/ioutil"
 	"log"
 	"math"
 	"math/rand"
-	"net/http"
 	"net/url"
 	"sort"
 	"strconv"
@@ -609,11 +607,7 @@ func TestXueXiToFlushCourse(t *testing.T) {
 						log.Printf("(%s)该文档非任务点或已完成，已自动跳过\n", documentDTO.Title)
 						continue
 					}
-					for {
-						report, _ := SendReport(userCache.UserID)
-						fmt.Println(report)
-						time.Sleep(10 * time.Second)
-					}
+
 					document, err1 := point.ExecuteDocument(&userCache, &documentDTO)
 					if err1 != nil {
 						log.Fatal(err1)
@@ -1131,36 +1125,6 @@ func buildReportUrl(userId string) (string, error) {
 	)
 
 	return finalUrl, nil
-}
-
-// 发起请求
-func SendReport(userId string) (string, error) {
-
-	urlStr, _ := buildReportUrl(userId)
-
-	client := &http.Client{}
-	req, err := http.NewRequest("GET", urlStr, nil)
-	if err != nil {
-		return "", err
-	}
-
-	req.Header.Add("User-Agent", "Mozilla/5.0 (Linux; Android 8.1.0; MI 5X Build/OPM1.171019.019; wv) AppleWebKit/537.36 (KHTML, like Gecko) Version/4.0 Chrome/71.0.3578.99 Mobile Safari/537.36 (schild:ce5175d20950c8ee955fb03246f762da) (device:MI 5X) Language/zh_CN com.chaoxing.mobile/ChaoXingStudy_3_6.7.2_android_phone_10936_311 (@Kalimdor)_76c82452584d47e39ab79aa54ea86554")
-	req.Header.Add("Origin", "https://special.rhky.com")
-	req.Header.Add("Referer", "https://special.rhky.com/mobile/mooc/")
-	req.Header.Add("Accept-Language", "zh-CN,en-US;q=0.9")
-	req.Header.Add("X-Requested-With", "com.chaoxing.mobile")
-	req.Header.Add("Accept", "*/*")
-	req.Header.Add("Host", "data-xxt.aichaoxing.com")
-	req.Header.Add("Connection", "keep-alive")
-
-	res, err := client.Do(req)
-	if err != nil {
-		return "", err
-	}
-	defer res.Body.Close()
-
-	body, err := ioutil.ReadAll(res.Body)
-	return string(body), err
 }
 
 // 生成 enc 参数（完全匹配超星 JS）

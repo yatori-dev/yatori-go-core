@@ -1,6 +1,7 @@
 package icve
 
 import (
+	"crypto/tls"
 	"encoding/json"
 	"fmt"
 	"image"
@@ -60,11 +61,25 @@ type CapUnionData struct {
 // 拉取Aid数据
 func (cache *IcveUserCache) PullAidApi() string {
 
-	url := "https://sso.icve.com.cn/prod-api/captcha/encrypt"
+	urlStr := "https://sso.icve.com.cn/prod-api/captcha/encrypt"
 	method := "POST"
 
-	client := &http.Client{}
-	req, err := http.NewRequest(method, url, nil)
+	tr := &http.Transport{
+		TLSClientConfig: &tls.Config{
+			InsecureSkipVerify: true, // 跳过证书验证，仅用于开发环境
+		},
+	}
+
+	//如果开启了IP代理，那么就直接添加代理
+	if cache.IpProxySW {
+		tr.Proxy = func(req *http.Request) (*url.URL, error) {
+			return url.Parse(cache.ProxyIP) // 设置代理
+		}
+	}
+	client := &http.Client{
+		Transport: tr,
+	}
+	req, err := http.NewRequest(method, urlStr, nil)
 
 	if err != nil {
 		fmt.Println(err)
@@ -98,7 +113,21 @@ func (cache *IcveUserCache) PullVerDataApi() (CapUnionData, error) {
 	urlStr := "https://turing.captcha.qcloud.com/cap_union_prehandle?aid=196632980&protocol=https&accver=1&showtype=popup&ua=TW96aWxsYS81LjAgKFdpbmRvd3MgTlQgMTAuMDsgV2luNjQ7IHg2NCkgQXBwbGVXZWJLaXQvNTM3LjM2IChLSFRNTCwgbGlrZSBHZWNrbykgQ2hyb21lLzE0MC4wLjAuMCBTYWZhcmkvNTM3LjM2IEVkZy8xNDAuMC4wLjA%253D&noheader=1&fb=1&aged=0&enableAged=0&enableDarkMode=0&grayscale=1&clientype=2" + "&aidEncrypted=" + cache.PullAidApi() + "&cap_cd=&uid=&lang=zh-cn&entry_url=https%253A%252F%252Fsso.icve.com.cn%252Fsso%252Fauth&elder_captcha=0&js=%252FtgJCap.977ef8c3.js&login_appid=&wb=1&subsid=3&callback=_aq_55600&sess="
 	method := "GET"
 
-	client := &http.Client{}
+	tr := &http.Transport{
+		TLSClientConfig: &tls.Config{
+			InsecureSkipVerify: true, // 跳过证书验证，仅用于开发环境
+		},
+	}
+
+	//如果开启了IP代理，那么就直接添加代理
+	if cache.IpProxySW {
+		tr.Proxy = func(req *http.Request) (*url.URL, error) {
+			return url.Parse(cache.ProxyIP) // 设置代理
+		}
+	}
+	client := &http.Client{
+		Transport: tr,
+	}
 	req, err := http.NewRequest(method, urlStr, nil)
 
 	if err != nil {
@@ -145,12 +174,26 @@ func (cache *IcveUserCache) PullVerDataApi() (CapUnionData, error) {
 }
 
 // 拉取验证码图片
-func PullCapImgApi(data CapUnionData) (image.Image, error) {
-	url := "https://turing.captcha.qcloud.com" + data.Data.DynShowInfo.BgElemCfg.ImgUrl
+func (cache *IcveUserCache) PullCapImgApi(data CapUnionData) (image.Image, error) {
+	urlStr := "https://turing.captcha.qcloud.com" + data.Data.DynShowInfo.BgElemCfg.ImgUrl
 	method := "GET"
 
-	client := &http.Client{}
-	req, err := http.NewRequest(method, url, nil)
+	tr := &http.Transport{
+		TLSClientConfig: &tls.Config{
+			InsecureSkipVerify: true, // 跳过证书验证，仅用于开发环境
+		},
+	}
+
+	//如果开启了IP代理，那么就直接添加代理
+	if cache.IpProxySW {
+		tr.Proxy = func(req *http.Request) (*url.URL, error) {
+			return url.Parse(cache.ProxyIP) // 设置代理
+		}
+	}
+	client := &http.Client{
+		Transport: tr,
+	}
+	req, err := http.NewRequest(method, urlStr, nil)
 
 	if err != nil {
 		fmt.Println(err)
@@ -188,7 +231,21 @@ func (cache *IcveUserCache) PullVMApi(data CapUnionData, path string) (string, e
 	urlStr := "https://turing.captcha.qcloud.com" + data.Data.CommCaptchaCfg.TdcPath
 	method := "GET"
 
-	client := &http.Client{}
+	tr := &http.Transport{
+		TLSClientConfig: &tls.Config{
+			InsecureSkipVerify: true, // 跳过证书验证，仅用于开发环境
+		},
+	}
+
+	//如果开启了IP代理，那么就直接添加代理
+	if cache.IpProxySW {
+		tr.Proxy = func(req *http.Request) (*url.URL, error) {
+			return url.Parse(cache.ProxyIP) // 设置代理
+		}
+	}
+	client := &http.Client{
+		Transport: tr,
+	}
 	req, err := http.NewRequest(method, urlStr, nil)
 
 	if err != nil {
@@ -228,7 +285,21 @@ func (cache *IcveUserCache) SubmitVerApi(data CapUnionData, collect string, eks 
 
 	payload := strings.NewReader("collect=" + url.QueryEscape(collect) + "&tlg=" + fmt.Sprintf("%d", len(collect)) + "&eks=" + url.QueryEscape(eks) + "&sess=" + url.QueryEscape(data.Sess) + "&ans=" + url.QueryEscape(posData) + "&pow_answer=" + url.QueryEscape(powAnswer) + "&pow_calc_time=" + powCalcTime)
 
-	client := &http.Client{}
+	tr := &http.Transport{
+		TLSClientConfig: &tls.Config{
+			InsecureSkipVerify: true, // 跳过证书验证，仅用于开发环境
+		},
+	}
+
+	//如果开启了IP代理，那么就直接添加代理
+	if cache.IpProxySW {
+		tr.Proxy = func(req *http.Request) (*url.URL, error) {
+			return url.Parse(cache.ProxyIP) // 设置代理
+		}
+	}
+	client := &http.Client{
+		Transport: tr,
+	}
 	req, err := http.NewRequest(method, urlStr, payload)
 
 	if err != nil {

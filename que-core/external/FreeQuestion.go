@@ -1,6 +1,7 @@
 package external
 
 import (
+	"crypto/tls"
 	"fmt"
 	"io/ioutil"
 	"net/http"
@@ -17,7 +18,15 @@ func QuanNengQueRequestApi(problem qentity.Question, retry int, err error) (*qen
 	urlStr := "https://api.wkexam.com/api?q=" + url.QueryEscape(problem.Content) + "&token=qqqqq"
 	method := "GET"
 
-	client := &http.Client{}
+	tr := &http.Transport{
+		TLSClientConfig: &tls.Config{
+			InsecureSkipVerify: true, // 跳过证书验证，仅用于开发环境
+		},
+	}
+
+	client := &http.Client{
+		Transport: tr,
+	}
 	req, err := http.NewRequest(method, urlStr, nil)
 
 	if err != nil {
@@ -86,7 +95,15 @@ func SpaceXQueRequestApi(problem qentity.Question, retry int, err error) (*qenti
 	urlStr := "https://doc.spacex-api.com/Api/tiku?question=" + url.QueryEscape(problem.Content) + "&token=c5ecf55ebeb4b61d669713b54693ce09&options=" + url.QueryEscape(options)
 	method := "GET"
 
-	client := &http.Client{}
+	tr := &http.Transport{
+		TLSClientConfig: &tls.Config{
+			InsecureSkipVerify: true, // 跳过证书验证，仅用于开发环境
+		},
+	}
+
+	client := &http.Client{
+		Transport: tr,
+	}
 	req, err := http.NewRequest(method, urlStr, nil)
 
 	if err != nil {
@@ -154,7 +171,15 @@ func JsonApiQuesRequestApi(problem qentity.Question, retry int, err error) (*qen
 	urlStr := "https://www.aiask.site/v1/question/precise?question=" + url.QueryEscape(problem.Content) + "&options=" + url.QueryEscape(options)
 	method := "POST"
 
-	client := &http.Client{}
+	tr := &http.Transport{
+		TLSClientConfig: &tls.Config{
+			InsecureSkipVerify: true, // 跳过证书验证，仅用于开发环境
+		},
+	}
+
+	client := &http.Client{
+		Transport: tr,
+	}
 	req, err := http.NewRequest(method, urlStr, nil)
 
 	if err != nil {

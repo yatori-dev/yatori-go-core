@@ -39,7 +39,7 @@ func IcveLoginAction(cache *icve.IcveUserCache) error {
 		rand.Seed(time.Now().UnixNano())
 		//randNum := rand.Intn(85000) + 5000
 		randNum := 1
-		img, err := icve.PullCapImgApi(data)
+		img, err := cache.PullCapImgApi(data)
 		//拉取vmjs
 		vmjs, err := cache.PullVMApi(data, "./assets/tencentVM"+fmt.Sprintf("%d", randNum)+".js")
 		if err != nil {

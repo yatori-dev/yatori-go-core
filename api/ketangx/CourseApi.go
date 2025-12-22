@@ -1,9 +1,11 @@
 package ketangx
 
 import (
+	"crypto/tls"
 	"fmt"
 	"io/ioutil"
 	"net/http"
+	"net/url"
 	"strings"
 	"time"
 
@@ -12,13 +14,27 @@ import (
 
 // 拉取课程对应列表HTML
 func (cache *KetangxUserCache) PullCourseListHTMLApi() (string, error) {
-	url := "https://www.ketangx.cn/Activity/Query"
+	urlStr := "https://www.ketangx.cn/Activity/Query"
 	method := "POST"
 
 	payload := strings.NewReader("actType=2&actStart=&actClose=&formId=&classId=&actKey=&actState=&timeId=" + fmt.Sprintf("%d", time.Now().UnixMilli()))
 
-	client := &http.Client{}
-	req, err := http.NewRequest(method, url, payload)
+	tr := &http.Transport{
+		TLSClientConfig: &tls.Config{
+			InsecureSkipVerify: true, // 跳过证书验证，仅用于开发环境
+		},
+	}
+
+	//如果开启了IP代理，那么就直接添加代理
+	if cache.IpProxySW {
+		tr.Proxy = func(req *http.Request) (*url.URL, error) {
+			return url.Parse(cache.ProxyIP) // 设置代理
+		}
+	}
+	client := &http.Client{
+		Transport: tr,
+	}
+	req, err := http.NewRequest(method, urlStr, payload)
 
 	if err != nil {
 		fmt.Println(err)
@@ -54,11 +70,25 @@ func (cache *KetangxUserCache) PullCourseListHTMLApi() (string, error) {
 // 拉取课程对应视屏列表HTML
 func (cache *KetangxUserCache) PullVideoListHTMLApi(courseId string) (string, error) {
 
-	url := "https://www.ketangx.cn/DoAct/ActIndex/" + courseId + "?_=" + fmt.Sprintf("%d", time.Now().UnixMilli())
+	urlStr := "https://www.ketangx.cn/DoAct/ActIndex/" + courseId + "?_=" + fmt.Sprintf("%d", time.Now().UnixMilli())
 	method := "GET"
 
-	client := &http.Client{}
-	req, err := http.NewRequest(method, url, nil)
+	tr := &http.Transport{
+		TLSClientConfig: &tls.Config{
+			InsecureSkipVerify: true, // 跳过证书验证，仅用于开发环境
+		},
+	}
+
+	//如果开启了IP代理，那么就直接添加代理
+	if cache.IpProxySW {
+		tr.Proxy = func(req *http.Request) (*url.URL, error) {
+			return url.Parse(cache.ProxyIP) // 设置代理
+		}
+	}
+	client := &http.Client{
+		Transport: tr,
+	}
+	req, err := http.NewRequest(method, urlStr, nil)
 
 	if err != nil {
 		fmt.Println(err)
@@ -92,11 +122,25 @@ func (cache *KetangxUserCache) PullVideoListHTMLApi(courseId string) (string, er
 // 标记任务点状态API，视屏学习前必须要先调用这个
 func (cache *KetangxUserCache) SignVideoStatusApi(sectId string) (string, error) {
 
-	url := "https://www.ketangx.cn/DoAct/GetSection?id=" + sectId + "&_=" + fmt.Sprintf("%d", time.Now().UnixMilli())
+	urlStr := "https://www.ketangx.cn/DoAct/GetSection?id=" + sectId + "&_=" + fmt.Sprintf("%d", time.Now().UnixMilli())
 	method := "GET"
 
-	client := &http.Client{}
-	req, err := http.NewRequest(method, url, nil)
+	tr := &http.Transport{
+		TLSClientConfig: &tls.Config{
+			InsecureSkipVerify: true, // 跳过证书验证，仅用于开发环境
+		},
+	}
+
+	//如果开启了IP代理，那么就直接添加代理
+	if cache.IpProxySW {
+		tr.Proxy = func(req *http.Request) (*url.URL, error) {
+			return url.Parse(cache.ProxyIP) // 设置代理
+		}
+	}
+	client := &http.Client{
+		Transport: tr,
+	}
+	req, err := http.NewRequest(method, urlStr, nil)
 
 	if err != nil {
 		fmt.Println(err)
@@ -127,13 +171,27 @@ func (cache *KetangxUserCache) SignVideoStatusApi(sectId string) (string, error)
 // 完成视频任务点API
 func (cache *KetangxUserCache) CompleteVideoApi(sectId, userId string, studyTime, duration int) (string, error) {
 
-	url := "https://www.ketangx.cn/Common/SetDuration"
+	urlStr := "https://www.ketangx.cn/Common/SetDuration"
 	method := "POST"
 
 	payload := strings.NewReader("studyData%5BSectId%5D=" + sectId + "&studyData%5BUserId%5D=" + userId + "&studyData%5BStudyTime%5D=" + fmt.Sprintf("%d", studyTime) + "&studyData%5BDuraion%5D=" + fmt.Sprintf("%d", duration))
 
-	client := &http.Client{}
-	req, err := http.NewRequest(method, url, payload)
+	tr := &http.Transport{
+		TLSClientConfig: &tls.Config{
+			InsecureSkipVerify: true, // 跳过证书验证，仅用于开发环境
+		},
+	}
+
+	//如果开启了IP代理，那么就直接添加代理
+	if cache.IpProxySW {
+		tr.Proxy = func(req *http.Request) (*url.URL, error) {
+			return url.Parse(cache.ProxyIP) // 设置代理
+		}
+	}
+	client := &http.Client{
+		Transport: tr,
+	}
+	req, err := http.NewRequest(method, urlStr, payload)
 
 	if err != nil {
 		fmt.Println(err)

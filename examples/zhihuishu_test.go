@@ -19,7 +19,11 @@ import (
 
 // 知到扫码登录测试
 func Test_ZhidaoQrcode(t *testing.T) {
-	qrImgBase64, qtoken, err := zhihuishu.ZhidaoQrCode()
+	cache := zhihuishu.ZhiDaoUserCache{
+		Account:  "",
+		Password: "",
+	}
+	qrImgBase64, qtoken, err := cache.ZhidaoQrCode()
 	raw, err := base64.StdEncoding.DecodeString(qrImgBase64)
 	// --- 2) 解码图片 ---
 	img, _, err := image.Decode(bytes.NewReader(raw))
@@ -44,7 +48,7 @@ func Test_ZhidaoQrcode(t *testing.T) {
 	fmt.Println(qtoken)
 
 	for {
-		checkjson, err := zhihuishu.ZhidaoQrCheck(qtoken)
+		checkjson, err := cache.ZhidaoQrCheck(qtoken)
 		if err != nil {
 			log.Fatalf("检测扫码登录失败：%v", err)
 		}

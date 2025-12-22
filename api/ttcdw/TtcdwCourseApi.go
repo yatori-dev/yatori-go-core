@@ -3,11 +3,13 @@ package ttcdw
 import (
 	"bytes"
 	"crypto/des"
+	"crypto/tls"
 	"encoding/base64"
 	"errors"
 	"fmt"
 	"io/ioutil"
 	"net/http"
+	"net/url"
 	"strings"
 	"time"
 
@@ -19,11 +21,25 @@ func (cache *TtcdwUserCache) PullProjectApi(retry int, lastErr error) (string, e
 	if retry < 0 {
 		return "", lastErr
 	}
-	url := "https://www.ttcdw.cn/m/open/app/v1/memProject/list?state=1&pageNum=1&pageSize=100"
+	urlStr := "https://www.ttcdw.cn/m/open/app/v1/memProject/list?state=1&pageNum=1&pageSize=100"
 	method := "GET"
 
-	client := &http.Client{}
-	req, err := http.NewRequest(method, url, nil)
+	tr := &http.Transport{
+		TLSClientConfig: &tls.Config{
+			InsecureSkipVerify: true, // 跳过证书验证，仅用于开发环境
+		},
+	}
+
+	//如果开启了IP代理，那么就直接添加代理
+	if cache.IpProxySW {
+		tr.Proxy = func(req *http.Request) (*url.URL, error) {
+			return url.Parse(cache.ProxyIP) // 设置代理
+		}
+	}
+	client := &http.Client{
+		Transport: tr,
+	}
+	req, err := http.NewRequest(method, urlStr, nil)
 
 	if err != nil {
 		//fmt.Println(err)
@@ -60,11 +76,25 @@ func (cache *TtcdwUserCache) PullClassRoomApi(courseProjectId string, classId st
 		return "", lastErr
 	}
 
-	url := "https://www.ttcdw.cn/m/open/app/v2/member/project/" + courseProjectId + "/segment?classId=" + classId
+	urlStr := "https://www.ttcdw.cn/m/open/app/v2/member/project/" + courseProjectId + "/segment?classId=" + classId
 	method := "GET"
 
-	client := &http.Client{}
-	req, err := http.NewRequest(method, url, nil)
+	tr := &http.Transport{
+		TLSClientConfig: &tls.Config{
+			InsecureSkipVerify: true, // 跳过证书验证，仅用于开发环境
+		},
+	}
+
+	//如果开启了IP代理，那么就直接添加代理
+	if cache.IpProxySW {
+		tr.Proxy = func(req *http.Request) (*url.URL, error) {
+			return url.Parse(cache.ProxyIP) // 设置代理
+		}
+	}
+	client := &http.Client{
+		Transport: tr,
+	}
+	req, err := http.NewRequest(method, urlStr, nil)
 
 	if err != nil {
 		return "", err
@@ -91,11 +121,25 @@ func (cache *TtcdwUserCache) PullClassRoomApi(courseProjectId string, classId st
 }
 func (cache *TtcdwUserCache) PullCourseInfoApi(segmentId, courseId string, retry int, lastErr error) (string, error) {
 
-	url := "https://www.ttcdw.cn/m/open/app/v1/course/basic/" + courseId + "?segId=" + segmentId
+	urlStr := "https://www.ttcdw.cn/m/open/app/v1/course/basic/" + courseId + "?segId=" + segmentId
 	method := "GET"
 
-	client := &http.Client{}
-	req, err := http.NewRequest(method, url, nil)
+	tr := &http.Transport{
+		TLSClientConfig: &tls.Config{
+			InsecureSkipVerify: true, // 跳过证书验证，仅用于开发环境
+		},
+	}
+
+	//如果开启了IP代理，那么就直接添加代理
+	if cache.IpProxySW {
+		tr.Proxy = func(req *http.Request) (*url.URL, error) {
+			return url.Parse(cache.ProxyIP) // 设置代理
+		}
+	}
+	client := &http.Client{
+		Transport: tr,
+	}
+	req, err := http.NewRequest(method, urlStr, nil)
 
 	if err != nil {
 		return "", nil
@@ -126,11 +170,25 @@ func (cache *TtcdwUserCache) PullCourseInfoApi(segmentId, courseId string, retry
 // 拉取对应项目的课程
 func (cache *TtcdwUserCache) PullCourseApi(segmentId, itemId string, retry int, lastErr error) (string, error) {
 
-	url := "https://www.ttcdw.cn/m/open/app/v1/items/bxk/course/list?types=&segmentId=" + segmentId + "&itemId=" + itemId + "&moduleId=&pageNum=1&pageSize=100"
+	urlStr := "https://www.ttcdw.cn/m/open/app/v1/items/bxk/course/list?types=&segmentId=" + segmentId + "&itemId=" + itemId + "&moduleId=&pageNum=1&pageSize=100"
 	method := "GET"
 
-	client := &http.Client{}
-	req, err := http.NewRequest(method, url, nil)
+	tr := &http.Transport{
+		TLSClientConfig: &tls.Config{
+			InsecureSkipVerify: true, // 跳过证书验证，仅用于开发环境
+		},
+	}
+
+	//如果开启了IP代理，那么就直接添加代理
+	if cache.IpProxySW {
+		tr.Proxy = func(req *http.Request) (*url.URL, error) {
+			return url.Parse(cache.ProxyIP) // 设置代理
+		}
+	}
+	client := &http.Client{
+		Transport: tr,
+	}
+	req, err := http.NewRequest(method, urlStr, nil)
 
 	if err != nil {
 		return "", err
@@ -163,11 +221,25 @@ func (cache *TtcdwUserCache) PullChapterListHtmlApi(cid string, retry int, lastE
 	if retry < 0 {
 		return "", lastErr
 	}
-	url := "https://service.icourses.cn/hep-company/sword/company/shareChapter?cid=" + cid + "&shield="
+	urlStr := "https://service.icourses.cn/hep-company/sword/company/shareChapter?cid=" + cid + "&shield="
 	method := "GET"
 
-	client := &http.Client{}
-	req, err := http.NewRequest(method, url, nil)
+	tr := &http.Transport{
+		TLSClientConfig: &tls.Config{
+			InsecureSkipVerify: true, // 跳过证书验证，仅用于开发环境
+		},
+	}
+
+	//如果开启了IP代理，那么就直接添加代理
+	if cache.IpProxySW {
+		tr.Proxy = func(req *http.Request) (*url.URL, error) {
+			return url.Parse(cache.ProxyIP) // 设置代理
+		}
+	}
+	client := &http.Client{
+		Transport: tr,
+	}
+	req, err := http.NewRequest(method, urlStr, nil)
 
 	if err != nil {
 		return "", err
@@ -200,13 +272,27 @@ func (cache *TtcdwUserCache) PullGetResApi(sectionId string, retry int, lastErr 
 	if retry < 0 {
 		return "", lastErr
 	}
-	url := "https://service.icourses.cn/hep-company//sword/company/getRess"
+	urlStr := "https://service.icourses.cn/hep-company//sword/company/getRess"
 	method := "POST"
 
 	payload := strings.NewReader("sectionId=" + sectionId)
 
-	client := &http.Client{}
-	req, err := http.NewRequest(method, url, payload)
+	tr := &http.Transport{
+		TLSClientConfig: &tls.Config{
+			InsecureSkipVerify: true, // 跳过证书验证，仅用于开发环境
+		},
+	}
+
+	//如果开启了IP代理，那么就直接添加代理
+	if cache.IpProxySW {
+		tr.Proxy = func(req *http.Request) (*url.URL, error) {
+			return url.Parse(cache.ProxyIP) // 设置代理
+		}
+	}
+	client := &http.Client{
+		Transport: tr,
+	}
+	req, err := http.NewRequest(method, urlStr, payload)
 
 	if err != nil {
 		return "", err
@@ -240,11 +326,25 @@ func (cache *TtcdwUserCache) PullVideoListApi(courseId, itemId, segId, projectId
 	if retry < 0 {
 		return "", lastErr
 	}
-	url := "https://www.ttcdw.cn/p/course/services/course/public/course/lesson/" + courseId + "?ddtab=true&itemId=" + itemId + "&segId=" + segId + "&projectId=" + projectId + "&orgId=" + orgId + "&orgId=" + orgId + "&type=1&courseType=1&courseId=" + courseId + "&id=" + courseId + "&isContent=false&sourceType=1&_=" + fmt.Sprintf("%d", time.Now().UnixMilli())
+	urlStr := "https://www.ttcdw.cn/p/course/services/course/public/course/lesson/" + courseId + "?ddtab=true&itemId=" + itemId + "&segId=" + segId + "&projectId=" + projectId + "&orgId=" + orgId + "&orgId=" + orgId + "&type=1&courseType=1&courseId=" + courseId + "&id=" + courseId + "&isContent=false&sourceType=1&_=" + fmt.Sprintf("%d", time.Now().UnixMilli())
 	method := "GET"
 
-	client := &http.Client{}
-	req, err := http.NewRequest(method, url, nil)
+	tr := &http.Transport{
+		TLSClientConfig: &tls.Config{
+			InsecureSkipVerify: true, // 跳过证书验证，仅用于开发环境
+		},
+	}
+
+	//如果开启了IP代理，那么就直接添加代理
+	if cache.IpProxySW {
+		tr.Proxy = func(req *http.Request) (*url.URL, error) {
+			return url.Parse(cache.ProxyIP) // 设置代理
+		}
+	}
+	client := &http.Client{
+		Transport: tr,
+	}
+	req, err := http.NewRequest(method, urlStr, nil)
 
 	if err != nil {
 		fmt.Println(err)
@@ -291,13 +391,27 @@ func (cache *TtcdwUserCache) PullVideoListApi(courseId, itemId, segId, projectId
 // 提交学时接口
 func (cache *TtcdwUserCache) StudyTimeSubmitApi(orgId, courseId, itemId, videoId string, playProgress int, segId string, isFinish bool, typeNum, tjzj, clockInDot, sourceId, clockInRule, eventType string, retry int, lastErr error) (string, error) {
 
-	url := "https://www.ttcdw.cn/p/course/services/member/study/progress?orgId=" + orgId
+	urlStr := "https://www.ttcdw.cn/p/course/services/member/study/progress?orgId=" + orgId
 	method := "POST"
 
 	payload := strings.NewReader("courseId=" + courseId + "&itemId=" + itemId + "&videoId=" + videoId + "&playProgress=" + fmt.Sprintf("%d", playProgress) + "&segId=" + segId + "&isFinish=" + fmt.Sprintf("%t", isFinish) + "&type=1&tjzj=1&clockInDot=599&sourceId=1033502195012517888&clockInRule=0&timeLimit=-1&eventType=" + eventType)
 
-	client := &http.Client{}
-	req, err := http.NewRequest(method, url, payload)
+	tr := &http.Transport{
+		TLSClientConfig: &tls.Config{
+			InsecureSkipVerify: true, // 跳过证书验证，仅用于开发环境
+		},
+	}
+
+	//如果开启了IP代理，那么就直接添加代理
+	if cache.IpProxySW {
+		tr.Proxy = func(req *http.Request) (*url.URL, error) {
+			return url.Parse(cache.ProxyIP) // 设置代理
+		}
+	}
+	client := &http.Client{
+		Transport: tr,
+	}
+	req, err := http.NewRequest(method, urlStr, payload)
 
 	if err != nil {
 		fmt.Println(err)

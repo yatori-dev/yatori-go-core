@@ -104,7 +104,7 @@ func TestQsxtPullCodeList(t *testing.T) {
 		Password: user.Password,
 	}
 	for i := 0; i < 50; i++ {
-		pullCodeJson, err := cache.QsxtPhoneValidationCodeApi()
+		pullCodeJson, err := cache.QsxtPhoneValidationCodeApi(3, nil)
 		if err != nil {
 			panic(err)
 		}

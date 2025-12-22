@@ -1,6 +1,7 @@
 package welearn
 
 import (
+	"crypto/tls"
 	"fmt"
 	"io/ioutil"
 	"math/rand"
@@ -19,7 +20,21 @@ func (cache *WeLearnUserCache) PullCourseListApi(retry int, lastErr error) (stri
 	urlStr := "https://welearn.sflep.com/ajax/authCourse.aspx?action=gmc&nocache=" + fmt.Sprintf("%.16f", rand.Float32())
 	method := "GET"
 
-	client := &http.Client{}
+	tr := &http.Transport{
+		TLSClientConfig: &tls.Config{
+			InsecureSkipVerify: true, // 跳过证书验证，仅用于开发环境
+		},
+	}
+
+	//如果开启了IP代理，那么就直接添加代理
+	if cache.IpProxySW {
+		tr.Proxy = func(req *http.Request) (*url.URL, error) {
+			return url.Parse(cache.ProxyIP) // 设置代理
+		}
+	}
+	client := &http.Client{
+		Transport: tr,
+	}
 	req, err := http.NewRequest(method, urlStr, nil)
 
 	if err != nil {
@@ -57,11 +72,25 @@ func (cache *WeLearnUserCache) PullCourseInfoApi(cid string, retry int, lastErr 
 	if retry < 0 {
 		return "", lastErr
 	}
-	url := "https://welearn.sflep.com/student/course_info.aspx?cid=" + cid
+	urlStr := "https://welearn.sflep.com/student/course_info.aspx?cid=" + cid
 	method := "GET"
 
-	client := &http.Client{}
-	req, err := http.NewRequest(method, url, nil)
+	tr := &http.Transport{
+		TLSClientConfig: &tls.Config{
+			InsecureSkipVerify: true, // 跳过证书验证，仅用于开发环境
+		},
+	}
+
+	//如果开启了IP代理，那么就直接添加代理
+	if cache.IpProxySW {
+		tr.Proxy = func(req *http.Request) (*url.URL, error) {
+			return url.Parse(cache.ProxyIP) // 设置代理
+		}
+	}
+	client := &http.Client{
+		Transport: tr,
+	}
+	req, err := http.NewRequest(method, urlStr, nil)
 
 	if err != nil {
 		fmt.Println(err)
@@ -108,7 +137,21 @@ func (cache *WeLearnUserCache) PullCourseChapterApi(cid, stuid, classid string, 
 	urlStr := "https://welearn.sflep.com/ajax/StudyStat.aspx?" + params.Encode()
 	method := "GET"
 
-	client := &http.Client{}
+	tr := &http.Transport{
+		TLSClientConfig: &tls.Config{
+			InsecureSkipVerify: true, // 跳过证书验证，仅用于开发环境
+		},
+	}
+
+	//如果开启了IP代理，那么就直接添加代理
+	if cache.IpProxySW {
+		tr.Proxy = func(req *http.Request) (*url.URL, error) {
+			return url.Parse(cache.ProxyIP) // 设置代理
+		}
+	}
+	client := &http.Client{
+		Transport: tr,
+	}
 	req, err := http.NewRequest(method, urlStr, nil)
 
 	if err != nil {
@@ -157,7 +200,21 @@ func (cache *WeLearnUserCache) PullCoursePointApi(cid, stuid, classid, unitidx s
 	urlStr := "https://welearn.sflep.com/ajax/StudyStat.aspx?" + params.Encode()
 	method := "GET"
 
-	client := &http.Client{}
+	tr := &http.Transport{
+		TLSClientConfig: &tls.Config{
+			InsecureSkipVerify: true, // 跳过证书验证，仅用于开发环境
+		},
+	}
+
+	//如果开启了IP代理，那么就直接添加代理
+	if cache.IpProxySW {
+		tr.Proxy = func(req *http.Request) (*url.URL, error) {
+			return url.Parse(cache.ProxyIP) // 设置代理
+		}
+	}
+	client := &http.Client{
+		Transport: tr,
+	}
 	req, err := http.NewRequest(method, urlStr, nil)
 
 	if err != nil {
@@ -195,7 +252,21 @@ func (cache *WeLearnUserCache) StartStudyApi(cid, scoId, uid, crate, classId str
 	if retry < 0 {
 		return "", lastErr
 	}
-	client := &http.Client{}
+	tr := &http.Transport{
+		TLSClientConfig: &tls.Config{
+			InsecureSkipVerify: true, // 跳过证书验证，仅用于开发环境
+		},
+	}
+
+	//如果开启了IP代理，那么就直接添加代理
+	if cache.IpProxySW {
+		tr.Proxy = func(req *http.Request) (*url.URL, error) {
+			return url.Parse(cache.ProxyIP) // 设置代理
+		}
+	}
+	client := &http.Client{
+		Transport: tr,
+	}
 
 	form1 := url.Values{}
 	form1.Set("action", "startsco160928")
@@ -245,7 +316,21 @@ func (cache *WeLearnUserCache) SubmitStudyTimeApi(uid, cid, classId, scoId strin
 	if retry < 0 {
 		return "", lastErr
 	}
-	client := &http.Client{}
+	tr := &http.Transport{
+		TLSClientConfig: &tls.Config{
+			InsecureSkipVerify: true, // 跳过证书验证，仅用于开发环境
+		},
+	}
+
+	//如果开启了IP代理，那么就直接添加代理
+	if cache.IpProxySW {
+		tr.Proxy = func(req *http.Request) (*url.URL, error) {
+			return url.Parse(cache.ProxyIP) // 设置代理
+		}
+	}
+	client := &http.Client{
+		Transport: tr,
+	}
 
 	form1 := url.Values{}
 	form1.Set("action", "getscoinfo_v7")
@@ -283,7 +368,21 @@ func (cache *WeLearnUserCache) KeepPointSessionPlan1Api(cid, scoId, uid, classId
 	if retry < 0 {
 		return "", lastErr
 	}
-	client := &http.Client{}
+	tr := &http.Transport{
+		TLSClientConfig: &tls.Config{
+			InsecureSkipVerify: true, // 跳过证书验证，仅用于开发环境
+		},
+	}
+
+	//如果开启了IP代理，那么就直接添加代理
+	if cache.IpProxySW {
+		tr.Proxy = func(req *http.Request) (*url.URL, error) {
+			return url.Parse(cache.ProxyIP) // 设置代理
+		}
+	}
+	client := &http.Client{
+		Transport: tr,
+	}
 
 	form1 := url.Values{}
 	form1.Set("action", "keepsco_with_getticket_with_updatecmitime")
@@ -325,7 +424,21 @@ func (cache *WeLearnUserCache) SubmitStudyPlan1Api(cid, scoId, uid, crate, class
 	if retry < 0 {
 		return "", lastErr
 	}
-	client := &http.Client{}
+	tr := &http.Transport{
+		TLSClientConfig: &tls.Config{
+			InsecureSkipVerify: true, // 跳过证书验证，仅用于开发环境
+		},
+	}
+
+	//如果开启了IP代理，那么就直接添加代理
+	if cache.IpProxySW {
+		tr.Proxy = func(req *http.Request) (*url.URL, error) {
+			return url.Parse(cache.ProxyIP) // 设置代理
+		}
+	}
+	client := &http.Client{
+		Transport: tr,
+	}
 
 	form1 := url.Values{}
 	form1.Set("action", "setscoinfo")
@@ -365,7 +478,21 @@ func (cache *WeLearnUserCache) SubmitStudyPlan2Api(cid, scoId, uid, crate, class
 	if retry < 0 {
 		return "", lastErr
 	}
-	client := &http.Client{}
+	tr := &http.Transport{
+		TLSClientConfig: &tls.Config{
+			InsecureSkipVerify: true, // 跳过证书验证，仅用于开发环境
+		},
+	}
+
+	//如果开启了IP代理，那么就直接添加代理
+	if cache.IpProxySW {
+		tr.Proxy = func(req *http.Request) (*url.URL, error) {
+			return url.Parse(cache.ProxyIP) // 设置代理
+		}
+	}
+	client := &http.Client{
+		Transport: tr,
+	}
 
 	form1 := url.Values{}
 	form1.Set("action", "savescoinfo160928")

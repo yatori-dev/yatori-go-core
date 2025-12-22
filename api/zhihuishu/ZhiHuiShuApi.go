@@ -1,6 +1,7 @@
 package zhihuishu
 
 import (
+	"crypto/tls"
 	"encoding/base64"
 	"encoding/json"
 	"fmt"
@@ -13,12 +14,19 @@ import (
 	"github.com/yatori-dev/yatori-go-core/utils"
 )
 
+type ZhiDaoUserCache struct {
+	Account   string
+	Password  string
+	IpProxySW bool
+	ProxyIP   string
+}
+
 func GetValidate() string {
 	return ""
 }
 
 // 通过用户账号和密码获取SecretStr值
-func GenerateSecretStr(username, password string) (string, error) {
+func (cache *ZhiDaoUserCache) GenerateSecretStr(username, password string) (string, error) {
 	validate := GetValidate()
 	if validate == "" {
 		return "", fmt.Errorf("validate is empty")
@@ -48,13 +56,27 @@ func GenerateSecretStr(username, password string) (string, error) {
 }
 
 // 知到扫码登录拉取二维码
-func ZhidaoQrCode() (string, string, error) {
+func (cache *ZhiDaoUserCache) ZhidaoQrCode() (string, string, error) {
 
-	url := "https://passport.zhihuishu.com/qrCodeLogin/getLoginQrImg"
+	urlStr := "https://passport.zhihuishu.com/qrCodeLogin/getLoginQrImg"
 	method := "GET"
 
-	client := &http.Client{}
-	req, err := http.NewRequest(method, url, nil)
+	tr := &http.Transport{
+		TLSClientConfig: &tls.Config{
+			InsecureSkipVerify: true, // 跳过证书验证，仅用于开发环境
+		},
+	}
+
+	//如果开启了IP代理，那么就直接添加代理
+	if cache.IpProxySW {
+		tr.Proxy = func(req *http.Request) (*url.URL, error) {
+			return url.Parse(cache.ProxyIP) // 设置代理
+		}
+	}
+	client := &http.Client{
+		Transport: tr,
+	}
+	req, err := http.NewRequest(method, urlStr, nil)
 
 	if err != nil {
 		fmt.Println(err)
@@ -83,13 +105,27 @@ func ZhidaoQrCode() (string, string, error) {
 }
 
 // 知到登录扫码成功扫描函数
-func ZhidaoQrCheck(qrToken string) (string, error) {
+func (cache *ZhiDaoUserCache) ZhidaoQrCheck(qrToken string) (string, error) {
 
-	url := "https://passport.zhihuishu.com/qrCodeLogin/getLoginQrInfo?qrToken=" + qrToken
+	urlStr := "https://passport.zhihuishu.com/qrCodeLogin/getLoginQrInfo?qrToken=" + qrToken
 	method := "GET"
 
-	client := &http.Client{}
-	req, err := http.NewRequest(method, url, nil)
+	tr := &http.Transport{
+		TLSClientConfig: &tls.Config{
+			InsecureSkipVerify: true, // 跳过证书验证，仅用于开发环境
+		},
+	}
+
+	//如果开启了IP代理，那么就直接添加代理
+	if cache.IpProxySW {
+		tr.Proxy = func(req *http.Request) (*url.URL, error) {
+			return url.Parse(cache.ProxyIP) // 设置代理
+		}
+	}
+	client := &http.Client{
+		Transport: tr,
+	}
+	req, err := http.NewRequest(method, urlStr, nil)
 
 	if err != nil {
 		fmt.Println(err)

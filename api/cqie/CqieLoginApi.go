@@ -1,12 +1,14 @@
 package cqie
 
 import (
+	"crypto/tls"
 	"fmt"
 	"io"
 	"io/ioutil"
 	"log"
 	"math/rand"
 	"net/http"
+	"net/url"
 	"os"
 	"strings"
 
@@ -42,11 +44,25 @@ var randChar = []string{"0", "1", "2", "3", "4", "5", "6", "7", "8", "9", "a", "
 func (cache *CqieUserCache) VerificationCodeApi() (string, string) {
 	uuid := uuid.New() //生成验证码UUID
 	cache.uuid = uuid.String()
-	url := "https://study.cqie.edu.cn/gateway/auth/createCaptcha?uuid=" + uuid.String()
+	urlStr := "https://study.cqie.edu.cn/gateway/auth/createCaptcha?uuid=" + uuid.String()
 	method := "GET"
 
-	client := &http.Client{}
-	req, err := http.NewRequest(method, url, nil)
+	tr := &http.Transport{
+		TLSClientConfig: &tls.Config{
+			InsecureSkipVerify: true, // 跳过证书验证，仅用于开发环境
+		},
+	}
+
+	//如果开启了IP代理，那么就直接添加代理
+	if cache.IpProxySW {
+		tr.Proxy = func(req *http.Request) (*url.URL, error) {
+			return url.Parse(cache.ProxyIP) // 设置代理
+		}
+	}
+	client := &http.Client{
+		Transport: tr,
+	}
+	req, err := http.NewRequest(method, urlStr, nil)
 
 	if err != nil {
 		fmt.Println(err)
@@ -86,13 +102,27 @@ func (cache *CqieUserCache) VerificationCodeApi() (string, string) {
 // LoginApi 登录API
 func (cache *CqieUserCache) LoginApi() (string, error) {
 
-	url := "https://study.cqie.edu.cn/gateway/auth/login"
+	urlStr := "https://study.cqie.edu.cn/gateway/auth/login"
 	method := "POST"
 	acc := fmt.Sprintf("%x", utils.CqieEncrypt(cache.Account))
 	pass := fmt.Sprintf("%x", utils.CqieEncrypt(cache.Password))
 	payload := strings.NewReader(`{ "account": "` + acc + `", "password": "` + pass + `","code": "` + cache.verCode + `","status": 0,` + `"uuid": "` + cache.uuid + `","student": true}`)
-	client := &http.Client{}
-	req, err := http.NewRequest(method, url, payload)
+	tr := &http.Transport{
+		TLSClientConfig: &tls.Config{
+			InsecureSkipVerify: true, // 跳过证书验证，仅用于开发环境
+		},
+	}
+
+	//如果开启了IP代理，那么就直接添加代理
+	if cache.IpProxySW {
+		tr.Proxy = func(req *http.Request) (*url.URL, error) {
+			return url.Parse(cache.ProxyIP) // 设置代理
+		}
+	}
+	client := &http.Client{
+		Transport: tr,
+	}
+	req, err := http.NewRequest(method, urlStr, payload)
 
 	if err != nil {
 		fmt.Println(err)

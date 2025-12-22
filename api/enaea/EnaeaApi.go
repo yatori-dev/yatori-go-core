@@ -3,6 +3,7 @@ package enaea
 import (
 	"bytes"
 	"crypto/md5"
+	"crypto/tls"
 	"encoding/hex"
 	"fmt"
 	"io/ioutil"
@@ -15,10 +16,12 @@ import (
 )
 
 type EnaeaUserCache struct {
-	Account  string //账号
-	Password string //密码
-	Cookie   string //cookie
-	Asuss    string //token
+	Account   string //账号
+	Password  string //密码
+	IpProxySW bool
+	ProxyIP   string
+	Cookie    string //cookie
+	Asuss     string //token
 }
 
 // LoginApi 学习公社登录
@@ -26,15 +29,29 @@ func LoginApi(cache *EnaeaUserCache) (string, error) {
 	//时间戳
 	simTime := fmt.Sprintf("%d", time.Now().UnixMilli())
 
-	client := &http.Client{}
-	url := fmt.Sprintf("https://passport.enaea.edu.cn/login.do?ajax=true&jsonp=ablesky_%s&j_username=%s&j_password=%s&_acegi_security_remember_me=false&_=%s",
+	tr := &http.Transport{
+		TLSClientConfig: &tls.Config{
+			InsecureSkipVerify: true, // 跳过证书验证，仅用于开发环境
+		},
+	}
+
+	//如果开启了IP代理，那么就直接添加代理
+	if cache.IpProxySW {
+		tr.Proxy = func(req *http.Request) (*url.URL, error) {
+			return url.Parse(cache.ProxyIP) // 设置代理
+		}
+	}
+	client := &http.Client{
+		Transport: tr,
+	}
+	urlStr := fmt.Sprintf("https://passport.enaea.edu.cn/login.do?ajax=true&jsonp=ablesky_%s&j_username=%s&j_password=%s&_acegi_security_remember_me=false&_=%s",
 		simTime,
 		cache.Account,
 		getMD5Str(cache.Password),
 		simTime,
 	)
 
-	req, err := http.NewRequest("GET", url, nil)
+	req, err := http.NewRequest("GET", urlStr, nil)
 	if err != nil {
 		return "", err
 	}
@@ -77,10 +94,24 @@ func getMD5Str(input string) string {
 
 // ProjectsPull 拉取所有工程
 func PullProjectsApi(cache *EnaeaUserCache) (string, error) {
-	url := fmt.Sprintf("https://study.enaea.edu.cn/assessment.do?action=getMyCircleCourses&start=0&limit=200&isFinished=false&_=%d", time.Now().UnixMilli())
+	urlStr := fmt.Sprintf("https://study.enaea.edu.cn/assessment.do?action=getMyCircleCourses&start=0&limit=200&isFinished=false&_=%d", time.Now().UnixMilli())
 
-	client := &http.Client{}
-	req, err := http.NewRequest("GET", url, nil)
+	tr := &http.Transport{
+		TLSClientConfig: &tls.Config{
+			InsecureSkipVerify: true, // 跳过证书验证，仅用于开发环境
+		},
+	}
+
+	//如果开启了IP代理，那么就直接添加代理
+	if cache.IpProxySW {
+		tr.Proxy = func(req *http.Request) (*url.URL, error) {
+			return url.Parse(cache.ProxyIP) // 设置代理
+		}
+	}
+	client := &http.Client{
+		Transport: tr,
+	}
+	req, err := http.NewRequest("GET", urlStr, nil)
 	if err != nil {
 		return "", err
 	}
@@ -110,7 +141,21 @@ func PullProjectsApi(cache *EnaeaUserCache) (string, error) {
 
 // 获取对应项目的页面的HTML，用于截取侧边栏菜单栏
 func PullStudyCourseHTMLApi(cache *EnaeaUserCache, circleId string) (string, error) {
-	client := &http.Client{}
+	tr := &http.Transport{
+		TLSClientConfig: &tls.Config{
+			InsecureSkipVerify: true, // 跳过证书验证，仅用于开发环境
+		},
+	}
+
+	//如果开启了IP代理，那么就直接添加代理
+	if cache.IpProxySW {
+		tr.Proxy = func(req *http.Request) (*url.URL, error) {
+			return url.Parse(cache.ProxyIP) // 设置代理
+		}
+	}
+	client := &http.Client{
+		Transport: tr,
+	}
 	url := fmt.Sprintf("https://study.enaea.edu.cn/circleIndexRedirect.do?action=toCircleIndex&circleId=%s&ct=%d", circleId, time.Now().UnixMilli())
 	req, err := http.NewRequest("GET", url, nil)
 	if err != nil {
@@ -142,7 +187,21 @@ func PullStudyCourseHTMLApi(cache *EnaeaUserCache, circleId string) (string, err
 
 // 获取对项目课程列表
 func PullStudyCourseListApi(cache *EnaeaUserCache, circleId, syllabusId, moudle string) (string, error) {
-	client := &http.Client{}
+	tr := &http.Transport{
+		TLSClientConfig: &tls.Config{
+			InsecureSkipVerify: true, // 跳过证书验证，仅用于开发环境
+		},
+	}
+
+	//如果开启了IP代理，那么就直接添加代理
+	if cache.IpProxySW {
+		tr.Proxy = func(req *http.Request) (*url.URL, error) {
+			return url.Parse(cache.ProxyIP) // 设置代理
+		}
+	}
+	client := &http.Client{
+		Transport: tr,
+	}
 	buildAction := ""
 	if moudle == "" {
 		buildAction = "getMyClass"
@@ -182,11 +241,25 @@ func PullStudyCourseListApi(cache *EnaeaUserCache, circleId, syllabusId, moudle 
 // PullCourseVideoListApi 拉取课程对应视屏列表
 func PullCourseVideoListApi(cache *EnaeaUserCache, circleId, courseId string) (string, error) {
 	// Construct the URL with courseId, circleId, and timestamp
-	url := fmt.Sprintf("https://study.enaea.edu.cn/course.do?action=getCourseContentList&courseId=%s&circleId=%s&_=%d",
+	urlStr := fmt.Sprintf("https://study.enaea.edu.cn/course.do?action=getCourseContentList&courseId=%s&circleId=%s&_=%d",
 		courseId, circleId, time.Now().UnixMilli())
 
-	client := &http.Client{}
-	req, err := http.NewRequest("GET", url, nil)
+	tr := &http.Transport{
+		TLSClientConfig: &tls.Config{
+			InsecureSkipVerify: true, // 跳过证书验证，仅用于开发环境
+		},
+	}
+
+	//如果开启了IP代理，那么就直接添加代理
+	if cache.IpProxySW {
+		tr.Proxy = func(req *http.Request) (*url.URL, error) {
+			return url.Parse(cache.ProxyIP) // 设置代理
+		}
+	}
+	client := &http.Client{
+		Transport: tr,
+	}
+	req, err := http.NewRequest("GET", urlStr, nil)
 	if err != nil {
 		return "", err
 	}
@@ -220,7 +293,21 @@ func PullICourseWorkHTMLApi(cache *EnaeaUserCache, circleId, courseId string) (s
 	urlStr := fmt.Sprintf("https://study.enaea.edu.cn/viewerforicourse.do?courseId=%s&circleId=%s",
 		courseId, circleId)
 
-	client := &http.Client{}
+	tr := &http.Transport{
+		TLSClientConfig: &tls.Config{
+			InsecureSkipVerify: true, // 跳过证书验证，仅用于开发环境
+		},
+	}
+
+	//如果开启了IP代理，那么就直接添加代理
+	if cache.IpProxySW {
+		tr.Proxy = func(req *http.Request) (*url.URL, error) {
+			return url.Parse(cache.ProxyIP) // 设置代理
+		}
+	}
+	client := &http.Client{
+		Transport: tr,
+	}
 	req, err := http.NewRequest("GET", urlStr, nil)
 	if err != nil {
 		return "", err
@@ -255,7 +342,21 @@ func StatisticTicForCCVideApi(cache *EnaeaUserCache, courseId, courseContentId, 
 	urlStr := fmt.Sprintf("https://study.enaea.edu.cn/course.do?action=statisticForCCVideo&courseId=%s&coursecontentId=%s&circleId=%s&_=%d",
 		courseId, courseContentId, circleId, time.Now().UnixMilli())
 
-	client := &http.Client{}
+	tr := &http.Transport{
+		TLSClientConfig: &tls.Config{
+			InsecureSkipVerify: true, // 跳过证书验证，仅用于开发环境
+		},
+	}
+
+	//如果开启了IP代理，那么就直接添加代理
+	if cache.IpProxySW {
+		tr.Proxy = func(req *http.Request) (*url.URL, error) {
+			return url.Parse(cache.ProxyIP) // 设置代理
+		}
+	}
+	client := &http.Client{
+		Transport: tr,
+	}
 	req, err := http.NewRequest("GET", urlStr, nil)
 	if err != nil {
 		return "", "", "", err
@@ -304,7 +405,21 @@ func SubmitStudyTimeApi(cache *EnaeaUserCache, circleId, SCFUCKPKey, SCFUCKPValu
 	data.Set("finish", "false")
 
 	// Create the HTTP request
-	client := &http.Client{}
+	tr := &http.Transport{
+		TLSClientConfig: &tls.Config{
+			InsecureSkipVerify: true, // 跳过证书验证，仅用于开发环境
+		},
+	}
+
+	//如果开启了IP代理，那么就直接添加代理
+	if cache.IpProxySW {
+		tr.Proxy = func(req *http.Request) (*url.URL, error) {
+			return url.Parse(cache.ProxyIP) // 设置代理
+		}
+	}
+	client := &http.Client{
+		Transport: tr,
+	}
 	req, err := http.NewRequest("POST", "https://study.enaea.edu.cn/studyLog.do", bytes.NewBufferString(data.Encode()))
 	//req, err := http.NewRequest("POST", "https://study.enaea.edu.cn/thirdPlatform/record", bytes.NewBufferString(data.Encode()))
 	if err != nil {
@@ -352,7 +467,21 @@ func SubmitStudyTimeFastApi(cache *EnaeaUserCache, circleId, SCFUCKPKey, SCFUCKP
 	data.Set("studyMins", fmt.Sprintf("%d", studyMins))
 
 	// Create the HTTP request
-	client := &http.Client{}
+	tr := &http.Transport{
+		TLSClientConfig: &tls.Config{
+			InsecureSkipVerify: true, // 跳过证书验证，仅用于开发环境
+		},
+	}
+
+	//如果开启了IP代理，那么就直接添加代理
+	if cache.IpProxySW {
+		tr.Proxy = func(req *http.Request) (*url.URL, error) {
+			return url.Parse(cache.ProxyIP) // 设置代理
+		}
+	}
+	client := &http.Client{
+		Transport: tr,
+	}
 	req, err := http.NewRequest("POST", "https://study.enaea.edu.cn/studyLog.do", bytes.NewBufferString(data.Encode()))
 	//req, err := http.NewRequest("POST", "https://study.enaea.edu.cn/thirdPlatform/record", bytes.NewBufferString(data.Encode()))
 	if err != nil {
@@ -391,7 +520,21 @@ func SubmitStudyTimeFastApi(cache *EnaeaUserCache, circleId, SCFUCKPKey, SCFUCKP
 
 // 获取对项目课程考试列表
 func PullExamListApi(cache *EnaeaUserCache, circleId, syllabusId, moudle string) (string, error) {
-	client := &http.Client{}
+	tr := &http.Transport{
+		TLSClientConfig: &tls.Config{
+			InsecureSkipVerify: true, // 跳过证书验证，仅用于开发环境
+		},
+	}
+
+	//如果开启了IP代理，那么就直接添加代理
+	if cache.IpProxySW {
+		tr.Proxy = func(req *http.Request) (*url.URL, error) {
+			return url.Parse(cache.ProxyIP) // 设置代理
+		}
+	}
+	client := &http.Client{
+		Transport: tr,
+	}
 	buildAction := ""
 	if moudle == "" {
 		buildAction = "getMyClass"

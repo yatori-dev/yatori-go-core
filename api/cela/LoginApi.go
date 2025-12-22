@@ -3,6 +3,7 @@ package cela
 import (
 	"bytes"
 	"crypto/aes"
+	"crypto/tls"
 	"encoding/base64"
 	"encoding/json"
 	"fmt"
@@ -25,6 +26,8 @@ import (
 type CelaUserCache struct {
 	Account     string //账号
 	Password    string //密码
+	IpProxySW   bool
+	ProxyIP     string
 	Cookies     []*http.Cookie
 	Code        string //验证码
 	LoginParams string //登录用的params
@@ -36,11 +39,25 @@ type CelaUserCache struct {
 // 初始化登录数据接口
 func (cache *CelaUserCache) InitLoginDataApi() {
 
-	url := "https://www.cela.gov.cn/home/default?"
+	urlStr := "https://www.cela.gov.cn/home/default?"
 	method := "GET"
 
-	client := &http.Client{}
-	req, err := http.NewRequest(method, url, nil)
+	tr := &http.Transport{
+		TLSClientConfig: &tls.Config{
+			InsecureSkipVerify: true, // 跳过证书验证，仅用于开发环境
+		},
+	}
+
+	//如果开启了IP代理，那么就直接添加代理
+	if cache.IpProxySW {
+		tr.Proxy = func(req *http.Request) (*url.URL, error) {
+			return url.Parse(cache.ProxyIP) // 设置代理
+		}
+	}
+	client := &http.Client{
+		Transport: tr,
+	}
+	req, err := http.NewRequest(method, urlStr, nil)
 
 	if err != nil {
 		fmt.Println(err)
@@ -82,11 +99,25 @@ var randChar []string = []string{"0", "1", "2", "3", "4", "5", "6", "7", "8", "9
 // 获取验证码的API
 func (cache *CelaUserCache) GetCaptchaApi() (string, error) {
 
-	url := "https://www.cela.gov.cn/home/captcha"
+	urlStr := "https://www.cela.gov.cn/home/captcha"
 	method := "GET"
 
-	client := &http.Client{}
-	req, err := http.NewRequest(method, url, nil)
+	tr := &http.Transport{
+		TLSClientConfig: &tls.Config{
+			InsecureSkipVerify: true, // 跳过证书验证，仅用于开发环境
+		},
+	}
+
+	//如果开启了IP代理，那么就直接添加代理
+	if cache.IpProxySW {
+		tr.Proxy = func(req *http.Request) (*url.URL, error) {
+			return url.Parse(cache.ProxyIP) // 设置代理
+		}
+	}
+	client := &http.Client{
+		Transport: tr,
+	}
+	req, err := http.NewRequest(method, urlStr, nil)
 
 	if err != nil {
 		fmt.Println(err)
@@ -150,13 +181,27 @@ func (cache *CelaUserCache) GetCaptchaApi() (string, error) {
 // 检测验证码是否正确接口
 func (cache *CelaUserCache) CheckCaptchaApi() (string, error) {
 
-	url := "https://www.cela.gov.cn/home/captcha?v=" + fmt.Sprintf("%d", time.Now().Unix())
+	urlStr := "https://www.cela.gov.cn/home/captcha?v=" + fmt.Sprintf("%d", time.Now().Unix())
 	method := "POST"
 
 	payload := strings.NewReader("captcha=" + cache.Code + "&account=" + cache.Account)
 
-	client := &http.Client{}
-	req, err := http.NewRequest(method, url, payload)
+	tr := &http.Transport{
+		TLSClientConfig: &tls.Config{
+			InsecureSkipVerify: true, // 跳过证书验证，仅用于开发环境
+		},
+	}
+
+	//如果开启了IP代理，那么就直接添加代理
+	if cache.IpProxySW {
+		tr.Proxy = func(req *http.Request) (*url.URL, error) {
+			return url.Parse(cache.ProxyIP) // 设置代理
+		}
+	}
+	client := &http.Client{
+		Transport: tr,
+	}
+	req, err := http.NewRequest(method, urlStr, payload)
 
 	if err != nil {
 		fmt.Println(err)
@@ -224,7 +269,21 @@ func (cache *CelaUserCache) LoginApi() string {
 
 	payload := strings.NewReader("params=" + url.QueryEscape(cache.LoginParams) + "&code=" + cache.Code + "&content=" + url.QueryEscape(base64.StdEncoding.EncodeToString(encrypt)))
 
-	client := &http.Client{}
+	tr := &http.Transport{
+		TLSClientConfig: &tls.Config{
+			InsecureSkipVerify: true, // 跳过证书验证，仅用于开发环境
+		},
+	}
+
+	//如果开启了IP代理，那么就直接添加代理
+	if cache.IpProxySW {
+		tr.Proxy = func(req *http.Request) (*url.URL, error) {
+			return url.Parse(cache.ProxyIP) // 设置代理
+		}
+	}
+	client := &http.Client{
+		Transport: tr,
+	}
 	req, err := http.NewRequest(method, urlPath, payload)
 
 	if err != nil {

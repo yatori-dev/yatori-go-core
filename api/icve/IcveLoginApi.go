@@ -1,18 +1,22 @@
 package icve
 
 import (
+	"crypto/tls"
 	"fmt"
 	"io/ioutil"
 	"net/http"
+	"net/url"
 	"strings"
 
 	"github.com/yatori-dev/yatori-go-core/utils"
 )
 
 type IcveUserCache struct {
-	PreUrl         string         //前置url
-	Account        string         //账号
-	Password       string         //用户密码
+	PreUrl         string //前置url
+	Account        string //账号
+	Password       string //用户密码
+	IpProxySW      bool
+	ProxyIP        string
 	VerCodeRandStr string         //验证码参数
 	VerCodeTicket  string         //验证码参数
 	Cookies        []*http.Cookie //验证码用的session
@@ -28,12 +32,26 @@ type IcveUserCache struct {
 // IcveLoginApi 智慧职教登录后拉取cookie接口
 func (cache *IcveUserCache) IcveLoginApi() (string, error) {
 
-	url := "https://sso.icve.com.cn/prod-api/data/userLoginV2"
+	urlStr := "https://sso.icve.com.cn/prod-api/data/userLoginV2"
 	method := "POST"
 	payload := strings.NewReader(`{` + `"userName":"` + cache.Account + `","randstr":"` + cache.VerCodeRandStr + `","ticket":"` + cache.VerCodeTicket + `","password": "` + cache.Password + `",` + `"type": 1,` + `"webPageSource": 1` + `}`)
 
-	client := &http.Client{}
-	req, err := http.NewRequest(method, url, payload)
+	tr := &http.Transport{
+		TLSClientConfig: &tls.Config{
+			InsecureSkipVerify: true, // 跳过证书验证，仅用于开发环境
+		},
+	}
+
+	//如果开启了IP代理，那么就直接添加代理
+	if cache.IpProxySW {
+		tr.Proxy = func(req *http.Request) (*url.URL, error) {
+			return url.Parse(cache.ProxyIP) // 设置代理
+		}
+	}
+	client := &http.Client{
+		Transport: tr,
+	}
+	req, err := http.NewRequest(method, urlStr, payload)
 
 	if err != nil {
 		fmt.Println(err)
@@ -63,12 +81,26 @@ func (cache *IcveUserCache) IcveLoginApi() (string, error) {
 
 // 拉取UserEncrypt
 func (cache *IcveUserCache) IcveUserEncryptApi() (string, error) {
-	url := "https://sso.icve.com.cn/prod-api/user/userEncrypt"
+	urlStr := "https://sso.icve.com.cn/prod-api/user/userEncrypt"
 	method := "POST"
 
 	payload := strings.NewReader(`{` + `"source":"25","token": "` + cache.Token + `"}`)
-	client := &http.Client{}
-	req, err := http.NewRequest(method, url, payload)
+	tr := &http.Transport{
+		TLSClientConfig: &tls.Config{
+			InsecureSkipVerify: true, // 跳过证书验证，仅用于开发环境
+		},
+	}
+
+	//如果开启了IP代理，那么就直接添加代理
+	if cache.IpProxySW {
+		tr.Proxy = func(req *http.Request) (*url.URL, error) {
+			return url.Parse(cache.ProxyIP) // 设置代理
+		}
+	}
+	client := &http.Client{
+		Transport: tr,
+	}
+	req, err := http.NewRequest(method, urlStr, payload)
 
 	if err != nil {
 		fmt.Println(err)
@@ -99,11 +131,25 @@ func (cache *IcveUserCache) IcveUserEncryptApi() (string, error) {
 // 拉取Authentication
 func (cache *IcveUserCache) IcveAccessTokenApi() (string, error) {
 
-	url := "https://www.icve.com.cn/prod-api/uc/passLogin?token=" + cache.Token
+	urlStr := "https://www.icve.com.cn/prod-api/uc/passLogin?token=" + cache.Token
 	method := "POST"
 
-	client := &http.Client{}
-	req, err := http.NewRequest(method, url, nil)
+	tr := &http.Transport{
+		TLSClientConfig: &tls.Config{
+			InsecureSkipVerify: true, // 跳过证书验证，仅用于开发环境
+		},
+	}
+
+	//如果开启了IP代理，那么就直接添加代理
+	if cache.IpProxySW {
+		tr.Proxy = func(req *http.Request) (*url.URL, error) {
+			return url.Parse(cache.ProxyIP) // 设置代理
+		}
+	}
+	client := &http.Client{
+		Transport: tr,
+	}
+	req, err := http.NewRequest(method, urlStr, nil)
 
 	if err != nil {
 		fmt.Println(err)
@@ -133,11 +179,25 @@ func (cache *IcveUserCache) IcveAccessTokenApi() (string, error) {
 // 拉取资源课Authentication的接口
 func (cache *IcveUserCache) IcveZYKAccessTokenApi() (string, error) {
 
-	url := "https://zyk.icve.com.cn/prod-api/auth/passLogin?token=" + cache.Token
+	urlStr := "https://zyk.icve.com.cn/prod-api/auth/passLogin?token=" + cache.Token
 	method := "GET"
 
-	client := &http.Client{}
-	req, err := http.NewRequest(method, url, nil)
+	tr := &http.Transport{
+		TLSClientConfig: &tls.Config{
+			InsecureSkipVerify: true, // 跳过证书验证，仅用于开发环境
+		},
+	}
+
+	//如果开启了IP代理，那么就直接添加代理
+	if cache.IpProxySW {
+		tr.Proxy = func(req *http.Request) (*url.URL, error) {
+			return url.Parse(cache.ProxyIP) // 设置代理
+		}
+	}
+	client := &http.Client{
+		Transport: tr,
+	}
+	req, err := http.NewRequest(method, urlStr, nil)
 
 	if err != nil {
 		fmt.Println(err)
@@ -167,11 +227,25 @@ func (cache *IcveUserCache) IcveZYKAccessTokenApi() (string, error) {
 // 拉取用户信息
 func (cache *IcveUserCache) IcveZYKPullUserInfoApi() (string, error) {
 
-	url := "https://zyk.icve.com.cn/prod-api/system/user/getInfo"
+	urlStr := "https://zyk.icve.com.cn/prod-api/system/user/getInfo"
 	method := "GET"
 
-	client := &http.Client{}
-	req, err := http.NewRequest(method, url, nil)
+	tr := &http.Transport{
+		TLSClientConfig: &tls.Config{
+			InsecureSkipVerify: true, // 跳过证书验证，仅用于开发环境
+		},
+	}
+
+	//如果开启了IP代理，那么就直接添加代理
+	if cache.IpProxySW {
+		tr.Proxy = func(req *http.Request) (*url.URL, error) {
+			return url.Parse(cache.ProxyIP) // 设置代理
+		}
+	}
+	client := &http.Client{
+		Transport: tr,
+	}
+	req, err := http.NewRequest(method, urlStr, nil)
 
 	if err != nil {
 		fmt.Println(err)

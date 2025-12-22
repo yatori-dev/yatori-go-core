@@ -863,7 +863,21 @@ func (cache *XueXiTUserCache) ReadV2PointWebReport(p *PointDocumentDto, retry in
 	urlStr := "https://mooc1-1.chaoxing.com/ananas/job/readv2?jobid=" + p.JobID + "&knowledgeid=" + fmt.Sprintf("%d", p.KnowledgeID) + "&courseid=" + p.CourseID + "&clazzid=" + p.ClassID + "&jtoken=" + p.Jtoken + "&checkMicroTopic=true&microTopicId=0&_dc=" + fmt.Sprintf("%d", time.Now().UnixMilli())
 	method := "GET"
 
-	client := &http.Client{}
+	tr := &http.Transport{
+		TLSClientConfig: &tls.Config{
+			InsecureSkipVerify: true, // 跳过证书验证，仅用于开发环境
+		},
+	}
+
+	//如果开启了IP代理，那么就直接添加代理
+	if cache.IpProxySW {
+		tr.Proxy = func(req *http.Request) (*url.URL, error) {
+			return url.Parse(cache.ProxyIP) // 设置代理
+		}
+	}
+	client := &http.Client{
+		Transport: tr,
+	}
 	req, err := http.NewRequest(method, urlStr, nil)
 
 	if err != nil {
@@ -910,7 +924,21 @@ func (cache *XueXiTUserCache) ReadV2PointPeReport(p *PointDocumentDto, retry int
 	urlStr := "https://mooc1-api.chaoxing.com/ananas/job/readv2?jobid=" + p.JobID + "&knowledgeid=" + fmt.Sprintf("%d", p.KnowledgeID) + "&courseid=" + p.CourseID + "&clazzid=" + p.ClassID + "&jtoken=" + p.Jtoken + "&checkMicroTopic=true&microTopicId=0&_dc=" + fmt.Sprintf("%d", time.Now().UnixMilli())
 	method := "GET"
 
-	client := &http.Client{}
+	tr := &http.Transport{
+		TLSClientConfig: &tls.Config{
+			InsecureSkipVerify: true, // 跳过证书验证，仅用于开发环境
+		},
+	}
+
+	//如果开启了IP代理，那么就直接添加代理
+	if cache.IpProxySW {
+		tr.Proxy = func(req *http.Request) (*url.URL, error) {
+			return url.Parse(cache.ProxyIP) // 设置代理
+		}
+	}
+	client := &http.Client{
+		Transport: tr,
+	}
 	req, err := http.NewRequest(method, urlStr, nil)
 
 	if err != nil {
@@ -997,61 +1025,6 @@ func (cache *XueXiTUserCache) HyperlinkDtoCompleteReport(p *PointHyperlinkDto, r
 	//fmt.Println(string(body))
 	return string(body), nil
 }
-
-// 拉取u参数
-//func (cache *XueXiTUserCache) PullLiveUParam(liveId string, retry int, lastErr error) (string, int) {
-//	if retry < 0 {
-//		return "", lastErr
-//	}
-//	urlStr := "https://zhibo.chaoxing.com/" + liveId + "?courseId=251085317&classId=128238814&knowledgeId=967705955&jobId=live-6000256327632944&userId=221172669&rt=0.9&livesetenc=6b70119b3792fc81816f8ca1f4ba54c8&isjob=true&watchingInCourse=1&customPara1=128238814_251085317&customPara2=92401b9a2dce6d2e49c0706a186247c3&jobfs=0&isNotDrag=1&livedragenc=3a828d58949143863af938a250d4026c&sw=0&ds=0&liveswdsenc=b2f601fb4b8e506dd3e823232106918b"
-//	method := "GET"
-//
-//	client := &http.Client{}
-//	req, err := http.NewRequest(method, urlStr, nil)
-//
-//	if err != nil {
-//		fmt.Println(err)
-//		return "", 0
-//	}
-//	req.Header.Add("User-Agent", "Apifox/1.0.0 (https://apifox.com)")
-//	req.Header.Add("Accept", "*/*")
-//	req.Header.Add("Host", "zhibo.chaoxing.com")
-//	req.Header.Add("Connection", "keep-alive")
-//	for _, cookie := range cache.cookies {
-//		req.AddCookie(cookie)
-//	}
-//
-//	res, err := client.Do(req)
-//	if err != nil {
-//		fmt.Println(err)
-//		return "", 0
-//	}
-//	defer res.Body.Close()
-//
-//	body, err := ioutil.ReadAll(res.Body)
-//	if err != nil {
-//		fmt.Println(err)
-//		return "", 0
-//	}
-//	//fmt.Println(string(body))
-//	r, _ := regexp.Compile("var uInfo = '([\\w\\W]*?)';")
-//	match := r.FindStringSubmatch(string(body))
-//	if len(match) <= 0 {
-//		return "", 0
-//	}
-//
-//	r1, _ := regexp.Compile("var watchMoment = ([\\d]*?);")
-//	match1 := r1.FindStringSubmatch(string(body))
-//	if len(match1) <= 0 {
-//		return "", 0
-//	}
-//	atoi, err := strconv.Atoi(match1[1])
-//	if err != nil {
-//		return "", 0
-//	}
-//	utils.CookiesAddNoRepetition(&cache.cookies, res.Cookies())
-//	return match[1], atoi
-//}
 
 // 拉取直播数据
 func (cache *XueXiTUserCache) PullLiveInfoApi(p *PointLiveDto, retry int, lastErr error) (string, error) {
