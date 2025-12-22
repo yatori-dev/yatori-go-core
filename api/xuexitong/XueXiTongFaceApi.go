@@ -735,13 +735,27 @@ func (cache *XueXiTUserCache) PassFaceQrPlanPhoneNew2Api(classId, courseId, know
 // 手机端过人脸接口（老接口）
 func (cache *XueXiTUserCache) PassFaceQrPlanPhoneOldApi(classId, courseId, knowledgeId, cpi, objectId string) (string, error) {
 
-	url := "https://mooc1-api.chaoxing.com/mooc-ans/knowledge/uploadInfo"
+	urlStr := "https://mooc1-api.chaoxing.com/mooc-ans/knowledge/uploadInfo"
 	method := "POST"
 
 	//payload := strings.NewReader("clazzId=130390181&courseId=256426381&knowledgeId=705058652&uuid=&qrcEnc=&objectId=123")
 	payload := strings.NewReader("clazzId=" + classId + "&courseId=" + courseId + "&knowledgeId=" + knowledgeId + "&uuid=&qrcEnc=&objectId=" + objectId)
-	client := &http.Client{}
-	req, err := http.NewRequest(method, url, payload)
+	tr := &http.Transport{
+		TLSClientConfig: &tls.Config{
+			InsecureSkipVerify: true, // 跳过证书验证，仅用于开发环境
+		},
+	}
+
+	//如果开启了IP代理，那么就直接添加代理
+	if cache.IpProxySW {
+		tr.Proxy = func(req *http.Request) (*url.URL, error) {
+			return url.Parse(cache.ProxyIP) // 设置代理
+		}
+	}
+	client := &http.Client{
+		Transport: tr,
+	}
+	req, err := http.NewRequest(method, urlStr, payload)
 
 	if err != nil {
 		fmt.Println(err)

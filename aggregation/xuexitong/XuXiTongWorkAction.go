@@ -323,7 +323,7 @@ func (question *XXTWorkQuestion) WriteQuestionForXXTAIAction(cache *xuexitong.Xu
 // 提交学习通考试答案
 func (question *XXTWorkQuestion) SubmitWorkAnswerAction(cache *xuexitong.XueXiTUserCache, isSubmit bool /*是否提交，true为提交，false为暂存*/) (string, error) {
 	//api, err := cache.SubmitExamAnswerApi(exam.ClazzId, exam.CourseId, exam.Paper.TestPaperId, exam.Paper.TestUserRelationId, exam.Cpi, exam.Paper.RemainTime, exam.Paper.EncRemainTime, exam.Paper.EncLastUpdateTime, exam.ExamRelationId, exam.AnswerId, exam.RemainTime, !isSubmit, exam.Paper.Enc, exam.Paper.EnterPageTime, exam.Paper.XXTExamQuestion.QuestionId, exam.Paper.Type, exam.Paper.XXTExamQuestion.TypeName, &exam.Paper)
-	api, err := cache.SubmitWorkAnswerApi(&question.XXTWorkQuestionSubmitEntity, !isSubmit)
+	api, err := cache.SubmitWorkAnswerApi(&question.XXTWorkQuestionSubmitEntity, !isSubmit, 3, nil)
 	if err != nil {
 		return "", err
 	}

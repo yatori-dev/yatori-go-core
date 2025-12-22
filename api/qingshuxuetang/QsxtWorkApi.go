@@ -43,7 +43,7 @@ func (cache *QsxtUserCache) PullWorkListApi(periodId, classId, schoolId, courseI
 	res, err := client.Do(req)
 	if err != nil {
 		fmt.Println(err)
-		return "", err
+		return cache.PullWorkListApi(periodId, classId, schoolId, courseId, retry-1, err)
 	}
 	defer res.Body.Close()
 
@@ -91,7 +91,7 @@ func (cache *QsxtUserCache) PullWorkQuestionListApi(classId, quizId, schoolId, c
 	res, err := client.Do(req)
 	if err != nil {
 		fmt.Println(err)
-		return "", err
+		return cache.PullWorkQuestionListApi(classId, quizId, schoolId, courseId, retry-1, err)
 	}
 	defer res.Body.Close()
 
@@ -143,7 +143,7 @@ func (cache *QsxtUserCache) SubmitAnswerApi(answer, questionId, quizId, schoolId
 	res, err := client.Do(req)
 	if err != nil {
 		fmt.Println(err)
-		return "", err
+		return cache.SubmitAnswerApi(answer, questionId, quizId, schoolId, retry-1, err)
 	}
 	defer res.Body.Close()
 
@@ -193,7 +193,7 @@ func (cache *QsxtUserCache) SaveAnswerApi(answers string, retry int, lastErr err
 	res, err := client.Do(req)
 	if err != nil {
 		fmt.Println(err)
-		return "", err
+		return cache.SaveAnswerApi(answers, retry-1, err)
 	}
 	defer res.Body.Close()
 

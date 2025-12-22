@@ -2,10 +2,12 @@ package xuexitong
 
 import (
 	"crypto/md5"
+	"crypto/tls"
 	"encoding/hex"
 	"fmt"
 	"io/ioutil"
 	"net/http"
+	"net/url"
 	"time"
 )
 
@@ -22,7 +24,21 @@ func (cache *XueXiTUserCache) AudioPhoneSubmitTimeApi(p *PointVideoDto, playingT
 	urlStr := "https://mooc1-api.chaoxing.com/mooc-ans/multimedia/log?objectId=" + p.ObjectID + "&clazzId=" + p.ClassID + "&userid=" + cache.UserID + "&jobid=" + p.JobID + "&duration=" + fmt.Sprintf("%d", p.Duration) + "&otherInfo=" + p.OtherInfo + "&courseId=" + p.CourseID + "&dtype=Audio&view=json&playingTime=" + fmt.Sprintf("%d", playingTime) + "&isdrag=" + fmt.Sprintf("%d", isdrag) + "&enc=" + enc + "&_dc=" + fmt.Sprintf("%d", time.Now().UnixMilli())
 	method := "GET"
 
-	client := &http.Client{}
+	tr := &http.Transport{
+		TLSClientConfig: &tls.Config{
+			InsecureSkipVerify: true, // 跳过证书验证，仅用于开发环境
+		},
+	}
+
+	//如果开启了IP代理，那么就直接添加代理
+	if cache.IpProxySW {
+		tr.Proxy = func(req *http.Request) (*url.URL, error) {
+			return url.Parse(cache.ProxyIP) // 设置代理
+		}
+	}
+	client := &http.Client{
+		Transport: tr,
+	}
 	req, err := http.NewRequest(method, urlStr, nil)
 
 	if err != nil {

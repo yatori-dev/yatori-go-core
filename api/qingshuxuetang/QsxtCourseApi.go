@@ -234,7 +234,7 @@ func (cache *QsxtUserCache) QsxtPullCourseScoreApi(periodId, classId, schoolId, 
 	res, err := client.Do(req)
 	if err != nil {
 		fmt.Println(err)
-		return "", err
+		return cache.QsxtPullCourseScoreApi(periodId, classId, schoolId, courseId, retry-1, err)
 	}
 	defer res.Body.Close()
 
@@ -281,7 +281,7 @@ func (cache *QsxtUserCache) PullStudyRecordApi(periodId, classId, schoolId, cour
 	res, err := client.Do(req)
 	if err != nil {
 		fmt.Println(err)
-		return "", err
+		return cache.PullStudyRecordApi(periodId, classId, schoolId, courseId, retry-1, err)
 	}
 	defer res.Body.Close()
 
@@ -344,7 +344,7 @@ func (cache *QsxtUserCache) StartStudyApi(classId, contentId, courseId, periodId
 	res, err := client.Do(req)
 	if err != nil {
 		fmt.Println(err)
-		return "", err
+		return cache.StartStudyApi(classId, contentId, courseId, periodId, schoolId, retry-1, err)
 	}
 	defer res.Body.Close()
 

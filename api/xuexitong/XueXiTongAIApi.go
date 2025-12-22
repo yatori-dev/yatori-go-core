@@ -3,11 +3,13 @@ package xuexitong
 import (
 	"bufio"
 	"bytes"
+	"crypto/tls"
 	"encoding/json"
 	"fmt"
 	"io"
 	"io/ioutil"
 	"net/http"
+	"net/url"
 	"regexp"
 	"strings"
 	"sync"
@@ -86,7 +88,21 @@ func (cache *XueXiTUserCache) xxtAiInformApi(clazzId, courseId, cpi string, retr
 	urlStr := "https://stat2-ans.chaoxing.com/bot/index?fromWorkbench=true&upload=true&clazzid=" + clazzId + "&showToolbox=false&bgColorNone=true&app_id=1192651262850&courseid=" + courseId + "&cpi=" + cpi + "&bot_id=7438777570621653018&ut=s"
 	method := "GET"
 
-	client := &http.Client{}
+	tr := &http.Transport{
+		TLSClientConfig: &tls.Config{
+			InsecureSkipVerify: true, // 跳过证书验证，仅用于开发环境
+		},
+	}
+
+	//如果开启了IP代理，那么就直接添加代理
+	if cache.IpProxySW {
+		tr.Proxy = func(req *http.Request) (*url.URL, error) {
+			return url.Parse(cache.ProxyIP) // 设置代理
+		}
+	}
+	client := &http.Client{
+		Transport: tr,
+	}
 	req, err := http.NewRequest(method, urlStr, nil)
 
 	if err != nil {
@@ -154,9 +170,21 @@ func (cache *XueXiTUserCache) xxtAiAnswerApi(cozeEnc, userId, courseId, classId,
 	for _, cookie := range cache.cookies {
 		req.AddCookie(cookie)
 	}
+	tr := &http.Transport{
+		TLSClientConfig: &tls.Config{
+			InsecureSkipVerify: true, // 跳过证书验证，仅用于开发环境
+		},
+	}
 
+	//如果开启了IP代理，那么就直接添加代理
+	if cache.IpProxySW {
+		tr.Proxy = func(req *http.Request) (*url.URL, error) {
+			return url.Parse(cache.ProxyIP) // 设置代理
+		}
+	}
 	client := &http.Client{
-		Timeout: 0, // 必须 0，否则流式会被提前中断
+		Transport: tr,
+		Timeout:   0, // 必须 0，否则流式会被提前中断
 	}
 
 	resp, err := client.Do(req)

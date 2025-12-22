@@ -109,7 +109,7 @@ func (cache *XueXiTUserCache) PullWorkListHtmlApi(courseId string, classId strin
 	res, err := client.Do(req)
 	if err != nil {
 		fmt.Println(err)
-		return "", err
+		return cache.PullWorkListHtmlApi(courseId, classId, cpi, retry-1, err)
 	}
 	defer res.Body.Close()
 
@@ -262,8 +262,10 @@ func (cache *XueXiTUserCache) PullWorkPaperHtmlApi(courseId, classId, workId, so
 }
 
 // 提交作业
-func (cache *XueXiTUserCache) SubmitWorkAnswerApi(question *XXTWorkQuestionSubmitEntity, tempSave bool) (string, error) {
-
+func (cache *XueXiTUserCache) SubmitWorkAnswerApi(question *XXTWorkQuestionSubmitEntity, tempSave bool, retry int, lastErr error) (string, error) {
+	if retry < 0 {
+		return "", lastErr
+	}
 	urlStr := "https://mooc1-api.chaoxing.com/mooc-ans/work/phone/doNormalHomeWorkSubmit?tempSave=" + fmt.Sprintf("%v", tempSave)
 	method := "POST"
 
@@ -384,7 +386,7 @@ func (cache *XueXiTUserCache) SubmitWorkAnswerApi(question *XXTWorkQuestionSubmi
 	res, err := client.Do(req)
 	if err != nil {
 		fmt.Println(err)
-		return "", err
+		return cache.SubmitWorkAnswerApi(question, tempSave, retry-1, err)
 	}
 	defer res.Body.Close()
 

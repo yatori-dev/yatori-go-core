@@ -21,8 +21,10 @@ type QsxtUserCache struct {
 }
 
 // 手机端登录接口
-func (cache *QsxtUserCache) QsxtPhoneLoginApi() (string, error) {
-
+func (cache *QsxtUserCache) QsxtPhoneLoginApi(retry int, lastErr error) (string, error) {
+	if retry < 0 {
+		return "", lastErr
+	}
 	url := "https://api.qingshuxuetang.com/v25_10/account/login"
 	method := "POST"
 
@@ -55,7 +57,7 @@ func (cache *QsxtUserCache) QsxtPhoneLoginApi() (string, error) {
 	res, err := client.Do(req)
 	if err != nil {
 		fmt.Println(err)
-		return "", nil
+		return cache.QsxtPhoneLoginApi(retry-1, err)
 	}
 	defer res.Body.Close()
 
@@ -69,8 +71,10 @@ func (cache *QsxtUserCache) QsxtPhoneLoginApi() (string, error) {
 }
 
 // 拉取验证码
-func (cache *QsxtUserCache) QsxtPhoneValidationCodeApi() (string, error) {
-
+func (cache *QsxtUserCache) QsxtPhoneValidationCodeApi(retry int, lastErr error) (string, error) {
+	if retry < 0 {
+		return "", lastErr
+	}
 	url := "https://api.qingshuxuetang.com/v25_10/account/getValidationCode"
 	method := "POST"
 
@@ -103,7 +107,7 @@ func (cache *QsxtUserCache) QsxtPhoneValidationCodeApi() (string, error) {
 	res, err := client.Do(req)
 	if err != nil {
 		fmt.Println(err)
-		return "", nil
+		return cache.QsxtPhoneValidationCodeApi(retry-1, err)
 	}
 	defer res.Body.Close()
 

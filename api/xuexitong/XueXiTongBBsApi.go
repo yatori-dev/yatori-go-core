@@ -6,8 +6,6 @@ import (
 	"encoding/hex"
 	"errors"
 	"fmt"
-	"github.com/google/uuid"
-	"github.com/yatori-dev/yatori-go-core/utils"
 	"io/ioutil"
 	"net/http"
 	"net/url"
@@ -15,6 +13,9 @@ import (
 	"strconv"
 	"strings"
 	"time"
+
+	"github.com/google/uuid"
+	"github.com/yatori-dev/yatori-go-core/utils"
 )
 
 // 拉取任务点链接数据
@@ -25,7 +26,21 @@ func (cache *XueXiTUserCache) PullBbsCircleIdApi(mid, jobid string, isPortal boo
 	urlStr := "https://mooc1.chaoxing.com/mooc-ans/bbscircle/chapter?mtopicid=" + mid + "&jobid=" + jobid + "&isPortal=" + strconv.FormatBool(isPortal) + "&knowledgeid=" + knowledgeid + "&ut=" + ut + "&clazzId=" + clazzId + "&enc=" + enc + "&utenc=" + utenc + "&courseid=" + courseId + "&isJob=" + strconv.FormatBool(isJob)
 	method := "GET"
 
-	client := &http.Client{}
+	tr := &http.Transport{
+		TLSClientConfig: &tls.Config{
+			InsecureSkipVerify: true, // 跳过证书验证，仅用于开发环境
+		},
+	}
+
+	//如果开启了IP代理，那么就直接添加代理
+	if cache.IpProxySW {
+		tr.Proxy = func(req *http.Request) (*url.URL, error) {
+			return url.Parse(cache.ProxyIP) // 设置代理
+		}
+	}
+	client := &http.Client{
+		Transport: tr,
+	}
 	req, err := http.NewRequest(method, urlStr, nil)
 
 	if err != nil {
@@ -184,11 +199,25 @@ func (cache *XueXiTUserCache) PullPhoneBbsInfoApi(mtopid, jobid, knowledgeid, co
 	}
 
 	//url := "https://mooc1-api.chaoxing.com/mooc-ans/bbscircle/chapter?mtopicid=6126910848511765298213523&jobid=1765298213522842&isPortal=false&knowledgeid=1088037085&ut=s&clazzId=134204187&enc&utenc=undefined&courseid=258101827&isJob=true&isMobile=true"
-	url := "https://mooc1-api.chaoxing.com/mooc-ans/bbscircle/chapter?mtopicid=" + mtopid + "&jobid=" + jobid + "&isPortal=false&knowledgeid=" + knowledgeid + "&ut=s&clazzId=" + clazzId + "&enc&utenc=undefined&courseid=" + courseId + "&isJob=true&isMobile=true"
+	urlStr := "https://mooc1-api.chaoxing.com/mooc-ans/bbscircle/chapter?mtopicid=" + mtopid + "&jobid=" + jobid + "&isPortal=false&knowledgeid=" + knowledgeid + "&ut=s&clazzId=" + clazzId + "&enc&utenc=undefined&courseid=" + courseId + "&isJob=true&isMobile=true"
 	method := "GET"
 
-	client := &http.Client{}
-	req, err := http.NewRequest(method, url, nil)
+	tr := &http.Transport{
+		TLSClientConfig: &tls.Config{
+			InsecureSkipVerify: true, // 跳过证书验证，仅用于开发环境
+		},
+	}
+
+	//如果开启了IP代理，那么就直接添加代理
+	if cache.IpProxySW {
+		tr.Proxy = func(req *http.Request) (*url.URL, error) {
+			return url.Parse(cache.ProxyIP) // 设置代理
+		}
+	}
+	client := &http.Client{
+		Transport: tr,
+	}
+	req, err := http.NewRequest(method, urlStr, nil)
 
 	if err != nil {
 		fmt.Println(err)
@@ -242,13 +271,27 @@ func (cache *XueXiTUserCache) PullPhoneBbsDetailApi(topicId string) (string, err
 		"token": "4faa8662c59590c6f43ae9fe5b002b42",
 		"_time": _time,
 	}, []string{"_c_0_", "token", "_time"})
-	url := "https://groupyd.chaoxing.com/apis/topic/getTopic?_c_0_=" + _c_0 + "&token=4faa8662c59590c6f43ae9fe5b002b42&_time=" + _time + "&inf_enc=" + inf_enc
+	urlStr := "https://groupyd.chaoxing.com/apis/topic/getTopic?_c_0_=" + _c_0 + "&token=4faa8662c59590c6f43ae9fe5b002b42&_time=" + _time + "&inf_enc=" + inf_enc
 	method := "POST"
 
 	payload := strings.NewReader("puid=" + puid + "&maxW=1080&topicId=" + topicId)
 
-	client := &http.Client{}
-	req, err := http.NewRequest(method, url, payload)
+	tr := &http.Transport{
+		TLSClientConfig: &tls.Config{
+			InsecureSkipVerify: true, // 跳过证书验证，仅用于开发环境
+		},
+	}
+
+	//如果开启了IP代理，那么就直接添加代理
+	if cache.IpProxySW {
+		tr.Proxy = func(req *http.Request) (*url.URL, error) {
+			return url.Parse(cache.ProxyIP) // 设置代理
+		}
+	}
+	client := &http.Client{
+		Transport: tr,
+	}
+	req, err := http.NewRequest(method, urlStr, payload)
 
 	if err != nil {
 		fmt.Println(err)

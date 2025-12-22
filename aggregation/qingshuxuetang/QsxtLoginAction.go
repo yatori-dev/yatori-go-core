@@ -15,7 +15,7 @@ import (
 // 登录
 func QsxtLoginAction(cache *qingshuxuetang.QsxtUserCache) (string, error) {
 	for {
-		pullCodeJson, err := cache.QsxtPhoneValidationCodeApi()
+		pullCodeJson, err := cache.QsxtPhoneValidationCodeApi(3, nil)
 		if err != nil {
 			return "", err
 		}
@@ -53,7 +53,7 @@ func QsxtLoginAction(cache *qingshuxuetang.QsxtUserCache) (string, error) {
 			cache.VerCode = fmt.Sprintf("%d", calc)
 			//fmt.Println(calc)
 		}
-		login_json, err := cache.QsxtPhoneLoginApi()
+		login_json, err := cache.QsxtPhoneLoginApi(3, nil)
 		//fmt.Println(login_json)
 		if err != nil {
 			return "", err
