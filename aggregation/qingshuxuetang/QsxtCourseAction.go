@@ -86,7 +86,6 @@ func PullCourseListAction(cache *qingshuxuetang.QsxtUserCache) ([]QsxtCourse, er
 								for _, cJson := range csListJson {
 									if courseJson, ok5 := cJson.(map[string]interface{}); ok5 {
 										courseName := courseJson["name"].(string)
-										coverImg := courseJson["coverImg"].(string)
 										studyStatus := int(courseJson["studyStatus"].(float64))
 										studyStatusName := courseJson["studyStatusName"].(string)
 										allowLearn := courseJson["allowLearn"].(bool)
@@ -100,10 +99,12 @@ func PullCourseListAction(cache *qingshuxuetang.QsxtUserCache) ([]QsxtCourse, er
 											SemesterYear:    semesterYear,
 											SemesterName:    semesterName,
 											CourseName:      courseName,
-											CourseCoverImg:  coverImg,
 											StudyStatus:     studyStatus,
 											StudyStatusName: studyStatusName,
 											AllowLearn:      allowLearn,
+										}
+										if coverImg, ok := courseJson["coverImg"].(string); ok {
+											course.CourseCoverImg = coverImg
 										}
 										//更新分数数据
 										_, err1 := UpdateCourseScore(cache, &course)
