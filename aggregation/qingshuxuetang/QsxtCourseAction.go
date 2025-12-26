@@ -9,26 +9,28 @@ import (
 )
 
 type QsxtCourse struct {
-	ClassId                   string  `json:"classId"`
-	ProjectName               string  `json:"projectName"`
-	SchoolId                  string  `json:"schoolId"`
-	SchoolName                string  `json:"schoolName"`
-	SemesterId                string  `json:"semesterId"` //学期ID
-	SemesterYear              string  `json:"semesterYear"`
-	SemesterName              string  `json:"semesterName"`
-	CourseId                  string  `json:"courseId"`
-	CourseName                string  `json:"courseName"`
-	CourseCoverImg            string  `json:"courseCoverImg"`
-	HasCourseWare             bool    `json:"hasCourseWare"`
-	HasNewCourse              bool    `json:"hasNewCourse"`
-	StudyStatus               int     `json:"studyStatus"`
-	StudyStatusName           string  `json:"studyStatusName"`
-	AllowLearn                bool    `json:"allowLearn"`
-	ClassCredit               float32 `json:"classCredit"`
-	CoursewareLearnGainScore  float64 `json:"coursewareGainLearnScore"`  //课件学习当前获分
-	CoursewareLearnTotalScore float64 `json:"coursewareLearnTotalScore"` //课件学习总分
-	CourseWorkGainScore       float64 `json:"courseWorkGainScore"`       //课程作业获得的分数
-	CourseWorkTotalScore      float64 `json:"courseWorkTotalScore"`      //课程作业总分
+	ClassId                       string  `json:"classId"`
+	ProjectName                   string  `json:"projectName"`
+	SchoolId                      string  `json:"schoolId"`
+	SchoolName                    string  `json:"schoolName"`
+	SemesterId                    string  `json:"semesterId"` //学期ID
+	SemesterYear                  string  `json:"semesterYear"`
+	SemesterName                  string  `json:"semesterName"`
+	CourseId                      string  `json:"courseId"`
+	CourseName                    string  `json:"courseName"`
+	CourseCoverImg                string  `json:"courseCoverImg"`
+	HasCourseWare                 bool    `json:"hasCourseWare"`
+	HasNewCourse                  bool    `json:"hasNewCourse"`
+	StudyStatus                   int     `json:"studyStatus"`
+	StudyStatusName               string  `json:"studyStatusName"`
+	AllowLearn                    bool    `json:"allowLearn"`
+	ClassCredit                   float32 `json:"classCredit"`
+	CoursewareLearnGainScore      float64 `json:"coursewareGainLearnScore"`      //课件学习当前获分
+	CoursewareLearnTotalScore     float64 `json:"coursewareLearnTotalScore"`     //课件学习总分
+	CourseWorkGainScore           float64 `json:"courseWorkGainScore"`           //课程作业获得的分数
+	CourseWorkTotalScore          float64 `json:"courseWorkTotalScore"`          //课程作业总分
+	CourseMaterialsLearnGainCore  float64 `json:"courseMaterialsLearnGainCore"`  //课程资料学习当前获分
+	CourseMaterialsLearnTotalCore float64 `json:"courseMaterialsLearnTotalCore"` //课程资料学习总分
 }
 
 type QsxtNode struct {
@@ -278,7 +280,11 @@ func UpdateCourseScore(cache *qingshuxuetang.QsxtUserCache, course *QsxtCourse) 
 							case 4: //作业
 								course.CourseWorkTotalScore = maxScore
 								course.CourseWorkGainScore = score
+							case 6: //课程资料
+								course.CourseMaterialsLearnTotalCore = maxScore
+								course.CourseMaterialsLearnGainCore = score
 							}
+
 						}
 					}
 				}
@@ -290,8 +296,8 @@ func UpdateCourseScore(cache *qingshuxuetang.QsxtUserCache, course *QsxtCourse) 
 }
 
 // 开始学习
-func StartStudyTimeAction(cache *qingshuxuetang.QsxtUserCache, node QsxtNode) (string, error) {
-	startResult, err := cache.StartStudyApi(node.ClassId, node.NodeId, node.CourseId, node.SemesterId, node.SchoolId, 3, nil)
+func (node QsxtNode) StartStudyTimeAction(cache *qingshuxuetang.QsxtUserCache) (string, error) {
+	startResult, err := cache.StartStudyApi(node.ClassId, node.NodeId, "11", node.CourseId, node.SemesterId, node.SchoolId, 3, nil)
 	if err != nil {
 		return "", err
 	}
@@ -309,7 +315,7 @@ func StartStudyTimeAction(cache *qingshuxuetang.QsxtUserCache, node QsxtNode) (s
 }
 
 // 提交学时
-func SubmitStudyTimeAction(cache *qingshuxuetang.QsxtUserCache, node QsxtNode, startId string, isEnd bool) (string, error) {
+func (node QsxtNode) SubmitStudyTimeAction(cache *qingshuxuetang.QsxtUserCache, startId string, isEnd bool) (string, error) {
 	submitResult, err1 := cache.SubmitStudyTimeApi(node.SchoolId, startId, 0, isEnd, 3, nil)
 	if err1 != nil {
 		return "", err1

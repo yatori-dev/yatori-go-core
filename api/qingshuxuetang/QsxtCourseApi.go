@@ -295,7 +295,7 @@ func (cache *QsxtUserCache) PullStudyRecordApi(periodId, classId, schoolId, cour
 }
 
 // 开始学习接口，每次学习前都要先调用
-func (cache *QsxtUserCache) StartStudyApi(classId, contentId, courseId, periodId, schoolId string, retry int, lastErr error) (string, error) {
+func (cache *QsxtUserCache) StartStudyApi(classId, contentId, contentType, courseId, periodId, schoolId string, retry int, lastErr error) (string, error) {
 	if retry < 0 {
 		return "", lastErr
 	}
@@ -306,7 +306,7 @@ func (cache *QsxtUserCache) StartStudyApi(classId, contentId, courseId, periodId
   "classId": ` + classId + `,
   "clientType": 2,
   "contentId": "` + contentId + `",
-  "contentType": 11,
+  "contentType": ` + contentType + `,
   "courseId": "` + courseId + `",
   "learnPlanId": 0,
   "pageType": 2,
@@ -344,7 +344,7 @@ func (cache *QsxtUserCache) StartStudyApi(classId, contentId, courseId, periodId
 	res, err := client.Do(req)
 	if err != nil {
 		fmt.Println(err)
-		return cache.StartStudyApi(classId, contentId, courseId, periodId, schoolId, retry-1, err)
+		return cache.StartStudyApi(classId, contentId, contentType, courseId, periodId, schoolId, retry-1, err)
 	}
 	defer res.Body.Close()
 
