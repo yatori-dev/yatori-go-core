@@ -131,7 +131,7 @@ func pullNode(cache *icve.IcveUserCache, root map[string]interface{}, level int,
 	//level检测
 	switch fileType {
 	case "父节点":
-		nodeResult, err1 := cache.PullZykNodeListApi(1, parentId, course.CourseInfoId)
+		nodeResult, err1 := cache.PullZykNodeListApi(1, parentId, course.CourseInfoId, 5, nil)
 		if err1 != nil {
 			log2.Fatal(err1)
 		}
@@ -149,7 +149,7 @@ func pullNode(cache *icve.IcveUserCache, root map[string]interface{}, level int,
 			}
 		}
 	case "子节点":
-		nodeResult, err1 := cache.PullZykNodeListApi(level+1, parentId, course.CourseInfoId)
+		nodeResult, err1 := cache.PullZykNodeListApi(level+1, parentId, course.CourseInfoId, 5, nil)
 		if err1 != nil {
 			log2.Fatal(err1)
 		}
@@ -225,7 +225,7 @@ func SubmitZYKStudyTimeAction(cache *icve.IcveUserCache, node IcveCourseNode) (s
 		return "", err2
 	}
 	//学习
-	studyResult, err := cache.SubmitZYKStudyTimeApi(node.CourseInfoId, "", node.ParentId, int(node.TotalNum), node.Id, cache.UserId, int(node.TotalNum), int(node.TotalNum), int(node.TotalNum))
+	studyResult, err := cache.SubmitZYKStudyTimeApi(node.CourseInfoId, "", node.ParentId, int(node.TotalNum), node.Id, cache.UserId, int(node.TotalNum), int(node.TotalNum), int(node.TotalNum), 5, nil)
 	if err != nil {
 		//log2.Fatal(err)
 		return "", err

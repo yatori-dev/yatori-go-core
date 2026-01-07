@@ -225,8 +225,10 @@ func (cache *IcveUserCache) PullRootNodeListApi(courseInfo string) (string, erro
 }
 
 // 拉取课程根节点列表
-func (cache *IcveUserCache) PullZykNodeListApi(level int, parentId, courseInfo string) (string, error) {
-
+func (cache *IcveUserCache) PullZykNodeListApi(level int, parentId, courseInfo string, retry int, lastErr error) (string, error) {
+	if retry < 0 {
+		return "", lastErr
+	}
 	urlStr := "https://zyk.icve.com.cn/prod-api/teacher/courseContent/studyList?level=" + fmt.Sprintf("%d", level) + "&parentId=" + parentId + "&courseInfoId=" + courseInfo
 	method := "GET"
 
@@ -263,7 +265,7 @@ func (cache *IcveUserCache) PullZykNodeListApi(level int, parentId, courseInfo s
 	res, err := client.Do(req)
 	if err != nil {
 		fmt.Println(err)
-		return "", err
+		return cache.PullZykNodeListApi(level, parentId, courseInfo, retry-1, err)
 	}
 	defer res.Body.Close()
 
@@ -377,7 +379,10 @@ func (cache *IcveUserCache) PullZykNodeDurationApi(fileUrl string) (string, erro
 }
 
 // 资源库提交学习
-func (cache *IcveUserCache) SubmitZYKStudyTimeApi(courseInfo string, id string, parentId string, studyTime int, sourceId string, studentId string, actualNum int, lastNum int, totalNum int) (string, error) {
+func (cache *IcveUserCache) SubmitZYKStudyTimeApi(courseInfo string, id string, parentId string, studyTime int, sourceId string, studentId string, actualNum int, lastNum int, totalNum int, retry int, lastErr error) (string, error) {
+	if retry < 0 {
+		return "", lastErr
+	}
 
 	urlStr := "https://zyk.icve.com.cn/prod-api/teacher/studyRecord"
 	method := "PUT"
@@ -434,7 +439,7 @@ func (cache *IcveUserCache) SubmitZYKStudyTimeApi(courseInfo string, id string, 
 	res, err := client.Do(req)
 	if err != nil {
 		fmt.Println(err)
-		return "", err
+		return cache.SubmitZYKStudyTimeApi(courseInfo, id, parentId, studyTime, sourceId, studentId, actualNum, lastNum, totalNum, retry-1, err)
 	}
 	defer res.Body.Close()
 
