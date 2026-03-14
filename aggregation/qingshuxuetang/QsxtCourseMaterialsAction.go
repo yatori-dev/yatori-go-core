@@ -86,11 +86,14 @@ func PullCourseMaterialListAction(cache *qingshuxuetang.QsxtUserCache, course Qs
 						Id:         strconv.Itoa(int(ebook["id"].(float64))),
 						BookId:     ebook["bookId"].(string),
 						Name:       ebook["name"].(string),
-						CoverImg:   ebook["coverImg"].(string),
 						ClassId:    course.ClassId,
 						CourseId:   course.CourseId,
 						SemesterId: course.SemesterId,
 						SchoolId:   course.SchoolId,
+					}
+
+					if coverImg, ok := ebook["coverImg"].(string); ok {
+						material.CoverImg = coverImg
 					}
 					if free, ok := ebook["free"].(bool); ok {
 						material.Free = free
