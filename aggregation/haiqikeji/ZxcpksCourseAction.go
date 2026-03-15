@@ -1,4 +1,4 @@
-package zxcpks
+package haiqikeji
 
 import (
 	"fmt"
@@ -6,10 +6,10 @@ import (
 	"time"
 
 	"github.com/thedevsaddam/gojsonq"
-	"github.com/yatori-dev/yatori-go-core/api/zxcpks"
+	"github.com/yatori-dev/yatori-go-core/api/haiqikeji"
 )
 
-type ZxcpksCourse struct {
+type HaiqikejiCourse struct {
 	Id            string      `json:"id"`
 	Name          string      `json:"name"`
 	Mode          int         `json:"mode"`
@@ -48,7 +48,7 @@ type ZxcpksCourse struct {
 	TemplateId    int         `json:"templateId"`
 }
 
-type ZxcpksNode struct {
+type HaiqikejiNode struct {
 	Id            string      `json:"id"`
 	Name          string      `json:"name"`
 	Type          interface{} `json:"type"`
@@ -71,8 +71,8 @@ type ZxcpksNode struct {
 }
 
 // 拉取课程列表
-func ZxcpksCourseListAction(cache *zxcpks.ZxcpksUserCache) ([]ZxcpksCourse, error) {
-	courseList := make([]ZxcpksCourse, 0)
+func HaiqikejiCourseListAction(cache *haiqikeji.HaiqikejiUserCache) ([]HaiqikejiCourse, error) {
+	courseList := make([]HaiqikejiCourse, 0)
 	coursesResult, err := cache.PullCourseListApi()
 	if err != nil {
 		return nil, err
@@ -80,7 +80,7 @@ func ZxcpksCourseListAction(cache *zxcpks.ZxcpksUserCache) ([]ZxcpksCourse, erro
 	if cslist, ok := gojsonq.New().JSONString(coursesResult).Find("data").([]any); ok {
 		for _, course := range cslist {
 			if cs, ok := course.(map[string]any); ok {
-				zxcpksCourse := ZxcpksCourse{
+				zxcpksCourse := HaiqikejiCourse{
 					Id:           strconv.Itoa(int(cs["id"].(float64))),
 					Name:         cs["name"].(string),
 					Intro:        cs["intro"].(string),
@@ -97,8 +97,8 @@ func ZxcpksCourseListAction(cache *zxcpks.ZxcpksUserCache) ([]ZxcpksCourse, erro
 }
 
 // 节点列表
-func ZxcpksNodeListAction(cache *zxcpks.ZxcpksUserCache, course ZxcpksCourse) ([]ZxcpksNode, error) {
-	nodeList := make([]ZxcpksNode, 0)
+func HaiqikejiNodeListAction(cache *haiqikeji.HaiqikejiUserCache, course HaiqikejiCourse) ([]HaiqikejiNode, error) {
+	nodeList := make([]HaiqikejiNode, 0)
 	chapterResult, err := cache.PullChapterListApi(course.Id)
 	if err != nil {
 		return nil, err
@@ -113,7 +113,7 @@ func ZxcpksNodeListAction(cache *zxcpks.ZxcpksUserCache, course ZxcpksCourse) ([
 				if ndlist, ok := gojsonq.New().JSONString(chapterNodeResult).Find("data").([]any); ok {
 					for _, node := range ndlist {
 						if nd, ok := node.(map[string]any); ok {
-							zxcpksNode := ZxcpksNode{
+							zxcpksNode := HaiqikejiNode{
 								Id:            strconv.Itoa(int(nd["id"].(float64))),
 								Name:          nd["name"].(string),
 								ChapterId:     strconv.Itoa(int(nd["chapterId"].(float64))),
@@ -133,7 +133,7 @@ func ZxcpksNodeListAction(cache *zxcpks.ZxcpksUserCache, course ZxcpksCourse) ([
 }
 
 // 提交学时，秒刷
-func ZxcpksSubmitFastSutdyTimeAction(cache *zxcpks.ZxcpksUserCache, node ZxcpksNode) (string, error) {
+func HaiqikejiSubmitFastSutdyTimeAction(cache *haiqikeji.HaiqikejiUserCache, node HaiqikejiNode) (string, error) {
 	startResult, err := cache.StartStudyApi(node.Id, node.CourseId)
 	if err != nil {
 		return "", err
@@ -161,7 +161,7 @@ func ZxcpksSubmitFastSutdyTimeAction(cache *zxcpks.ZxcpksUserCache, node ZxcpksN
 }
 
 // 获取节点进度
-func ZxcpksGetNodeProgressAction(cache *zxcpks.ZxcpksUserCache, node ZxcpksNode) (int, error) {
+func HaiqikejiGetNodeProgressAction(cache *haiqikeji.HaiqikejiUserCache, node HaiqikejiNode) (int, error) {
 
 	//拉取当前适配的观看进度
 	nowProgressResult, err := cache.PullLastProgressApi(node.Id)
@@ -181,7 +181,7 @@ func ZxcpksGetNodeProgressAction(cache *zxcpks.ZxcpksUserCache, node ZxcpksNode)
 }
 
 // 开始学习时访问的接口，获取session
-func ZxcpksStartSutdyAction(cache *zxcpks.ZxcpksUserCache, node ZxcpksNode) (string, error) {
+func HaiqikejiStartSutdyAction(cache *haiqikeji.HaiqikejiUserCache, node HaiqikejiNode) (string, error) {
 	startResult, err := cache.StartStudyApi(node.Id, node.CourseId)
 	if err != nil {
 		return "", err
@@ -192,7 +192,7 @@ func ZxcpksStartSutdyAction(cache *zxcpks.ZxcpksUserCache, node ZxcpksNode) (str
 }
 
 // 提交学时
-func ZxcpksSubmitSutdyTimeAction(cache *zxcpks.ZxcpksUserCache, node ZxcpksNode, sessionId string, progress int) (string, error) {
+func HaiqikejiSubmitSutdyTimeAction(cache *haiqikeji.HaiqikejiUserCache, node HaiqikejiNode, sessionId string, progress int) (string, error) {
 	submitResult, err := cache.SubmitStudyTimeApi(sessionId, progress)
 	if err != nil {
 		return "", err

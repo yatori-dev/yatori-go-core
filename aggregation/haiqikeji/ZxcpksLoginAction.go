@@ -1,4 +1,4 @@
-package zxcpks
+package haiqikeji
 
 import (
 	"fmt"
@@ -6,11 +6,11 @@ import (
 	"strconv"
 
 	"github.com/thedevsaddam/gojsonq"
-	"github.com/yatori-dev/yatori-go-core/api/zxcpks"
+	"github.com/yatori-dev/yatori-go-core/api/haiqikeji"
 )
 
 // 登录
-func ZxcpksLoginAction(cache *zxcpks.ZxcpksUserCache) error {
+func HaiqikejiLoginAction(cache *haiqikeji.HaiqikejiUserCache) error {
 	hostname, _ := extractDomain(cache.PreUrl)
 	schoolInfoStr := cache.PullSchoolInfoApi(hostname)
 	cache.SchoolId = strconv.Itoa(int(gojsonq.New().JSONString(schoolInfoStr).Find("data.id").(float64)))

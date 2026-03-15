@@ -1,4 +1,4 @@
-package zxcpks
+package haiqikeji
 
 import (
 	"bytes"
@@ -10,7 +10,7 @@ import (
 	"strings"
 )
 
-type ZxcpksUserCache struct {
+type HaiqikejiUserCache struct {
 	PreUrl    string //前置url
 	Account   string //账号
 	Password  string //用户密码
@@ -26,7 +26,7 @@ type ZxcpksUserCache struct {
 }
 
 // 登录
-func (cache *ZxcpksUserCache) LoginApi() (string, error) {
+func (cache *HaiqikejiUserCache) LoginApi() (string, error) {
 	client := &http.Client{}
 	req, err := http.NewRequest("GET", "https://swxy.haiqikeji.com/api/user/login?number="+cache.Account+"&password="+cache.Password+"&schoolId="+cache.SchoolId, nil)
 	if err != nil {
@@ -60,7 +60,7 @@ func (cache *ZxcpksUserCache) LoginApi() (string, error) {
 }
 
 // 用于获取School账号信息
-func (cache *ZxcpksUserCache) PullSchoolInfoApi(url string) string {
+func (cache *HaiqikejiUserCache) PullSchoolInfoApi(url string) string {
 	client := &http.Client{}
 	//req, err := http.NewRequest("GET", "https://swxy.haiqikeji.com/api/course/selectdomain?domain=swxy.haiqikeji.com", nil)
 	req, err := http.NewRequest("GET", "https://swxy.haiqikeji.com/api/course/selectdomain?domain="+url, nil)
@@ -95,7 +95,7 @@ func (cache *ZxcpksUserCache) PullSchoolInfoApi(url string) string {
 }
 
 // 拉取用户个人信息
-func (cache *ZxcpksUserCache) PullUserInfoApi() (string, error) {
+func (cache *HaiqikejiUserCache) PullUserInfoApi() (string, error) {
 	client := &http.Client{}
 	req, err := http.NewRequest("GET", "https://swxy.haiqikeji.com/api/user/yee_student_info", nil)
 	if err != nil {
@@ -129,7 +129,7 @@ func (cache *ZxcpksUserCache) PullUserInfoApi() (string, error) {
 	return string(bodyText), nil
 }
 
-func (cache *ZxcpksUserCache) PullCourseListApi() (string, error) {
+func (cache *HaiqikejiUserCache) PullCourseListApi() (string, error) {
 	client := &http.Client{}
 	req, err := http.NewRequest("GET", "https://swxy.haiqikeji.com/api/user/yee_my_course_list?schoolId="+cache.SchoolId+"&studentId=1257795&type=0&pageNum=1&pageSize=10000&_t=1773594164210", nil)
 	if err != nil {
@@ -164,7 +164,7 @@ func (cache *ZxcpksUserCache) PullCourseListApi() (string, error) {
 }
 
 // 拉取大章节
-func (cache *ZxcpksUserCache) PullChapterListApi(courseId string) (string, error) {
+func (cache *HaiqikejiUserCache) PullChapterListApi(courseId string) (string, error) {
 	form := new(bytes.Buffer)
 	writer := multipart.NewWriter(form)
 	formField, err := writer.CreateFormField("schoolId")
@@ -218,7 +218,7 @@ func (cache *ZxcpksUserCache) PullChapterListApi(courseId string) (string, error
 }
 
 // 拉取大章节对应下的小节点
-func (cache *ZxcpksUserCache) PullChapterNodeListApi(chapterId string) (string, error) {
+func (cache *HaiqikejiUserCache) PullChapterNodeListApi(chapterId string) (string, error) {
 	client := &http.Client{}
 	//req, err := http.NewRequest("GET", "https://swxy.haiqikeji.com/api/user/yee_node_select?schoolId=15&chapterId=1101498", nil)
 	req, err := http.NewRequest("GET", "https://swxy.haiqikeji.com/api/user/yee_node_select?schoolId="+cache.SchoolId+"&chapterId="+chapterId, nil)
@@ -253,7 +253,7 @@ func (cache *ZxcpksUserCache) PullChapterNodeListApi(chapterId string) (string, 
 }
 
 // 获取视频学习进度
-func (cache *ZxcpksUserCache) PullLastProgressApi(nodeId string) (string, error) {
+func (cache *HaiqikejiUserCache) PullLastProgressApi(nodeId string) (string, error) {
 	client := &http.Client{}
 	req, err := http.NewRequest("GET", "https://swxy.haiqikeji.com/api/user/last_progress?nodeId="+nodeId+"&userId="+cache.UserId+"&schoolId="+cache.SchoolId, nil)
 	if err != nil {
@@ -287,7 +287,7 @@ func (cache *ZxcpksUserCache) PullLastProgressApi(nodeId string) (string, error)
 }
 
 // 打点开始学习，获取学习id
-func (cache *ZxcpksUserCache) StartStudyApi(nodeId, courseId string) (string, error) {
+func (cache *HaiqikejiUserCache) StartStudyApi(nodeId, courseId string) (string, error) {
 	client := &http.Client{}
 	//var data = strings.NewReader(`{"schoolId":`+cache.SchoolId+`,"userId":1257795,"nodeId":"1473241","courseId":"1012279","terminal":"web"}`)
 	var data = strings.NewReader(`{"schoolId":` + cache.SchoolId + `,"userId":` + cache.UserId + `,"nodeId":"` + nodeId + `","courseId":"` + courseId + `","terminal":"web"}`)
@@ -326,7 +326,7 @@ func (cache *ZxcpksUserCache) StartStudyApi(nodeId, courseId string) (string, er
 }
 
 // 提交学时
-func (cache *ZxcpksUserCache) SubmitStudyTimeApi(sessionId string, progress int) (string, error) {
+func (cache *HaiqikejiUserCache) SubmitStudyTimeApi(sessionId string, progress int) (string, error) {
 	client := &http.Client{}
 	//var data = strings.NewReader(`{"sessionId":"20410346-558e-4b8c-8166-48fa58d76abf","progress":"3"}`)
 	var data = strings.NewReader(`{"sessionId":"` + sessionId + `","progress":"` + fmt.Sprintf("%d", progress) + `"}`)
