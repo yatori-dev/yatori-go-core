@@ -10,7 +10,7 @@ import (
 )
 
 // 登录
-func HaiqikejiLoginAction(cache *haiqikeji.HaiqikejiUserCache) error {
+func HqkjLoginAction(cache *haiqikeji.HqkjUserCache) error {
 	hostname, _ := extractDomain(cache.PreUrl)
 	schoolInfoStr := cache.PullSchoolInfoApi(hostname)
 	cache.SchoolId = strconv.Itoa(int(gojsonq.New().JSONString(schoolInfoStr).Find("data.id").(float64)))

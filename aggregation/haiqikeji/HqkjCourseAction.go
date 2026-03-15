@@ -9,7 +9,7 @@ import (
 	"github.com/yatori-dev/yatori-go-core/api/haiqikeji"
 )
 
-type HaiqikejiCourse struct {
+type HqkjCourse struct {
 	Id            string      `json:"id"`
 	Name          string      `json:"name"`
 	Mode          int         `json:"mode"`
@@ -48,7 +48,7 @@ type HaiqikejiCourse struct {
 	TemplateId    int         `json:"templateId"`
 }
 
-type HaiqikejiNode struct {
+type HqkjNode struct {
 	Id            string      `json:"id"`
 	Name          string      `json:"name"`
 	Type          interface{} `json:"type"`
@@ -71,8 +71,8 @@ type HaiqikejiNode struct {
 }
 
 // 拉取课程列表
-func HaiqikejiCourseListAction(cache *haiqikeji.HaiqikejiUserCache) ([]HaiqikejiCourse, error) {
-	courseList := make([]HaiqikejiCourse, 0)
+func HqkjCourseListAction(cache *haiqikeji.HqkjUserCache) ([]HqkjCourse, error) {
+	courseList := make([]HqkjCourse, 0)
 	coursesResult, err := cache.PullCourseListApi()
 	if err != nil {
 		return nil, err
@@ -80,7 +80,7 @@ func HaiqikejiCourseListAction(cache *haiqikeji.HaiqikejiUserCache) ([]Haiqikeji
 	if cslist, ok := gojsonq.New().JSONString(coursesResult).Find("data").([]any); ok {
 		for _, course := range cslist {
 			if cs, ok := course.(map[string]any); ok {
-				zxcpksCourse := HaiqikejiCourse{
+				zxcpksCourse := HqkjCourse{
 					Id:           strconv.Itoa(int(cs["id"].(float64))),
 					Name:         cs["name"].(string),
 					Intro:        cs["intro"].(string),
@@ -97,8 +97,8 @@ func HaiqikejiCourseListAction(cache *haiqikeji.HaiqikejiUserCache) ([]Haiqikeji
 }
 
 // 节点列表
-func HaiqikejiNodeListAction(cache *haiqikeji.HaiqikejiUserCache, course HaiqikejiCourse) ([]HaiqikejiNode, error) {
-	nodeList := make([]HaiqikejiNode, 0)
+func HqkjNodeListAction(cache *haiqikeji.HqkjUserCache, course HqkjCourse) ([]HqkjNode, error) {
+	nodeList := make([]HqkjNode, 0)
 	chapterResult, err := cache.PullChapterListApi(course.Id)
 	if err != nil {
 		return nil, err
@@ -113,7 +113,7 @@ func HaiqikejiNodeListAction(cache *haiqikeji.HaiqikejiUserCache, course Haiqike
 				if ndlist, ok := gojsonq.New().JSONString(chapterNodeResult).Find("data").([]any); ok {
 					for _, node := range ndlist {
 						if nd, ok := node.(map[string]any); ok {
-							zxcpksNode := HaiqikejiNode{
+							zxcpksNode := HqkjNode{
 								Id:            strconv.Itoa(int(nd["id"].(float64))),
 								Name:          nd["name"].(string),
 								ChapterId:     strconv.Itoa(int(nd["chapterId"].(float64))),
@@ -133,7 +133,7 @@ func HaiqikejiNodeListAction(cache *haiqikeji.HaiqikejiUserCache, course Haiqike
 }
 
 // 提交学时，秒刷
-func HaiqikejiSubmitFastSutdyTimeAction(cache *haiqikeji.HaiqikejiUserCache, node HaiqikejiNode) (string, error) {
+func HqkjSubmitFastSutdyTimeAction(cache *haiqikeji.HqkjUserCache, node HqkjNode) (string, error) {
 	startResult, err := cache.StartStudyApi(node.Id, node.CourseId)
 	if err != nil {
 		return "", err
@@ -161,7 +161,7 @@ func HaiqikejiSubmitFastSutdyTimeAction(cache *haiqikeji.HaiqikejiUserCache, nod
 }
 
 // 获取节点进度
-func HaiqikejiGetNodeProgressAction(cache *haiqikeji.HaiqikejiUserCache, node HaiqikejiNode) (int, error) {
+func HqkjGetNodeProgressAction(cache *haiqikeji.HqkjUserCache, node HqkjNode) (int, error) {
 
 	//拉取当前适配的观看进度
 	nowProgressResult, err := cache.PullLastProgressApi(node.Id)
@@ -181,7 +181,7 @@ func HaiqikejiGetNodeProgressAction(cache *haiqikeji.HaiqikejiUserCache, node Ha
 }
 
 // 开始学习时访问的接口，获取session
-func HaiqikejiStartSutdyAction(cache *haiqikeji.HaiqikejiUserCache, node HaiqikejiNode) (string, error) {
+func HqkjStartSutdyAction(cache *haiqikeji.HqkjUserCache, node HqkjNode) (string, error) {
 	startResult, err := cache.StartStudyApi(node.Id, node.CourseId)
 	if err != nil {
 		return "", err
@@ -192,7 +192,7 @@ func HaiqikejiStartSutdyAction(cache *haiqikeji.HaiqikejiUserCache, node Haiqike
 }
 
 // 提交学时
-func HaiqikejiSubmitSutdyTimeAction(cache *haiqikeji.HaiqikejiUserCache, node HaiqikejiNode, sessionId string, progress int) (string, error) {
+func HqkjSubmitSutdyTimeAction(cache *haiqikeji.HqkjUserCache, node HqkjNode, sessionId string, progress int) (string, error) {
 	submitResult, err := cache.SubmitStudyTimeApi(sessionId, progress)
 	if err != nil {
 		return "", err
