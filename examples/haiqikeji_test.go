@@ -30,7 +30,7 @@ func TestHqkjLogin(t *testing.T) {
 		}
 		for _, node := range nodeList {
 			fmt.Println(node)
-			zxcpks2.HqkjSubmitFastSutdyTimeAction(&cache, node)
+			zxcpks2.HqkjSubmitFastStudyTimeAction(&cache, node)
 		}
 	}
 }
