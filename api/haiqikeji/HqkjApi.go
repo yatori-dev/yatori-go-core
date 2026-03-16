@@ -213,7 +213,7 @@ func (cache *HqkjUserCache) PullCourseListApi(retry int, lastErr error) (string,
 		Timeout:   30 * time.Second,
 		Transport: tr,
 	}
-	req, err := http.NewRequest("GET", "https://swxy.haiqikeji.com/api/user/yee_my_course_list?schoolId="+cache.SchoolId+"&studentId=1257795&type=0&pageNum=1&pageSize=10000&_t=1773594164210", nil)
+	req, err := http.NewRequest("GET", "https://swxy.haiqikeji.com/api/user/yee_my_course_list?schoolId="+cache.SchoolId+"&studentId="+cache.UserId+"&type=0&pageNum=1&pageSize=10000&_t=1773594164210", nil)
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -407,7 +407,7 @@ func (cache *HqkjUserCache) PullLastProgressApi(nodeId string, retry int, lastEr
 	req.Header.Set("cache-control", "no-cache")
 	req.Header.Set("pragma", "no-cache")
 	req.Header.Set("priority", "u=1, i")
-	req.Header.Set("referer", "https://swxy.haiqikeji.com/student/course-study?id=1012279")
+	//req.Header.Set("referer", "https://swxy.haiqikeji.com/student/course-study?id=1012279")
 	req.Header.Set("sec-ch-ua", `"Not:A-Brand";v="99", "Google Chrome";v="145", "Chromium";v="145"`)
 	req.Header.Set("sec-ch-ua-mobile", "?0")
 	req.Header.Set("sec-ch-ua-platform", `"Windows"`)
@@ -415,7 +415,7 @@ func (cache *HqkjUserCache) PullLastProgressApi(nodeId string, retry int, lastEr
 	req.Header.Set("sec-fetch-mode", "cors")
 	req.Header.Set("sec-fetch-site", "same-origin")
 	req.Header.Set("user-agent", "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/145.0.0.0 Safari/537.36")
-	req.Header.Set("cookie", "__root_domain_v=.haiqikeji.com; _qddaz=QD.247873038960618; _qdda=3-1.luvll; _qddab=3-8f2fdp.mms0w07g")
+	//req.Header.Set("cookie", "__root_domain_v=.haiqikeji.com; _qddaz=QD.247873038960618; _qdda=3-1.luvll; _qddab=3-8f2fdp.mms0w07g")
 	resp, err := client.Do(req)
 	if err != nil {
 		//log.Fatal(err)
