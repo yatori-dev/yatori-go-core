@@ -70,7 +70,8 @@ func (cache *HqkjUserCache) LoginApi(retry int, lastErr error) (string, error) {
 	req.Header.Set("cookie", "__root_domain_v=.haiqikeji.com; _qddaz=QD.247873038960618; _qdda=3-1.1; _qddab=3-vn3xs9.mmitm9t9")
 	resp, err := client.Do(req)
 	if err != nil {
-		log.Fatal(err)
+		//log.Fatal(err)
+		return cache.LoginApi(retry-1, err)
 	}
 	defer resp.Body.Close()
 	bodyText, err := io.ReadAll(resp.Body)
@@ -124,7 +125,8 @@ func (cache *HqkjUserCache) PullSchoolInfoApi(urlStr string, retry int, lastErr 
 	req.Header.Set("cookie", "__root_domain_v=.haiqikeji.com; _qddaz=QD.247873038960618; _qdda=3-1.1; _qddab=3-b2u746.mmrwmvxj")
 	resp, err := client.Do(req)
 	if err != nil {
-		log.Fatal(err)
+		//log.Fatal(err)
+		return cache.PullSchoolInfoApi(urlStr, retry-1, err)
 	}
 	defer resp.Body.Close()
 	bodyText, err := io.ReadAll(resp.Body)
@@ -178,7 +180,8 @@ func (cache *HqkjUserCache) PullUserInfoApi(retry int, lastErr error) (string, e
 	req.Header.Set("cookie", "__root_domain_v=.haiqikeji.com; _qddaz=QD.247873038960618; _qddab=3-8f2fdp.mms0w07g")
 	resp, err := client.Do(req)
 	if err != nil {
-		log.Fatal(err)
+		//log.Fatal(err)
+		return cache.PullUserInfoApi(retry-1, err)
 	}
 	defer resp.Body.Close()
 	bodyText, err := io.ReadAll(resp.Body)
@@ -231,7 +234,8 @@ func (cache *HqkjUserCache) PullCourseListApi(retry int, lastErr error) (string,
 	req.Header.Set("cookie", "__root_domain_v=.haiqikeji.com; _qddaz=QD.247873038960618; _qddab=3-b2u746.mmrwmvxj")
 	resp, err := client.Do(req)
 	if err != nil {
-		log.Fatal(err)
+		//log.Fatal(err)
+		return cache.PullCourseListApi(retry-1, err)
 	}
 	defer resp.Body.Close()
 	bodyText, err := io.ReadAll(resp.Body)
@@ -304,7 +308,8 @@ func (cache *HqkjUserCache) PullChapterListApi(courseId string, retry int, lastE
 	req.Header.Set("Content-Type", writer.FormDataContentType())
 	resp, err := client.Do(req)
 	if err != nil {
-		log.Fatal(err)
+		//log.Fatal(err)
+		return cache.PullChapterListApi(courseId, retry-1, err)
 	}
 	defer resp.Body.Close()
 	bodyText, err := io.ReadAll(resp.Body)
@@ -359,7 +364,8 @@ func (cache *HqkjUserCache) PullChapterNodeListApi(chapterId string, retry int, 
 	req.Header.Set("cookie", "__root_domain_v=.haiqikeji.com; _qddaz=QD.247873038960618; _qdda=3-1.luvll; _qddab=3-8f2fdp.mms0w07g")
 	resp, err := client.Do(req)
 	if err != nil {
-		log.Fatal(err)
+		//log.Fatal(err)
+		return cache.PullChapterNodeListApi(chapterId, retry-1, err)
 	}
 	defer resp.Body.Close()
 	bodyText, err := io.ReadAll(resp.Body)
@@ -412,7 +418,8 @@ func (cache *HqkjUserCache) PullLastProgressApi(nodeId string, retry int, lastEr
 	req.Header.Set("cookie", "__root_domain_v=.haiqikeji.com; _qddaz=QD.247873038960618; _qdda=3-1.luvll; _qddab=3-8f2fdp.mms0w07g")
 	resp, err := client.Do(req)
 	if err != nil {
-		log.Fatal(err)
+		//log.Fatal(err)
+		return cache.PullLastProgressApi(nodeId, retry-1, err)
 	}
 	defer resp.Body.Close()
 	bodyText, err := io.ReadAll(resp.Body)
@@ -466,10 +473,11 @@ func (cache *HqkjUserCache) StartStudyApi(nodeId, courseId string, retry int, la
 	req.Header.Set("sec-fetch-mode", "cors")
 	req.Header.Set("sec-fetch-site", "same-origin")
 	req.Header.Set("user-agent", "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/145.0.0.0 Safari/537.36")
-	req.Header.Set("cookie", "__root_domain_v=.haiqikeji.com; _qddaz=QD.247873038960618; _qdda=3-1.luvll; _qddab=3-8f2fdp.mms0w07g")
+	//req.Header.Set("cookie", "__root_domain_v=.haiqikeji.com; _qddaz=QD.247873038960618; _qdda=3-1.luvll; _qddab=3-8f2fdp.mms0w07g")
 	resp, err := client.Do(req)
 	if err != nil {
-		log.Fatal(err)
+		//log.Fatal(err)
+		return cache.StartStudyApi(nodeId, courseId, retry-1, err)
 	}
 	defer resp.Body.Close()
 	bodyText, err := io.ReadAll(resp.Body)
@@ -527,7 +535,8 @@ func (cache *HqkjUserCache) SubmitStudyTimeApi(sessionId string, progress int, r
 	req.Header.Set("cookie", "__root_domain_v=.haiqikeji.com; _qddaz=QD.247873038960618; _qdda=3-1.luvll; _qddab=3-8f2fdp.mms0w07g")
 	resp, err := client.Do(req)
 	if err != nil {
-		log.Fatal(err)
+		//log.Fatal(err)
+		return cache.SubmitStudyTimeApi(sessionId, progress, retry-1, err)
 	}
 	defer resp.Body.Close()
 	bodyText, err := io.ReadAll(resp.Body)
