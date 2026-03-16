@@ -2,12 +2,15 @@ package haiqikeji
 
 import (
 	"bytes"
+	"crypto/tls"
 	"fmt"
 	"io"
 	"log"
 	"mime/multipart"
 	"net/http"
+	"net/url"
 	"strings"
+	"time"
 )
 
 type HqkjUserCache struct {
@@ -30,7 +33,23 @@ func (cache *HqkjUserCache) LoginApi(retry int, lastErr error) (string, error) {
 	if retry < 0 {
 		return "", lastErr
 	}
-	client := &http.Client{}
+	tr := &http.Transport{
+		TLSClientConfig: &tls.Config{
+			InsecureSkipVerify: true, // 跳过证书验证，仅用于开发环境
+		},
+	}
+
+	//如果开启了IP代理，那么就直接添加代理
+	if cache.IpProxySW {
+		tr.Proxy = func(req *http.Request) (*url.URL, error) {
+			return url.Parse(cache.ProxyIP) // 设置代理
+		}
+	}
+
+	client := &http.Client{
+		Timeout:   30 * time.Second,
+		Transport: tr,
+	}
 	req, err := http.NewRequest("GET", "https://swxy.haiqikeji.com/api/user/login?number="+cache.Account+"&password="+cache.Password+"&schoolId="+cache.SchoolId, nil)
 	if err != nil {
 		log.Fatal(err)
@@ -63,13 +82,29 @@ func (cache *HqkjUserCache) LoginApi(retry int, lastErr error) (string, error) {
 }
 
 // 用于获取School账号信息
-func (cache *HqkjUserCache) PullSchoolInfoApi(url string, retry int, lastErr error) string {
+func (cache *HqkjUserCache) PullSchoolInfoApi(urlStr string, retry int, lastErr error) string {
 	if retry < 0 {
 		return ""
 	}
-	client := &http.Client{}
+	tr := &http.Transport{
+		TLSClientConfig: &tls.Config{
+			InsecureSkipVerify: true, // 跳过证书验证，仅用于开发环境
+		},
+	}
+
+	//如果开启了IP代理，那么就直接添加代理
+	if cache.IpProxySW {
+		tr.Proxy = func(req *http.Request) (*url.URL, error) {
+			return url.Parse(cache.ProxyIP) // 设置代理
+		}
+	}
+
+	client := &http.Client{
+		Timeout:   30 * time.Second,
+		Transport: tr,
+	}
 	//req, err := http.NewRequest("GET", "https://swxy.haiqikeji.com/api/course/selectdomain?domain=swxy.haiqikeji.com", nil)
-	req, err := http.NewRequest("GET", "https://swxy.haiqikeji.com/api/course/selectdomain?domain="+url, nil)
+	req, err := http.NewRequest("GET", "https://swxy.haiqikeji.com/api/course/selectdomain?domain="+urlStr, nil)
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -105,7 +140,23 @@ func (cache *HqkjUserCache) PullUserInfoApi(retry int, lastErr error) (string, e
 	if retry < 0 {
 		return "", lastErr
 	}
-	client := &http.Client{}
+	tr := &http.Transport{
+		TLSClientConfig: &tls.Config{
+			InsecureSkipVerify: true, // 跳过证书验证，仅用于开发环境
+		},
+	}
+
+	//如果开启了IP代理，那么就直接添加代理
+	if cache.IpProxySW {
+		tr.Proxy = func(req *http.Request) (*url.URL, error) {
+			return url.Parse(cache.ProxyIP) // 设置代理
+		}
+	}
+
+	client := &http.Client{
+		Timeout:   30 * time.Second,
+		Transport: tr,
+	}
 	req, err := http.NewRequest("GET", "https://swxy.haiqikeji.com/api/user/yee_student_info", nil)
 	if err != nil {
 		log.Fatal(err)
@@ -142,7 +193,23 @@ func (cache *HqkjUserCache) PullCourseListApi(retry int, lastErr error) (string,
 	if retry < 0 {
 		return "", lastErr
 	}
-	client := &http.Client{}
+	tr := &http.Transport{
+		TLSClientConfig: &tls.Config{
+			InsecureSkipVerify: true, // 跳过证书验证，仅用于开发环境
+		},
+	}
+
+	//如果开启了IP代理，那么就直接添加代理
+	if cache.IpProxySW {
+		tr.Proxy = func(req *http.Request) (*url.URL, error) {
+			return url.Parse(cache.ProxyIP) // 设置代理
+		}
+	}
+
+	client := &http.Client{
+		Timeout:   30 * time.Second,
+		Transport: tr,
+	}
 	req, err := http.NewRequest("GET", "https://swxy.haiqikeji.com/api/user/yee_my_course_list?schoolId="+cache.SchoolId+"&studentId=1257795&type=0&pageNum=1&pageSize=10000&_t=1773594164210", nil)
 	if err != nil {
 		log.Fatal(err)
@@ -197,7 +264,23 @@ func (cache *HqkjUserCache) PullChapterListApi(courseId string, retry int, lastE
 
 	writer.Close()
 
-	client := &http.Client{}
+	tr := &http.Transport{
+		TLSClientConfig: &tls.Config{
+			InsecureSkipVerify: true, // 跳过证书验证，仅用于开发环境
+		},
+	}
+
+	//如果开启了IP代理，那么就直接添加代理
+	if cache.IpProxySW {
+		tr.Proxy = func(req *http.Request) (*url.URL, error) {
+			return url.Parse(cache.ProxyIP) // 设置代理
+		}
+	}
+
+	client := &http.Client{
+		Timeout:   30 * time.Second,
+		Transport: tr,
+	}
 	req, err := http.NewRequest("POST", "https://swxy.haiqikeji.com/api/user/yee_chapter_select", form)
 	if err != nil {
 		log.Fatal(err)
@@ -237,7 +320,23 @@ func (cache *HqkjUserCache) PullChapterNodeListApi(chapterId string, retry int, 
 	if retry < 0 {
 		return "", lastErr
 	}
-	client := &http.Client{}
+	tr := &http.Transport{
+		TLSClientConfig: &tls.Config{
+			InsecureSkipVerify: true, // 跳过证书验证，仅用于开发环境
+		},
+	}
+
+	//如果开启了IP代理，那么就直接添加代理
+	if cache.IpProxySW {
+		tr.Proxy = func(req *http.Request) (*url.URL, error) {
+			return url.Parse(cache.ProxyIP) // 设置代理
+		}
+	}
+
+	client := &http.Client{
+		Timeout:   30 * time.Second,
+		Transport: tr,
+	}
 	//req, err := http.NewRequest("GET", "https://swxy.haiqikeji.com/api/user/yee_node_select?schoolId=15&chapterId=1101498", nil)
 	req, err := http.NewRequest("GET", "https://swxy.haiqikeji.com/api/user/yee_node_select?schoolId="+cache.SchoolId+"&chapterId="+chapterId, nil)
 	if err != nil {
@@ -275,7 +374,23 @@ func (cache *HqkjUserCache) PullLastProgressApi(nodeId string, retry int, lastEr
 	if retry < 0 {
 		return "", lastErr
 	}
-	client := &http.Client{}
+	tr := &http.Transport{
+		TLSClientConfig: &tls.Config{
+			InsecureSkipVerify: true, // 跳过证书验证，仅用于开发环境
+		},
+	}
+
+	//如果开启了IP代理，那么就直接添加代理
+	if cache.IpProxySW {
+		tr.Proxy = func(req *http.Request) (*url.URL, error) {
+			return url.Parse(cache.ProxyIP) // 设置代理
+		}
+	}
+
+	client := &http.Client{
+		Timeout:   30 * time.Second,
+		Transport: tr,
+	}
 	req, err := http.NewRequest("GET", "https://swxy.haiqikeji.com/api/user/last_progress?nodeId="+nodeId+"&userId="+cache.UserId+"&schoolId="+cache.SchoolId, nil)
 	if err != nil {
 		log.Fatal(err)
@@ -312,7 +427,23 @@ func (cache *HqkjUserCache) StartStudyApi(nodeId, courseId string, retry int, la
 	if retry < 0 {
 		return "", lastErr
 	}
-	client := &http.Client{}
+	tr := &http.Transport{
+		TLSClientConfig: &tls.Config{
+			InsecureSkipVerify: true, // 跳过证书验证，仅用于开发环境
+		},
+	}
+
+	//如果开启了IP代理，那么就直接添加代理
+	if cache.IpProxySW {
+		tr.Proxy = func(req *http.Request) (*url.URL, error) {
+			return url.Parse(cache.ProxyIP) // 设置代理
+		}
+	}
+
+	client := &http.Client{
+		Timeout:   30 * time.Second,
+		Transport: tr,
+	}
 	//var data = strings.NewReader(`{"schoolId":`+cache.SchoolId+`,"userId":1257795,"nodeId":"1473241","courseId":"1012279","terminal":"web"}`)
 	var data = strings.NewReader(`{"schoolId":` + cache.SchoolId + `,"userId":` + cache.UserId + `,"nodeId":"` + nodeId + `","courseId":"` + courseId + `","terminal":"web"}`)
 	req, err := http.NewRequest("POST", "https://swxy.haiqikeji.com/api/user/study_session_start", data)
@@ -354,7 +485,23 @@ func (cache *HqkjUserCache) SubmitStudyTimeApi(sessionId string, progress int, r
 	if retry < 0 {
 		return "", lastErr
 	}
-	client := &http.Client{}
+	tr := &http.Transport{
+		TLSClientConfig: &tls.Config{
+			InsecureSkipVerify: true, // 跳过证书验证，仅用于开发环境
+		},
+	}
+
+	//如果开启了IP代理，那么就直接添加代理
+	if cache.IpProxySW {
+		tr.Proxy = func(req *http.Request) (*url.URL, error) {
+			return url.Parse(cache.ProxyIP) // 设置代理
+		}
+	}
+
+	client := &http.Client{
+		Timeout:   30 * time.Second,
+		Transport: tr,
+	}
 	//var data = strings.NewReader(`{"sessionId":"20410346-558e-4b8c-8166-48fa58d76abf","progress":"3"}`)
 	var data = strings.NewReader(`{"sessionId":"` + sessionId + `","progress":"` + fmt.Sprintf("%d", progress) + `"}`)
 	req, err := http.NewRequest("POST", "https://swxy.haiqikeji.com/api/user/study_session_heartbeat", data)
