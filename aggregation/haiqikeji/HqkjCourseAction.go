@@ -181,7 +181,7 @@ func HqkjGetNodeProgressAction(cache *haiqikeji.HqkjUserCache, node HqkjNode) (i
 }
 
 // 开始学习时访问的接口，获取session
-func HqkjStartSutdyAction(cache *haiqikeji.HqkjUserCache, node HqkjNode) (string, error) {
+func HqkjStartStudyAction(cache *haiqikeji.HqkjUserCache, node HqkjNode) (string, error) {
 	startResult, err := cache.StartStudyApi(node.Id, node.CourseId, 3, nil)
 	if err != nil {
 		return "", err
