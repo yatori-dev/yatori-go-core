@@ -26,7 +26,10 @@ type HqkjUserCache struct {
 }
 
 // 登录
-func (cache *HqkjUserCache) LoginApi() (string, error) {
+func (cache *HqkjUserCache) LoginApi(retry int, lastErr error) (string, error) {
+	if retry < 0 {
+		return "", lastErr
+	}
 	client := &http.Client{}
 	req, err := http.NewRequest("GET", "https://swxy.haiqikeji.com/api/user/login?number="+cache.Account+"&password="+cache.Password+"&schoolId="+cache.SchoolId, nil)
 	if err != nil {
@@ -60,7 +63,10 @@ func (cache *HqkjUserCache) LoginApi() (string, error) {
 }
 
 // 用于获取School账号信息
-func (cache *HqkjUserCache) PullSchoolInfoApi(url string) string {
+func (cache *HqkjUserCache) PullSchoolInfoApi(url string, retry int, lastErr error) string {
+	if retry < 0 {
+		return ""
+	}
 	client := &http.Client{}
 	//req, err := http.NewRequest("GET", "https://swxy.haiqikeji.com/api/course/selectdomain?domain=swxy.haiqikeji.com", nil)
 	req, err := http.NewRequest("GET", "https://swxy.haiqikeji.com/api/course/selectdomain?domain="+url, nil)
@@ -95,7 +101,10 @@ func (cache *HqkjUserCache) PullSchoolInfoApi(url string) string {
 }
 
 // 拉取用户个人信息
-func (cache *HqkjUserCache) PullUserInfoApi() (string, error) {
+func (cache *HqkjUserCache) PullUserInfoApi(retry int, lastErr error) (string, error) {
+	if retry < 0 {
+		return "", lastErr
+	}
 	client := &http.Client{}
 	req, err := http.NewRequest("GET", "https://swxy.haiqikeji.com/api/user/yee_student_info", nil)
 	if err != nil {
@@ -129,7 +138,10 @@ func (cache *HqkjUserCache) PullUserInfoApi() (string, error) {
 	return string(bodyText), nil
 }
 
-func (cache *HqkjUserCache) PullCourseListApi() (string, error) {
+func (cache *HqkjUserCache) PullCourseListApi(retry int, lastErr error) (string, error) {
+	if retry < 0 {
+		return "", lastErr
+	}
 	client := &http.Client{}
 	req, err := http.NewRequest("GET", "https://swxy.haiqikeji.com/api/user/yee_my_course_list?schoolId="+cache.SchoolId+"&studentId=1257795&type=0&pageNum=1&pageSize=10000&_t=1773594164210", nil)
 	if err != nil {
@@ -164,7 +176,10 @@ func (cache *HqkjUserCache) PullCourseListApi() (string, error) {
 }
 
 // 拉取大章节
-func (cache *HqkjUserCache) PullChapterListApi(courseId string) (string, error) {
+func (cache *HqkjUserCache) PullChapterListApi(courseId string, retry int, lastErr error) (string, error) {
+	if retry < 0 {
+		return "", lastErr
+	}
 	form := new(bytes.Buffer)
 	writer := multipart.NewWriter(form)
 	formField, err := writer.CreateFormField("schoolId")
@@ -218,7 +233,10 @@ func (cache *HqkjUserCache) PullChapterListApi(courseId string) (string, error) 
 }
 
 // 拉取大章节对应下的小节点
-func (cache *HqkjUserCache) PullChapterNodeListApi(chapterId string) (string, error) {
+func (cache *HqkjUserCache) PullChapterNodeListApi(chapterId string, retry int, lastErr error) (string, error) {
+	if retry < 0 {
+		return "", lastErr
+	}
 	client := &http.Client{}
 	//req, err := http.NewRequest("GET", "https://swxy.haiqikeji.com/api/user/yee_node_select?schoolId=15&chapterId=1101498", nil)
 	req, err := http.NewRequest("GET", "https://swxy.haiqikeji.com/api/user/yee_node_select?schoolId="+cache.SchoolId+"&chapterId="+chapterId, nil)
@@ -253,7 +271,10 @@ func (cache *HqkjUserCache) PullChapterNodeListApi(chapterId string) (string, er
 }
 
 // 获取视频学习进度
-func (cache *HqkjUserCache) PullLastProgressApi(nodeId string) (string, error) {
+func (cache *HqkjUserCache) PullLastProgressApi(nodeId string, retry int, lastErr error) (string, error) {
+	if retry < 0 {
+		return "", lastErr
+	}
 	client := &http.Client{}
 	req, err := http.NewRequest("GET", "https://swxy.haiqikeji.com/api/user/last_progress?nodeId="+nodeId+"&userId="+cache.UserId+"&schoolId="+cache.SchoolId, nil)
 	if err != nil {
@@ -287,7 +308,10 @@ func (cache *HqkjUserCache) PullLastProgressApi(nodeId string) (string, error) {
 }
 
 // 打点开始学习，获取学习id
-func (cache *HqkjUserCache) StartStudyApi(nodeId, courseId string) (string, error) {
+func (cache *HqkjUserCache) StartStudyApi(nodeId, courseId string, retry int, lastErr error) (string, error) {
+	if retry < 0 {
+		return "", lastErr
+	}
 	client := &http.Client{}
 	//var data = strings.NewReader(`{"schoolId":`+cache.SchoolId+`,"userId":1257795,"nodeId":"1473241","courseId":"1012279","terminal":"web"}`)
 	var data = strings.NewReader(`{"schoolId":` + cache.SchoolId + `,"userId":` + cache.UserId + `,"nodeId":"` + nodeId + `","courseId":"` + courseId + `","terminal":"web"}`)
@@ -326,7 +350,10 @@ func (cache *HqkjUserCache) StartStudyApi(nodeId, courseId string) (string, erro
 }
 
 // 提交学时
-func (cache *HqkjUserCache) SubmitStudyTimeApi(sessionId string, progress int) (string, error) {
+func (cache *HqkjUserCache) SubmitStudyTimeApi(sessionId string, progress int, retry int, lastErr error) (string, error) {
+	if retry < 0 {
+		return "", lastErr
+	}
 	client := &http.Client{}
 	//var data = strings.NewReader(`{"sessionId":"20410346-558e-4b8c-8166-48fa58d76abf","progress":"3"}`)
 	var data = strings.NewReader(`{"sessionId":"` + sessionId + `","progress":"` + fmt.Sprintf("%d", progress) + `"}`)

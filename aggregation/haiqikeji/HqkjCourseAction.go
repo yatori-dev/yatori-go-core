@@ -73,7 +73,7 @@ type HqkjNode struct {
 // 拉取课程列表
 func HqkjCourseListAction(cache *haiqikeji.HqkjUserCache) ([]HqkjCourse, error) {
 	courseList := make([]HqkjCourse, 0)
-	coursesResult, err := cache.PullCourseListApi()
+	coursesResult, err := cache.PullCourseListApi(3, nil)
 	if err != nil {
 		return nil, err
 	}
@@ -99,14 +99,14 @@ func HqkjCourseListAction(cache *haiqikeji.HqkjUserCache) ([]HqkjCourse, error) 
 // 节点列表
 func HqkjNodeListAction(cache *haiqikeji.HqkjUserCache, course HqkjCourse) ([]HqkjNode, error) {
 	nodeList := make([]HqkjNode, 0)
-	chapterResult, err := cache.PullChapterListApi(course.Id)
+	chapterResult, err := cache.PullChapterListApi(course.Id, 3, nil)
 	if err != nil {
 		return nil, err
 	}
 	if cslist, ok := gojsonq.New().JSONString(chapterResult).Find("data").([]any); ok {
 		for _, chapter := range cslist {
 			if cp, ok := chapter.(map[string]any); ok {
-				chapterNodeResult, err := cache.PullChapterNodeListApi(strconv.Itoa(int(cp["id"].(float64))))
+				chapterNodeResult, err := cache.PullChapterNodeListApi(strconv.Itoa(int(cp["id"].(float64))), 3, nil)
 				if err != nil {
 					return nil, err
 				}
@@ -134,13 +134,13 @@ func HqkjNodeListAction(cache *haiqikeji.HqkjUserCache, course HqkjCourse) ([]Hq
 
 // 提交学时，秒刷
 func HqkjSubmitFastSutdyTimeAction(cache *haiqikeji.HqkjUserCache, node HqkjNode) (string, error) {
-	startResult, err := cache.StartStudyApi(node.Id, node.CourseId)
+	startResult, err := cache.StartStudyApi(node.Id, node.CourseId, 3, nil)
 	if err != nil {
 		return "", err
 	}
 
 	//拉取当前适配的观看进度
-	nowProgressResult, err := cache.PullLastProgressApi(node.Id)
+	nowProgressResult, err := cache.PullLastProgressApi(node.Id, 3, nil)
 	nowProgress := gojsonq.New().JSONString(nowProgressResult).Find("data").(string)
 	fmt.Println("当前视频进度：", nowProgress)
 	if err != nil {
@@ -148,7 +148,7 @@ func HqkjSubmitFastSutdyTimeAction(cache *haiqikeji.HqkjUserCache, node HqkjNode
 	}
 	sessionId := gojsonq.New().JSONString(startResult).Find("data").(string)
 	time.Sleep(30 * time.Second) //先隔30s
-	submitResult, err := cache.SubmitStudyTimeApi(sessionId, 100)
+	submitResult, err := cache.SubmitStudyTimeApi(sessionId, 100, 3, nil)
 	if err != nil {
 		return "", err
 	}
@@ -164,25 +164,25 @@ func HqkjSubmitFastSutdyTimeAction(cache *haiqikeji.HqkjUserCache, node HqkjNode
 func HqkjGetNodeProgressAction(cache *haiqikeji.HqkjUserCache, node HqkjNode) (int, error) {
 
 	//拉取当前适配的观看进度
-	nowProgressResult, err := cache.PullLastProgressApi(node.Id)
+	nowProgressResult, err := cache.PullLastProgressApi(node.Id, 3, nil)
+	code := int(gojsonq.New().JSONString(nowProgressResult).Find("code").(float64))
+	if code != 200 {
+		fmt.Println("获取进度失败：", nowProgressResult)
+
+	}
 	nowProgress := gojsonq.New().JSONString(nowProgressResult).Find("data").(string)
 	//fmt.Println("当前视频进度：", nowProgress)
 	if err != nil {
 		return 0, err
 	}
 
-	code := int(gojsonq.New().JSONString(nowProgress).Find("code").(float64))
-	if code != 200 {
-		fmt.Println("获取进度失败：", nowProgressResult)
-
-	}
 	floatProgress, err := strconv.ParseFloat(nowProgress, 64)
 	return int(floatProgress * 100), nil
 }
 
 // 开始学习时访问的接口，获取session
 func HqkjStartSutdyAction(cache *haiqikeji.HqkjUserCache, node HqkjNode) (string, error) {
-	startResult, err := cache.StartStudyApi(node.Id, node.CourseId)
+	startResult, err := cache.StartStudyApi(node.Id, node.CourseId, 3, nil)
 	if err != nil {
 		return "", err
 	}
@@ -192,8 +192,8 @@ func HqkjStartSutdyAction(cache *haiqikeji.HqkjUserCache, node HqkjNode) (string
 }
 
 // 提交学时
-func HqkjSubmitSutdyTimeAction(cache *haiqikeji.HqkjUserCache, node HqkjNode, sessionId string, progress int) (string, error) {
-	submitResult, err := cache.SubmitStudyTimeApi(sessionId, progress)
+func HqkjSubmitStudyTimeAction(cache *haiqikeji.HqkjUserCache, node HqkjNode, sessionId string, progress int) (string, error) {
+	submitResult, err := cache.SubmitStudyTimeApi(sessionId, progress, 3, nil)
 	if err != nil {
 		return "", err
 	}

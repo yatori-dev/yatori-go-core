@@ -12,9 +12,9 @@ import (
 // 登录
 func HqkjLoginAction(cache *haiqikeji.HqkjUserCache) error {
 	hostname, _ := extractDomain(cache.PreUrl)
-	schoolInfoStr := cache.PullSchoolInfoApi(hostname)
+	schoolInfoStr := cache.PullSchoolInfoApi(hostname, 3, nil)
 	cache.SchoolId = strconv.Itoa(int(gojsonq.New().JSONString(schoolInfoStr).Find("data.id").(float64)))
-	loginResult, err := cache.LoginApi()
+	loginResult, err := cache.LoginApi(3, nil)
 	if err != nil {
 		return err
 	}
@@ -26,7 +26,7 @@ func HqkjLoginAction(cache *haiqikeji.HqkjUserCache) error {
 	}
 	cache.Token = gojsonq.New().JSONString(loginResult).Find("data").(string) //登陆成功赋值Token
 	//fmt.Println(loginResult)
-	userInfo, err := cache.PullUserInfoApi()
+	userInfo, err := cache.PullUserInfoApi(3, nil)
 	cache.UserId = strconv.Itoa(int(gojsonq.New().JSONString(userInfo).Find("data.id").(float64))) //赋值userId
 	return nil
 }
