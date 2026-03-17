@@ -11,14 +11,15 @@ import (
 )
 
 type HqkjCourse struct {
-	Id            string      `json:"id"`
-	Name          string      `json:"name"`
-	Mode          int         `json:"mode"`
-	CollegeId     string      `json:"collegeId"`
-	CategoryId    interface{} `json:"categoryId"`
-	Lecturers     string      `json:"lecturers"`
-	StartDate     string      `json:"startDate"`
-	EndDate       string      `json:"endDate"`
+	Id         string      `json:"id"`
+	Name       string      `json:"name"`
+	Mode       int         `json:"mode"`
+	CollegeId  string      `json:"collegeId"`
+	CategoryId interface{} `json:"categoryId"`
+	Lecturers  string      `json:"lecturers"`
+	//StartDate     string      `json:"startDate"`
+	StartDate     time.Time   `json:"startDate"`
+	EndDate       time.Time   `json:"endDate"`
 	Cover         string      `json:"cover"`
 	Content       interface{} `json:"content"`
 	Credit        float64     `json:"credit"`
@@ -115,6 +116,18 @@ func HqkjCourseListAction(cache *haiqikeji.HqkjUserCache) ([]HqkjCourse, error) 
 				}
 				if lecturerName, ok := cs["lecturerName"].(string); ok {
 					zxcpksCourse.LecturerName = lecturerName
+				}
+				if startDate, ok := cs["startDate"].(string); ok {
+					turn, err := time.Parse("2006-01-02", startDate)
+					if err == nil {
+						zxcpksCourse.StartDate = turn
+					}
+				}
+				if endDate, ok := cs["endDate"].(string); ok {
+					turn, err := time.Parse("2006-01-02", endDate)
+					if err == nil {
+						zxcpksCourse.EndDate = turn
+					}
 				}
 				courseList = append(courseList, zxcpksCourse)
 			}
@@ -232,11 +245,15 @@ func HqkjGetNodeProgressAction(cache *haiqikeji.HqkjUserCache, node HqkjNode) (i
 			}
 		}
 	}
-	code := int(gojsonq.New().JSONString(nowProgressResult).Find("code").(float64))
-	if code != 200 {
-		fmt.Println("获取进度失败：", nowProgressResult)
-		return 0, fmt.Errorf("拉取进度失败：%s", nowProgressResult)
+	if code, ok := gojsonq.New().JSONString(nowProgressResult).Find("code").(float64); ok {
+		if int(code) != 200 {
+			fmt.Println("获取进度失败：", nowProgressResult)
+			return 0, fmt.Errorf("拉取进度失败：%s", nowProgressResult)
+		}
+	} else {
+		return 0, fmt.Errorf("%s", nowProgressResult)
 	}
+
 	nowProgress := gojsonq.New().JSONString(nowProgressResult).Find("data").(string)
 	//fmt.Println("当前视频进度：", nowProgress)
 	if err != nil {
@@ -249,7 +266,7 @@ func HqkjGetNodeProgressAction(cache *haiqikeji.HqkjUserCache, node HqkjNode) (i
 
 // 开始学习时访问的接口，获取session
 func HqkjStartStudyAction(cache *haiqikeji.HqkjUserCache, node HqkjNode) (string, error) {
-	startResult, err := cache.StartStudyApi(node.Id, node.CourseId, 5, nil)
+	startResult, err := cache.StartStudyApi(node.Id, node.CourseId, 10, nil)
 	if err != nil {
 		return "", err
 	}
