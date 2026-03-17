@@ -3,6 +3,7 @@ package haiqikeji
 import (
 	"fmt"
 	"strconv"
+	"strings"
 	"time"
 
 	"github.com/thedevsaddam/gojsonq"
@@ -77,17 +78,20 @@ func HqkjCourseListAction(cache *haiqikeji.HqkjUserCache) ([]HqkjCourse, error) 
 	if err != nil {
 		return nil, err
 	}
-	code := int(gojsonq.New().JSONString(coursesResult).Find("code").(float64))
-	if code != 200 {
-		msg := gojsonq.New().JSONString(coursesResult).Find("msg").(string)
-		if code == 401 && msg == "令牌不匹配" {
-			err := HqkjLoginAction(cache) //如果遇到挤号则重登
+	//如果遇到挤号则重登
+	if strings.Contains(coursesResult, "令牌不匹配") {
+		for {
+			err := HqkjLoginAction(cache)
 			if err != nil {
 				return nil, err
 			}
-			courseList, err = HqkjCourseListAction(cache)
+			coursesResult, err = cache.PullCourseListApi(5, nil)
+			if strings.Contains(coursesResult, "令牌不匹配") {
+				continue
+			}
 		}
 	}
+
 	if cslist, ok := gojsonq.New().JSONString(coursesResult).Find("data").([]any); ok {
 		for _, course := range cslist {
 			if cs, ok := course.(map[string]any); ok {
@@ -127,15 +131,17 @@ func HqkjNodeListAction(cache *haiqikeji.HqkjUserCache, course HqkjCourse) ([]Hq
 	if err != nil {
 		return nil, err
 	}
-	code := int(gojsonq.New().JSONString(chapterResult).Find("code").(float64))
-	if code != 200 {
-		msg := gojsonq.New().JSONString(chapterResult).Find("msg").(string)
-		if code == 401 && msg == "令牌不匹配" {
-			err := HqkjLoginAction(cache) //如果遇到挤号则重登
+	//如果遇到挤号则重登
+	if strings.Contains(chapterResult, "令牌不匹配") {
+		for {
+			err := HqkjLoginAction(cache)
 			if err != nil {
-				return nil, err
+				return nodeList, err
 			}
 			chapterResult, err = cache.PullChapterListApi(course.Id, 5, nil)
+			if strings.Contains(chapterResult, "令牌不匹配") {
+				continue
+			}
 		}
 	}
 	if cslist, ok := gojsonq.New().JSONString(chapterResult).Find("data").([]any); ok {
@@ -145,15 +151,17 @@ func HqkjNodeListAction(cache *haiqikeji.HqkjUserCache, course HqkjCourse) ([]Hq
 				if err != nil {
 					return nil, err
 				}
-				code := int(gojsonq.New().JSONString(chapterNodeResult).Find("code").(float64))
-				if code != 200 {
-					msg := gojsonq.New().JSONString(chapterNodeResult).Find("msg").(string)
-					if code == 401 && msg == "令牌不匹配" {
-						err := HqkjLoginAction(cache) //如果遇到挤号则重登
+				//如果遇到挤号则重登
+				if strings.Contains(chapterNodeResult, "令牌不匹配") {
+					for i := 0; i < 3; i++ {
+						err := HqkjLoginAction(cache)
 						if err != nil {
-							return nil, err
+							return nodeList, err
 						}
 						chapterNodeResult, err = cache.PullChapterNodeListApi(strconv.Itoa(int(cp["id"].(float64))), 5, nil)
+						if strings.Contains(chapterNodeResult, "令牌不匹配") {
+							continue
+						}
 					}
 				}
 				if ndlist, ok := gojsonq.New().JSONString(chapterNodeResult).Find("data").([]any); ok {
@@ -200,8 +208,8 @@ func HqkjSubmitFastStudyTimeAction(cache *haiqikeji.HqkjUserCache, node HqkjNode
 	}
 	code := int(gojsonq.New().JSONString(submitResult).Find("code").(float64))
 	if code != 200 {
-		fmt.Println("提交学时失败：", submitResult)
-
+		//fmt.Println("提交学时失败：", submitResult)
+		return "", fmt.Errorf("%s", nowProgressResult)
 	}
 	return submitResult, nil
 }
@@ -211,19 +219,23 @@ func HqkjGetNodeProgressAction(cache *haiqikeji.HqkjUserCache, node HqkjNode) (i
 
 	//拉取当前适配的观看进度
 	nowProgressResult, err := cache.PullLastProgressApi(node.Id, 5, nil)
-	code := int(gojsonq.New().JSONString(nowProgressResult).Find("code").(float64))
-	if code != 200 {
-		fmt.Println("获取进度失败：", nowProgressResult)
-
-		msg := gojsonq.New().JSONString(nowProgressResult).Find("msg").(string)
-		if code == 401 && msg == "令牌不匹配" {
-			err := HqkjLoginAction(cache) //如果遇到挤号则重登
+	//如果遇到挤号则重登
+	if strings.Contains(nowProgressResult, "令牌不匹配") {
+		for {
+			err := HqkjLoginAction(cache)
 			if err != nil {
 				return 0, err
 			}
 			nowProgressResult, err = cache.PullLastProgressApi(node.Id, 5, nil)
+			if strings.Contains(nowProgressResult, "令牌不匹配") {
+				continue
+			}
 		}
-
+	}
+	code := int(gojsonq.New().JSONString(nowProgressResult).Find("code").(float64))
+	if code != 200 {
+		fmt.Println("获取进度失败：", nowProgressResult)
+		return 0, fmt.Errorf("拉取进度失败：%s", nowProgressResult)
 	}
 	nowProgress := gojsonq.New().JSONString(nowProgressResult).Find("data").(string)
 	//fmt.Println("当前视频进度：", nowProgress)
@@ -241,16 +253,22 @@ func HqkjStartStudyAction(cache *haiqikeji.HqkjUserCache, node HqkjNode) (string
 	if err != nil {
 		return "", err
 	}
-	code := int(gojsonq.New().JSONString(startResult).Find("code").(float64))
-	if code != 200 {
-		msg := gojsonq.New().JSONString(startResult).Find("msg").(string)
-		if code == 401 && msg == "令牌不匹配" {
-			err := HqkjLoginAction(cache) //如果遇到挤号则重登
+	//如果遇到挤号则重登
+	if strings.Contains(startResult, "令牌不匹配") {
+		for {
+			err := HqkjLoginAction(cache)
 			if err != nil {
 				return "", err
 			}
 			startResult, err = cache.StartStudyApi(node.Id, node.CourseId, 5, nil)
+			if strings.Contains(startResult, "令牌不匹配") {
+				continue
+			}
 		}
+	}
+	code := int(gojsonq.New().JSONString(startResult).Find("code").(float64))
+	if code != 200 {
+		return "", fmt.Errorf("%s", startResult)
 	}
 	sessionId := gojsonq.New().JSONString(startResult).Find("data").(string)
 	return sessionId, nil
@@ -262,16 +280,19 @@ func HqkjSubmitStudyTimeAction(cache *haiqikeji.HqkjUserCache, node HqkjNode, se
 	if err != nil {
 		return "", err
 	}
-	code := int(gojsonq.New().JSONString(submitResult).Find("code").(float64))
-	if code != 200 {
-		msg := gojsonq.New().JSONString(submitResult).Find("msg").(string)
-		if code == 401 && msg == "令牌不匹配" {
-			err := HqkjLoginAction(cache) //如果遇到挤号则重登
+	//如果遇到挤号则重登
+	if strings.Contains(submitResult, "令牌不匹配") {
+		for {
+			err := HqkjLoginAction(cache)
 			if err != nil {
 				return "", err
 			}
+			submitResult, err = cache.SubmitStudyTimeApi(sessionId, progress, 5, nil)
+			if strings.Contains(submitResult, "令牌不匹配") {
+				continue
+			}
 		}
-		submitResult, err = cache.SubmitStudyTimeApi(sessionId, progress, 5, nil)
 	}
+
 	return submitResult, nil
 }
