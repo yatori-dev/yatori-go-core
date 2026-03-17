@@ -75,7 +75,7 @@ type HqkjNode struct {
 // 拉取课程列表
 func HqkjCourseListAction(cache *haiqikeji.HqkjUserCache) ([]HqkjCourse, error) {
 	courseList := make([]HqkjCourse, 0)
-	coursesResult, err := cache.PullCourseListApi(5, nil)
+	coursesResult, err := cache.PullCourseListApi(10, nil)
 	if err != nil {
 		return nil, err
 	}
@@ -86,7 +86,7 @@ func HqkjCourseListAction(cache *haiqikeji.HqkjUserCache) ([]HqkjCourse, error) 
 			if err != nil {
 				return nil, err
 			}
-			coursesResult, err = cache.PullCourseListApi(5, nil)
+			coursesResult, err = cache.PullCourseListApi(10, nil)
 			if strings.Contains(coursesResult, "令牌不匹配") {
 				continue
 			}
@@ -140,7 +140,7 @@ func HqkjCourseListAction(cache *haiqikeji.HqkjUserCache) ([]HqkjCourse, error) 
 // 节点列表
 func HqkjNodeListAction(cache *haiqikeji.HqkjUserCache, course HqkjCourse) ([]HqkjNode, error) {
 	nodeList := make([]HqkjNode, 0)
-	chapterResult, err := cache.PullChapterListApi(course.Id, 5, nil)
+	chapterResult, err := cache.PullChapterListApi(course.Id, 10, nil)
 	if err != nil {
 		return nil, err
 	}
@@ -151,7 +151,7 @@ func HqkjNodeListAction(cache *haiqikeji.HqkjUserCache, course HqkjCourse) ([]Hq
 			if err != nil {
 				return nodeList, err
 			}
-			chapterResult, err = cache.PullChapterListApi(course.Id, 5, nil)
+			chapterResult, err = cache.PullChapterListApi(course.Id, 10, nil)
 			if strings.Contains(chapterResult, "令牌不匹配") {
 				continue
 			}
@@ -207,7 +207,7 @@ func HqkjSubmitFastStudyTimeAction(cache *haiqikeji.HqkjUserCache, node HqkjNode
 	}
 
 	//拉取当前适配的观看进度
-	nowProgressResult, err := cache.PullLastProgressApi(node.Id, 5, nil)
+	nowProgressResult, err := cache.PullLastProgressApi(node.Id, 10, nil)
 	nowProgress := gojsonq.New().JSONString(nowProgressResult).Find("data").(string)
 	fmt.Println("当前视频进度：", nowProgress)
 	if err != nil {
@@ -215,7 +215,7 @@ func HqkjSubmitFastStudyTimeAction(cache *haiqikeji.HqkjUserCache, node HqkjNode
 	}
 	sessionId := gojsonq.New().JSONString(startResult).Find("data").(string)
 	time.Sleep(30 * time.Second) //先隔30s
-	submitResult, err := cache.SubmitStudyTimeApi(sessionId, 100, 5, nil)
+	submitResult, err := cache.SubmitStudyTimeApi(sessionId, 100, 10, nil)
 	if err != nil {
 		return "", err
 	}
@@ -231,7 +231,7 @@ func HqkjSubmitFastStudyTimeAction(cache *haiqikeji.HqkjUserCache, node HqkjNode
 func HqkjGetNodeProgressAction(cache *haiqikeji.HqkjUserCache, node HqkjNode) (int, error) {
 
 	//拉取当前适配的观看进度
-	nowProgressResult, err := cache.PullLastProgressApi(node.Id, 5, nil)
+	nowProgressResult, err := cache.PullLastProgressApi(node.Id, 10, nil)
 	//如果遇到挤号则重登
 	if strings.Contains(nowProgressResult, "令牌不匹配") {
 		for {
@@ -239,7 +239,7 @@ func HqkjGetNodeProgressAction(cache *haiqikeji.HqkjUserCache, node HqkjNode) (i
 			if err != nil {
 				return 0, err
 			}
-			nowProgressResult, err = cache.PullLastProgressApi(node.Id, 5, nil)
+			nowProgressResult, err = cache.PullLastProgressApi(node.Id, 10, nil)
 			if strings.Contains(nowProgressResult, "令牌不匹配") {
 				continue
 			}
@@ -277,7 +277,7 @@ func HqkjStartStudyAction(cache *haiqikeji.HqkjUserCache, node HqkjNode) (string
 			if err != nil {
 				return "", err
 			}
-			startResult, err = cache.StartStudyApi(node.Id, node.CourseId, 5, nil)
+			startResult, err = cache.StartStudyApi(node.Id, node.CourseId, 10, nil)
 			if strings.Contains(startResult, "令牌不匹配") {
 				continue
 			}
@@ -293,7 +293,7 @@ func HqkjStartStudyAction(cache *haiqikeji.HqkjUserCache, node HqkjNode) (string
 
 // 提交学时
 func HqkjSubmitStudyTimeAction(cache *haiqikeji.HqkjUserCache, node HqkjNode, sessionId string, progress int) (string, error) {
-	submitResult, err := cache.SubmitStudyTimeApi(sessionId, progress, 5, nil)
+	submitResult, err := cache.SubmitStudyTimeApi(sessionId, progress, 10, nil)
 	if err != nil {
 		return "", err
 	}
@@ -304,7 +304,7 @@ func HqkjSubmitStudyTimeAction(cache *haiqikeji.HqkjUserCache, node HqkjNode, se
 			if err != nil {
 				return "", err
 			}
-			submitResult, err = cache.SubmitStudyTimeApi(sessionId, progress, 5, nil)
+			submitResult, err = cache.SubmitStudyTimeApi(sessionId, progress, 10, nil)
 			if strings.Contains(submitResult, "令牌不匹配") {
 				continue
 			}
