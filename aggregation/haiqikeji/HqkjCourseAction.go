@@ -92,12 +92,25 @@ func HqkjCourseListAction(cache *haiqikeji.HqkjUserCache) ([]HqkjCourse, error) 
 		for _, course := range cslist {
 			if cs, ok := course.(map[string]any); ok {
 				zxcpksCourse := HqkjCourse{
-					Id:           strconv.Itoa(int(cs["id"].(float64))),
-					Name:         cs["name"].(string),
-					Intro:        cs["intro"].(string),
-					CollegeId:    strconv.Itoa(int(cs["collegeId"].(float64))),
-					PeriodName:   cs["periodName"].(string),
-					LecturerName: cs["lecturerName"].(string),
+					Id: strconv.Itoa(int(cs["id"].(float64))),
+				}
+				if name, ok := cs["name"].(string); ok {
+					zxcpksCourse.Name = name
+				}
+				if name, ok := cs["courseName"].(string); ok {
+					zxcpksCourse.Name = name
+				}
+				if intro, ok := cs["intro"].(string); ok {
+					zxcpksCourse.Intro = intro
+				}
+				if collegeId, ok := cs["collegeId"].(float64); ok {
+					zxcpksCourse.CollegeId = strconv.Itoa(int(collegeId))
+				}
+				if periodName, ok := cs["periodName"].(string); ok {
+					zxcpksCourse.PeriodName = periodName
+				}
+				if lecturerName, ok := cs["lecturerName"].(string); ok {
+					zxcpksCourse.LecturerName = lecturerName
 				}
 				courseList = append(courseList, zxcpksCourse)
 			}
