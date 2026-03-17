@@ -540,3 +540,55 @@ func (cache *HqkjUserCache) SubmitStudyTimeApi(sessionId string, progress int, r
 
 	return string(bodyText), nil
 }
+
+func (cache *HqkjUserCache) PullWorkInfoApi(courseId, nodeId string, retry int, lastErr error) (string, error) {
+	if retry < 0 {
+		return "", lastErr
+	}
+	tr := &http.Transport{
+		TLSClientConfig: &tls.Config{
+			InsecureSkipVerify: true, // 跳过证书验证，仅用于开发环境
+		},
+	}
+
+	//如果开启了IP代理，那么就直接添加代理
+	if cache.IpProxySW {
+		tr.Proxy = func(req *http.Request) (*url.URL, error) {
+			return url.Parse(cache.ProxyIP) // 设置代理
+		}
+	}
+
+	client := &http.Client{
+		Timeout:   30 * time.Second,
+		Transport: tr,
+	}
+	req, err := http.NewRequest("GET", "https://swxy.haiqikeji.com/api/user/yee_course_student_work_list?schoolId="+cache.SchoolId+"&studentId="+cache.UserId+"&courseId="+courseId+"&nodeId="+nodeId, nil)
+	if err != nil {
+		log.Fatal(err)
+	}
+	req.Header.Set("accept", "application/json, text/plain, */*")
+	req.Header.Set("accept-language", "zh-CN,zh;q=0.9,zh-TW;q=0.8,en;q=0.7")
+	req.Header.Set("authorization", cache.Token)
+	req.Header.Set("cache-control", "no-cache")
+	req.Header.Set("pragma", "no-cache")
+	req.Header.Set("priority", "u=1, i")
+
+	req.Header.Set("sec-ch-ua", `"Not:A-Brand";v="99", "Google Chrome";v="145", "Chromium";v="145"`)
+	req.Header.Set("sec-ch-ua-mobile", "?0")
+	req.Header.Set("sec-ch-ua-platform", `"Windows"`)
+	req.Header.Set("sec-fetch-dest", "empty")
+	req.Header.Set("sec-fetch-mode", "cors")
+	req.Header.Set("sec-fetch-site", "same-origin")
+	req.Header.Set("user-agent", "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/145.0.0.0 Safari/537.36")
+	resp, err := client.Do(req)
+	if err != nil {
+		log.Fatal(err)
+	}
+	defer resp.Body.Close()
+	bodyText, err := io.ReadAll(resp.Body)
+	if err != nil {
+		log.Fatal(err)
+	}
+	//fmt.Printf("%s\n", bodyText)
+	return string(bodyText), nil
+}
