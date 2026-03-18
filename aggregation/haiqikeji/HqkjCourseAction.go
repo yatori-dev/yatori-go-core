@@ -313,3 +313,29 @@ func HqkjSubmitStudyTimeAction(cache *haiqikeji.HqkjUserCache, node HqkjNode, se
 
 	return submitResult, nil
 }
+
+// 结束学习
+func HqkjEndStudyAction(cache *haiqikeji.HqkjUserCache, sessionId string) (string, error) {
+	endResult, err := cache.EndStudyApi(sessionId, 10, nil)
+	if err != nil {
+		return "", err
+	}
+	//如果遇到挤号则重登
+	if strings.Contains(endResult, "令牌不匹配") {
+		for {
+			err := HqkjLoginAction(cache)
+			if err != nil {
+				return "", err
+			}
+			endResult, err = cache.EndStudyApi(sessionId, 10, nil)
+			if strings.Contains(endResult, "令牌不匹配") {
+				continue
+			}
+		}
+	}
+	code := int(gojsonq.New().JSONString(endResult).Find("code").(float64))
+	if code != 200 {
+		return "", fmt.Errorf("%s", endResult)
+	}
+	return endResult, nil
+}
