@@ -80,14 +80,14 @@ func HqkjCourseListAction(cache *haiqikeji.HqkjUserCache) ([]HqkjCourse, error) 
 		return nil, err
 	}
 	//如果遇到挤号则重登
-	if strings.Contains(coursesResult, "令牌不匹配") {
+	if strings.Contains(coursesResult, "令牌不匹配") || strings.Contains(coursesResult, "认证失败") {
 		for {
 			err := HqkjLoginAction(cache)
 			if err != nil {
 				return nil, err
 			}
 			coursesResult, err = cache.PullCourseListApi(10, nil)
-			if strings.Contains(coursesResult, "令牌不匹配") {
+			if strings.Contains(coursesResult, "令牌不匹配") || strings.Contains(coursesResult, "认证失败") {
 				continue
 			}
 		}
@@ -145,14 +145,14 @@ func HqkjNodeListAction(cache *haiqikeji.HqkjUserCache, course HqkjCourse) ([]Hq
 		return nil, err
 	}
 	//如果遇到挤号则重登
-	if strings.Contains(chapterResult, "令牌不匹配") {
+	if strings.Contains(chapterResult, "令牌不匹配") || strings.Contains(chapterResult, "认证失败") {
 		for {
 			err := HqkjLoginAction(cache)
 			if err != nil {
 				return nodeList, err
 			}
 			chapterResult, err = cache.PullChapterListApi(course.Id, 10, nil)
-			if strings.Contains(chapterResult, "令牌不匹配") {
+			if strings.Contains(chapterResult, "令牌不匹配") || strings.Contains(chapterResult, "认证失败") {
 				continue
 			}
 		}
@@ -165,14 +165,14 @@ func HqkjNodeListAction(cache *haiqikeji.HqkjUserCache, course HqkjCourse) ([]Hq
 					return nil, err
 				}
 				//如果遇到挤号则重登
-				if strings.Contains(chapterNodeResult, "令牌不匹配") {
+				if strings.Contains(chapterNodeResult, "令牌不匹配") || strings.Contains(chapterNodeResult, "认证失败") {
 					for i := 0; i < 3; i++ {
 						err := HqkjLoginAction(cache)
 						if err != nil {
 							return nodeList, err
 						}
 						chapterNodeResult, err = cache.PullChapterNodeListApi(strconv.Itoa(int(cp["id"].(float64))), 5, nil)
-						if strings.Contains(chapterNodeResult, "令牌不匹配") {
+						if strings.Contains(chapterNodeResult, "令牌不匹配") || strings.Contains(chapterNodeResult, "认证失败") {
 							continue
 						}
 					}
@@ -233,14 +233,14 @@ func HqkjGetNodeProgressAction(cache *haiqikeji.HqkjUserCache, node HqkjNode) (i
 	//拉取当前适配的观看进度
 	nowProgressResult, err := cache.PullLastProgressApi(node.Id, 10, nil)
 	//如果遇到挤号则重登
-	if strings.Contains(nowProgressResult, "令牌不匹配") {
+	if strings.Contains(nowProgressResult, "令牌不匹配") || strings.Contains(nowProgressResult, "认证失败") {
 		for {
 			err := HqkjLoginAction(cache)
 			if err != nil {
 				return 0, err
 			}
 			nowProgressResult, err = cache.PullLastProgressApi(node.Id, 10, nil)
-			if strings.Contains(nowProgressResult, "令牌不匹配") {
+			if strings.Contains(nowProgressResult, "令牌不匹配") || strings.Contains(nowProgressResult, "认证失败") {
 				continue
 			}
 		}
@@ -271,14 +271,14 @@ func HqkjStartStudyAction(cache *haiqikeji.HqkjUserCache, node HqkjNode) (string
 		return "", err
 	}
 	//如果遇到挤号则重登
-	if strings.Contains(startResult, "令牌不匹配") {
+	if strings.Contains(startResult, "令牌不匹配") || strings.Contains(startResult, "认证失败") {
 		for {
 			err := HqkjLoginAction(cache)
 			if err != nil {
 				return "", err
 			}
 			startResult, err = cache.StartStudyApi(node.Id, node.CourseId, 10, nil)
-			if strings.Contains(startResult, "令牌不匹配") {
+			if strings.Contains(startResult, "令牌不匹配") || strings.Contains(startResult, "认证失败") {
 				continue
 			}
 		}
@@ -298,14 +298,14 @@ func HqkjSubmitStudyTimeAction(cache *haiqikeji.HqkjUserCache, node HqkjNode, se
 		return "", err
 	}
 	//如果遇到挤号则重登
-	if strings.Contains(submitResult, "令牌不匹配") {
+	if strings.Contains(submitResult, "令牌不匹配") || strings.Contains(submitResult, "认证失败") {
 		for {
 			err := HqkjLoginAction(cache)
 			if err != nil {
 				return "", err
 			}
 			submitResult, err = cache.SubmitStudyTimeApi(sessionId, progress, 10, nil)
-			if strings.Contains(submitResult, "令牌不匹配") {
+			if strings.Contains(submitResult, "令牌不匹配") || strings.Contains(submitResult, "认证失败") {
 				continue
 			}
 		}
@@ -321,14 +321,14 @@ func HqkjEndStudyAction(cache *haiqikeji.HqkjUserCache, sessionId string) (strin
 		return "", err
 	}
 	//如果遇到挤号则重登
-	if strings.Contains(endResult, "令牌不匹配") {
+	if strings.Contains(endResult, "令牌不匹配") || strings.Contains(endResult, "认证失败") {
 		for {
 			err := HqkjLoginAction(cache)
 			if err != nil {
 				return "", err
 			}
 			endResult, err = cache.EndStudyApi(sessionId, 10, nil)
-			if strings.Contains(endResult, "令牌不匹配") {
+			if strings.Contains(endResult, "令牌不匹配") || strings.Contains(endResult, "认证失败") {
 				continue
 			}
 		}
