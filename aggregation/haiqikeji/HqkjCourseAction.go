@@ -187,6 +187,36 @@ func HqkjNodeListAction(cache *haiqikeji.HqkjUserCache, course HqkjCourse) ([]Hq
 								CourseId:      strconv.Itoa(int(nd["courseId"].(float64))),
 								VideoDuration: int(nd["videoDuration"].(float64)),
 							}
+							if tabVideo, ok := nd["tabVideo"].(float64); ok {
+								zxcpksNode.TabVideo = int(tabVideo)
+							}
+							if tabFile, ok := nd["tabFile"].(float64); ok {
+								zxcpksNode.TabFile = int(tabFile)
+							}
+							if tabVote, ok := nd["tabVote"].(float64); ok {
+								zxcpksNode.TabVote = int(tabVote)
+							}
+							if tabWork, ok := nd["tabWork"].(float64); ok {
+								zxcpksNode.TabWork = int(tabWork)
+							}
+							if tabExam, ok := nd["tabExam"].(float64); ok {
+								zxcpksNode.TabExam = int(tabExam)
+							}
+							if sort, ok := nd["sort"].(float64); ok {
+								zxcpksNode.Sort = int(sort)
+							}
+							if videoMode, ok := nd["videoMode"].(float64); ok {
+								zxcpksNode.VideoMode = int(videoMode)
+							}
+							if schoolId, ok := nd["schoolId"].(float64); ok {
+								zxcpksNode.SchoolId = int(schoolId)
+							}
+							if lock, ok := nd["lock"].(float64); ok {
+								zxcpksNode.Lock = int(lock)
+							}
+							if unlock, ok := nd["unlock"].(float64); ok {
+								zxcpksNode.UnlockTime = int(unlock)
+							}
 							nodeList = append(nodeList, zxcpksNode)
 						}
 					}
