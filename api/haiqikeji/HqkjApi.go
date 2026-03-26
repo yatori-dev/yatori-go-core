@@ -50,7 +50,7 @@ func (cache *HqkjUserCache) LoginApi(retry int, lastErr error) (string, error) {
 		Timeout:   30 * time.Second,
 		Transport: tr,
 	}
-	req, err := http.NewRequest("GET", "https://swxy.haiqikeji.com/api/user/login?number="+cache.Account+"&password="+cache.Password+"&schoolId="+cache.SchoolId, nil)
+	req, err := http.NewRequest("GET", cache.PreUrl+"/api/user/login?number="+cache.Account+"&password="+cache.Password+"&schoolId="+cache.SchoolId, nil)
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -59,7 +59,6 @@ func (cache *HqkjUserCache) LoginApi(retry int, lastErr error) (string, error) {
 	req.Header.Set("cache-control", "no-cache")
 	req.Header.Set("pragma", "no-cache")
 	req.Header.Set("priority", "u=1, i")
-	req.Header.Set("referer", "https://swxy.haiqikeji.com/student/login")
 	req.Header.Set("sec-ch-ua", `"Not:A-Brand";v="99", "Google Chrome";v="145", "Chromium";v="145"`)
 	req.Header.Set("sec-ch-ua-mobile", "?1")
 	req.Header.Set("sec-ch-ua-platform", `"Android"`)
@@ -105,7 +104,7 @@ func (cache *HqkjUserCache) PullSchoolInfoApi(urlStr string, retry int, lastErr 
 		Transport: tr,
 	}
 	//req, err := http.NewRequest("GET", "https://swxy.haiqikeji.com/api/course/selectdomain?domain=swxy.haiqikeji.com", nil)
-	req, err := http.NewRequest("GET", "https://swxy.haiqikeji.com/api/course/selectdomain?domain="+urlStr, nil)
+	req, err := http.NewRequest("GET", cache.PreUrl+"/api/course/selectdomain?domain="+urlStr, nil)
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -114,7 +113,7 @@ func (cache *HqkjUserCache) PullSchoolInfoApi(urlStr string, retry int, lastErr 
 	req.Header.Set("cache-control", "no-cache")
 	req.Header.Set("pragma", "no-cache")
 	req.Header.Set("priority", "u=1, i")
-	req.Header.Set("referer", "https://swxy.haiqikeji.com/")
+	req.Header.Set("referer", cache.PreUrl)
 	req.Header.Set("sec-ch-ua", `"Not:A-Brand";v="99", "Google Chrome";v="145", "Chromium";v="145"`)
 	req.Header.Set("sec-ch-ua-mobile", "?0")
 	req.Header.Set("sec-ch-ua-platform", `"Windows"`)
@@ -159,7 +158,7 @@ func (cache *HqkjUserCache) PullUserInfoApi(retry int, lastErr error) (string, e
 		Timeout:   30 * time.Second,
 		Transport: tr,
 	}
-	req, err := http.NewRequest("GET", "https://swxy.haiqikeji.com/api/user/yee_student_info", nil)
+	req, err := http.NewRequest("GET", cache.PreUrl+"/api/user/yee_student_info", nil)
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -169,7 +168,6 @@ func (cache *HqkjUserCache) PullUserInfoApi(retry int, lastErr error) (string, e
 	req.Header.Set("cache-control", "no-cache")
 	req.Header.Set("pragma", "no-cache")
 	req.Header.Set("priority", "u=1, i")
-	req.Header.Set("referer", "https://swxy.haiqikeji.com/student/login?reason=logout&_t=1773597512951")
 	req.Header.Set("sec-ch-ua", `"Not:A-Brand";v="99", "Google Chrome";v="145", "Chromium";v="145"`)
 	req.Header.Set("sec-ch-ua-mobile", "?0")
 	req.Header.Set("sec-ch-ua-platform", `"Windows"`)
@@ -213,7 +211,7 @@ func (cache *HqkjUserCache) PullCourseListApi(retry int, lastErr error) (string,
 		Timeout:   30 * time.Second,
 		Transport: tr,
 	}
-	req, err := http.NewRequest("GET", "https://swxy.haiqikeji.com/api/user/yee_my_course_list?schoolId="+cache.SchoolId+"&studentId="+cache.UserId+"&type=0&pageNum=1&pageSize=10000&_t=1773594164210", nil)
+	req, err := http.NewRequest("GET", cache.PreUrl+"/api/user/yee_my_course_list?schoolId="+cache.SchoolId+"&studentId="+cache.UserId+"&type=0&pageNum=1&pageSize=10000&_t=1773594164210", nil)
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -285,7 +283,7 @@ func (cache *HqkjUserCache) PullChapterListApi(courseId string, retry int, lastE
 		Timeout:   30 * time.Second,
 		Transport: tr,
 	}
-	req, err := http.NewRequest("POST", "https://swxy.haiqikeji.com/api/user/yee_chapter_select", form)
+	req, err := http.NewRequest("POST", cache.PreUrl+"/api/user/yee_chapter_select", form)
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -293,7 +291,7 @@ func (cache *HqkjUserCache) PullChapterListApi(courseId string, retry int, lastE
 	req.Header.Set("accept-language", "zh-CN,zh;q=0.9,zh-TW;q=0.8,en;q=0.7")
 	req.Header.Set("authorization", cache.Token)
 	req.Header.Set("cache-control", "no-cache")
-	req.Header.Set("origin", "https://swxy.haiqikeji.com")
+	req.Header.Set("origin", cache.PreUrl)
 	req.Header.Set("pragma", "no-cache")
 	req.Header.Set("priority", "u=1, i")
 	req.Header.Set("sec-ch-ua", `"Not:A-Brand";v="99", "Google Chrome";v="145", "Chromium";v="145"`)
@@ -342,7 +340,7 @@ func (cache *HqkjUserCache) PullChapterNodeListApi(chapterId string, retry int, 
 		Transport: tr,
 	}
 	//req, err := http.NewRequest("GET", "https://swxy.haiqikeji.com/api/user/yee_node_select?schoolId=15&chapterId=1101498", nil)
-	req, err := http.NewRequest("GET", "https://swxy.haiqikeji.com/api/user/yee_node_select?schoolId="+cache.SchoolId+"&chapterId="+chapterId, nil)
+	req, err := http.NewRequest("GET", cache.PreUrl+"/api/user/yee_node_select?schoolId="+cache.SchoolId+"&chapterId="+chapterId, nil)
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -395,7 +393,7 @@ func (cache *HqkjUserCache) PullLastProgressApi(nodeId string, retry int, lastEr
 		Timeout:   30 * time.Second,
 		Transport: tr,
 	}
-	req, err := http.NewRequest("GET", "https://swxy.haiqikeji.com/api/user/last_progress?nodeId="+nodeId+"&userId="+cache.UserId+"&schoolId="+cache.SchoolId, nil)
+	req, err := http.NewRequest("GET", cache.PreUrl+"/api/user/last_progress?nodeId="+nodeId+"&userId="+cache.UserId+"&schoolId="+cache.SchoolId, nil)
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -450,7 +448,7 @@ func (cache *HqkjUserCache) StartStudyApi(nodeId, courseId string, retry int, la
 	}
 	//var data = strings.NewReader(`{"schoolId":`+cache.SchoolId+`,"userId":1257795,"nodeId":"1473241","courseId":"1012279","terminal":"web"}`)
 	var data = strings.NewReader(`{"schoolId":` + cache.SchoolId + `,"userId":` + cache.UserId + `,"nodeId":"` + nodeId + `","courseId":"` + courseId + `","terminal":"web"}`)
-	req, err := http.NewRequest("POST", "https://swxy.haiqikeji.com/api/user/study_session_start", data)
+	req, err := http.NewRequest("POST", cache.PreUrl+"/api/user/study_session_start", data)
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -459,7 +457,7 @@ func (cache *HqkjUserCache) StartStudyApi(nodeId, courseId string, retry int, la
 	req.Header.Set("authorization", cache.Token)
 	req.Header.Set("cache-control", "no-cache")
 	req.Header.Set("content-type", "application/json")
-	req.Header.Set("origin", "https://swxy.haiqikeji.com")
+	req.Header.Set("origin", cache.PreUrl)
 	req.Header.Set("pragma", "no-cache")
 	req.Header.Set("priority", "u=1, i")
 	req.Header.Set("sec-ch-ua", `"Not:A-Brand";v="99", "Google Chrome";v="145", "Chromium";v="145"`)
@@ -508,7 +506,7 @@ func (cache *HqkjUserCache) SubmitStudyTimeApi(sessionId string, progress int, r
 	}
 	//var data = strings.NewReader(`{"sessionId":"20410346-558e-4b8c-8166-48fa58d76abf","progress":"3"}`)
 	var data = strings.NewReader(`{"sessionId":"` + sessionId + `","progress":"` + fmt.Sprintf("%d", progress) + `"}`)
-	req, err := http.NewRequest("POST", "https://swxy.haiqikeji.com/api/user/study_session_heartbeat", data)
+	req, err := http.NewRequest("POST", cache.PreUrl+"/api/user/study_session_heartbeat", data)
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -517,7 +515,7 @@ func (cache *HqkjUserCache) SubmitStudyTimeApi(sessionId string, progress int, r
 	req.Header.Set("authorization", cache.Token)
 	req.Header.Set("cache-control", "no-cache")
 	req.Header.Set("content-type", "application/json")
-	req.Header.Set("origin", "https://swxy.haiqikeji.com")
+	req.Header.Set("origin", cache.PreUrl)
 	req.Header.Set("pragma", "no-cache")
 	req.Header.Set("priority", "u=1, i")
 	req.Header.Set("sec-ch-ua", `"Not:A-Brand";v="99", "Google Chrome";v="145", "Chromium";v="145"`)
@@ -562,7 +560,7 @@ func (cache *HqkjUserCache) PullWorkInfoApi(courseId, nodeId string, retry int, 
 		Timeout:   30 * time.Second,
 		Transport: tr,
 	}
-	req, err := http.NewRequest("GET", "https://swxy.haiqikeji.com/api/user/yee_course_student_work_list?schoolId="+cache.SchoolId+"&studentId="+cache.UserId+"&courseId="+courseId+"&nodeId="+nodeId, nil)
+	req, err := http.NewRequest("GET", cache.PreUrl+"/api/user/yee_course_student_work_list?schoolId="+cache.SchoolId+"&studentId="+cache.UserId+"&courseId="+courseId+"&nodeId="+nodeId, nil)
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -616,7 +614,7 @@ func (cache HqkjUserCache) EndStudyApi(sessionId string, retry int, lastErr erro
 		Transport: tr,
 	}
 	var data = strings.NewReader(`{"sessionId":"` + sessionId + `"}`)
-	req, err := http.NewRequest("POST", "https://bxait.haiqikeji.com/api/user/study_session_end", data)
+	req, err := http.NewRequest("POST", cache.PreUrl+"/api/user/study_session_end", data)
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -625,7 +623,7 @@ func (cache HqkjUserCache) EndStudyApi(sessionId string, retry int, lastErr erro
 	req.Header.Set("authorization", cache.Token)
 	req.Header.Set("cache-control", "no-cache")
 	req.Header.Set("content-type", "application/json")
-	req.Header.Set("origin", "https://bxait.haiqikeji.com")
+	req.Header.Set("origin", cache.PreUrl)
 	req.Header.Set("pragma", "no-cache")
 	req.Header.Set("priority", "u=1, i")
 	req.Header.Set("sec-ch-ua", `"Not:A-Brand";v="99", "Google Chrome";v="145", "Chromium";v="145"`)

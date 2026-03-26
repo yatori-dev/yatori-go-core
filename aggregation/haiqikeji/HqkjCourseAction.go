@@ -185,7 +185,7 @@ func HqkjNodeListAction(cache *haiqikeji.HqkjUserCache, course HqkjCourse) ([]Hq
 								Name:          nd["name"].(string),
 								ChapterId:     strconv.Itoa(int(nd["chapterId"].(float64))),
 								CourseId:      strconv.Itoa(int(nd["courseId"].(float64))),
-								VideoDuration: int(nd["videoDuration"].(float64)),
+								VideoDuration: 0,
 							}
 							if tabVideo, ok := nd["tabVideo"].(float64); ok {
 								zxcpksNode.TabVideo = int(tabVideo)
@@ -216,6 +216,9 @@ func HqkjNodeListAction(cache *haiqikeji.HqkjUserCache, course HqkjCourse) ([]Hq
 							}
 							if unlock, ok := nd["unlock"].(float64); ok {
 								zxcpksNode.UnlockTime = int(unlock)
+							}
+							if videoDuration, ok := nd["videoDuration"].(float64); ok {
+								zxcpksNode.VideoDuration = int(videoDuration)
 							}
 							nodeList = append(nodeList, zxcpksNode)
 						}

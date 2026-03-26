@@ -13,7 +13,12 @@ import (
 func HqkjLoginAction(cache *haiqikeji.HqkjUserCache) error {
 	hostname, _ := extractDomain(cache.PreUrl)
 	schoolInfoStr := cache.PullSchoolInfoApi(hostname, 5, nil)
-	cache.SchoolId = strconv.Itoa(int(gojsonq.New().JSONString(schoolInfoStr).Find("data.id").(float64)))
+
+	if schoolId, ok := gojsonq.New().JSONString(schoolInfoStr).Find("data.id").(float64); ok {
+		cache.SchoolId = strconv.Itoa(int(schoolId))
+	} else {
+		return fmt.Errorf("未找到url对应学校id，请检查url是否填写正确(注：有些学校可能会登录后才会显示正真的域名)：%s", schoolInfoStr)
+	}
 	loginResult, err := cache.LoginApi(5, nil)
 	if err != nil {
 		return err
