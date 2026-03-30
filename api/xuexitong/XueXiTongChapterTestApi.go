@@ -187,6 +187,7 @@ func (cache *XueXiTUserCache) WorkNewSubmitAnswer(courseId string, classId strin
 		}
 		listSel := []SelData{}
 		for i, answer := range ch.Answers {
+
 			answerSel := qutils.SimilarityArraySelect(strings.Split(answer, "->")[1], ch.Selects)
 			listSel = append(listSel, SelData{
 				Name:    i + 1,
