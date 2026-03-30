@@ -2,15 +2,15 @@ package yinghua
 
 import (
 	"errors"
-	"os"
-	"strings"
-
+	"fmt"
 	ddddocr "github.com/Changbaiqi/ddddocr-go/utils"
 	"github.com/thedevsaddam/gojsonq"
 	ort "github.com/yalue/onnxruntime_go"
 	yinghuaApi "github.com/yatori-dev/yatori-go-core/api/yinghua"
 	"github.com/yatori-dev/yatori-go-core/utils"
 	"github.com/yatori-dev/yatori-go-core/utils/log"
+	"os"
+	"strings"
 )
 
 // YingHuaLoginAction 登录API聚合整理
@@ -31,6 +31,8 @@ func YingHuaLoginAction(cache *yinghuaApi.YingHuaUserCache) error {
 		log.Print(log.DEBUG, "["+cache.Account+"] "+"LoginAction---"+jsonStr)
 		if gojsonq.New().JSONString(jsonStr).Find("msg") == "验证码有误！" {
 			continue
+		} else if strings.Contains(jsonStr, ">选择学校<") {
+			return fmt.Errorf("请填写正确的url链接，英华的url可能首页和登录后的是不一样的，以登录后的url为准。")
 		} else if gojsonq.New().JSONString(jsonStr).Find("redirect") == nil {
 			if gojsonq.New().JSONString(jsonStr).Find("msg") == nil { // 如果登录不成功并且msg也返回空那么直接重新再登录一遍
 				continue
