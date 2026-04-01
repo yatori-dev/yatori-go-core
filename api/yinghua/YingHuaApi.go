@@ -1165,7 +1165,7 @@ func StartWork(userCache YingHuaUserCache, courseId, nodeId, workId string, retr
 	//如果开启了IP代理，那么就直接添加代理
 	if userCache.IpProxySW {
 		tr.Proxy = func(req *http.Request) (*url.URL, error) {
-			return url.Parse(userCache.ProxyIP) // 设置代理
+			return url.Parse("http://" + userCache.ProxyIP) // 设置代理
 		}
 	}
 	client := &http.Client{
@@ -1387,7 +1387,7 @@ func WorkedFinallyDetailApi(userCache YingHuaUserCache, courseId, nodeId, workId
 	//如果开启了IP代理，那么就直接添加代理
 	if userCache.IpProxySW {
 		tr.Proxy = func(req *http.Request) (*url.URL, error) {
-			return url.Parse(userCache.ProxyIP) // 设置代理
+			return url.Parse("http://" + userCache.ProxyIP) // 设置代理
 		}
 	}
 	client := &http.Client{
@@ -1443,7 +1443,7 @@ func ExamFinallyDetailApi(userCache YingHuaUserCache, courseId, nodeId, workId s
 	//如果开启了IP代理，那么就直接添加代理
 	if userCache.IpProxySW {
 		tr.Proxy = func(req *http.Request) (*url.URL, error) {
-			return url.Parse(userCache.ProxyIP) // 设置代理
+			return url.Parse("http://" + userCache.ProxyIP) // 设置代理
 		}
 	}
 	client := &http.Client{
