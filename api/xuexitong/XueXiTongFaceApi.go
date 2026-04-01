@@ -40,7 +40,7 @@ func (cache *XueXiTUserCache) GetFaceUpLoadToken() (string, error) {
 	//如果开启了IP代理，那么就直接添加代理
 	if cache.IpProxySW {
 		tr.Proxy = func(req *http.Request) (*url.URL, error) {
-			return url.Parse(cache.ProxyIP) // 设置代理
+			return url.Parse("http://" + cache.ProxyIP) // 设置代理
 		}
 	}
 	client := &http.Client{
@@ -104,7 +104,7 @@ func (cache *XueXiTUserCache) GetHistoryFaceImg(puid string) (string, image.Imag
 	//如果开启了IP代理，那么就直接添加代理
 	if cache.IpProxySW {
 		tr.Proxy = func(req *http.Request) (*url.URL, error) {
-			return url.Parse(cache.ProxyIP) // 设置代理
+			return url.Parse("http://" + cache.ProxyIP) // 设置代理
 		}
 	}
 	client := &http.Client{
@@ -220,7 +220,7 @@ func (cache *XueXiTUserCache) UploadFaceImageApi(token string, image image.Image
 	//如果开启了IP代理，那么就直接添加代理
 	if cache.IpProxySW {
 		tr.Proxy = func(req *http.Request) (*url.URL, error) {
-			return url.Parse(cache.ProxyIP) // 设置代理
+			return url.Parse("http://" + cache.ProxyIP) // 设置代理
 		}
 	}
 	client := &http.Client{
@@ -298,7 +298,7 @@ func (cache *XueXiTUserCache) GetFaceQrCodeApi1(courseId, clazzid, chapterId, cp
 	//如果开启了IP代理，那么就直接添加代理
 	if cache.IpProxySW {
 		tr.Proxy = func(req *http.Request) (*url.URL, error) {
-			return url.Parse(cache.ProxyIP) // 设置代理
+			return url.Parse("http://" + cache.ProxyIP) // 设置代理
 		}
 	}
 	client := &http.Client{
@@ -363,7 +363,7 @@ func (cache *XueXiTUserCache) GetFaceQrCodeApi2(courseId, clazzId, cpi string) (
 	//如果开启了IP代理，那么就直接添加代理
 	if cache.IpProxySW {
 		tr.Proxy = func(req *http.Request) (*url.URL, error) {
-			return url.Parse(cache.ProxyIP) // 设置代理
+			return url.Parse("http://" + cache.ProxyIP) // 设置代理
 		}
 	}
 	client := &http.Client{
@@ -434,7 +434,7 @@ func (cache *XueXiTUserCache) GetFaceQrCodeApi3(courseId, clazzid, chapterId, cp
 	//如果开启了IP代理，那么就直接添加代理
 	if cache.IpProxySW {
 		tr.Proxy = func(req *http.Request) (*url.URL, error) {
-			return url.Parse(cache.ProxyIP) // 设置代理
+			return url.Parse("http://" + cache.ProxyIP) // 设置代理
 		}
 	}
 	client := &http.Client{
@@ -505,7 +505,7 @@ func (cache *XueXiTUserCache) GetFaceQrCodeApi3(courseId, clazzid, chapterId, cp
 	//如果开启了IP代理，那么就直接添加代理
 	if cache.IpProxySW {
 		tr1.Proxy = func(req *http.Request) (*url.URL, error) {
-			return url.Parse(cache.ProxyIP) // 设置代理
+			return url.Parse("http://" + cache.ProxyIP) // 设置代理
 		}
 	}
 	client1 := &http.Client{
@@ -573,7 +573,7 @@ func (cache *XueXiTUserCache) GetCourseFaceQrPlan1Api(courseId, classId, uuid, o
 	//如果开启了IP代理，那么就直接添加代理
 	if cache.IpProxySW {
 		tr.Proxy = func(req *http.Request) (*url.URL, error) {
-			return url.Parse(cache.ProxyIP) // 设置代理
+			return url.Parse("http://" + cache.ProxyIP) // 设置代理
 		}
 	}
 	client := &http.Client{
@@ -626,7 +626,7 @@ func (cache *XueXiTUserCache) PassFaceQrPlanPhoneNewApi(classId, courseId, knowl
 	//如果开启了IP代理，那么就直接添加代理
 	if cache.IpProxySW {
 		tr.Proxy = func(req *http.Request) (*url.URL, error) {
-			return url.Parse(cache.ProxyIP) // 设置代理
+			return url.Parse("http://" + cache.ProxyIP) // 设置代理
 		}
 	}
 	client := &http.Client{
@@ -690,7 +690,7 @@ func (cache *XueXiTUserCache) PassFaceQrPlanPhoneNew2Api(classId, courseId, know
 	//如果开启了IP代理，那么就直接添加代理
 	if cache.IpProxySW {
 		tr.Proxy = func(req *http.Request) (*url.URL, error) {
-			return url.Parse(cache.ProxyIP) // 设置代理
+			return url.Parse("http://" + cache.ProxyIP) // 设置代理
 		}
 	}
 	client := &http.Client{
@@ -749,7 +749,7 @@ func (cache *XueXiTUserCache) PassFaceQrPlanPhoneOldApi(classId, courseId, knowl
 	//如果开启了IP代理，那么就直接添加代理
 	if cache.IpProxySW {
 		tr.Proxy = func(req *http.Request) (*url.URL, error) {
-			return url.Parse(cache.ProxyIP) // 设置代理
+			return url.Parse("http://" + cache.ProxyIP) // 设置代理
 		}
 	}
 	client := &http.Client{
@@ -827,7 +827,7 @@ func (cache *XueXiTUserCache) GetCourseFaceQrPlan5Api(classId, courseId, knowled
 	//如果开启了IP代理，那么就直接添加代理
 	if cache.IpProxySW {
 		tr.Proxy = func(req *http.Request) (*url.URL, error) {
-			return url.Parse(cache.ProxyIP) // 设置代理
+			return url.Parse("http://" + cache.ProxyIP) // 设置代理
 		}
 	}
 	client := &http.Client{
@@ -882,7 +882,7 @@ func (cache *XueXiTUserCache) GetCourseFaceQrPlan3Api(clazzId, courseId, uuid, q
 	//如果开启了IP代理，那么就直接添加代理
 	if cache.IpProxySW {
 		tr.Proxy = func(req *http.Request) (*url.URL, error) {
-			return url.Parse(cache.ProxyIP) // 设置代理
+			return url.Parse("http://" + cache.ProxyIP) // 设置代理
 		}
 	}
 	client := &http.Client{
@@ -932,7 +932,7 @@ func (cache *XueXiTUserCache) GetCourseFaceStart(clazzId, courseId, knowledgeId,
 	//如果开启了IP代理，那么就直接添加代理
 	if cache.IpProxySW {
 		tr.Proxy = func(req *http.Request) (*url.URL, error) {
-			return url.Parse(cache.ProxyIP) // 设置代理
+			return url.Parse("http://" + cache.ProxyIP) // 设置代理
 		}
 	}
 	client := &http.Client{
@@ -982,7 +982,7 @@ func (cache *XueXiTUserCache) ContinueStudy(clazzId, courseId, cpi, objectId, er
 	//如果开启了IP代理，那么就直接添加代理
 	if cache.IpProxySW {
 		tr.Proxy = func(req *http.Request) (*url.URL, error) {
-			return url.Parse(cache.ProxyIP) // 设置代理
+			return url.Parse("http://" + cache.ProxyIP) // 设置代理
 		}
 	}
 	client := &http.Client{
@@ -1034,7 +1034,7 @@ func (cache *XueXiTUserCache) GetCourseFaceQrPlan4Api(clazzId, courseId, knowled
 	//如果开启了IP代理，那么就直接添加代理
 	if cache.IpProxySW {
 		tr.Proxy = func(req *http.Request) (*url.URL, error) {
-			return url.Parse(cache.ProxyIP) // 设置代理
+			return url.Parse("http://" + cache.ProxyIP) // 设置代理
 		}
 	}
 	client := &http.Client{
@@ -1077,7 +1077,7 @@ func (cache *XueXiTUserCache) GetCourseFaceQrStateApi(uuid, enc, clazzid, course
 	//如果开启了IP代理，那么就直接添加代理
 	if cache.IpProxySW {
 		tr.Proxy = func(req *http.Request) (*url.URL, error) {
-			return url.Parse(cache.ProxyIP) // 设置代理
+			return url.Parse("http://" + cache.ProxyIP) // 设置代理
 		}
 	}
 	client := &http.Client{

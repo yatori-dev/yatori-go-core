@@ -97,7 +97,7 @@ func (cache *XueXiTUserCache) xxtAiInformApi(clazzId, courseId, cpi string, retr
 	//如果开启了IP代理，那么就直接添加代理
 	if cache.IpProxySW {
 		tr.Proxy = func(req *http.Request) (*url.URL, error) {
-			return url.Parse(cache.ProxyIP) // 设置代理
+			return url.Parse("http://" + cache.ProxyIP) // 设置代理
 		}
 	}
 	client := &http.Client{
@@ -179,7 +179,7 @@ func (cache *XueXiTUserCache) xxtAiAnswerApi(cozeEnc, userId, courseId, classId,
 	//如果开启了IP代理，那么就直接添加代理
 	if cache.IpProxySW {
 		tr.Proxy = func(req *http.Request) (*url.URL, error) {
-			return url.Parse(cache.ProxyIP) // 设置代理
+			return url.Parse("http://" + cache.ProxyIP) // 设置代理
 		}
 	}
 	client := &http.Client{

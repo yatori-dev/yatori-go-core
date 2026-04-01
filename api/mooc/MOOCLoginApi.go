@@ -43,7 +43,7 @@ func (cache *MOOCUserCache) InitCookiesApi() {
 	//如果开启了IP代理，那么就直接添加代理
 	if cache.IpProxySW {
 		tr.Proxy = func(req *http.Request) (*url.URL, error) {
-			return url.Parse(cache.ProxyIP) // 设置代理
+			return url.Parse("http://" + cache.ProxyIP) // 设置代理
 		}
 	}
 	client := &http.Client{
@@ -123,7 +123,7 @@ func (cache *MOOCUserCache) PowGetPApi() {
 	//如果开启了IP代理，那么就直接添加代理
 	if cache.IpProxySW {
 		tr.Proxy = func(req *http.Request) (*url.URL, error) {
-			return url.Parse(cache.ProxyIP) // 设置代理
+			return url.Parse("http://" + cache.ProxyIP) // 设置代理
 		}
 	}
 	client := &http.Client{
@@ -184,7 +184,7 @@ func (cache *MOOCUserCache) GtApi() {
 	//如果开启了IP代理，那么就直接添加代理
 	if cache.IpProxySW {
 		tr.Proxy = func(req *http.Request) (*url.URL, error) {
-			return url.Parse(cache.ProxyIP) // 设置代理
+			return url.Parse("http://" + cache.ProxyIP) // 设置代理
 		}
 	}
 	client := &http.Client{
@@ -255,7 +255,7 @@ func (cache *MOOCUserCache) LoginApi() {
 	//如果开启了IP代理，那么就直接添加代理
 	if cache.IpProxySW {
 		tr.Proxy = func(req *http.Request) (*url.URL, error) {
-			return url.Parse(cache.ProxyIP) // 设置代理
+			return url.Parse("http://" + cache.ProxyIP) // 设置代理
 		}
 	}
 	client := &http.Client{

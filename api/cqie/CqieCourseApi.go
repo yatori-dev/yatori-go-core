@@ -30,7 +30,7 @@ func (cache *CqieUserCache) UserDetailsApi(retry int, lastErr error) (string, er
 	//如果开启了IP代理，那么就直接添加代理
 	if cache.IpProxySW {
 		tr.Proxy = func(req *http.Request) (*url.URL, error) {
-			return url.Parse(cache.ProxyIP) // 设置代理
+			return url.Parse("http://" + cache.ProxyIP) // 设置代理
 		}
 	}
 	client := &http.Client{
@@ -94,7 +94,7 @@ func (cache *CqieUserCache) PullCourseListApi(retry int, lastErr error) (string,
 	//如果开启了IP代理，那么就直接添加代理
 	if cache.IpProxySW {
 		tr.Proxy = func(req *http.Request) (*url.URL, error) {
-			return url.Parse(cache.ProxyIP) // 设置代理
+			return url.Parse("http://" + cache.ProxyIP) // 设置代理
 		}
 	}
 	client := &http.Client{
@@ -158,7 +158,7 @@ func (cache *CqieUserCache) PullCourseListApiNew(retry int, lastErr error) (stri
 	//如果开启了IP代理，那么就直接添加代理
 	if cache.IpProxySW {
 		tr.Proxy = func(req *http.Request) (*url.URL, error) {
-			return url.Parse(cache.ProxyIP) // 设置代理
+			return url.Parse("http://" + cache.ProxyIP) // 设置代理
 		}
 	}
 	client := &http.Client{
@@ -209,7 +209,7 @@ func (cache *CqieUserCache) GetVideoStudyIdApi(studentCourseId, videoId, version
 	//如果开启了IP代理，那么就直接添加代理
 	if cache.IpProxySW {
 		tr.Proxy = func(req *http.Request) (*url.URL, error) {
-			return url.Parse(cache.ProxyIP) // 设置代理
+			return url.Parse("http://" + cache.ProxyIP) // 设置代理
 		}
 	}
 	client := &http.Client{
@@ -288,7 +288,7 @@ func (cache *CqieUserCache) SubmitStudyTimeApi(
 	//如果开启了IP代理，那么就直接添加代理
 	if cache.IpProxySW {
 		tr.Proxy = func(req *http.Request) (*url.URL, error) {
-			return url.Parse(cache.ProxyIP) // 设置代理
+			return url.Parse("http://" + cache.ProxyIP) // 设置代理
 		}
 	}
 	client := &http.Client{
@@ -350,7 +350,7 @@ func (cache *CqieUserCache) SaveStudyTimeApi(courseId, studentCourseId, unitId, 
 	//如果开启了IP代理，那么就直接添加代理
 	if cache.IpProxySW {
 		tr.Proxy = func(req *http.Request) (*url.URL, error) {
-			return url.Parse(cache.ProxyIP) // 设置代理
+			return url.Parse("http://" + cache.ProxyIP) // 设置代理
 		}
 	}
 	client := &http.Client{
@@ -416,7 +416,7 @@ func (cache *CqieUserCache) SaveSegmentStudyTimeApi(courseId, studentCourseId, u
 	//如果开启了IP代理，那么就直接添加代理
 	if cache.IpProxySW {
 		tr.Proxy = func(req *http.Request) (*url.URL, error) {
-			return url.Parse(cache.ProxyIP) // 设置代理
+			return url.Parse("http://" + cache.ProxyIP) // 设置代理
 		}
 	}
 	client := &http.Client{
@@ -464,7 +464,7 @@ func (cache *CqieUserCache) PullCourseDetailApi(courseId, studentCourseId, versi
 	//如果开启了IP代理，那么就直接添加代理
 	if cache.IpProxySW {
 		tr.Proxy = func(req *http.Request) (*url.URL, error) {
-			return url.Parse(cache.ProxyIP) // 设置代理
+			return url.Parse("http://" + cache.ProxyIP) // 设置代理
 		}
 	}
 	client := &http.Client{
@@ -511,7 +511,7 @@ func (cache *CqieUserCache) PullProgressDetailApi(courseId, studentCourseId, ver
 	//如果开启了IP代理，那么就直接添加代理
 	if cache.IpProxySW {
 		tr.Proxy = func(req *http.Request) (*url.URL, error) {
-			return url.Parse(cache.ProxyIP) // 设置代理
+			return url.Parse("http://" + cache.ProxyIP) // 设置代理
 		}
 	}
 	client := &http.Client{
@@ -562,7 +562,7 @@ func (cache *CqieUserCache) PullVideoWorkPaperApi(knowledgeNodeId, studentCourse
 	//如果开启了IP代理，那么就直接添加代理
 	if cache.IpProxySW {
 		tr.Proxy = func(req *http.Request) (*url.URL, error) {
-			return url.Parse(cache.ProxyIP) // 设置代理
+			return url.Parse("http://" + cache.ProxyIP) // 设置代理
 		}
 	}
 	client := &http.Client{
@@ -626,7 +626,7 @@ func (cache *CqieUserCache) SubmitWorkAnswerApi(answerJson string) (string, erro
 	//如果开启了IP代理，那么就直接添加代理
 	if cache.IpProxySW {
 		tr.Proxy = func(req *http.Request) (*url.URL, error) {
-			return url.Parse(cache.ProxyIP) // 设置代理
+			return url.Parse("http://" + cache.ProxyIP) // 设置代理
 		}
 	}
 	client := &http.Client{

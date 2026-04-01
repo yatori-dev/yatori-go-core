@@ -38,7 +38,7 @@ func (cache *XueXiTUserCache) XueXiTVerificationCodeApi(retry int, lastErr error
 	//如果开启了IP代理，那么就直接添加代理
 	if cache.IpProxySW {
 		tr.Proxy = func(req *http.Request) (*url.URL, error) {
-			return url.Parse(cache.ProxyIP) // 设置代理
+			return url.Parse("http://" + cache.ProxyIP) // 设置代理
 		}
 	}
 	client := &http.Client{
@@ -93,7 +93,7 @@ func (cache *XueXiTUserCache) XueXiTChapterVerificationCodeApi(retry int, lastEr
 	// 代理
 	if cache.IpProxySW {
 		tr.Proxy = func(req *http.Request) (*url.URL, error) {
-			return url.Parse(cache.ProxyIP)
+			return url.Parse("http://" + cache.ProxyIP)
 		}
 	}
 
@@ -156,7 +156,7 @@ func (cache *XueXiTUserCache) XueXiTPassVerificationCode(code string, retry int,
 	//如果开启了IP代理，那么就直接添加代理
 	if cache.IpProxySW {
 		tr.Proxy = func(req *http.Request) (*url.URL, error) {
-			return url.Parse(cache.ProxyIP) // 设置代理
+			return url.Parse("http://" + cache.ProxyIP) // 设置代理
 		}
 	}
 	client := &http.Client{
@@ -229,7 +229,7 @@ func (cache *XueXiTUserCache) XueXiTPassCahpterVerificationCode(code string, ret
 	//如果开启了IP代理，那么就直接添加代理
 	if cache.IpProxySW {
 		tr.Proxy = func(req *http.Request) (*url.URL, error) {
-			return url.Parse(cache.ProxyIP) // 设置代理
+			return url.Parse("http://" + cache.ProxyIP) // 设置代理
 		}
 	}
 	client := &http.Client{
@@ -290,7 +290,7 @@ func (cache *XueXiTUserCache) XueXiTSliderVerificationCodeApi(captchaId string, 
 	//如果开启了IP代理，那么就直接添加代理
 	if cache.IpProxySW {
 		tr.Proxy = func(req *http.Request) (*url.URL, error) {
-			return url.Parse(cache.ProxyIP) // 设置代理
+			return url.Parse("http://" + cache.ProxyIP) // 设置代理
 		}
 	}
 	client := &http.Client{
@@ -355,7 +355,7 @@ func (cache *XueXiTUserCache) XueXiTSliderVerificationImgApi(captchaId, serverTi
 	//如果开启了IP代理，那么就直接添加代理
 	if cache.IpProxySW {
 		tr.Proxy = func(req *http.Request) (*url.URL, error) {
-			return url.Parse(cache.ProxyIP) // 设置代理
+			return url.Parse("http://" + cache.ProxyIP) // 设置代理
 		}
 	}
 	client := &http.Client{
