@@ -50,7 +50,7 @@ func (cache *HqkjUserCache) LoginApi(retry int, lastErr error) (string, error) {
 		Timeout:   30 * time.Second,
 		Transport: tr,
 	}
-	req, err := http.NewRequest("GET", cache.PreUrl+"/api/user/login?number="+cache.Account+"&password="+cache.Password+"&schoolId="+cache.SchoolId, nil)
+	req, err := http.NewRequest("GET", cache.PreUrl+"/api/user/login?number="+url.QueryEscape(cache.Account)+"&password="+url.QueryEscape(cache.Password)+"&schoolId="+cache.SchoolId, nil)
 	if err != nil {
 		log.Fatal(err)
 	}
