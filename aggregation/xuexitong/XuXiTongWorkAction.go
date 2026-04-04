@@ -446,6 +446,31 @@ func HtmlWorkQuestionTurnEntity(paperHtml string) (XXTWorkQuestion, error) {
 	return question, nil
 }
 
+// 提取作业题干（避免把选项 .workWrap 误当题干）
+func extractWorkTitle(sel *goquery.Selection) string {
+	titleSel := sel.Find(`div.ans-cc.timuStyle.fontLabel.workWrap`).First()
+	if titleSel.Length() == 0 {
+		titleSel = sel.Find(`div.ans-cc.workWrap`).First()
+	}
+	if titleSel.Length() == 0 {
+		titleSel = sel.Find(`.workWrap`).First()
+	}
+	if titleSel.Length() == 0 {
+		return ""
+	}
+	return extractQuestion(titleSel)
+}
+
+// 提取选项文本（兼容 div.centerSpan / p 文本）
+func extractWorkOptionText(sel *goquery.Selection) string {
+	text := strings.TrimSpace(sel.Text())
+	if text == "" {
+		text = strings.TrimSpace(sel.Find("p").Text())
+	}
+	text = regexp.MustCompile(`\s+`).ReplaceAllString(text, " ")
+	return strings.TrimSpace(text)
+}
+
 // 单选题转换
 func singleWorkTurn(paperDoc *goquery.Document) (XXTWorkQuestion, error) {
 	question := XXTWorkQuestion{}
@@ -458,29 +483,25 @@ func singleWorkTurn(paperDoc *goquery.Document) (XXTWorkQuestion, error) {
 			//fmt.Println("question:", questionId)
 		}
 
-		//题目
-		//title := strings.TrimSpace(sel.Find(`.workWrap p`).First().Text())
-		title := ""
-		//截取题目
-		sel.Find(`.workWrap`).Each(func(i int, sel *goquery.Selection) {
-			title = extractQuestion(sel)
-		})
-		//fmt.Println(title)
-		question.Question.Content = title
+		// 题干（仅取题干节点）
+		question.Question.Content = extractWorkTitle(sel)
+
 		resOptions := make(map[string]string)
 		sel.Find(`div.centerSpan`).Each(func(i int, sel *goquery.Selection) {
-			//letter := strings.TrimSpace(sel.Find(`.No`).Text())
 			letter, _ := sel.Attr("id")
-			text := strings.TrimSpace(sel.Find(`p`).Text())
-			resOptions[letter] = letter + text
-			//fmt.Println(letter, text)
+			text := extractWorkOptionText(sel)
+			if letter == "" || text == "" {
+				return
+			}
+			resOptions[letter] = text
 		})
 		resSelect := []string{"A", "B", "C", "D", "E", "F", "G", "H", "I", "J", "K", "L", "M", "N"}
 		for _, slt := range resSelect {
-			if resOptions[slt] == "" {
+			v, ok := resOptions[slt]
+			if !ok || v == "" {
 				break
 			}
-			question.Question.Options = append(question.Question.Options, resOptions[slt])
+			question.Question.Options = append(question.Question.Options, v)
 		}
 	})
 	return question, nil
@@ -498,29 +519,25 @@ func multipleWorkTurn(paperDoc *goquery.Document) (XXTWorkQuestion, error) {
 			//fmt.Println("question:", questionId)
 		}
 
-		//题目
-		//title := strings.TrimSpace(sel.Find(`.workWrap p`).First().Text())
-		title := ""
-		//截取题目
-		sel.Find(`.workWrap`).Each(func(i int, sel *goquery.Selection) {
-			title = extractQuestion(sel)
-		})
-		//fmt.Println(title)
-		question.Question.Content = title
+		// 题干（仅取题干节点）
+		question.Question.Content = extractWorkTitle(sel)
+
 		resOptions := make(map[string]string)
 		sel.Find(`div.centerSpan`).Each(func(i int, sel *goquery.Selection) {
-			//letter := strings.TrimSpace(sel.Find(`.No`).Text())
 			letter, _ := sel.Attr("id")
-			text := strings.TrimSpace(sel.Find(`p`).Text())
-			resOptions[letter] = letter + text
-			//fmt.Println(letter, text)
+			text := extractWorkOptionText(sel)
+			if letter == "" || text == "" {
+				return
+			}
+			resOptions[letter] = text
 		})
 		resSelect := []string{"A", "B", "C", "D", "E", "F", "G", "H", "I", "J", "K", "L", "M", "N"}
 		for _, slt := range resSelect {
-			if resOptions[slt] == "" {
+			v, ok := resOptions[slt]
+			if !ok || v == "" {
 				break
 			}
-			question.Question.Options = append(question.Question.Options, resOptions[slt])
+			question.Question.Options = append(question.Question.Options, v)
 		}
 	})
 
