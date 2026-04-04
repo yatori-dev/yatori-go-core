@@ -899,6 +899,45 @@ func MetaAIReplyApi(model, apiKey string, aiChatMessages AIChatMessages, retryNu
 }
 
 // OtherChatReplyApi 其他支持CHATGPT API格式的AI模型接入
+// 尝试从模型返回中提取标准 JSON 数组（兼容 ```json 包裹、<think>...</think> 前置思考等）
+func normalizeJSONAnswerContent(raw string) string {
+	s := strings.TrimSpace(raw)
+	if s == "" {
+		return s
+	}
+
+	// 去掉 markdown 代码块标记
+	s = strings.ReplaceAll(s, "```json", "")
+	s = strings.ReplaceAll(s, "```JSON", "")
+	s = strings.ReplaceAll(s, "```", "")
+	s = strings.TrimSpace(s)
+
+	// 去掉 <think>...</think>
+	for {
+		lower := strings.ToLower(s)
+		start := strings.Index(lower, "<think>")
+		if start == -1 {
+			break
+		}
+		end := strings.Index(lower[start:], "</think>")
+		if end == -1 {
+			// 没闭合则直接裁掉 think 起始后的内容
+			s = strings.TrimSpace(s[:start])
+			break
+		}
+		end = start + end + len("</think>")
+		s = strings.TrimSpace(s[:start] + " " + s[end:])
+	}
+
+	// 提取首个 JSON 数组
+	l := strings.Index(s, "[")
+	r := strings.LastIndex(s, "]")
+	if l != -1 && r != -1 && r > l {
+		return strings.TrimSpace(s[l : r+1])
+	}
+	return strings.TrimSpace(s)
+}
+
 func OtherChatReplyApi(url,
 	model,
 	apiKey string,
@@ -918,10 +957,21 @@ func OtherChatReplyApi(url,
 		Transport: tr,
 		Timeout:   60 * time.Second, // Set connection and read timeout
 	}
+
+	// 兼容部分非 OpenAI 标准兼容接口（如 MiniMax chatcompletion_v2）
+	// 这类接口会拒绝 system role，这里退化为 user，避免直接 2013 invalid params。
+	normalizedMessages := make([]Message, 0, len(aiChatMessages.Messages))
+	for _, m := range aiChatMessages.Messages {
+		if strings.EqualFold(m.Role, "system") {
+			m.Role = "user"
+		}
+		normalizedMessages = append(normalizedMessages, m)
+	}
+
 	requestBody := map[string]interface{}{
 		"model":       model,
 		"temperature": 0.2,
-		"messages":    aiChatMessages.Messages,
+		"messages":    normalizedMessages,
 		//"response_format": map[string]string{"type": "json_object"},
 	}
 
@@ -976,8 +1026,9 @@ func OtherChatReplyApi(url,
 		return "", fmt.Errorf("content field missing or not a string in response")
 	}
 	//json格式检查逻辑-----------------------------------------
+	candidate := normalizeJSONAnswerContent(content)
 	var answers []string
-	err = json.Unmarshal([]byte(content), &answers)
+	err = json.Unmarshal([]byte(candidate), &answers)
 	if err != nil {
 		aiChatMessages.Messages = append(aiChatMessages.Messages, Message{
 			Role:    "system",
@@ -989,5 +1040,5 @@ func OtherChatReplyApi(url,
 		})
 		return OtherChatReplyApi(url, model, apiKey, aiChatMessages, retryNum-1, fmt.Errorf("生成的回复无法正常解析成json:%s", string(body)))
 	}
-	return content, nil
+	return candidate, nil
 }
