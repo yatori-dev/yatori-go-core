@@ -3,8 +3,10 @@ package haiqikeji
 import (
 	"bytes"
 	"crypto/tls"
+	"encoding/json"
 	"fmt"
 	"io"
+	"io/ioutil"
 	"log"
 	"mime/multipart"
 	"net/http"
@@ -645,4 +647,269 @@ func (cache HqkjUserCache) EndStudyApi(sessionId string, retry int, lastErr erro
 	}
 	//fmt.Printf("%s\n", bodyText)
 	return string(bodyText), nil
+}
+
+// 拉取章节中的考试列表
+func (cache HqkjUserCache) PullExamListApi(courseId, nodeId string, retry int, lastErr error) (string, error) {
+	if retry < 0 {
+		return "", lastErr
+	}
+	tr := &http.Transport{
+		TLSClientConfig: &tls.Config{
+			InsecureSkipVerify: true, // 跳过证书验证，仅用于开发环境
+		},
+	}
+
+	//如果开启了IP代理，那么就直接添加代理
+	if cache.IpProxySW {
+		tr.Proxy = func(req *http.Request) (*url.URL, error) {
+			return url.Parse("http://" + cache.ProxyIP) // 设置代理
+		}
+	}
+
+	client := &http.Client{
+		Timeout:   30 * time.Second,
+		Transport: tr,
+	}
+	//urlStr := "https://whxyart.haiqikeji.com/api/user/yee_course_student_exam_list?schoolId=" + cache.SchoolId + "&studentId=1270478&courseId=1009407&nodeId=1508247"
+	urlStr := "https://whxyart.haiqikeji.com/api/user/yee_course_student_exam_list?schoolId=" + cache.SchoolId + "&studentId=" + cache.UserId + "&courseId=" + courseId + "&nodeId=" + nodeId
+	method := "GET"
+
+	req, err := http.NewRequest(method, urlStr, nil)
+
+	if err != nil {
+		fmt.Println(err)
+		return "", nil
+	}
+	req.Header.Add("authorization", cache.Token)
+	req.Header.Add("pragma", "no-cache")
+	req.Header.Add("priority", "u=1, i")
+	req.Header.Set("user-agent", "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/145.0.0.0 Safari/537.36")
+	req.Header.Add("Accept", "*/*")
+	req.Header.Add("Connection", "keep-alive")
+
+	res, err := client.Do(req)
+	if err != nil {
+		fmt.Println(err)
+		return "", nil
+	}
+	defer res.Body.Close()
+
+	body, err := ioutil.ReadAll(res.Body)
+	if err != nil {
+		fmt.Println(err)
+		return "", nil
+	}
+	//fmt.Println(string(body))
+	return string(body), nil
+}
+
+// 拉取考试详细信息
+func (cache HqkjUserCache) PullExamDetailInformApi(examId, courseId, title string, retry int, lastErr error) (string, error) {
+	if retry < 0 {
+		return "", lastErr
+	}
+	//url := "https://whxyart.haiqikeji.com/api/user/yee_course_student_exam_detail?schoolId=25&studentId=1270478&examId=1003087&courseId=1009407&title=%25E5%2588%259B%25E4%25B8%259A%25E5%259F%25BA%25E7%25A1%2580%25E8%2580%2583%25E8%25AF%2595"
+	urlStr := "https://whxyart.haiqikeji.com/api/user/yee_course_student_exam_detail?schoolId=" + cache.SchoolId + "&studentId=" + cache.UserId + "&examId=" + examId + "&courseId=" + courseId + "&title=" + url.QueryEscape(title)
+	method := "GET"
+
+	tr := &http.Transport{
+		TLSClientConfig: &tls.Config{
+			InsecureSkipVerify: true, // 跳过证书验证，仅用于开发环境
+		},
+	}
+
+	//如果开启了IP代理，那么就直接添加代理
+	if cache.IpProxySW {
+		tr.Proxy = func(req *http.Request) (*url.URL, error) {
+			return url.Parse("http://" + cache.ProxyIP) // 设置代理
+		}
+	}
+
+	client := &http.Client{
+		Timeout:   30 * time.Second,
+		Transport: tr,
+	}
+	req, err := http.NewRequest(method, urlStr, nil)
+
+	if err != nil {
+		fmt.Println(err)
+		return "", nil
+	}
+	req.Header.Add("authorization", cache.Token)
+	req.Header.Add("pragma", "no-cache")
+	req.Header.Add("priority", "u=1, i")
+	req.Header.Set("user-agent", "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/145.0.0.0 Safari/537.36")
+	req.Header.Add("Accept", "*/*")
+	req.Header.Add("Connection", "keep-alive")
+
+	res, err := client.Do(req)
+	if err != nil {
+		fmt.Println(err)
+		return "", nil
+	}
+	defer res.Body.Close()
+
+	body, err := ioutil.ReadAll(res.Body)
+	if err != nil {
+		fmt.Println(err)
+		return "", nil
+	}
+	//fmt.Println(string(body))
+	return string(body), nil
+}
+
+// 进入考试
+func (cache HqkjUserCache) PullEnterExamApi(examId, courseId, title string, retry int, lastErr error) (string, error) {
+	if retry < 0 {
+		return "", lastErr
+	}
+	//url := "https://whxyart.haiqikeji.com/api/user/yee_course_student_exam_detail?schoolId=25&studentId=1270478&examId=1003087&courseId=1009407&title=%25E5%2588%259B%25E4%25B8%259A%25E5%259F%25BA%25E7%25A1%2580%25E8%2580%2583%25E8%25AF%2595"
+	urlStr := "https://whxyart.haiqikeji.com/api/user/yee_course_student_exam_detail?schoolId=" + cache.SchoolId + "&studentId=" + cache.UserId + "&examId=" + examId + "&courseId=" + courseId + "&title=" + url.QueryEscape(title)
+	method := "GET"
+
+	tr := &http.Transport{
+		TLSClientConfig: &tls.Config{
+			InsecureSkipVerify: true, // 跳过证书验证，仅用于开发环境
+		},
+	}
+
+	//如果开启了IP代理，那么就直接添加代理
+	if cache.IpProxySW {
+		tr.Proxy = func(req *http.Request) (*url.URL, error) {
+			return url.Parse("http://" + cache.ProxyIP) // 设置代理
+		}
+	}
+
+	client := &http.Client{
+		Timeout:   30 * time.Second,
+		Transport: tr,
+	}
+	req, err := http.NewRequest(method, urlStr, nil)
+
+	if err != nil {
+		fmt.Println(err)
+		return "", nil
+	}
+	req.Header.Add("authorization", cache.Token)
+	req.Header.Add("pragma", "no-cache")
+	req.Header.Add("priority", "u=1, i")
+	req.Header.Set("user-agent", "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/145.0.0.0 Safari/537.36")
+	req.Header.Add("Accept", "*/*")
+	req.Header.Add("Connection", "keep-alive")
+
+	res, err := client.Do(req)
+	if err != nil {
+		fmt.Println(err)
+		return "", nil
+	}
+	defer res.Body.Close()
+
+	body, err := ioutil.ReadAll(res.Body)
+	if err != nil {
+		fmt.Println(err)
+		return "", nil
+	}
+	//fmt.Println(string(body))
+	return string(body), nil
+}
+
+// 拉取题目列表
+func (cache HqkjUserCache) PullExamQuestionsApi(examId, courseId, title string, retry int, lastErr error) (string, error) {
+
+	url := "https://whxyart.haiqikeji.com/api/user/yee_course_student_exam_start?schoolId=25&studentId=1270478&courseId=1009407&examId=1003087&platform=pc&createUserId=1249456&state=1&classId=1016378&paperId=6196&random=&randData=%257B%257D&randNumber="
+	method := "GET"
+
+	client := &http.Client{}
+	req, err := http.NewRequest(method, url, nil)
+
+	if err != nil {
+		fmt.Println(err)
+		return "", nil
+	}
+	req.Header.Add("authorization", cache.Token)
+	req.Header.Add("pragma", "no-cache")
+	req.Header.Add("priority", "u=1, i")
+	req.Header.Set("user-agent", "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/145.0.0.0 Safari/537.36")
+	req.Header.Add("Accept", "*/*")
+	req.Header.Add("Connection", "keep-alive")
+
+	res, err := client.Do(req)
+	if err != nil {
+		fmt.Println(err)
+		return "", nil
+	}
+	defer res.Body.Close()
+
+	body, err := ioutil.ReadAll(res.Body)
+	if err != nil {
+		fmt.Println(err)
+		return "", nil
+	}
+	//fmt.Println(string(body))
+	return string(body), nil
+}
+
+// 提交答案
+func (cache HqkjUserCache) AnswerApi(courseId, examId, topicId, recordId, questionType string, answers []string, retry int, lastErr error) (string, error) {
+	if retry < 0 {
+		return "", lastErr
+	}
+	//url := "https://whxyart.haiqikeji.com/api/user/yee_exam_answer_add"
+	urlStr := "https://whxyart.haiqikeji.com/api/user/yee_exam_answer_add"
+	method := "POST"
+
+	//payload := strings.NewReader(`{"schoolId":25,"courseId":1009407,"userId":1270478,"examId":1003087,"topicId":1253487,"answer":["B"],"recordId":57198,"type":1}`)
+	answersData, err := json.Marshal(answers)
+	if err != nil {
+		panic(err)
+	}
+
+	payload := strings.NewReader(`{"schoolId":` + cache.SchoolId + `,"courseId":` + courseId + `,"userId":` + cache.UserId + `,"examId":` + examId + `,"topicId":` + topicId + `,"answer":` + string(answersData) + `,"recordId":` + recordId + `,"type":` + questionType + `}`)
+
+	tr := &http.Transport{
+		TLSClientConfig: &tls.Config{
+			InsecureSkipVerify: true, // 跳过证书验证，仅用于开发环境
+		},
+	}
+
+	//如果开启了IP代理，那么就直接添加代理
+	if cache.IpProxySW {
+		tr.Proxy = func(req *http.Request) (*url.URL, error) {
+			return url.Parse("http://" + cache.ProxyIP) // 设置代理
+		}
+	}
+
+	client := &http.Client{
+		Timeout:   30 * time.Second,
+		Transport: tr,
+	}
+	req, err := http.NewRequest(method, urlStr, payload)
+
+	if err != nil {
+		fmt.Println(err)
+		return "", nil
+	}
+	req.Header.Add("authorization", cache.Token)
+	req.Header.Add("pragma", "no-cache")
+	req.Header.Add("priority", "u=1, i")
+	req.Header.Set("user-agent", "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/145.0.0.0 Safari/537.36")
+	req.Header.Add("content-type", "application/json")
+	req.Header.Add("Accept", "*/*")
+	req.Header.Add("Connection", "keep-alive")
+
+	res, err := client.Do(req)
+	if err != nil {
+		fmt.Println(err)
+		return "", nil
+	}
+	defer res.Body.Close()
+
+	body, err := ioutil.ReadAll(res.Body)
+	if err != nil {
+		fmt.Println(err)
+		return "", nil
+	}
+	//fmt.Println(string(body))
+	return string(body), nil
 }
