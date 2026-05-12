@@ -23,15 +23,18 @@ import (
 const (
 	KEY         = "u2oh6Vu^HWe4_AES" // 注意 Go 语言中字符串默认就是 UTF-8 编码
 	APP_VERSION = "6.7.2"
+	//APP_VERSION = "6.7.5"
 	//APP_VERSION   = "6.6.4"
 	DEVICE_VENDOR = "MI10"
-	BUILD         = "10831_263" //这个对应6.6.4版本
+	//BUILD         = "10831_263" //这个对应6.6.4版本
+	BUILD = "10941_314" //这个对应6.7.5版本
 	//BUILD           = "10936_311"
-	ANDROID_VERSION = "Android 12"
+	ANDROID_VERSION = "Android 16"
 )
 
 var IMEI = utils.TokenHex(16)
-
+var XXTEXAMUA = GetUA("mobile") //专门用于学习通考试用的UA，如果签名UA用不了就用普通UA，傻逼学习通又在搞什么哟蛾子。
+// var XXTEXAMUA = GetUA("iphone") //专门用于学习通考试用的UA，如果签名UA用不了就用普通UA，傻逼学习通又在搞什么哟蛾子。
 type XueXiTUserCache struct {
 	Name     string //用户使用Phone
 	Password string //用户密码
@@ -73,6 +76,10 @@ func GetUA(uaType string) string {
 			fmt.Sprintf("com.chaoxing.mobile/ChaoXingStudy_3_%s_android_phone_%s", APP_VERSION, BUILD),
 			fmt.Sprintf("(@Kalimdor)_%s", IMEI),
 		}, " ")
+	case "iphone":
+
+		return "Mozilla/5.0 (iPhone; CPU iPhone OS 18_5 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/18.5 Mobile/15E148 Safari/604.1"
+
 	case "web":
 		return "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/107.0.0.0 Safari/537.36 Edg/107.0.1418.35"
 	default:

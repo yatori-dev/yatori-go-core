@@ -143,6 +143,8 @@ func EnterExamAction(cache *xuexitong.XueXiTUserCache, exam *XXTExam) error {
 		//fmt.Println(refererUrl)
 		return err
 	}
+	//该考试教师已设置章节任务点未完成80%，不能参加考试
+	//记得处理上面这个情况
 	doc, err := goquery.NewDocumentFromReader(strings.NewReader(enterHtml))
 	if err != nil {
 		log.Fatal(err)
@@ -232,6 +234,10 @@ func EnterExamAction(cache *xuexitong.XueXiTUserCache, exam *XXTExam) error {
 	if err != nil {
 		return err
 
+	}
+	if strings.Contains(pullPaperHtml, "访问异常（请升级学习通APP最新版本）") {
+		xuexitong.XXTEXAMUA = xuexitong.GetUA("iphone")
+		return EnterExamAction(cache, exam)
 	}
 	qsEntity, err1 := HtmlQuestionTurnEntity(pullPaperHtml)
 	if err1 != nil {
@@ -331,6 +337,9 @@ func (question *XXTExamQuestion) WriteQuestionForXXTAIAction(cache *xuexitong.Xu
 func (question *XXTExamQuestion) SubmitExamAnswerAction(cache *xuexitong.XueXiTUserCache, isSubmit bool /*是否提交，true为提交，false为暂存*/) (string, error) {
 	//api, err := cache.SubmitExamAnswerApi(exam.ClazzId, exam.CourseId, exam.Paper.TestPaperId, exam.Paper.TestUserRelationId, exam.Cpi, exam.Paper.RemainTime, exam.Paper.EncRemainTime, exam.Paper.EncLastUpdateTime, exam.ExamRelationId, exam.AnswerId, exam.RemainTime, !isSubmit, exam.Paper.Enc, exam.Paper.EnterPageTime, exam.Paper.XXTExamQuestion.QuestionId, exam.Paper.Type, exam.Paper.XXTExamQuestion.TypeName, &exam.Paper)
 	api, err := cache.SubmitExamAnswerApi(&question.XXTExamQuestionSubmitEntity, !isSubmit)
+	if isSubmit { //用于提交试卷后的处理
+		xuexitong.XXTEXAMUA = xuexitong.GetUA("mobile") //回复原ua
+	}
 	if err != nil {
 		return "", err
 	}
