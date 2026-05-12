@@ -156,13 +156,18 @@ func XueXiTPullCourseAction(cache *xuexitong.XueXiTUserCache) ([]XueXiTCourse, e
 	courseStatusListJson, err := cache.CourseCompleteStatusApi(courseListQueryData, 5, nil)
 	courseStatusList := gojsonq.New().JSONString(courseStatusListJson).Find("jobArray")
 	//fmt.Println(courseStatusList)
-	for _, statusData := range courseStatusList.([]interface{}) {
-		index := strconv.Itoa(int(statusData.(map[string]any)["clazzId"].(float64)))
-		keyed := keyCourse[index]
-		courseList[keyed].JobFinishCount = int(statusData.(map[string]any)["jobFinishCount"].(float64))
-		courseList[keyed].JobRate = statusData.(map[string]any)["jobRate"].(float64)
-		courseList[keyed].JobCount = int(statusData.(map[string]any)["jobCount"].(float64))
+	if courseStatusList == nil {
+		log2.Print(log2.INFO, "["+cache.Name+"] ", log2.BoldRed, " 无法拉取课程任务点进度数据,可能会导致出现不遇见的BUG\n", courseStatusListJson)
+	} else {
+		for _, statusData := range courseStatusList.([]interface{}) {
+			index := strconv.Itoa(int(statusData.(map[string]any)["clazzId"].(float64)))
+			keyed := keyCourse[index]
+			courseList[keyed].JobFinishCount = int(statusData.(map[string]any)["jobFinishCount"].(float64))
+			courseList[keyed].JobRate = statusData.(map[string]any)["jobRate"].(float64)
+			courseList[keyed].JobCount = int(statusData.(map[string]any)["jobCount"].(float64))
+		}
 	}
+
 	return courseList, nil
 }
 
