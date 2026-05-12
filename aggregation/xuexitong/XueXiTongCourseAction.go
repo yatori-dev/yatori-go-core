@@ -157,7 +157,7 @@ func XueXiTPullCourseAction(cache *xuexitong.XueXiTUserCache) ([]XueXiTCourse, e
 	courseStatusList := gojsonq.New().JSONString(courseStatusListJson).Find("jobArray")
 	//fmt.Println(courseStatusList)
 	if courseStatusList == nil {
-		log2.Print(log2.INFO, "["+cache.Name+"] ", log2.BoldRed, " 无法拉取课程任务点进度数据,可能会导致出现不遇见的BUG\n", courseStatusListJson)
+		log2.Print(log2.INFO, "["+cache.Name+"] ", log2.BoldRed, " 无法拉取课程任务点进度数据,可能会导致出现不可遇见的BUG\n", courseStatusListJson)
 	} else {
 		for _, statusData := range courseStatusList.([]interface{}) {
 			index := strconv.Itoa(int(statusData.(map[string]any)["clazzId"].(float64)))
