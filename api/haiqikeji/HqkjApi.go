@@ -320,7 +320,7 @@ func (cache *HqkjUserCache) PullChapterListApi(courseId string, retry int, lastE
 }
 
 // 拉取大章节对应下的小节点
-func (cache *HqkjUserCache) PullChapterNodeListApi(chapterId string, retry int, lastErr error) (string, error) {
+func (cache *HqkjUserCache) PullChapterNodeListApi(courseId string, retry int, lastErr error) (string, error) {
 	if retry < 0 {
 		return "", lastErr
 	}
@@ -342,7 +342,8 @@ func (cache *HqkjUserCache) PullChapterNodeListApi(chapterId string, retry int, 
 		Transport: tr,
 	}
 	//req, err := http.NewRequest("GET", "https://swxy.haiqikeji.com/api/user/yee_node_select?schoolId=15&chapterId=1101498", nil)
-	req, err := http.NewRequest("GET", cache.PreUrl+"/api/user/yee_node_select?schoolId="+cache.SchoolId+"&chapterId="+chapterId, nil)
+	//req, err := http.NewRequest("GET", cache.PreUrl+"/api/user/yee_node_select?studentId="+cache.UserId+"&courseId="+courseId+"&schoolId="+cache.SchoolId+"&chapterId="+chapterId, nil)
+	req, err := http.NewRequest("GET", cache.PreUrl+"/api/user/yee_node_select?studentId="+cache.UserId+"&courseId="+courseId+"&schoolId="+cache.SchoolId, nil)
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -363,7 +364,7 @@ func (cache *HqkjUserCache) PullChapterNodeListApi(chapterId string, retry int, 
 	resp, err := client.Do(req)
 	if err != nil {
 		//log.Fatal(err)
-		return cache.PullChapterNodeListApi(chapterId, retry-1, err)
+		return cache.PullChapterNodeListApi(courseId, retry-1, err)
 	}
 	defer resp.Body.Close()
 	bodyText, err := io.ReadAll(resp.Body)
