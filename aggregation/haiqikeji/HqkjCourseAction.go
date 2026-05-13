@@ -157,35 +157,121 @@ func HqkjNodeListAction(cache *haiqikeji.HqkjUserCache, course HqkjCourse) ([]Hq
 			}
 		}
 	}
-	if cslist, ok := gojsonq.New().JSONString(chapterResult).Find("data").([]any); ok {
-		for _, chapter := range cslist {
-			if cp, ok := chapter.(map[string]any); ok {
-				chapterNodeResult, err := cache.PullChapterNodeListApi(strconv.Itoa(int(cp["id"].(float64))), 5, nil)
-				if err != nil {
-					return nil, err
-				}
-				//如果遇到挤号则重登
-				if strings.Contains(chapterNodeResult, "令牌不匹配") || strings.Contains(chapterNodeResult, "认证失败") {
-					for i := 0; i < 3; i++ {
-						err := HqkjLoginAction(cache)
-						if err != nil {
-							return nodeList, err
-						}
-						chapterNodeResult, err = cache.PullChapterNodeListApi(strconv.Itoa(int(cp["id"].(float64))), 5, nil)
-						if strings.Contains(chapterNodeResult, "令牌不匹配") || strings.Contains(chapterNodeResult, "认证失败") {
-							continue
-						}
-					}
-				}
-				if ndlist, ok := gojsonq.New().JSONString(chapterNodeResult).Find("data").([]any); ok {
-					for _, node := range ndlist {
-						if nd, ok := node.(map[string]any); ok {
+	//if cslist, ok := gojsonq.New().JSONString(chapterResult).Find("data").([]any); ok {
+	//	for _, chapter := range cslist {
+	//		if cp, ok := chapter.(map[string]any); ok {
+	//			chapterNodeResult, err := cache.PullChapterNodeListApi(course.Id,strconv.Itoa(int(cp["id"].(float64))), 5, nil)
+	//			if err != nil {
+	//				return nil, err
+	//			}
+	//			//如果遇到挤号则重登
+	//			if strings.Contains(chapterNodeResult, "令牌不匹配") || strings.Contains(chapterNodeResult, "认证失败") {
+	//				for i := 0; i < 3; i++ {
+	//					err := HqkjLoginAction(cache)
+	//					if err != nil {
+	//						return nodeList, err
+	//					}
+	//					chapterNodeResult, err = cache.PullChapterNodeListApi(course.Id,strconv.Itoa(int(cp["id"].(float64))), 5, nil)
+	//					if strings.Contains(chapterNodeResult, "令牌不匹配") || strings.Contains(chapterNodeResult, "认证失败") {
+	//						continue
+	//					}
+	//				}
+	//			}
+	//			if ndlist, ok := gojsonq.New().JSONString(chapterNodeResult).Find("data").([]any); ok {
+	//				for _, node := range ndlist {
+	//					if ndd, ok := node.(map[string]any); ok {
+	//						if chsNode,ok := ndd["children"].([]any); ok {
+	//							for _, chNode := range chsNode {
+	//								if nd, ok := chNode.(map[string]any); ok {
+	//									zxcpksNode := HqkjNode{
+	//										Id:   strconv.Itoa(int(nd["id"].(float64))),
+	//										Name: nd["name"].(string),
+	//										//ChapterId:     strconv.Itoa(int(nd["chapterId"].(float64))),
+	//										//CourseId:      strconv.Itoa(int(nd["courseId"].(float64))),
+	//										CourseId:      course.Id,
+	//										VideoDuration: 0,
+	//									}
+	//									if videoDuration, ok := nd["videoDuration"].(float64); ok {
+	//										zxcpksNode.VideoDuration = int(videoDuration)
+	//									}
+	//									if tabVideo, ok := nd["tabVideo"].(float64); ok {
+	//										zxcpksNode.TabVideo = int(tabVideo)
+	//									}
+	//									if tabFile, ok := nd["tabFile"].(float64); ok {
+	//										zxcpksNode.TabFile = int(tabFile)
+	//									}
+	//									if tabVote, ok := nd["tabVote"].(float64); ok {
+	//										zxcpksNode.TabVote = int(tabVote)
+	//									}
+	//									if tabWork, ok := nd["tabWork"].(float64); ok {
+	//										zxcpksNode.TabWork = int(tabWork)
+	//									}
+	//									if tabExam, ok := nd["tabExam"].(float64); ok {
+	//										zxcpksNode.TabExam = int(tabExam)
+	//									}
+	//									if sort, ok := nd["sort"].(float64); ok {
+	//										zxcpksNode.Sort = int(sort)
+	//									}
+	//									if videoMode, ok := nd["videoMode"].(float64); ok {
+	//										zxcpksNode.VideoMode = int(videoMode)
+	//									}
+	//									if schoolId, ok := nd["schoolId"].(float64); ok {
+	//										zxcpksNode.SchoolId = int(schoolId)
+	//									}
+	//									if lock, ok := nd["lock"].(float64); ok {
+	//										zxcpksNode.Lock = int(lock)
+	//									}
+	//									if unlock, ok := nd["unlock"].(float64); ok {
+	//										zxcpksNode.UnlockTime = int(unlock)
+	//									}
+	//									if videoDuration, ok := nd["videoDuration"].(float64); ok {
+	//										zxcpksNode.VideoDuration = int(videoDuration)
+	//									}
+	//									nodeList = append(nodeList, zxcpksNode)
+	//								}
+	//							}
+	//						}
+	//					}
+	//				}
+	//			}
+	//
+	//		}
+	//	}
+	//}
+
+	chapterNodeResult, err := cache.PullChapterNodeListApi(course.Id, 5, nil)
+	if err != nil {
+		return nil, err
+	}
+	//如果遇到挤号则重登
+	if strings.Contains(chapterNodeResult, "令牌不匹配") || strings.Contains(chapterNodeResult, "认证失败") {
+		for i := 0; i < 3; i++ {
+			err := HqkjLoginAction(cache)
+			if err != nil {
+				return nodeList, err
+			}
+			chapterNodeResult, err = cache.PullChapterNodeListApi(course.Id, 5, nil)
+			if strings.Contains(chapterNodeResult, "令牌不匹配") || strings.Contains(chapterNodeResult, "认证失败") {
+				continue
+			}
+		}
+	}
+	if ndlist, ok := gojsonq.New().JSONString(chapterNodeResult).Find("data").([]any); ok {
+		for _, node := range ndlist {
+			if ndd, ok := node.(map[string]any); ok {
+				if chsNode, ok := ndd["children"].([]any); ok {
+					for _, chNode := range chsNode {
+						if nd, ok := chNode.(map[string]any); ok {
 							zxcpksNode := HqkjNode{
-								Id:            strconv.Itoa(int(nd["id"].(float64))),
-								Name:          nd["name"].(string),
-								ChapterId:     strconv.Itoa(int(nd["chapterId"].(float64))),
-								CourseId:      strconv.Itoa(int(nd["courseId"].(float64))),
+								Id:   strconv.Itoa(int(nd["id"].(float64))),
+								Name: nd["name"].(string),
+								//ChapterId:     strconv.Itoa(int(nd["chapterId"].(float64))),
+								//CourseId:      strconv.Itoa(int(nd["courseId"].(float64))),
+								CourseId:      course.Id,
 								VideoDuration: 0,
+							}
+							if videoDuration, ok := nd["videoDuration"].(float64); ok {
+								zxcpksNode.VideoDuration = int(videoDuration)
 							}
 							if tabVideo, ok := nd["tabVideo"].(float64); ok {
 								zxcpksNode.TabVideo = int(tabVideo)
@@ -224,11 +310,9 @@ func HqkjNodeListAction(cache *haiqikeji.HqkjUserCache, course HqkjCourse) ([]Hq
 						}
 					}
 				}
-
 			}
 		}
 	}
-
 	return nodeList, nil
 }
 
