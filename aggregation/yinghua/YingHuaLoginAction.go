@@ -3,14 +3,15 @@ package yinghua
 import (
 	"errors"
 	"fmt"
+	"os"
+	"strings"
+
 	ddddocr "github.com/Changbaiqi/ddddocr-go/utils"
 	"github.com/thedevsaddam/gojsonq"
 	ort "github.com/yalue/onnxruntime_go"
 	yinghuaApi "github.com/yatori-dev/yatori-go-core/api/yinghua"
 	"github.com/yatori-dev/yatori-go-core/utils"
 	"github.com/yatori-dev/yatori-go-core/utils/log"
-	"os"
-	"strings"
 )
 
 // YingHuaLoginAction 登录API聚合整理
@@ -47,7 +48,7 @@ func YingHuaLoginAction(cache *yinghuaApi.YingHuaUserCache) error {
 		cache.SetSign(
 			strings.Split(
 				gojsonq.New().JSONString(jsonStr).Find("redirect").(string), "&sign=")[1]) //设置签名
-		log.Print(log.INFO, "["+cache.Account+"] "+" 登录成功")
+		//log.Print(log.INFO, "["+cache.Account+"] "+" 登录成功")
 		break
 	}
 	return nil

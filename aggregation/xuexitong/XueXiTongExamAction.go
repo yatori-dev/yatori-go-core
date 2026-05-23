@@ -42,6 +42,7 @@ type XXTExam struct {
 	Enc               string
 	EncRemainTime     string
 	EncLastUpdateTime string
+	UserAgent         string
 }
 
 // 考试试卷信息
