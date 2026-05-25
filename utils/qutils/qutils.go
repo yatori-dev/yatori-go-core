@@ -1,6 +1,9 @@
 package qutils
 
-import "sort"
+import (
+	"slices"
+	"sort"
+)
 
 // 计算两个字符串的Levenshtein距离
 func Levenshtein(a, b string) int {
@@ -78,6 +81,24 @@ func SimilarityArraySelect(target string, v []string) string {
 	slist := []string{"A", "B", "C", "D", "E", "F", "G", "H", "I", "J", "K", "R", "M", "N", "O", "P", "Q"}
 	for _, co := range coList {
 		if sco < co.Score {
+			sco = co.Score
+			index = co.Index
+		}
+	}
+	return slist[index]
+}
+
+// 直接返回对应最大匹配的ABCD，并且代过滤字母
+func SimilarityArraySelectAndFilter(target string, v []string, filter []string) string {
+	coList := make([]Co, len(v))
+	for i := 0; i < len(v); i++ {
+		coList[i] = Co{Index: i, Score: Similarity(v[i], target)}
+	}
+	var sco = 0.0
+	var index = 0
+	slist := []string{"A", "B", "C", "D", "E", "F", "G", "H", "I", "J", "K", "R", "M", "N", "O", "P", "Q"}
+	for _, co := range coList {
+		if sco < co.Score && !slices.Contains(filter, slist[co.Index]) {
 			sco = co.Score
 			index = co.Index
 		}

@@ -4,13 +4,6 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
-	"math/rand"
-	"os"
-	"regexp"
-	"strconv"
-	"strings"
-	"time"
-
 	"github.com/thedevsaddam/gojsonq"
 	"github.com/yatori-dev/yatori-go-core/api/xuexitong"
 	yinghuaApi "github.com/yatori-dev/yatori-go-core/api/yinghua"
@@ -21,6 +14,12 @@ import (
 	"github.com/yatori-dev/yatori-go-core/que-core/qtype"
 	"github.com/yatori-dev/yatori-go-core/utils/log"
 	"github.com/yatori-dev/yatori-go-core/utils/qutils"
+	"math/rand"
+	"os"
+	"regexp"
+	"strconv"
+	"strings"
+	"time"
 )
 
 // 课程必要数据得截取
@@ -454,6 +453,9 @@ func StartExamForExternalAction(
 	//fmt.Println(topic)
 	var lastProblem xuexitong.YingHuaExamTopic
 	for _, v := range topic {
+		//if strings.Contains(v.Content,"光圈的作用有哪些"){
+		//	fmt.Println("debugger")
+		//}
 		answer, err := external.ApiQueRequest(v.Question, queBankUrl, 5, nil)
 		if err != nil {
 			log.Print(log.INFO, err.Error())
@@ -647,10 +649,10 @@ func answerTurnResult(cache *yinghuaApi.YingHuaUserCache, question qentity.Quest
 		//var jsonStr []string
 		var res []string
 		//json.Unmarshal([]byte(aiAnswer), &jsonStr)
-		//直接相同匹配方式
+		//直接相同匹配方式，并且有有重复的选项就过滤
 		for _, item := range question.Answers {
 			//result := qutils.SimilarityArrayAnswer(item, v.Question.Options)
-			result := qutils.SimilarityArraySelect(item, question.Options)
+			result := qutils.SimilarityArraySelectAndFilter(item, question.Options, res)
 			res = append(res, result)
 		}
 

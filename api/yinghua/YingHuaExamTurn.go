@@ -142,7 +142,10 @@ func TurnExamTopic(examHtml string) []xuexitong.YingHuaExamTopic {
 
 			//fmt.Println(topicHtml)
 		}
-
+		//编码替换
+		for i := range selects {
+			selects[i] = strings.ReplaceAll(selects[i], "&quot;", "\"")
+		}
 		// Construct the ExamTopic
 		examTopic := xuexitong.YingHuaExamTopic{
 			AnswerId: topicMap[num],
