@@ -4,6 +4,13 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+	"math/rand"
+	"os"
+	"regexp"
+	"strconv"
+	"strings"
+	"time"
+
 	"github.com/thedevsaddam/gojsonq"
 	"github.com/yatori-dev/yatori-go-core/api/xuexitong"
 	yinghuaApi "github.com/yatori-dev/yatori-go-core/api/yinghua"
@@ -14,12 +21,6 @@ import (
 	"github.com/yatori-dev/yatori-go-core/que-core/qtype"
 	"github.com/yatori-dev/yatori-go-core/utils/log"
 	"github.com/yatori-dev/yatori-go-core/utils/qutils"
-	"math/rand"
-	"os"
-	"regexp"
-	"strconv"
-	"strings"
-	"time"
 )
 
 // 课程必要数据得截取
