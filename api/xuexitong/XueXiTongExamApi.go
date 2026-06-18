@@ -613,7 +613,7 @@ func (cache *XueXiTUserCache) SubmitExamAnswerApi(question *XXTExamQuestionSubmi
 			blankNum += fmt.Sprintf("%d,", i+1)
 		}
 		values.Set("blankNum"+question.QuestionId, blankNum)
-	} else if question.QuestionTypeCode == "4" || question.QuestionTypeStr == "6" {
+	} else if question.QuestionTypeCode == "4" || question.QuestionTypeCode == "6" {
 		values.Set("type"+question.QuestionId, question.QuestionTypeCode)
 		values.Set("typeName"+question.QuestionId, question.QuestionTypeStr)
 		answerStr := ""
