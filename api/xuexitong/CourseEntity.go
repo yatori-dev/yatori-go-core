@@ -216,7 +216,8 @@ type Question struct {
 func (f Question) String() string {
 	marshal, err := json.Marshal(f)
 	if err != nil {
-		return fmt.Sprintf("%v", f)
+		type questionWithoutString Question
+		return fmt.Sprintf("%+v", questionWithoutString(f))
 	}
 	return string(marshal)
 }
