@@ -1,10 +1,9 @@
 package xuexitong
 
 import (
+	"context"
 	"strings"
 
-	ddddocr "github.com/Changbaiqi/ddddocr-go/utils"
-	ort "github.com/yalue/onnxruntime_go"
 	"github.com/yatori-dev/yatori-go-core/api/xuexitong"
 	"github.com/yatori-dev/yatori-go-core/models/ctype"
 	"github.com/yatori-dev/yatori-go-core/utils"
@@ -14,18 +13,30 @@ import (
 
 // WorkNewSubmitAnswerAction 提交答题
 func WorkNewSubmitAnswerAction(userCache *xuexitong.XueXiTUserCache, question xuexitong.Question, isSubmit bool) (string, error) {
+	return WorkNewSubmitAnswerActionContext(context.Background(), userCache, question, isSubmit)
+}
+
+func WorkNewSubmitAnswerActionContext(ctx context.Context, userCache *xuexitong.XueXiTUserCache, question xuexitong.Question, isSubmit bool) (string, error) {
+	if ctx == nil {
+		ctx = context.Background()
+	}
 	submitState := "1"
 	if isSubmit {
 		submitState = ""
 	}
-	answer, err := userCache.WorkNewSubmitAnswer(question.CourseId, question.ClassId, question.Knowledgeid, question.Cpi,
-		question.JobId, question.TotalQuestionNum, question.AnswerId, question.WorkAnswerId, question.Api,
-		question.FullScore, question.OldSchoolId, question.OldWorkId, question.WorkRelationId, question.Enc_work,
-		question, submitState)
-	//answer, err := userCache.WorkNewSubmitAnswerNew(question.CourseId, question.ClassId, question.Knowledgeid, question.Cpi,
-	//	question.JobId, question.TotalQuestionNum, question.AnswerId, question.WorkAnswerId, question.Api,
-	//	question.FullScore, question.OldSchoolId, question.OldWorkId, question.WorkRelationId, question.Enc_work,
-	//	question, submitState)
+	submit := func(ctx context.Context) (string, error) {
+		return userCache.WorkNewSubmitAnswerContext(ctx, question.CourseId, question.ClassId, question.Knowledgeid, question.Cpi,
+			question.JobId, question.TotalQuestionNum, question.AnswerId, question.WorkAnswerId, question.Api,
+			question.FullScore, question.OldSchoolId, question.OldWorkId, question.WorkRelationId, question.Enc_work,
+			question, submitState)
+	}
+	return workNewSubmitAnswerAction(ctx, userCache, submit, passImageCaptcha)
+}
+
+func workNewSubmitAnswerAction(ctx context.Context, userCache *xuexitong.XueXiTUserCache,
+	submit func(context.Context) (string, error), passCaptcha func(context.Context, *xuexitong.XueXiTUserCache) error,
+) (string, error) {
+	answer, err := submit(ctx)
 	if err == nil {
 		return answer, nil
 	}
@@ -34,31 +45,11 @@ func WorkNewSubmitAnswerAction(userCache *xuexitong.XueXiTUserCache, question xu
 	}
 
 	log2.Print(log2.DEBUG, utils.RunFuncName(), "触发验证码，正在进行AI智能识别绕过.....")
-	for {
-		img, err1 := userCache.XueXiTVerificationCodeApi(7, nil)
-		if err1 != nil {
-			return "", err1
-		}
-
-		_, width, _ := utils.GetImageShape(img)
-
-		var shape ort.Shape
-		if width == 140 {
-			shape = ort.NewShape(1, 23)
-		} else {
-			shape = ort.NewShape(1, 30)
-		}
-		codeResult := ddddocr.SemiOCRVerification(img, shape)
-		status, _ := userCache.XueXiTPassVerificationCode(codeResult, 7, nil)
-		if status {
-			break
-		}
+	if err := passCaptcha(ctx, userCache); err != nil {
+		return answer, err
 	}
 
-	answer, err = userCache.WorkNewSubmitAnswer(question.CourseId, question.ClassId, question.Knowledgeid, question.Cpi,
-		question.JobId, question.TotalQuestionNum, question.AnswerId, question.WorkAnswerId, question.Api,
-		question.FullScore, question.OldSchoolId, question.OldWorkId, question.WorkRelationId, question.Enc_work,
-		question, submitState)
+	answer, err = submit(ctx)
 	if err != nil {
 		return answer, err
 	}

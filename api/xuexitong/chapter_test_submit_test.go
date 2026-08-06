@@ -1,6 +1,7 @@
 package xuexitong
 
 import (
+	"context"
 	"errors"
 	"io"
 	"net/http"
@@ -8,6 +9,18 @@ import (
 	"strings"
 	"testing"
 )
+
+func TestWorkNewSubmitAnswerContextHonorsCancellation(t *testing.T) {
+	ctx, cancel := context.WithCancel(context.Background())
+	cancel()
+
+	_, err := (&XueXiTUserCache{}).WorkNewSubmitAnswerContext(ctx,
+		"", "", "", "", "", "", "", "", "", "", "", "", "", "", Question{}, "",
+	)
+	if !errors.Is(err, context.Canceled) {
+		t.Fatalf("WorkNewSubmitAnswerContext() error = %v, want context canceled", err)
+	}
+}
 
 func TestSendChapterWorkSubmissionValidatesResponse(t *testing.T) {
 	tests := []struct {

@@ -2,6 +2,7 @@ package xuexitong
 
 import (
 	"bytes"
+	"context"
 	"crypto/md5"
 	"crypto/sha1"
 	"crypto/tls"
@@ -33,6 +34,18 @@ func (cache *XueXiTUserCache) WorkNewSubmitAnswer(courseId string, classId strin
 	cpi string, jobid string, totalQuestionNum string, answerId string,
 	workAnswerId string, api string, fullScore string, oldSchoolId string,
 	oldWorkId string, workRelationId string, enc_work string, question Question, isSubmit string /*""为直接交卷，1为暂存*/) (string, error) {
+	return cache.WorkNewSubmitAnswerContext(context.Background(), courseId, classId, knowledgeid, cpi, jobid,
+		totalQuestionNum, answerId, workAnswerId, api, fullScore, oldSchoolId, oldWorkId, workRelationId,
+		enc_work, question, isSubmit)
+}
+
+func (cache *XueXiTUserCache) WorkNewSubmitAnswerContext(ctx context.Context, courseId string, classId string, knowledgeid string,
+	cpi string, jobid string, totalQuestionNum string, answerId string,
+	workAnswerId string, api string, fullScore string, oldSchoolId string,
+	oldWorkId string, workRelationId string, enc_work string, question Question, isSubmit string /*""为直接交卷，1为暂存*/) (string, error) {
+	if ctx == nil {
+		ctx = context.Background()
+	}
 
 	payload := &bytes.Buffer{}
 	writer := multipart.NewWriter(payload)
@@ -221,7 +234,7 @@ func (cache *XueXiTUserCache) WorkNewSubmitAnswer(courseId string, classId strin
 		"https://mooc1.chaoxing.com/mooc-ans/work/addStudentWorkNew", classId, courseId, enc_work, totalQuestionNum)
 
 	// 构建请求
-	req, err := http.NewRequest("POST", urlStr, payload)
+	req, err := http.NewRequestWithContext(ctx, "POST", urlStr, payload)
 	if err != nil {
 		return "", err
 	}
