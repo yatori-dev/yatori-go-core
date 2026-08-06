@@ -2,7 +2,6 @@ package xuexitong
 
 import (
 	"context"
-	"crypto/tls"
 	"errors"
 	"fmt"
 	"io/ioutil"
@@ -35,17 +34,7 @@ func (cache *XueXiTUserCache) PullChapterContext(ctx context.Context, cpi int, k
 	params.Add("fields", "id,bbsid,classscore,isstart,allowdownload,chatid,name,state,isfiled,visiblescore,hideclazz,begindate,forbidintoclazz,coursesetting.fields(id,courseid,hiddencoursecover,coursefacecheck),course.fields(id,belongschoolid,name,infocontent,objectid,app,bulletformat,mappingcourseid,imageurl,teacherfactor,jobcount,knowledge.fields(id,name,indexOrder,parentnodeid,status,isReview,layer,label,jobcount,begintime,endtime,attachment.fields(id,type,objectid,extension).type(video)))")
 	params.Add("view", "json")
 
-	tr := &http.Transport{
-		TLSClientConfig: &tls.Config{},
-	}
-
-	//如果开启了IP代理，那么就直接添加代理
-	if cache.IpProxySW {
-		tr.Proxy = func(req *http.Request) (*url.URL, error) {
-			return url.Parse("http://" + cache.ProxyIP) // 设置代理
-		}
-	}
-	client := newRequestClient(tr)
+	client := cache.requestClient()
 	req, err := http.NewRequestWithContext(ctx, method, "https://mooc1-api.chaoxing.com/gas/clazz"+"?"+params.Encode(), nil)
 
 	if err != nil {
@@ -111,17 +100,7 @@ func (cache *XueXiTUserCache) FetchChapterPointStatusContext(ctx context.Context
 	// 编码请求体
 	payload := strings.NewReader(values.Encode())
 
-	tr := &http.Transport{
-		TLSClientConfig: &tls.Config{},
-	}
-
-	//如果开启了IP代理，那么就直接添加代理
-	if cache.IpProxySW {
-		tr.Proxy = func(req *http.Request) (*url.URL, error) {
-			return url.Parse("http://" + cache.ProxyIP) // 设置代理
-		}
-	}
-	client := newRequestClient(tr)
+	client := cache.requestClient()
 	req, err := http.NewRequestWithContext(ctx, method, "https://mooc1-api.chaoxing.com/job/myjobsnodesmap", payload)
 
 	if err != nil {
@@ -184,17 +163,7 @@ func (cache *XueXiTUserCache) FetchChapterCordsContext(ctx context.Context, node
 	values.Add("token", "4faa8662c59590c6f43ae9fe5b002b42")
 	values.Add("_time", strconv.FormatInt(time.Now().UnixNano()/1000000, 10))
 
-	tr := &http.Transport{
-		TLSClientConfig: &tls.Config{},
-	}
-
-	//如果开启了IP代理，那么就直接添加代理
-	if cache.IpProxySW {
-		tr.Proxy = func(req *http.Request) (*url.URL, error) {
-			return url.Parse("http://" + cache.ProxyIP) // 设置代理
-		}
-	}
-	client := newRequestClient(tr)
+	client := cache.requestClient()
 	req, err := http.NewRequestWithContext(ctx, method, "https://mooc1-api.chaoxing.com/gas/knowledge"+"?"+values.Encode(), nil)
 
 	if err != nil {
@@ -246,19 +215,7 @@ func (cache *XueXiTUserCache) FetchChapterCords2(clazzid, courseid, knowledgeid,
 	urlStr := "https://mooc1.chaoxing.com/mooc-ans/knowledge/cards?clazzid=" + clazzid + "&courseid=" + courseid + "&knowledgeid=" + knowledgeid + "&num=0&ut=s&cpi=" + cpi + "&v=2025-0424-1038-3&mooc2=1&isMicroCourse=false&editorPreview=0"
 	method := "GET"
 
-	tr := &http.Transport{
-		TLSClientConfig: &tls.Config{},
-	}
-
-	//如果开启了IP代理，那么就直接添加代理
-	if cache.IpProxySW {
-		tr.Proxy = func(req *http.Request) (*url.URL, error) {
-			return url.Parse("http://" + cache.ProxyIP) // 设置代理
-		}
-	}
-	client := &http.Client{
-		Transport: tr,
-	}
+	client := cache.requestClient()
 	req, err := http.NewRequest(method, urlStr, nil)
 
 	if err != nil {
@@ -311,19 +268,7 @@ func (cache *XueXiTUserCache) EnterChapterForwardCallApi(courseId, clazzid, chap
 	urlStr := "https://mooc1.chaoxing.com/mooc-ans/mycourse/studentstudyAjax?courseId=" + courseId + "&clazzid=" + clazzid + "&chapterId=" + chapterId + "&cpi=" + cpi + "&verificationcode=&mooc2=1&toComputer=false&microTopicId=0"
 	method := "GET"
 
-	tr := &http.Transport{
-		TLSClientConfig: &tls.Config{},
-	}
-
-	//如果开启了IP代理，那么就直接添加代理
-	if cache.IpProxySW {
-		tr.Proxy = func(req *http.Request) (*url.URL, error) {
-			return url.Parse("http://" + cache.ProxyIP) // 设置代理
-		}
-	}
-	client := &http.Client{
-		Transport: tr,
-	}
+	client := cache.requestClient()
 	req, err := http.NewRequest(method, urlStr, nil)
 
 	if err != nil {

@@ -4,7 +4,6 @@ package xuexitong
 //序列化和具体的功能实现请移步到Action代码文件中
 import (
 	"context"
-	"crypto/tls"
 	"io/ioutil"
 	"net/http"
 	"net/url"
@@ -24,17 +23,7 @@ func (cache *XueXiTUserCache) CourseListApiContext(ctx context.Context, retry in
 	}
 	method := "GET"
 
-	tr := &http.Transport{
-		TLSClientConfig: &tls.Config{},
-	}
-
-	//如果开启了IP代理，那么就直接添加代理
-	if cache.IpProxySW {
-		tr.Proxy = func(req *http.Request) (*url.URL, error) {
-			return url.Parse("http://" + cache.ProxyIP) // 设置代理
-		}
-	}
-	client := newRequestClient(tr)
+	client := cache.requestClient()
 	req, err := http.NewRequestWithContext(ctx, method, "https://mooc1-api.chaoxing.com/mycourse/backclazzdata", nil)
 
 	if err != nil {
@@ -78,10 +67,7 @@ func (cache *XueXiTUserCache) CourseCompleteStatusApiContext(ctx context.Context
 	urlStr := "https://mooc2-ans.chaoxing.com/mooc2-ans/mycourse/stu-job-info?clazzPersonStr=" + url.QueryEscape(courseListData)
 	//urlStr := "https://mooc2-ans.chaoxing.com/mooc2-ans/mycourse/stu-job-info?clazzPersonStr=134350229_407555221%252C125743273_407555221%252C127063689_407555221%252C126701067_407555221%252C125755386_407555221%252C125888882_407555221%252C125783661_454194591%252C124859308_454194591%252C124554421_454194591%252C116272688_407555221%252C117108284_407555221%252C117784832_407555221%252C116370785_407555221%252C116370660_407555221%252C117687599_407555221"
 	method := "GET"
-	tr := &http.Transport{
-		TLSClientConfig: &tls.Config{},
-	}
-	client := newRequestClient(tr)
+	client := cache.requestClient()
 	req, err := http.NewRequestWithContext(ctx, method, urlStr, nil)
 
 	if err != nil {

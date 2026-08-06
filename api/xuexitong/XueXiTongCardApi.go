@@ -35,30 +35,19 @@ func (cache *XueXiTUserCache) PageMobileChapterCard(
 	params.Add("cpi", strconv.Itoa(cpi))
 	//params.Add("pagestate", "0")
 	//params.Add("isMicroCourse", "false")
-	tr := &http.Transport{
-		TLSClientConfig: &tls.Config{},
-	}
-	client := &http.Client{
-		Transport: tr,
-		CheckRedirect: func(req *http.Request, via []*http.Request) error {
-			if len(via) >= 5 {
-				return errors.New("太多重定向")
-			}
-
-			// 复制 Cookie
-			if len(via) > 0 {
-				for _, c := range via[0].Cookies() {
-					req.AddCookie(c)
-				}
-			}
-			return nil // 允许重定向
-		},
-	}
-	//如果开启了IP代理，那么就直接添加代理
-	if cache.IpProxySW {
-		tr.Proxy = func(req *http.Request) (*url.URL, error) {
-			return url.Parse("http://" + cache.ProxyIP) // 设置代理
+	client := *cache.requestClient()
+	client.CheckRedirect = func(req *http.Request, via []*http.Request) error {
+		if len(via) >= 5 {
+			return errors.New("太多重定向")
 		}
+
+		// 复制 Cookie
+		if len(via) > 0 {
+			for _, c := range via[0].Cookies() {
+				req.AddCookie(c)
+			}
+		}
+		return nil // 允许重定向
 	}
 	//urlStr := "https://mooc1-api.chaoxing.com/knowledge/cards?clazzid=133129771&courseid=257616245&knowledgeid=1072936161&num=0&isPhone=1&control=true&cpi=492766448&pagestate=0&isMicroCourse=false"
 	//req, err := http.NewRequest(method, urlStr, nil)
