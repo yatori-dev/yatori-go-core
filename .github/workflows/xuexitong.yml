@@ -1,0 +1,42 @@
+name: 学习通离线检查
+
+on:
+  push:
+    paths:
+      - ".github/workflows/xuexitong.yml"
+      - "api/xuexitong/**"
+      - "aggregation/xuexitong/**"
+      - "utils/qutils/**"
+      - "go.mod"
+      - "go.sum"
+  pull_request:
+    paths:
+      - ".github/workflows/xuexitong.yml"
+      - "api/xuexitong/**"
+      - "aggregation/xuexitong/**"
+      - "utils/qutils/**"
+      - "go.mod"
+      - "go.sum"
+
+permissions:
+  contents: read
+
+jobs:
+  test:
+    name: 测试与构建
+    runs-on: ubuntu-latest
+    steps:
+      - name: 检出代码
+        uses: actions/checkout@v6
+
+      - name: 配置 Go
+        uses: actions/setup-go@v6
+        with:
+          go-version-file: go.mod
+          cache-dependency-path: go.sum
+
+      - name: 运行确定性测试
+        run: go test -count=1 ./api/xuexitong ./aggregation/xuexitong ./utils/qutils
+
+      - name: 构建学习通目标包
+        run: go build ./api/xuexitong ./aggregation/xuexitong ./utils/qutils
