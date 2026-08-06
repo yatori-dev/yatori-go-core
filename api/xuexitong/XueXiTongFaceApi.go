@@ -79,6 +79,18 @@ func (cache *XueXiTUserCache) GetFaceUpLoadToken() (string, error) {
 
 // 获取历史人脸图片
 func (cache *XueXiTUserCache) GetHistoryFaceImg(puid string) (string, image.Image, error) {
+	tr := &http.Transport{
+		TLSClientConfig: &tls.Config{},
+	}
+	if cache.IpProxySW {
+		tr.Proxy = func(req *http.Request) (*url.URL, error) {
+			return url.Parse("http://" + cache.ProxyIP)
+		}
+	}
+	return cache.getHistoryFaceImg(puid, &http.Client{Transport: tr}, &http.Client{})
+}
+
+func (cache *XueXiTUserCache) getHistoryFaceImg(puid string, client, imageClient *http.Client) (string, image.Image, error) {
 	//获取puid
 	if puid == "" {
 		for _, cookie := range cache.cookies {
@@ -93,19 +105,6 @@ func (cache *XueXiTUserCache) GetHistoryFaceImg(puid string) (string, image.Imag
 	urlStr := "https://passport2-api.chaoxing.com/api/getUserFaceid?enc=" + enc + "&token=4faa8662c59590c6f43ae9fe5b002b42&_time=" + fmt.Sprintf("%d", time.Now().Unix())
 	method := "GET"
 
-	tr := &http.Transport{
-		TLSClientConfig: &tls.Config{},
-	}
-
-	//如果开启了IP代理，那么就直接添加代理
-	if cache.IpProxySW {
-		tr.Proxy = func(req *http.Request) (*url.URL, error) {
-			return url.Parse("http://" + cache.ProxyIP) // 设置代理
-		}
-	}
-	client := &http.Client{
-		Transport: tr,
-	}
 	req, err := http.NewRequest(method, urlStr, nil)
 
 	if err != nil {
@@ -141,16 +140,11 @@ func (cache *XueXiTUserCache) GetHistoryFaceImg(puid string) (string, image.Imag
 		return "", nil, errors.New("没有历史人脸")
 	}
 	//图片获取段
-	methodImg := "GET"
-	clientImg := &http.Client{}
-	reqImg, errImg := http.NewRequest(methodImg, gojsonq.New().JSONString(string(body)).Find("data.http").(string), nil)
+	reqImg, errImg := http.NewRequest(http.MethodGet, gojsonq.New().JSONString(string(body)).Find("data.http").(string), nil)
 
 	if errImg != nil {
 		fmt.Println(errImg)
 		return "", nil, errImg
-	}
-	for _, cookie := range cache.cookies {
-		req.AddCookie(cookie)
 	}
 	//reqImg.Header.Add("User-Agent", "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/136.0.0.0 Safari/537.36 Edg/136.0.0.0")
 	reqImg.Header.Add("User-Agent", GetUA("mobile"))
@@ -158,17 +152,17 @@ func (cache *XueXiTUserCache) GetHistoryFaceImg(puid string) (string, image.Imag
 	reqImg.Header.Add("Host", "passport2-api.chaoxing.com")
 	reqImg.Header.Add("Connection", "keep-alive")
 
-	resImg, errImg := clientImg.Do(reqImg)
+	resImg, errImg := imageClient.Do(reqImg)
 	if errImg != nil {
 		fmt.Println(errImg)
 		return "", nil, errImg
 	}
-	defer res.Body.Close()
+	defer resImg.Body.Close()
 
 	// 解码图片
 	img, _, errImg := image.Decode(resImg.Body)
 	if errImg != nil {
-		return "", nil, fmt.Errorf("图片解码失败: %w", err)
+		return "", nil, fmt.Errorf("图片解码失败: %w", errImg)
 	}
 	return string(body), img, nil
 }
