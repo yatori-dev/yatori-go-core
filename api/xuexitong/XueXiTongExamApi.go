@@ -2,7 +2,6 @@ package xuexitong
 
 import (
 	"context"
-	"crypto/tls"
 	"encoding/hex"
 	"errors"
 	"fmt"
@@ -66,25 +65,19 @@ func (cache *XueXiTUserCache) PullExamListHtmlApiContext(ctx context.Context, co
 		return "", lastErr
 	}
 	urlStr := "https://mooc1-api.chaoxing.com/mooc-ans/exam/phone/task-list?courseId=" + courseId + "&classId=" + classId + "&cpi=" + cpi
-	tr := &http.Transport{
-		TLSClientConfig: &tls.Config{},
-	}
-	client := &http.Client{
-		Transport: tr,
-		Timeout:   defaultRequestTimeout,
-		CheckRedirect: func(req *http.Request, via []*http.Request) error {
-			if len(via) >= 5 {
-				return errors.New("太多重定向")
-			}
+	client := *cache.requestClient()
+	client.CheckRedirect = func(req *http.Request, via []*http.Request) error {
+		if len(via) >= 5 {
+			return errors.New("太多重定向")
+		}
 
-			// 复制 Cookie
-			if len(via) > 0 {
-				for _, c := range via[0].Cookies() {
-					req.AddCookie(c)
-				}
+		// 复制 Cookie
+		if len(via) > 0 {
+			for _, c := range via[0].Cookies() {
+				req.AddCookie(c)
 			}
-			return nil // 允许重定向
-		},
+		}
+		return nil // 允许重定向
 	}
 	req, err := http.NewRequestWithContext(ctx, "GET", urlStr, nil)
 
@@ -135,29 +128,23 @@ func (cache *XueXiTUserCache) PullExamEnterInformHtmlApi(
 
 	var finalURL string // ⭐ 用于保存最终的有效 URL
 
-	tr := &http.Transport{
-		TLSClientConfig: &tls.Config{},
-	}
-	client := &http.Client{
-		Transport: tr,
+	client := *cache.requestClient()
+	// ⭐ 重定向处理，抓取重定向后的 URL
+	client.CheckRedirect = func(req *http.Request, via []*http.Request) error {
+		// 限制次数
+		if len(via) >= 5 {
+			return errors.New("太多重定向")
+		}
+		// 每次重定向都更新 finalURL
+		finalURL = req.URL.String()
 
-		// ⭐ 重定向处理，抓取重定向后的 URL
-		CheckRedirect: func(req *http.Request, via []*http.Request) error {
-			// 限制次数
-			if len(via) >= 5 {
-				return errors.New("太多重定向")
+		// ⭐ 手动携带 Cookie
+		if len(via) > 0 {
+			for _, c := range via[0].Cookies() {
+				req.AddCookie(c)
 			}
-			// 每次重定向都更新 finalURL
-			finalURL = req.URL.String()
-
-			// ⭐ 手动携带 Cookie
-			if len(via) > 0 {
-				for _, c := range via[0].Cookies() {
-					req.AddCookie(c)
-				}
-			}
-			return nil
-		},
+		}
+		return nil
 	}
 
 	req, err := http.NewRequest(method, urlStr, nil)
@@ -222,12 +209,7 @@ func (cache *XueXiTUserCache) PullExamPaperHtmlApi(courseId, classId, examId, so
 	//urlStr := "https://mooc1-api.chaoxing.com/exam-ans/exam/phone/start?courseId=" + courseId + "&classId=" + classId + "&examId=" + examId + "&source=" + source + "&examAnswerId=" + examAnswerId + "&cpi=" + cpi + "&keyboardDisplayRequiresUserAction=" + keyboardDisplayRequiresUserAction  + "&faceDetectionResult&captchavalidate=" + captchavalidate + "&jt=" + jt + "&_v=0.3868294515418076&cxcid&cxtime&signt&_signcode=3&_signc=0&_signe=3-1&signk"
 	method := "GET"
 
-	tr := &http.Transport{
-		TLSClientConfig: &tls.Config{},
-	}
-	client := &http.Client{
-		Transport: tr,
-	}
+	client := cache.requestClient()
 	req, err := http.NewRequest(method, urlStr, nil)
 
 	if err != nil {
@@ -272,12 +254,7 @@ func (cache *XueXiTUserCache) PullExamListHtmlTwoApi(urlStr string, retry int, l
 
 	method := "GET"
 
-	tr := &http.Transport{
-		TLSClientConfig: &tls.Config{},
-	}
-	client := &http.Client{
-		Transport: tr,
-	}
+	client := cache.requestClient()
 	req, err := http.NewRequest(method, urlStr, nil)
 
 	if err != nil {
@@ -318,12 +295,7 @@ func (cache *XueXiTUserCache) PullReDoExamPaperHtmlApi(urlStr string, retry int,
 	urlStr = urlStr + "&redo=1"
 	method := "GET"
 
-	tr := &http.Transport{
-		TLSClientConfig: &tls.Config{},
-	}
-	client := &http.Client{
-		Transport: tr,
-	}
+	client := cache.requestClient()
 	req, err := http.NewRequest(method, urlStr, nil)
 
 	if err != nil {
@@ -369,19 +341,7 @@ func (cache *XueXiTUserCache) StartReExamApi(examId, examAnswerId, courseId, cla
 	urlStr := "https://mooc1-api.chaoxing.com/exam-ans/exam/phone/restartOp?examId=" + examId + "&examAnswerId=" + examAnswerId + "&courseId=" + courseId + "&classId=" + classId + "&source=0&code="
 	method := "GET"
 
-	tr := &http.Transport{
-		TLSClientConfig: &tls.Config{},
-	}
-
-	//如果开启了IP代理，那么就直接添加代理
-	if cache.IpProxySW {
-		tr.Proxy = func(req *http.Request) (*url.URL, error) {
-			return url.Parse("http://" + cache.ProxyIP) // 设置代理
-		}
-	}
-	client := &http.Client{
-		Transport: tr,
-	}
+	client := cache.requestClient()
 	req, err := http.NewRequest(method, urlStr, nil)
 
 	if err != nil {
@@ -431,12 +391,7 @@ func (cache *XueXiTUserCache) PullReExamPaperHtmlApi(urlStr string) (string, err
 	urlStr = "https://mooc1-api.chaoxing.com" + urlStr
 	method := "GET"
 
-	tr := &http.Transport{
-		TLSClientConfig: &tls.Config{},
-	}
-	client := &http.Client{
-		Transport: tr,
-	}
+	client := cache.requestClient()
 	req, err := http.NewRequest(method, urlStr, nil)
 
 	if err != nil {
@@ -479,19 +434,7 @@ func (cache *XueXiTUserCache) PullExamQuestionApi(courseId, classId, tId, id, cp
 	urlStr := "https://mooc1-api.chaoxing.com/exam-ans/exam/test/reVersionTestStartNew?keyboardDisplayRequiresUserAction=1&courseId=" + courseId + "&classId=" + classId + "&source=0&imei=" + IMEI + "&tId=" + tId + "&id=" + id + "&p=1&start=" + fmt.Sprintf("%d", index) + "&cpi=" + cpi + "&isphone=true&monitorStatus=0&monitorOp=-1&remainTimeParam=" + remainTimeParam + "&relationAnswerLastUpdateTime=" + relationAnswerLastUpdateTime + "&enc=" + enc
 	method := "GET"
 
-	tr := &http.Transport{
-		TLSClientConfig: &tls.Config{},
-	}
-
-	//如果开启了IP代理，那么就直接添加代理
-	if cache.IpProxySW {
-		tr.Proxy = func(req *http.Request) (*url.URL, error) {
-			return url.Parse("http://" + cache.ProxyIP) // 设置代理
-		}
-	}
-	client := &http.Client{
-		Transport: tr,
-	}
+	client := cache.requestClient()
 	req, err := http.NewRequest(method, urlStr, nil)
 
 	if err != nil {
@@ -616,19 +559,7 @@ func (cache *XueXiTUserCache) SubmitExamAnswerApi(question *XXTExamQuestionSubmi
 
 	payload := strings.NewReader(values.Encode())
 
-	tr := &http.Transport{
-		TLSClientConfig: &tls.Config{},
-	}
-
-	//如果开启了IP代理，那么就直接添加代理
-	if cache.IpProxySW {
-		tr.Proxy = func(req *http.Request) (*url.URL, error) {
-			return url.Parse("http://" + cache.ProxyIP) // 设置代理
-		}
-	}
-	client := &http.Client{
-		Transport: tr,
-	}
+	client := cache.requestClient()
 	req, err := http.NewRequest(method, urlStr, payload)
 
 	if err != nil {

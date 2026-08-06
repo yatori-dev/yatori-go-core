@@ -52,10 +52,6 @@ func (e *RemoteError) Error() string {
 	return strings.Join(parts, ": ")
 }
 
-func newRequestClient(transport http.RoundTripper) *http.Client {
-	return &http.Client{Transport: transport, Timeout: defaultRequestTimeout}
-}
-
 func newSharedTransport(proxy func(*http.Request) (*url.URL, error)) *http.Transport {
 	transport := http.DefaultTransport.(*http.Transport).Clone()
 	transport.Proxy = proxy

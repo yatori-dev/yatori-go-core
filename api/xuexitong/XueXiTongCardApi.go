@@ -2,7 +2,6 @@ package xuexitong
 
 import (
 	"crypto/md5"
-	"crypto/tls"
 	"encoding/hex"
 	"errors"
 	"fmt"
@@ -105,19 +104,7 @@ func (cache *XueXiTUserCache) VideoDtoFetch(p *PointVideoDto, retry int, lastErr
 	params.Set("flag", "normal")
 	params.Set("_dc", strconv.FormatInt(time.Now().UnixNano()/1e6, 10))
 	method := "GET"
-	tr := &http.Transport{
-		TLSClientConfig: &tls.Config{},
-	}
-
-	//如果开启了IP代理，那么就直接添加代理
-	if cache.IpProxySW {
-		tr.Proxy = func(req *http.Request) (*url.URL, error) {
-			return url.Parse("http://" + cache.ProxyIP) // 设置代理
-		}
-	}
-	client := &http.Client{
-		Transport: tr,
-	}
+	client := cache.requestClient()
 	resp, err := http.NewRequest(method, fmt.Sprintf("%s/%s?%s", "https://mooc1-api.chaoxing.com/ananas/status", p.ObjectID, params.Encode()), nil)
 	// resp, err := p.Session.Client.Get(fmt.Sprintf("%s/%s?%s", APIChapterCardResource, p.ObjectID, params.Encode()))
 	if err != nil {
@@ -166,19 +153,7 @@ func (cache *XueXiTUserCache) VideoSubmitStudyTimeApi(p *PointVideoDto, playingT
 
 	method := "GET"
 
-	tr := &http.Transport{
-		TLSClientConfig: &tls.Config{},
-	}
-
-	//如果开启了IP代理，那么就直接添加代理
-	if cache.IpProxySW {
-		tr.Proxy = func(req *http.Request) (*url.URL, error) {
-			return url.Parse("http://" + cache.ProxyIP) // 设置代理
-		}
-	}
-	client := &http.Client{
-		Transport: tr,
-	}
+	client := cache.requestClient()
 	req, err := http.NewRequest(method, urlStr, nil)
 
 	if err != nil {
@@ -247,19 +222,7 @@ func (cache *XueXiTUserCache) VideoSubmitStudyTimePEApi(p *PointVideoDto, playin
 
 	method := "GET"
 
-	tr := &http.Transport{
-		TLSClientConfig: &tls.Config{},
-	}
-
-	//如果开启了IP代理，那么就直接添加代理
-	if cache.IpProxySW {
-		tr.Proxy = func(req *http.Request) (*url.URL, error) {
-			return url.Parse("http://" + cache.ProxyIP) // 设置代理
-		}
-	}
-	client := &http.Client{
-		Transport: tr,
-	}
+	client := cache.requestClient()
 	req, err := http.NewRequest(method, urlStr, nil)
 
 	if err != nil {
@@ -327,19 +290,7 @@ func (cache *XueXiTUserCache) VideoDtoPlayReport(p *PointVideoDto, playingTime i
 		p.ClassID, cache.UserID, p.JobID, p.ObjectID, playingTime*1000, "d_yHJ!$pdA~5", p.Duration*1000, clipTime)))
 	enc := hex.EncodeToString(hash[:])
 	//fmt.Println(enc)
-	tr := &http.Transport{
-		TLSClientConfig: &tls.Config{},
-	}
-
-	//如果开启了IP代理，那么就直接添加代理
-	if cache.IpProxySW {
-		tr.Proxy = func(req *http.Request) (*url.URL, error) {
-			return url.Parse("http://" + cache.ProxyIP) // 设置代理
-		}
-	}
-	client := &http.Client{
-		Transport: tr,
-	}
+	client := cache.requestClient()
 	params := url.Values{}
 	params.Set("otherInfo", p.OtherInfo)
 	params.Set("playingTime", strconv.Itoa(playingTime))
@@ -445,19 +396,7 @@ func (cache *XueXiTUserCache) WorkFetchQuestion(p *PointWorkDto, retry int, last
 	params.Add("cpi", p.Cpi)
 	params.Add("ktoken", p.KToken)
 	params.Add("enc", p.Enc)
-	tr := &http.Transport{
-		TLSClientConfig: &tls.Config{},
-	}
-
-	//如果开启了IP代理，那么就直接添加代理
-	if cache.IpProxySW {
-		tr.Proxy = func(req *http.Request) (*url.URL, error) {
-			return url.Parse("http://" + cache.ProxyIP) // 设置代理
-		}
-	}
-	client := &http.Client{
-		Transport: tr,
-	}
+	client := cache.requestClient()
 	req, err := http.NewRequest(method, "https://mooc1-api.chaoxing.com/android/mworkspecial"+"?"+params.Encode(), nil)
 
 	if err != nil {
@@ -527,19 +466,7 @@ func (cache *XueXiTUserCache) WorkFetch1Question(p *PointWorkDto, retry int, las
 	params.Add("cpi", p.Cpi)
 	params.Add("originJobId", p.JobID)
 
-	tr := &http.Transport{
-		TLSClientConfig: &tls.Config{},
-	}
-
-	//如果开启了IP代理，那么就直接添加代理
-	if cache.IpProxySW {
-		tr.Proxy = func(req *http.Request) (*url.URL, error) {
-			return url.Parse("http://" + cache.ProxyIP) // 设置代理
-		}
-	}
-	client := &http.Client{
-		Transport: tr,
-	}
+	client := cache.requestClient()
 	req, err := http.NewRequest(method, "https://mooc1-api.chaoxing.com/mooc-ans/work/phone/doHomeWork"+"?"+params.Encode(), nil)
 
 	if err != nil {
@@ -593,19 +520,7 @@ func (cache *XueXiTUserCache) WorkFetch2Question(p *PointWorkDto, retry int, las
 	params.Add("cpi", p.Cpi)
 	params.Add("originJobId", p.JobID)
 
-	tr := &http.Transport{
-		TLSClientConfig: &tls.Config{},
-	}
-
-	//如果开启了IP代理，那么就直接添加代理
-	if cache.IpProxySW {
-		tr.Proxy = func(req *http.Request) (*url.URL, error) {
-			return url.Parse("http://" + cache.ProxyIP) // 设置代理
-		}
-	}
-	client := &http.Client{
-		Transport: tr,
-	}
+	client := cache.requestClient()
 	req, err := http.NewRequest(method, "https://mooc1-api.chaoxing.com/mooc-ans/work/phone/work"+"?"+params.Encode(), nil)
 
 	if err != nil {
@@ -650,19 +565,7 @@ func (cache *XueXiTUserCache) WorkCommit(p *PointWorkDto, fields []WorkInputFiel
 	//TODO 此处需要对答案进行分析后提交 具体body模板 在 examples 中
 	payload := strings.NewReader("")
 
-	tr := &http.Transport{
-		TLSClientConfig: &tls.Config{},
-	}
-
-	//如果开启了IP代理，那么就直接添加代理
-	if cache.IpProxySW {
-		tr.Proxy = func(req *http.Request) (*url.URL, error) {
-			return url.Parse("http://" + cache.ProxyIP) // 设置代理
-		}
-	}
-	client := &http.Client{
-		Transport: tr,
-	}
+	client := cache.requestClient()
 	req, err := http.NewRequest(method, "https://mooc1-api.chaoxing.com/work/addStudentWorkNew", payload)
 
 	if err != nil {
@@ -704,19 +607,7 @@ func (cache *XueXiTUserCache) DocumentDtoReadingReport(p *PointDocumentDto, retr
 		return "", lastErr
 	}
 	method := "GET"
-	tr := &http.Transport{
-		TLSClientConfig: &tls.Config{},
-	}
-
-	//如果开启了IP代理，那么就直接添加代理
-	if cache.IpProxySW {
-		tr.Proxy = func(req *http.Request) (*url.URL, error) {
-			return url.Parse("http://" + cache.ProxyIP) // 设置代理
-		}
-	}
-	client := &http.Client{
-		Transport: tr,
-	}
+	client := cache.requestClient()
 	params := url.Values{}
 
 	params.Add("jobid", p.JobID)
@@ -766,19 +657,7 @@ func (cache *XueXiTUserCache) DocumentDtoReadingBookReport(p *PointDocumentDto, 
 	}
 	method := "GET"
 
-	tr := &http.Transport{
-		TLSClientConfig: &tls.Config{},
-	}
-
-	//如果开启了IP代理，那么就直接添加代理
-	if cache.IpProxySW {
-		tr.Proxy = func(req *http.Request) (*url.URL, error) {
-			return url.Parse("http://" + cache.ProxyIP) // 设置代理
-		}
-	}
-	client := &http.Client{
-		Transport: tr,
-	}
+	client := cache.requestClient()
 	params := url.Values{}
 
 	params.Add("jobid", p.JobID)
@@ -830,19 +709,7 @@ func (cache *XueXiTUserCache) ReadV2PointWebReport(p *PointDocumentDto, retry in
 	urlStr := "https://mooc1-1.chaoxing.com/ananas/job/readv2?jobid=" + p.JobID + "&knowledgeid=" + fmt.Sprintf("%d", p.KnowledgeID) + "&courseid=" + p.CourseID + "&clazzid=" + p.ClassID + "&jtoken=" + p.Jtoken + "&checkMicroTopic=true&microTopicId=0&_dc=" + fmt.Sprintf("%d", time.Now().UnixMilli())
 	method := "GET"
 
-	tr := &http.Transport{
-		TLSClientConfig: &tls.Config{},
-	}
-
-	//如果开启了IP代理，那么就直接添加代理
-	if cache.IpProxySW {
-		tr.Proxy = func(req *http.Request) (*url.URL, error) {
-			return url.Parse("http://" + cache.ProxyIP) // 设置代理
-		}
-	}
-	client := &http.Client{
-		Transport: tr,
-	}
+	client := cache.requestClient()
 	req, err := http.NewRequest(method, urlStr, nil)
 
 	if err != nil {
@@ -889,19 +756,7 @@ func (cache *XueXiTUserCache) ReadV2PointPeReport(p *PointDocumentDto, retry int
 	urlStr := "https://mooc1-api.chaoxing.com/ananas/job/readv2?jobid=" + p.JobID + "&knowledgeid=" + fmt.Sprintf("%d", p.KnowledgeID) + "&courseid=" + p.CourseID + "&clazzid=" + p.ClassID + "&jtoken=" + p.Jtoken + "&checkMicroTopic=true&microTopicId=0&_dc=" + fmt.Sprintf("%d", time.Now().UnixMilli())
 	method := "GET"
 
-	tr := &http.Transport{
-		TLSClientConfig: &tls.Config{},
-	}
-
-	//如果开启了IP代理，那么就直接添加代理
-	if cache.IpProxySW {
-		tr.Proxy = func(req *http.Request) (*url.URL, error) {
-			return url.Parse("http://" + cache.ProxyIP) // 设置代理
-		}
-	}
-	client := &http.Client{
-		Transport: tr,
-	}
+	client := cache.requestClient()
 	req, err := http.NewRequest(method, urlStr, nil)
 
 	if err != nil {
@@ -941,18 +796,7 @@ func (cache *XueXiTUserCache) HyperlinkDtoCompleteReport(p *PointHyperlinkDto, r
 	urlStr := "https://mooc1.chaoxing.com/ananas/job/hyperlink?jobid=" + p.JobID + "&knowledgeid=" + strconv.Itoa(p.KnowledgeID) + "&courseid=" + p.CourseID + "&clazzid=" + p.ClassID + "&jtoken=" + p.Jtoken + "&checkMicroTopic=true&microTopicId=undefined&_dc=" + strconv.FormatInt(time.Now().UnixMilli(), 10)
 	method := "GET"
 
-	tr := &http.Transport{
-		TLSClientConfig: &tls.Config{},
-	}
-	//如果开启了IP代理，那么就直接添加代理
-	if cache.IpProxySW {
-		tr.Proxy = func(req *http.Request) (*url.URL, error) {
-			return url.Parse("http://" + cache.ProxyIP) // 设置代理
-		}
-	}
-	client := &http.Client{
-		Transport: tr,
-	}
+	client := cache.requestClient()
 	req, err := http.NewRequest(method, urlStr, nil)
 
 	if err != nil {
@@ -995,18 +839,7 @@ func (cache *XueXiTUserCache) PullLiveInfoApi(p *PointLiveDto, retry int, lastEr
 	urlStr := "https://mooc1.chaoxing.com/ananas/live/liveinfo?liveid=" + p.LiveId + "&userid=" + p.UserId + "&clazzid=" + p.ClassID + "&knowledgeid=" + fmt.Sprintf("%d", p.KnowledgeID) + "&courseid=" + p.CourseID + "&jobid=" + p.JobID + "&ut=s"
 	method := "GET"
 
-	tr := &http.Transport{
-		TLSClientConfig: &tls.Config{},
-	}
-	//如果开启了IP代理，那么就直接添加代理
-	if cache.IpProxySW {
-		tr.Proxy = func(req *http.Request) (*url.URL, error) {
-			return url.Parse("http://" + cache.ProxyIP) // 设置代理
-		}
-	}
-	client := &http.Client{
-		Transport: tr,
-	}
+	client := cache.requestClient()
 	req, err := http.NewRequest(method, urlStr, nil)
 
 	if err != nil {
@@ -1050,18 +883,7 @@ func (cache *XueXiTUserCache) LiveRelationReport(p *PointLiveDto, retry int, las
 	urlStr := "https://mooc1.chaoxing.com/mooc-ans/live/relation?courseid=" + p.CourseID + "&knowledgeid=" + fmt.Sprintf("%d", p.KnowledgeID) + "&ut=s&jobid=" + p.JobID + "&aid=" + p.Aid
 	method := "GET"
 
-	tr := &http.Transport{
-		TLSClientConfig: &tls.Config{},
-	}
-	//如果开启了IP代理，那么就直接添加代理
-	if cache.IpProxySW {
-		tr.Proxy = func(req *http.Request) (*url.URL, error) {
-			return url.Parse("http://" + cache.ProxyIP) // 设置代理
-		}
-	}
-	client := &http.Client{
-		Transport: tr,
-	}
+	client := cache.requestClient()
 	req, err := http.NewRequest(method, urlStr, nil)
 
 	if err != nil {
@@ -1103,18 +925,7 @@ func (cache *XueXiTUserCache) LiveWatchMomentReport(p *PointLiveDto, UParam stri
 	urlStr := "https://zhibo.chaoxing.com/apis/live/put/watchMoment?liveId=" + p.LiveId + "&streamName=" + p.StreamName + "&vdoid=" + p.Vdoid + "&watchMoment=" + fmt.Sprintf("%.6f", watchMoment) + "&t=" + strconv.FormatInt(time.Now().UnixMilli(), 10) + "&u=" + UParam
 	method := "GET"
 
-	tr := &http.Transport{
-		TLSClientConfig: &tls.Config{},
-	}
-	//如果开启了IP代理，那么就直接添加代理
-	if cache.IpProxySW {
-		tr.Proxy = func(req *http.Request) (*url.URL, error) {
-			return url.Parse("http://" + cache.ProxyIP) // 设置代理
-		}
-	}
-	client := &http.Client{
-		Transport: tr,
-	}
+	client := cache.requestClient()
 	req, err := http.NewRequest(method, urlStr, nil)
 
 	if err != nil {
@@ -1155,18 +966,7 @@ func (cache *XueXiTUserCache) LiveSaveTimePcReport(p *PointLiveDto, retry int, l
 	urlStr := "https://zhibo.chaoxing.com/saveTimePc?streamName=" + p.StreamName + "&vdoid=" + p.Vdoid + "&userId=" + p.UserId + "&isStart=1&t=" + strconv.FormatInt(time.Now().UnixMilli(), 10) + "&courseId=" + p.CourseID
 	method := "GET"
 
-	tr := &http.Transport{
-		TLSClientConfig: &tls.Config{},
-	}
-	//如果开启了IP代理，那么就直接添加代理
-	if cache.IpProxySW {
-		tr.Proxy = func(req *http.Request) (*url.URL, error) {
-			return url.Parse("http://" + cache.ProxyIP) // 设置代理
-		}
-	}
-	client := &http.Client{
-		Transport: tr,
-	}
+	client := cache.requestClient()
 	req, err := http.NewRequest(method, urlStr, nil)
 
 	if err != nil {

@@ -2,7 +2,6 @@ package xuexitong
 
 import (
 	"context"
-	"crypto/tls"
 	"errors"
 	"fmt"
 	"io/ioutil"
@@ -73,25 +72,19 @@ func (cache *XueXiTUserCache) PullWorkListHtmlApiContext(ctx context.Context, co
 	urlStr := "https://mooc1-api.chaoxing.com/work/task-list?courseId=" + courseId + "&classId=" + classId + "&cpi=" + cpi
 	method := "GET"
 
-	tr := &http.Transport{
-		TLSClientConfig: &tls.Config{},
-	}
-	client := &http.Client{
-		Transport: tr,
-		Timeout:   defaultRequestTimeout,
-		CheckRedirect: func(req *http.Request, via []*http.Request) error {
-			if len(via) >= 5 {
-				return errors.New("太多重定向")
-			}
+	client := *cache.requestClient()
+	client.CheckRedirect = func(req *http.Request, via []*http.Request) error {
+		if len(via) >= 5 {
+			return errors.New("太多重定向")
+		}
 
-			// 复制 Cookie
-			if len(via) > 0 {
-				for _, c := range via[0].Cookies() {
-					req.AddCookie(c)
-				}
+		// 复制 Cookie
+		if len(via) > 0 {
+			for _, c := range via[0].Cookies() {
+				req.AddCookie(c)
 			}
-			return nil // 允许重定向
-		},
+		}
+		return nil // 允许重定向
 	}
 	req, err := http.NewRequestWithContext(ctx, method, urlStr, nil)
 
@@ -143,29 +136,23 @@ func (cache *XueXiTUserCache) PullWorkEnterInformHtmlApi(
 
 	var finalURL string // ⭐ 用于保存最终的有效 URL
 
-	tr := &http.Transport{
-		TLSClientConfig: &tls.Config{},
-	}
-	client := &http.Client{
-		Transport: tr,
+	client := *cache.requestClient()
+	// ⭐ 重定向处理，抓取重定向后的 URL
+	client.CheckRedirect = func(req *http.Request, via []*http.Request) error {
+		// 限制次数
+		if len(via) >= 5 {
+			return errors.New("太多重定向")
+		}
+		// 每次重定向都更新 finalURL
+		finalURL = req.URL.String()
 
-		// ⭐ 重定向处理，抓取重定向后的 URL
-		CheckRedirect: func(req *http.Request, via []*http.Request) error {
-			// 限制次数
-			if len(via) >= 5 {
-				return errors.New("太多重定向")
+		// ⭐ 手动携带 Cookie
+		if len(via) > 0 {
+			for _, c := range via[0].Cookies() {
+				req.AddCookie(c)
 			}
-			// 每次重定向都更新 finalURL
-			finalURL = req.URL.String()
-
-			// ⭐ 手动携带 Cookie
-			if len(via) > 0 {
-				for _, c := range via[0].Cookies() {
-					req.AddCookie(c)
-				}
-			}
-			return nil
-		},
+		}
+		return nil
 	}
 
 	req, err := http.NewRequest(method, urlStr, nil)
@@ -215,19 +202,7 @@ func (cache *XueXiTUserCache) PullWorkPaperHtmlApi(courseId, classId, workId, so
 	urlStr := "https://mooc1-api.chaoxing.com/mooc-ans/work/phone/doHomeWork?courseId=" + courseId + "&workId=" + workId + "&cpi=" + cpi + "&workAnswerId=" + workAnswerId + "&classId=" + classId + "&oldWorkId&mooc=1&msgId=" + msgId + "&source=" + source + "&checkIntegrity=true&enc=" + enc + "&keyboardDisplayRequiresUserAction=" + keyboardDisplayRequiresUserAction
 	method := "GET"
 
-	tr := &http.Transport{
-		TLSClientConfig: &tls.Config{},
-	}
-
-	//如果开启了IP代理，那么就直接添加代理
-	if cache.IpProxySW {
-		tr.Proxy = func(req *http.Request) (*url.URL, error) {
-			return url.Parse("http://" + cache.ProxyIP) // 设置代理
-		}
-	}
-	client := &http.Client{
-		Transport: tr,
-	}
+	client := cache.requestClient()
 	req, err := http.NewRequest(method, urlStr, nil)
 
 	if err != nil {
@@ -352,19 +327,7 @@ func (cache *XueXiTUserCache) SubmitWorkAnswerApi(question *XXTWorkQuestionSubmi
 
 	//payload := strings.NewReader("workExamUploadUrl=&workExamUploadCrcUrl=&workRelationAnswerId=54657628&knowledgeid=0&enc=737ad94cd5529ffa3ba68606eb91a124&source=0&encWork=ace56cb8a1c65f68339d3cd452757caa&courseId=258101827&workRelationId=48731428&classId=134204187&workTimesEnc=&courseId=258101827&workRelationId=48731428&classId=134204187&answer405139692=A&type405139692=0&score405139692=100.0&questionId=405139692&index=0&tempSave=false")
 
-	tr := &http.Transport{
-		TLSClientConfig: &tls.Config{},
-	}
-
-	//如果开启了IP代理，那么就直接添加代理
-	if cache.IpProxySW {
-		tr.Proxy = func(req *http.Request) (*url.URL, error) {
-			return url.Parse("http://" + cache.ProxyIP) // 设置代理
-		}
-	}
-	client := &http.Client{
-		Transport: tr,
-	}
+	client := cache.requestClient()
 	req, err := http.NewRequest(method, urlStr, payload)
 
 	if err != nil {
@@ -406,19 +369,7 @@ func (cache *XueXiTUserCache) PullWorkQuestionApi(courseId, classId, workId, sou
 	urlStr := "https://mooc1-api.chaoxing.com/mooc-ans/work/phone/doHomeWork?courseId=" + courseId + "&workId=" + workId + "&cpi=" + cpi + "&workAnswerId=" + workAnswerId + "&classId=" + classId + "&mooc=1" + "&source=" + source + "&enc=" + enc + "&keyboardDisplayRequiresUserAction=" + keyboardDisplayRequiresUserAction + "&index=" + fmt.Sprintf("%d", index)
 	method := "GET"
 
-	tr := &http.Transport{
-		TLSClientConfig: &tls.Config{},
-	}
-
-	//如果开启了IP代理，那么就直接添加代理
-	if cache.IpProxySW {
-		tr.Proxy = func(req *http.Request) (*url.URL, error) {
-			return url.Parse("http://" + cache.ProxyIP) // 设置代理
-		}
-	}
-	client := &http.Client{
-		Transport: tr,
-	}
+	client := cache.requestClient()
 	req, err := http.NewRequest(method, urlStr, nil)
 
 	if err != nil {

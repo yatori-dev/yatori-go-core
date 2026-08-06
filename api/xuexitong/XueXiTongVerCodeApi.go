@@ -3,7 +3,6 @@ package xuexitong
 import (
 	"bytes"
 	"crypto/md5"
-	"crypto/tls"
 	"encoding/hex"
 	"fmt"
 	"image"
@@ -30,16 +29,7 @@ func (cache *XueXiTUserCache) XueXiTVerificationCodeApi(retry int, lastErr error
 	urlStr := "https://mooc1-api.chaoxing.com/processVerifyPng.ac?t=" + fmt.Sprintf("%d", time.Now().UnixMilli())
 	method := "GET"
 
-	tr := &http.Transport{
-		TLSClientConfig: &tls.Config{},
-	}
-	//如果开启了IP代理，那么就直接添加代理
-	if cache.IpProxySW {
-		tr.Proxy = func(req *http.Request) (*url.URL, error) {
-			return url.Parse("http://" + cache.ProxyIP) // 设置代理
-		}
-	}
-	client := newRequestClient(tr)
+	client := cache.requestClient()
 	req, err := http.NewRequest(method, urlStr, nil)
 
 	if err != nil {
@@ -80,18 +70,7 @@ func (cache *XueXiTUserCache) XueXiTChapterVerificationCodeApi(retry int, lastEr
 	urlStr := "https://mooc1.chaoxing.com/mooc-ans/kaptcha-img/code?" +
 		fmt.Sprintf("%d", time.Now().UnixMilli())
 
-	tr := &http.Transport{
-		TLSClientConfig: &tls.Config{},
-	}
-
-	// 代理
-	if cache.IpProxySW {
-		tr.Proxy = func(req *http.Request) (*url.URL, error) {
-			return url.Parse("http://" + cache.ProxyIP)
-		}
-	}
-
-	client := &http.Client{Transport: tr}
+	client := cache.requestClient()
 
 	req, err := http.NewRequest("GET", urlStr, nil)
 	if err != nil {
@@ -142,23 +121,7 @@ func (cache *XueXiTUserCache) XueXiTPassVerificationCode(code string, retry int,
 		return false, err
 	}
 
-	tr := &http.Transport{
-		TLSClientConfig: &tls.Config{},
-	}
-	//如果开启了IP代理，那么就直接添加代理
-	if cache.IpProxySW {
-		tr.Proxy = func(req *http.Request) (*url.URL, error) {
-			return url.Parse("http://" + cache.ProxyIP) // 设置代理
-		}
-	}
-	client := &http.Client{
-		Transport: tr,
-		// 禁止自动重定向
-		CheckRedirect: func(req *http.Request, via []*http.Request) error {
-			// 返回 http.ErrUseLastResponse 表示不要跟随重定向
-			return http.ErrUseLastResponse
-		},
-	}
+	client := cache.noRedirectRequestClient()
 	req, err := http.NewRequest(method, urlStr, payload)
 
 	if err != nil {
@@ -213,23 +176,7 @@ func (cache *XueXiTUserCache) XueXiTPassCahpterVerificationCode(code string, ret
 		return false, err
 	}
 
-	tr := &http.Transport{
-		TLSClientConfig: &tls.Config{},
-	}
-	//如果开启了IP代理，那么就直接添加代理
-	if cache.IpProxySW {
-		tr.Proxy = func(req *http.Request) (*url.URL, error) {
-			return url.Parse("http://" + cache.ProxyIP) // 设置代理
-		}
-	}
-	client := &http.Client{
-		Transport: tr,
-		// 禁止自动重定向
-		CheckRedirect: func(req *http.Request, via []*http.Request) error {
-			// 返回 http.ErrUseLastResponse 表示不要跟随重定向
-			return http.ErrUseLastResponse
-		},
-	}
+	client := cache.noRedirectRequestClient()
 	req, err := http.NewRequest(method, urlStr, payload)
 
 	if err != nil {
@@ -271,17 +218,7 @@ func (cache *XueXiTUserCache) XueXiTSliderVerificationCodeApi(captchaId string, 
 	urlStr := "https://captcha.chaoxing.com/captcha/get/conf?callback=cx_captcha_function&captchaId=" + captchaId + "&_=" + fmt.Sprintf("%d", time.Now().UnixMilli())
 	method := "GET"
 
-	tr := &http.Transport{
-		TLSClientConfig: &tls.Config{},
-	}
-
-	//如果开启了IP代理，那么就直接添加代理
-	if cache.IpProxySW {
-		tr.Proxy = func(req *http.Request) (*url.URL, error) {
-			return url.Parse("http://" + cache.ProxyIP) // 设置代理
-		}
-	}
-	client := newRequestClient(tr)
+	client := cache.requestClient()
 	req, err := http.NewRequest(method, urlStr, nil)
 
 	if err != nil {
@@ -332,19 +269,7 @@ func (cache *XueXiTUserCache) XueXiTSliderVerificationImgApi(captchaId, serverTi
 	urlStr := "https://captcha.chaoxing.com/captcha/get/verification/image?callback=cx_captcha_function&captchaId=" + captchaId + "&type=slide&version=" + version + "&captchaKey=" + captchaKey + "&token=" + token + "&referer=" + url.QueryEscape(referer)
 	method := "GET"
 
-	tr := &http.Transport{
-		TLSClientConfig: &tls.Config{},
-	}
-
-	//如果开启了IP代理，那么就直接添加代理
-	if cache.IpProxySW {
-		tr.Proxy = func(req *http.Request) (*url.URL, error) {
-			return url.Parse("http://" + cache.ProxyIP) // 设置代理
-		}
-	}
-	client := &http.Client{
-		Transport: tr,
-	}
+	client := cache.requestClient()
 	req, err := http.NewRequest(method, urlStr, nil)
 
 	if err != nil {
@@ -384,14 +309,9 @@ func (cache *XueXiTUserCache) PullSliderImgApi(imgUrl string, retry int, lastErr
 	}
 	method := "GET"
 
-	tr := &http.Transport{
-		TLSClientConfig: &tls.Config{},
-	}
-	client := &http.Client{
-		Transport: tr,
-		CheckRedirect: func(_ *http.Request, _ []*http.Request) error {
-			return fmt.Errorf("滑块图片请求不允许重定向")
-		},
+	client := *cache.noRedirectRequestClient()
+	client.CheckRedirect = func(_ *http.Request, _ []*http.Request) error {
+		return fmt.Errorf("滑块图片请求不允许重定向")
 	}
 	req, err := http.NewRequest(method, imgUrl, nil)
 
@@ -432,10 +352,7 @@ func (cache *XueXiTUserCache) PassSliderApi(captchaId, token, xPoint, runEnv str
 	urlStr := "https://captcha.chaoxing.com/captcha/check/verification/result?callback=cx_captcha_function&captchaId=" + captchaId + "&type=slide&token=" + token + "&textClickArr=" + url.QueryEscape(`[{"x":`+xPoint+`}]`) + "&coordinate=" + url.QueryEscape(`[]`) + "&runEnv=10&version=1.1.20&t=a&iv=cdd9bfb9e7805d0d2d5f1ad4498f70e1&_=1764584636040"
 	method := "GET"
 
-	tr := &http.Transport{
-		TLSClientConfig: &tls.Config{},
-	}
-	client := newRequestClient(tr)
+	client := cache.requestClient()
 	req, err := http.NewRequest(method, urlStr, nil)
 
 	if err != nil {

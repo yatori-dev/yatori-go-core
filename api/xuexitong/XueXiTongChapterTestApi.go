@@ -5,7 +5,6 @@ import (
 	"context"
 	"crypto/md5"
 	"crypto/sha1"
-	"crypto/tls"
 	"encoding/base64"
 	"encoding/binary"
 	"encoding/hex"
@@ -250,18 +249,7 @@ func (cache *XueXiTUserCache) WorkNewSubmitAnswerContext(ctx context.Context, co
 		req.AddCookie(cookie)
 	}
 
-	// 发送请求
-	tr := &http.Transport{
-		TLSClientConfig: &tls.Config{},
-	}
-
-	//如果开启了IP代理，那么就直接添加代理
-	if cache.IpProxySW {
-		tr.Proxy = func(req *http.Request) (*url.URL, error) {
-			return url.Parse("http://" + cache.ProxyIP) // 设置代理
-		}
-	}
-	return cache.sendChapterWorkSubmission(newRequestClient(tr), req)
+	return cache.sendChapterWorkSubmission(cache.requestClient(), req)
 }
 
 func (cache *XueXiTUserCache) sendChapterWorkSubmission(client *http.Client, req *http.Request) (string, error) {
