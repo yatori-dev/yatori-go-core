@@ -13,6 +13,7 @@ import (
 	"net/http"
 	"net/url"
 	"strings"
+	"sync"
 	"time"
 
 	"github.com/yatori-dev/yatori-go-core/utils"
@@ -45,6 +46,10 @@ type XueXiTUserCache struct {
 	cookie      string //验证码用的session
 	IpProxySW   bool   // 是否开启代理
 	ProxyIP     string //代理IP
+
+	requestClientsMu     sync.Mutex
+	cachedProxyIP        string
+	cachedRequestClients *requestClients
 }
 
 func (cache *XueXiTUserCache) GetCookie() string {

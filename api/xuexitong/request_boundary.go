@@ -5,11 +5,29 @@ import (
 	"encoding/json"
 	"fmt"
 	"net/http"
+	"net/url"
 	"strings"
 	"time"
 )
 
-const defaultRequestTimeout = 30 * time.Second
+const (
+	defaultRequestTimeout     = 30 * time.Second
+	responseHeaderTimeout     = 15 * time.Second
+	tlsHandshakeTimeout       = 10 * time.Second
+	idleConnectionTimeout     = 90 * time.Second
+	maxIdleConnectionsPerHost = 32
+)
+
+var (
+	sharedRequestTransport = newSharedTransport(nil)
+	sharedRequestClients   = newRequestClients(sharedRequestTransport)
+)
+
+type requestClients struct {
+	transport  *http.Transport
+	normal     *http.Client
+	noRedirect *http.Client
+}
 
 // RemoteError preserves enough response context to distinguish HTTP failures from business rejections.
 type RemoteError struct {
@@ -36,6 +54,65 @@ func (e *RemoteError) Error() string {
 
 func newRequestClient(transport http.RoundTripper) *http.Client {
 	return &http.Client{Transport: transport, Timeout: defaultRequestTimeout}
+}
+
+func newSharedTransport(proxy func(*http.Request) (*url.URL, error)) *http.Transport {
+	transport := http.DefaultTransport.(*http.Transport).Clone()
+	transport.Proxy = proxy
+	transport.ForceAttemptHTTP2 = true
+	transport.ResponseHeaderTimeout = responseHeaderTimeout
+	transport.TLSHandshakeTimeout = tlsHandshakeTimeout
+	transport.IdleConnTimeout = idleConnectionTimeout
+	transport.MaxIdleConnsPerHost = maxIdleConnectionsPerHost
+	transport.MaxConnsPerHost = 0
+	return transport
+}
+
+func newRequestClients(transport *http.Transport) *requestClients {
+	return &requestClients{
+		transport: transport,
+		normal: &http.Client{
+			Transport: transport,
+			Timeout:   defaultRequestTimeout,
+		},
+		noRedirect: &http.Client{
+			Transport: transport,
+			Timeout:   defaultRequestTimeout,
+			CheckRedirect: func(_ *http.Request, _ []*http.Request) error {
+				return http.ErrUseLastResponse
+			},
+		},
+	}
+}
+
+func (cache *XueXiTUserCache) requestClient() *http.Client {
+	return cache.requestClients().normal
+}
+
+func (cache *XueXiTUserCache) noRedirectRequestClient() *http.Client {
+	return cache.requestClients().noRedirect
+}
+
+func (cache *XueXiTUserCache) requestClients() *requestClients {
+	if !cache.IpProxySW {
+		return sharedRequestClients
+	}
+
+	cache.requestClientsMu.Lock()
+	defer cache.requestClientsMu.Unlock()
+	if cache.cachedRequestClients != nil && cache.cachedProxyIP == cache.ProxyIP {
+		return cache.cachedRequestClients
+	}
+	if cache.cachedRequestClients != nil {
+		cache.cachedRequestClients.transport.CloseIdleConnections()
+	}
+	proxyIP := cache.ProxyIP
+	transport := newSharedTransport(func(*http.Request) (*url.URL, error) {
+		return url.Parse("http://" + proxyIP)
+	})
+	cache.cachedProxyIP = proxyIP
+	cache.cachedRequestClients = newRequestClients(transport)
+	return cache.cachedRequestClients
 }
 
 func validateResponse(operation string, response *http.Response, body []byte) error {
