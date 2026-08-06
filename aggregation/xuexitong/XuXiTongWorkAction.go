@@ -52,8 +52,12 @@ type XXTWorkQuestion struct {
 
 // 拉取考试列表
 func PullWorkListAction(cache *xuexitong.XueXiTUserCache, course XueXiTCourse) ([]XXTWork, error) {
+	return PullWorkListActionContext(context.Background(), cache, course)
+}
+
+func PullWorkListActionContext(ctx context.Context, cache *xuexitong.XueXiTUserCache, course XueXiTCourse) ([]XXTWork, error) {
 	examList := []XXTWork{}
-	examListHtml, err := cache.PullWorkListHtmlApi(course.CourseID, course.Key, fmt.Sprintf("%d", course.Cpi), 3, nil)
+	examListHtml, err := cache.PullWorkListHtmlApiContext(ctx, course.CourseID, course.Key, fmt.Sprintf("%d", course.Cpi), 3, nil)
 	if err != nil {
 		return examList, err
 	}

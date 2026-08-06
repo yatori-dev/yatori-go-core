@@ -165,8 +165,15 @@ func (cache *XueXiTUserCache) FetchChapterPointStatusContext(ctx context.Context
 //
 //	nodes: 任务点集合 , index: 任务点索引
 func (cache *XueXiTUserCache) FetchChapterCords(nodes []int, index, courseId int, retry int, lastErr error) (string, error) {
+	return cache.FetchChapterCordsContext(context.Background(), nodes, index, courseId, retry, lastErr)
+}
+
+func (cache *XueXiTUserCache) FetchChapterCordsContext(ctx context.Context, nodes []int, index, courseId int, retry int, lastErr error) (string, error) {
 	if retry < 0 {
 		return "", lastErr
+	}
+	if index < 0 || index >= len(nodes) {
+		return "", errors.New("章节索引越界")
 	}
 	method := "GET"
 	values := url.Values{}
@@ -187,13 +194,10 @@ func (cache *XueXiTUserCache) FetchChapterCords(nodes []int, index, courseId int
 			return url.Parse("http://" + cache.ProxyIP) // 设置代理
 		}
 	}
-	client := &http.Client{
-		Transport: tr,
-	}
-	req, err := http.NewRequest(method, "https://mooc1-api.chaoxing.com/gas/knowledge"+"?"+values.Encode(), nil)
+	client := newRequestClient(tr)
+	req, err := http.NewRequestWithContext(ctx, method, "https://mooc1-api.chaoxing.com/gas/knowledge"+"?"+values.Encode(), nil)
 
 	if err != nil {
-		fmt.Println(err)
 		return "", err
 	}
 	//req.Header.Add("User-Agent", " Dalvik/2.1.0 (Linux; U; Android 12; SM-N9006 Build/70e2a6b.1) (schild:e9b05c3f9fb49fef2f516e86ac3c4ff1) (device:SM-N9006) Language/zh_CN com.chaoxing.mobile/ChaoXingStudy_3_6.3.7_android_phone_10822_249 (@Kalimdor)_4627cad9c4b6415cba5dc6cac39e6c96")
@@ -209,23 +213,24 @@ func (cache *XueXiTUserCache) FetchChapterCords(nodes []int, index, courseId int
 	res, err := client.Do(req)
 
 	if err != nil {
-		time.Sleep(time.Duration(retry*5) * time.Second)
-		return cache.FetchChapterCords(nodes, index, courseId, retry-1, lastErr)
+		if waitErr := waitForRetry(ctx, time.Duration(retry*5)*time.Second); waitErr != nil {
+			return "", waitErr
+		}
+		return cache.FetchChapterCordsContext(ctx, nodes, index, courseId, retry-1, err)
 	}
-
 	if res.StatusCode != 200 {
-		return cache.FetchChapterCords(nodes, index, courseId, retry-1, errors.New("status code: "+fmt.Sprintf("%d", res.StatusCode)))
+		_ = res.Body.Close()
+		return cache.FetchChapterCordsContext(ctx, nodes, index, courseId, retry-1, errors.New("status code: "+fmt.Sprintf("%d", res.StatusCode)))
 	}
+	defer res.Body.Close()
 
 	body, err := ioutil.ReadAll(res.Body)
 	if err != nil {
-		fmt.Println(err)
-		return "", nil
+		return "", err
 	}
 	if strings.Contains(string(body), "请输入验证码") || strings.Contains(string(body), "请输入图片中的验证码") {
 		return "", errors.New("触发验证码")
 	}
-	defer res.Body.Close()
 	utils.CookiesAddNoRepetition(&cache.cookies, res.Cookies()) //赋值cookie
 	return string(body), nil
 }

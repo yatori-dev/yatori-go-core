@@ -61,35 +61,44 @@ func ChapterFetchCardsAction(
 	chapters *ChaptersList,
 	nodes []int,
 	index, courseId, classId, cpi int) ([]Card, []xuexitong.PointDto, error) {
+	return ChapterFetchCardsActionContext(context.Background(), cache, chapters, nodes, index, courseId, classId, cpi)
+}
+
+func ChapterFetchCardsActionContext(
+	ctx context.Context,
+	cache *xuexitong.XueXiTUserCache,
+	chapters *ChaptersList,
+	nodes []int,
+	index, courseId, classId, cpi int) ([]Card, []xuexitong.PointDto, error) {
 	var apiResp APIResponse
 
-	cords, err := cache.FetchChapterCords(nodes, index, courseId, 5, nil)
+	cords, err := cache.FetchChapterCordsContext(ctx, nodes, index, courseId, 5, nil)
 
 	if err != nil {
 		if err.Error() == "status code: 500" {
 			log2.Print(log2.DEBUG, "触发请求频繁500，自动重新登录")
-			ReLogin(cache)                                                       //越过验证码或者202
-			cords, err = cache.FetchChapterCords(nodes, index, courseId, 5, nil) //尝试重新拉取卡片信息
+			ReLogin(cache)                                                                   //越过验证码或者202
+			cords, err = cache.FetchChapterCordsContext(ctx, nodes, index, courseId, 5, nil) //尝试重新拉取卡片信息
 			if err != nil {
 				log2.Print(log2.DEBUG, "重新登录后cords拉取错误err值>>", fmt.Sprintf("%s", err.Error()))
 			}
 			log2.Print(log2.DEBUG, "重新登录后cords值>>", fmt.Sprintf("%+v", cords))
 		} else if err.Error() == "触发验证码" {
 			log2.Print(log2.DEBUG, utils.RunFuncName(), "触发验证码，正在进行AI智能识别绕过.....")
-			if err := passImageCaptcha(context.Background(), cache); err != nil {
+			if err := passImageCaptcha(ctx, cache); err != nil {
 				return nil, nil, fmt.Errorf("章节卡片验证码处理失败: %w", err)
 			}
-			cords, err = cache.FetchChapterCords(nodes, index, courseId, 5, nil) //尝试重新拉取卡片信息
+			cords, err = cache.FetchChapterCordsContext(ctx, nodes, index, courseId, 5, nil) //尝试重新拉取卡片信息
 			log2.Print(log2.DEBUG, utils.RunFuncName(), "绕过成功")
 		} else if strings.Contains(err.Error(), "status code: 202") {
-			ReLogin(cache)                                                       //重登
-			cords, err = cache.FetchChapterCords(nodes, index, courseId, 5, nil) //尝试重新拉取卡片信息
+			ReLogin(cache)                                                                   //重登
+			cords, err = cache.FetchChapterCordsContext(ctx, nodes, index, courseId, 5, nil) //尝试重新拉取卡片信息
 		} else if strings.Contains(err.Error(), "status code: 400") {
-			ReLogin(cache)                                                       //重登
-			cords, err = cache.FetchChapterCords(nodes, index, courseId, 5, nil) //尝试重新拉取卡片信息
+			ReLogin(cache)                                                                   //重登
+			cords, err = cache.FetchChapterCordsContext(ctx, nodes, index, courseId, 5, nil) //尝试重新拉取卡片信息
 		} else if strings.Contains(err.Error(), "status code: 403") {
-			ReLogin(cache)                                                       //重登
-			cords, err = cache.FetchChapterCords(nodes, index, courseId, 5, nil) //尝试重新拉取卡片信息
+			ReLogin(cache)                                                                   //重登
+			cords, err = cache.FetchChapterCordsContext(ctx, nodes, index, courseId, 5, nil) //尝试重新拉取卡片信息
 		}
 	}
 

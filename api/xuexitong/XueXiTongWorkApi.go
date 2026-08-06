@@ -1,6 +1,7 @@
 package xuexitong
 
 import (
+	"context"
 	"crypto/tls"
 	"errors"
 	"fmt"
@@ -62,6 +63,10 @@ type XXTWorkQuestionSubmitEntity struct {
 
 // PullWorkListHtmlApi 拉取邮箱作业列表
 func (cache *XueXiTUserCache) PullWorkListHtmlApi(courseId string, classId string, cpi string, retry int, lastErr error) (string, error) {
+	return cache.PullWorkListHtmlApiContext(context.Background(), courseId, classId, cpi, retry, lastErr)
+}
+
+func (cache *XueXiTUserCache) PullWorkListHtmlApiContext(ctx context.Context, courseId string, classId string, cpi string, retry int, lastErr error) (string, error) {
 	if retry < 0 {
 		return "", lastErr
 	}
@@ -73,6 +78,7 @@ func (cache *XueXiTUserCache) PullWorkListHtmlApi(courseId string, classId strin
 	}
 	client := &http.Client{
 		Transport: tr,
+		Timeout:   defaultRequestTimeout,
 		CheckRedirect: func(req *http.Request, via []*http.Request) error {
 			if len(via) >= 5 {
 				return errors.New("太多重定向")
@@ -87,10 +93,9 @@ func (cache *XueXiTUserCache) PullWorkListHtmlApi(courseId string, classId strin
 			return nil // 允许重定向
 		},
 	}
-	req, err := http.NewRequest(method, urlStr, nil)
+	req, err := http.NewRequestWithContext(ctx, method, urlStr, nil)
 
 	if err != nil {
-		fmt.Println(err)
 		return "", err
 	}
 	req.Header.Add("User-Agent", GetUA("mobile"))
@@ -106,8 +111,10 @@ func (cache *XueXiTUserCache) PullWorkListHtmlApi(courseId string, classId strin
 
 	res, err := client.Do(req)
 	if err != nil {
-		fmt.Println(err)
-		return cache.PullWorkListHtmlApi(courseId, classId, cpi, retry-1, err)
+		if ctxErr := ctx.Err(); ctxErr != nil {
+			return "", ctxErr
+		}
+		return cache.PullWorkListHtmlApiContext(ctx, courseId, classId, cpi, retry-1, err)
 	}
 	defer res.Body.Close()
 

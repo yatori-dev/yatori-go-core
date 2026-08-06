@@ -1,6 +1,7 @@
 package xuexitong
 
 import (
+	"context"
 	"crypto/tls"
 	"encoding/hex"
 	"errors"
@@ -57,6 +58,10 @@ type XXTExamQuestionSubmitEntity struct {
 
 // PullExamListHtmlApi 拉取邮箱考试列表
 func (cache *XueXiTUserCache) PullExamListHtmlApi(courseId string, classId string, cpi string, retry int, lastErr error) (string, error) {
+	return cache.PullExamListHtmlApiContext(context.Background(), courseId, classId, cpi, retry, lastErr)
+}
+
+func (cache *XueXiTUserCache) PullExamListHtmlApiContext(ctx context.Context, courseId string, classId string, cpi string, retry int, lastErr error) (string, error) {
 	if retry < 0 {
 		return "", lastErr
 	}
@@ -66,6 +71,7 @@ func (cache *XueXiTUserCache) PullExamListHtmlApi(courseId string, classId strin
 	}
 	client := &http.Client{
 		Transport: tr,
+		Timeout:   defaultRequestTimeout,
 		CheckRedirect: func(req *http.Request, via []*http.Request) error {
 			if len(via) >= 5 {
 				return errors.New("太多重定向")
@@ -80,10 +86,9 @@ func (cache *XueXiTUserCache) PullExamListHtmlApi(courseId string, classId strin
 			return nil // 允许重定向
 		},
 	}
-	req, err := http.NewRequest("GET", urlStr, nil)
+	req, err := http.NewRequestWithContext(ctx, "GET", urlStr, nil)
 
 	if err != nil {
-		fmt.Println(err)
 		return "", err
 	}
 	//req.Header.Add("User-Agent", GetUA("mobile"))
@@ -100,7 +105,9 @@ func (cache *XueXiTUserCache) PullExamListHtmlApi(courseId string, classId strin
 
 	res, err := client.Do(req)
 	if err != nil {
-		fmt.Println(err)
+		if ctxErr := ctx.Err(); ctxErr != nil {
+			return "", ctxErr
+		}
 		return "", err
 	}
 	defer res.Body.Close()

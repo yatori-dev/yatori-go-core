@@ -82,8 +82,12 @@ type XXTExamQuestion struct {
 
 // 拉取考试列表
 func PullExamListAction(cache *xuexitong.XueXiTUserCache, course XueXiTCourse) ([]XXTExam, error) {
+	return PullExamListActionContext(context.Background(), cache, course)
+}
+
+func PullExamListActionContext(ctx context.Context, cache *xuexitong.XueXiTUserCache, course XueXiTCourse) ([]XXTExam, error) {
 	examList := []XXTExam{}
-	examListHtml, err := cache.PullExamListHtmlApi(course.CourseID, course.Key, fmt.Sprintf("%d", course.Cpi), 3, nil)
+	examListHtml, err := cache.PullExamListHtmlApiContext(ctx, course.CourseID, course.Key, fmt.Sprintf("%d", course.Cpi), 3, nil)
 	if err != nil {
 		return examList, err
 	}
