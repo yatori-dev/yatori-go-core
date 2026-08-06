@@ -26,40 +26,43 @@ func WorkNewSubmitAnswerAction(userCache *xuexitong.XueXiTUserCache, question xu
 	//	question.JobId, question.TotalQuestionNum, question.AnswerId, question.WorkAnswerId, question.Api,
 	//	question.FullScore, question.OldSchoolId, question.OldWorkId, question.WorkRelationId, question.Enc_work,
 	//	question, submitState)
-	if err != nil {
-		if err.Error() == "触发验证码" {
-			log2.Print(log2.DEBUG, utils.RunFuncName(), "触发验证码，正在进行AI智能识别绕过.....")
-			for {
-				img, err1 := userCache.XueXiTVerificationCodeApi(7, nil)
-				if err1 != nil {
-					return "", err1
-				}
+	if err == nil {
+		return answer, nil
+	}
+	if err.Error() != "触发验证码" {
+		return answer, err
+	}
 
-				_, width, _ := utils.GetImageShape(img)
+	log2.Print(log2.DEBUG, utils.RunFuncName(), "触发验证码，正在进行AI智能识别绕过.....")
+	for {
+		img, err1 := userCache.XueXiTVerificationCodeApi(7, nil)
+		if err1 != nil {
+			return "", err1
+		}
 
-				var shape ort.Shape
-				if width == 140 {
-					shape = ort.NewShape(1, 23)
-				} else {
-					shape = ort.NewShape(1, 30)
-				}
-				codeResult := ddddocr.SemiOCRVerification(img, shape)
-				status, err1 := userCache.XueXiTPassVerificationCode(codeResult, 7, nil)
-				//fmt.Println(codeResult)
-				//fmt.Println(status)
-				if status {
-					break
-				}
-			}
-			answer, err = userCache.WorkNewSubmitAnswer(question.CourseId, question.ClassId, question.Knowledgeid, question.Cpi,
-				question.JobId, question.TotalQuestionNum, question.AnswerId, question.WorkAnswerId, question.Api,
-				question.FullScore, question.OldSchoolId, question.OldWorkId, question.WorkRelationId, question.Enc_work,
-				question, submitState) //尝试重新拉取卡片信息
-			log2.Print(log2.DEBUG, utils.RunFuncName(), "绕过成功")
+		_, width, _ := utils.GetImageShape(img)
+
+		var shape ort.Shape
+		if width == 140 {
+			shape = ort.NewShape(1, 23)
+		} else {
+			shape = ort.NewShape(1, 30)
+		}
+		codeResult := ddddocr.SemiOCRVerification(img, shape)
+		status, _ := userCache.XueXiTPassVerificationCode(codeResult, 7, nil)
+		if status {
+			break
 		}
 	}
 
-	//fmt.Println(answer)
+	answer, err = userCache.WorkNewSubmitAnswer(question.CourseId, question.ClassId, question.Knowledgeid, question.Cpi,
+		question.JobId, question.TotalQuestionNum, question.AnswerId, question.WorkAnswerId, question.Api,
+		question.FullScore, question.OldSchoolId, question.OldWorkId, question.WorkRelationId, question.Enc_work,
+		question, submitState)
+	if err != nil {
+		return answer, err
+	}
+	log2.Print(log2.DEBUG, utils.RunFuncName(), "绕过成功")
 	return answer, nil
 }
 

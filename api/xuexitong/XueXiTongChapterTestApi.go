@@ -12,21 +12,19 @@ import (
 	"errors"
 	"fmt"
 	"io"
+	"mime/multipart"
+	"net/http"
+	"net/url"
 	"os"
 	"regexp"
 	"sort"
+	"strconv"
 	"strings"
 
 	"github.com/PuerkitoBio/goquery"
 	"github.com/yatori-dev/yatori-go-core/que-core/qtype"
 	"github.com/yatori-dev/yatori-go-core/utils"
 	"github.com/yatori-dev/yatori-go-core/utils/qutils"
-
-	"io/ioutil"
-	"mime/multipart"
-	"net/http"
-	"net/url"
-	"strconv"
 )
 
 // WorkNewSubmitAnswer 新的提交作业答案的接口
@@ -214,8 +212,7 @@ func (cache *XueXiTUserCache) WorkNewSubmitAnswer(courseId string, classId strin
 	_ = writer.WriteField("answerwqbid", answerwqbid)
 	err := writer.Close()
 	if err != nil {
-		fmt.Println(err)
-		return "", err
+		return "", fmt.Errorf("构建章节测试任务点提交表单失败: %w", err)
 	}
 	//403825664,403825665,403825666,403825667,403825668,403825669,403825670,403825671,403825672,403825673,403825674,403825684,403825685,403825686,403825675,403825676,403825677,403825678,403825687,403825688,
 	//403825664,403825665,403825666,403825667,403825668,403825669,403825670,403825671,403825672,403825673,403825674,403825684,403825685,403825686,403825675,403825676,403825677,403825678,403825687,403825688,
@@ -251,21 +248,27 @@ func (cache *XueXiTUserCache) WorkNewSubmitAnswer(courseId string, classId strin
 			return url.Parse("http://" + cache.ProxyIP) // 设置代理
 		}
 	}
-	client := &http.Client{
-		Transport: tr,
-	}
+	return cache.sendChapterWorkSubmission(newRequestClient(tr), req)
+}
+
+func (cache *XueXiTUserCache) sendChapterWorkSubmission(client *http.Client, req *http.Request) (string, error) {
 	resp, err := client.Do(req)
 	if err != nil {
-		fmt.Println("Error sending request:", err)
-		return "", err
+		return "", fmt.Errorf("提交章节测试任务点请求失败: %w", err)
 	}
 	defer resp.Body.Close()
 
-	body, _ := ioutil.ReadAll(resp.Body)
-	if strings.Contains(string(body), "请输入验证码") || strings.Contains(string(body), "请输入图片中的验证码") {
-		return "", errors.New("触发验证码")
+	body, err := io.ReadAll(resp.Body)
+	if err != nil {
+		return "", fmt.Errorf("读取章节测试任务点提交响应失败: %w", err)
 	}
-	utils.CookiesAddNoRepetition(&cache.cookies, resp.Cookies()) //赋值cookie
+	utils.CookiesAddNoRepetition(&cache.cookies, resp.Cookies())
+	if strings.Contains(string(body), "请输入验证码") || strings.Contains(string(body), "请输入图片中的验证码") {
+		return string(body), errors.New("触发验证码")
+	}
+	if err := validateResponse("提交章节测试任务点", resp, body); err != nil {
+		return string(body), err
+	}
 	return string(body), nil
 }
 
