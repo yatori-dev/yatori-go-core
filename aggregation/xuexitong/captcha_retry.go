@@ -68,10 +68,17 @@ func passImageCaptcha(ctx context.Context, cache *xuexitongApi.XueXiTUserCache) 
 	})
 }
 
+// 偏移修正探测表: 第N次重试使用 delta[(N-1)%len]，x_submit = x_detect + delta。
+// 超星滑块容差有限，通过多候选探测确定服务器接受的修正量
+var sliderOffsetDeltas = []int{0, -2, 2, -5, 5}
+
 func passSliderCaptcha(ctx context.Context, cache *xuexitongApi.XueXiTUserCache, slider *XueXiTSlider) (string, error) {
 	var validate string
+	attemptIndex := 0
 	err := retryCaptcha(ctx, "滑块验证码", defaultCaptchaAttempts, func() (bool, error) {
-		value, err := slider.Pass(cache)
+		delta := sliderOffsetDeltas[attemptIndex%len(sliderOffsetDeltas)]
+		attemptIndex++
+		value, err := slider.PassWithOffset(cache, delta)
 		if err != nil {
 			return false, err
 		}

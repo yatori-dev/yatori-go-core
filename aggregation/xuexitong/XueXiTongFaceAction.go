@@ -4,7 +4,12 @@ import (
 	"errors"
 	"fmt"
 	"image"
+	_ "image/jpeg"
+	_ "image/png"
+	"math/rand"
 	"net/http"
+	"os"
+	"path/filepath"
 	"strconv"
 	"strings"
 	"time"
@@ -13,7 +18,77 @@ import (
 	"github.com/yatori-dev/yatori-go-core/api/xuexitong"
 	"github.com/yatori-dev/yatori-go-core/utils"
 	log2 "github.com/yatori-dev/yatori-go-core/utils/log"
+
+	_ "golang.org/x/image/webp"
 )
+
+// loadFaceImage 拉取人脸图片: 本地库优先(多张轮换) → 单张兼容 → 服务器历史人脸
+//
+// 本地库: ./assets/faces/{账号}/ 目录下的图片文件(jpg/jpeg/png/webp)，
+// 存在多张时随机选一张轮换(降低同一张被风控的概率)；
+// 兼容旧单张 ./assets/faces/{账号}.jpg；
+// 都没有时拉取服务器历史人脸。
+func loadFaceImage(cache *xuexitong.XueXiTUserCache) (image.Image, error) {
+	// 1) 多张目录(前端上传)
+	dirPath := filepath.Join(".", "assets", "faces", cache.Name)
+	if entries, err := os.ReadDir(dirPath); err == nil {
+		var candidates []string
+		for _, entry := range entries {
+			if entry.IsDir() {
+				continue
+			}
+			switch strings.ToLower(filepath.Ext(entry.Name())) {
+			case ".jpg", ".jpeg", ".png", ".webp":
+				candidates = append(candidates, filepath.Join(dirPath, entry.Name()))
+			}
+		}
+		if len(candidates) > 0 {
+			if img, err := loadFaceImageFile(candidates[rand.Intn(len(candidates))]); err == nil {
+				return img, nil
+			}
+		}
+	}
+	// 2) 兼容旧单张
+	singlePath := filepath.Join(".", "assets", "faces", cache.Name+".jpg")
+	if exists, _ := utils.PathExists(singlePath); exists {
+		return utils.LoadImage(singlePath)
+	}
+	// 3) 服务器历史人脸
+	_, img, err := cache.GetHistoryFaceImg("")
+	if err != nil {
+		return nil, err
+	}
+	if img == nil {
+		return nil, errors.New("没有历史人脸")
+	}
+	return img, nil
+}
+
+func loadFaceImageFile(path string) (image.Image, error) {
+	file, err := os.Open(path)
+	if err != nil {
+		return nil, err
+	}
+	defer file.Close()
+	img, _, err := image.Decode(file)
+	if err != nil {
+		return nil, fmt.Errorf("图片解码失败: %w", err)
+	}
+	return img, nil
+}
+
+// fetchFaceUploadToken 拉取人脸上传token
+func fetchFaceUploadToken(cache *xuexitong.XueXiTUserCache) (string, error) {
+	tokenJson, err := cache.GetFaceUpLoadToken()
+	if err != nil {
+		return "", err
+	}
+	token, _ := gojsonq.New().JSONString(tokenJson).Find("_token").(string)
+	if token == "" {
+		return "", fmt.Errorf("获取上传token失败: %s", responseSummary(tokenJson))
+	}
+	return token, nil
+}
 
 // 人脸识别1
 func PassFaceAction1(cache *xuexitong.XueXiTUserCache, courseId, classId, cpi, chapterId, enc, videojobid, chaptervideoobjectid, mid, videoRandomCollectTime string, face image.Image) (string, string, string, string /*识别状态*/, error) {
@@ -26,9 +101,7 @@ func PassFaceAction1(cache *xuexitong.XueXiTUserCache, courseId, classId, cpi, c
 		return "", "", "", "", errors.New("uuid或qrEnc为空")
 	}
 	//获取token
-	tokenJson, err := cache.GetFaceUpLoadToken()
-
-	token := gojsonq.New().JSONString(tokenJson).Find("_token").(string)
+	token, err := fetchFaceUploadToken(cache)
 	if err != nil {
 		return "", "", "", "", err
 	}
@@ -40,6 +113,10 @@ func PassFaceAction1(cache *xuexitong.XueXiTUserCache, courseId, classId, cpi, c
 	}
 	if ObjectId == "" {
 		return "", "", "", "", errors.New("ObjectId is empty")
+	}
+	//更换基准FaceId为新上传的照片(新版APP过人脸的核心: 先换基准再比对，绕过历史基准照片限制)
+	if _, err := cache.ChangeFaceIdApi(ObjectId, 3, nil); err != nil {
+		return "", "", "", "", err
 	}
 	//暂时先用plan3的过人脸（进入课程扫通过的）
 	//plan2Api, err := cache.GetCourseFaceQrPlan3Api(classId, courseId, uuid, qrEnc, cpi, ObjectId)
@@ -74,25 +151,10 @@ func PassFaceAction1(cache *xuexitong.XueXiTUserCache, courseId, classId, cpi, c
 
 // 手机端过人脸接口
 func PassFacePhoneAction(cache *xuexitong.XueXiTUserCache, courseId, classId, cpi, chapterId, videojobid, mid, videoRandomCollectTime string) (string /*识别状态*/, error) {
-	//拉取用户照片
-	localFaceExists, _ := utils.PathExists("./assets/faces/" + cache.Name + ".jpg")
-	var faceImg image.Image
-	if localFaceExists {
-		img, err2 := utils.LoadImage("./assets/faces/" + cache.Name + ".jpg")
-		if err2 != nil {
-			log2.Print(log2.INFO, err2)
-			//os.Exit(0)
-			return "", err2
-		}
-		faceImg = img
-	} else {
-		pullJson, img, err2 := cache.GetHistoryFaceImg("")
-		if err2 != nil {
-			log2.Print(log2.DEBUG, pullJson, err2)
-			//os.Exit(0)
-			return "", err2
-		}
-		faceImg = img
+	//拉取用户照片(本地库多张轮换优先 → 单张 → 服务器历史人脸)
+	faceImg, err := loadFaceImage(cache)
+	if err != nil {
+		return "", err
 	}
 	disturbImage := utils.ImageRGBDisturb(faceImg)
 	//disturbImage := utils.ProcessImageDisturb(faceImg)
@@ -101,9 +163,7 @@ func PassFacePhoneAction(cache *xuexitong.XueXiTUserCache, courseId, classId, cp
 	//cache.GetCourseFaceStart(classId, courseId, chapterId, cpi) //没事别放开，测试用的
 
 	//获取token
-	tokenJson, err := cache.GetFaceUpLoadToken()
-
-	token := gojsonq.New().JSONString(tokenJson).Find("_token").(string)
+	token, err := fetchFaceUploadToken(cache)
 	if err != nil {
 		return "", err
 	}
@@ -116,7 +176,12 @@ func PassFacePhoneAction(cache *xuexitong.XueXiTUserCache, courseId, classId, cp
 	if ObjectId == "" {
 		return "", errors.New("ObjectId is empty")
 	}
-	time.Sleep(2 * time.Second)
+	time.Sleep(1 * time.Second)
+	//更换基准FaceId为新上传的照片(新版APP过人脸的核心: 先换基准再比对，绕过历史基准照片限制)
+	if _, err := cache.ChangeFaceIdApi(ObjectId, 3, nil); err != nil {
+		return "", err
+	}
+	time.Sleep(1 * time.Second)
 	plan3Api, err := cache.PassFaceQrPlanPhoneNewApi(classId, courseId, chapterId, cpi, ObjectId)
 	//暂时先用plan3的过人脸（进入课程扫通过的）
 
@@ -143,25 +208,10 @@ func PassFacePhoneAction(cache *xuexitong.XueXiTUserCache, courseId, classId, cp
 
 // 手机端过人脸接口(老接口）
 func PassFacePhoneOldAction(cache *xuexitong.XueXiTUserCache, courseId, classId, cpi, chapterId, videojobid, mid, videoRandomCollectTime string) (string /*识别状态*/, error) {
-	//拉取用户照片
-	localFaceExists, _ := utils.PathExists("./assets/faces/" + cache.Name + ".jpg")
-	var faceImg image.Image
-	if localFaceExists {
-		img, err2 := utils.LoadImage("./assets/faces/" + cache.Name + ".jpg")
-		if err2 != nil {
-			log2.Print(log2.INFO, err2)
-			//os.Exit(0)
-			return "", err2
-		}
-		faceImg = img
-	} else {
-		pullJson, img, err2 := cache.GetHistoryFaceImg("")
-		if err2 != nil {
-			log2.Print(log2.DEBUG, pullJson, err2)
-			//os.Exit(0)
-			return "", err2
-		}
-		faceImg = img
+	//拉取用户照片(本地库多张轮换优先 → 单张 → 服务器历史人脸)
+	faceImg, err := loadFaceImage(cache)
+	if err != nil {
+		return "", err
 	}
 	disturbImage := utils.ImageRGBDisturb(faceImg)
 	//disturbImage := utils.ProcessImageDisturb(faceImg)
@@ -170,9 +220,7 @@ func PassFacePhoneOldAction(cache *xuexitong.XueXiTUserCache, courseId, classId,
 	//cache.GetCourseFaceStart(classId, courseId, chapterId, cpi) //没事别放开，测试用的
 
 	//获取token
-	tokenJson, err := cache.GetFaceUpLoadToken()
-
-	token := gojsonq.New().JSONString(tokenJson).Find("_token").(string)
+	token, err := fetchFaceUploadToken(cache)
 	if err != nil {
 		return "", err
 	}
@@ -185,7 +233,12 @@ func PassFacePhoneOldAction(cache *xuexitong.XueXiTUserCache, courseId, classId,
 	if ObjectId == "" {
 		return "", errors.New("ObjectId is empty")
 	}
-	time.Sleep(2 * time.Second)
+	time.Sleep(1 * time.Second)
+	//更换基准FaceId为新上传的照片(新版APP过人脸的核心: 先换基准再比对，绕过历史基准照片限制)
+	if _, err := cache.ChangeFaceIdApi(ObjectId, 3, nil); err != nil {
+		return "", err
+	}
+	time.Sleep(1 * time.Second)
 	//plan3Api, err := cache.GetCourseFaceQrPlan4Api( classId,courseId, chapterId,"", "", ObjectId)
 	plan3Api, err := cache.PassFaceQrPlanPhoneOldApi(classId, courseId, chapterId, cpi, ObjectId)
 	//暂时先用plan3的过人脸（进入课程扫通过的）
@@ -223,9 +276,7 @@ func PassFacePCAction(cache *xuexitong.XueXiTUserCache, courseId, classId, cpi, 
 		return "", "", "", "", errors.New("uuid或qrEnc为空")
 	}
 	//获取token
-	tokenJson, err := cache.GetFaceUpLoadToken()
-
-	token := gojsonq.New().JSONString(tokenJson).Find("_token").(string)
+	token, err := fetchFaceUploadToken(cache)
 	if err != nil {
 		return "", "", "", "", err
 	}
@@ -237,6 +288,10 @@ func PassFacePCAction(cache *xuexitong.XueXiTUserCache, courseId, classId, cpi, 
 	}
 	if ObjectId == "" {
 		return "", "", "", "", errors.New("ObjectId is empty")
+	}
+	//更换基准FaceId为新上传的照片(新版APP过人脸的核心: 先换基准再比对，绕过历史基准照片限制)
+	if _, err := cache.ChangeFaceIdApi(ObjectId, 3, nil); err != nil {
+		return "", "", "", "", err
 	}
 	//plan3Api, err := cache.PassFaceQrPlanPhoneApi(classId, courseId, chapterId, cpi, ObjectId)
 	//暂时先用plan3的过人脸（进入课程扫通过的）

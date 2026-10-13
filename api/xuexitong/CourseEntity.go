@@ -216,7 +216,7 @@ type Question struct {
 func (f Question) String() string {
 	marshal, err := json.Marshal(f)
 	if err != nil {
-		return fmt.Sprintf("%v", f)
+		return fmt.Sprintf("Question marshal error: %v", err)
 	}
 	return string(marshal)
 }

@@ -16,9 +16,9 @@ func TestWeiBanLogin(t *testing.T) {
 	//测试账号
 	setup()
 	cache := weiban.WeiBanCache{
-		School:   "西安文理学院",
-		Account:  global.Config.Users[35].Account,
-		Password: global.Config.Users[35].Password,
+		School:   "浙江师范大学",
+		Account:  global.Config.Users[0].Account,
+		Password: global.Config.Users[0].Password,
 	}
 
 	loginAction, err := action.WeiBanLoginAction(&cache)

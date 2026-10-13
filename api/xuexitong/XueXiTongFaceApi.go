@@ -15,7 +15,6 @@ import (
 	"net/http"
 	"net/url"
 	"regexp"
-	"strconv"
 	"strings"
 	"time"
 
@@ -133,24 +132,34 @@ func (cache *XueXiTUserCache) GetHistoryFaceImg(puid string) (string, image.Imag
 		fmt.Println(err)
 		return "", nil, err
 	}
-	if strconv.Itoa(int(gojsonq.New().JSONString(string(body)).Find("result").(float64))) != "1" {
-		return "", nil, nil
+	// 安全解析 result: 服务器可能返回非1值或异常结构(此前直接断言float64会panic)
+	resultVal := gojsonq.New().JSONString(string(body)).Find("result")
+	resultOK := false
+	switch v := resultVal.(type) {
+	case float64:
+		resultOK = int(v) == 1
+	case string:
+		resultOK = v == "1"
+	}
+	if !resultOK {
+		return "", nil, errors.New("没有历史人脸")
 	}
 	//如果为空
-	if gojsonq.New().JSONString(string(body)).Find("data.http").(string) == "" {
+	faceURL, _ := gojsonq.New().JSONString(string(body)).Find("data.http").(string)
+	if faceURL == "" {
 		return "", nil, errors.New("没有历史人脸")
 	}
 	//图片获取段
 	methodImg := "GET"
 	clientImg := &http.Client{}
-	reqImg, errImg := http.NewRequest(methodImg, gojsonq.New().JSONString(string(body)).Find("data.http").(string), nil)
+	reqImg, errImg := http.NewRequest(methodImg, faceURL, nil)
 
 	if errImg != nil {
 		fmt.Println(errImg)
 		return "", nil, errImg
 	}
 	for _, cookie := range cache.cookies {
-		req.AddCookie(cookie)
+		reqImg.AddCookie(cookie)
 	}
 	//reqImg.Header.Add("User-Agent", "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/136.0.0.0 Safari/537.36 Edg/136.0.0.0")
 	reqImg.Header.Add("User-Agent", GetUA("mobile"))
@@ -163,12 +172,12 @@ func (cache *XueXiTUserCache) GetHistoryFaceImg(puid string) (string, image.Imag
 		fmt.Println(errImg)
 		return "", nil, errImg
 	}
-	defer res.Body.Close()
+	defer resImg.Body.Close()
 
 	// 解码图片
 	img, _, errImg := image.Decode(resImg.Body)
 	if errImg != nil {
-		return "", nil, fmt.Errorf("图片解码失败: %w", err)
+		return "", nil, fmt.Errorf("图片解码失败: %w", errImg)
 	}
 	return string(body), img, nil
 }
@@ -221,11 +230,12 @@ func (cache *XueXiTUserCache) UploadFaceImageApi(token string, image image.Image
 		Transport: tr,
 	}
 	req, err := http.NewRequest(method, urlStr, body)
-	req.Header.Set("Content-Type", writer.FormDataContentType())
 	if err != nil {
 		fmt.Println(err)
-		return "", nil
+		return "", err
 	}
+	// multipart 的 Content-Type(含boundary)必须唯一，追加其它 Content-Type 会导致服务端解析失败
+	req.Header.Set("Content-Type", writer.FormDataContentType())
 	//req.Header.Add("User-Agent", "Mozilla/5.0 (Linux; Android 12; SM-N9006 Build/V417IR; wv) AppleWebKit/537.36 (KHTML, like Gecko) Version/4.0 Chrome/95.0.4638.74 Mobile Safari/537.36 (schild:e9b05c3f9fb49fef2f516e86ac3c4ff1) (device:SM-N9006) Language/zh_CN com.chaoxing.mobile/ChaoXingStudy_3_6.3.7_android_phone_10822_249 (@Kalimdor)_4627cad9c4b6415cba5dc6cac39e6c96")
 	req.Header.Add("User-Agent", GetUA("mobile"))
 	for _, cookie := range cache.cookies {
@@ -234,7 +244,6 @@ func (cache *XueXiTUserCache) UploadFaceImageApi(token string, image image.Image
 	req.Header.Add("Accept", "*/*")
 	req.Header.Add("Host", "mooc1-api.chaoxing.com")
 	req.Header.Add("Connection", "keep-alive")
-	req.Header.Add("Content-Type", "application/x-www-form-urlencoded")
 
 	resp, err := client.Do(req)
 	if err != nil {
@@ -262,6 +271,72 @@ func (cache *XueXiTUserCache) UploadFaceImageApi(token string, image image.Image
 
 	log2.Print(log2.DEBUG, "人脸上传成功 ", objectId, " ", previewUrl)
 	return objectId, nil
+}
+
+// 更换人脸基准(FaceId) - 对齐新版APP api/changefaceid
+// 上传照片后调用此接口，将人脸比对基准换成刚上传的照片
+// (新版APP过人脸的核心: 先换基准再比对，绕过历史基准照片限制)
+// 响应 {"result":1,"errorMsg":""} 即成功
+func (cache *XueXiTUserCache) ChangeFaceIdApi(objectId string, retry int, lastErr error) (string, error) {
+	if retry < 0 {
+		return "", lastErr
+	}
+	if objectId == "" {
+		return "", errors.New("objectId为空，无法更换人脸基准")
+	}
+	urlStr := "https://passport2-api.chaoxing.com/api/changefaceid?objectid=" + objectId
+	method := "GET"
+
+	tr := &http.Transport{
+		TLSClientConfig: &tls.Config{},
+	}
+	//如果开启了IP代理，那么就直接添加代理
+	if cache.IpProxySW {
+		tr.Proxy = func(req *http.Request) (*url.URL, error) {
+			return url.Parse("http://" + cache.ProxyIP) // 设置代理
+		}
+	}
+	client := newRequestClient(tr)
+	req, err := http.NewRequest(method, urlStr, nil)
+	if err != nil {
+		fmt.Println(err)
+		return "", err
+	}
+	for _, cookie := range cache.cookies {
+		req.AddCookie(cookie)
+	}
+	req.Header.Add("User-Agent", GetUA("mobile"))
+	req.Header.Add("Accept", "*/*")
+	req.Header.Add("Host", "passport2-api.chaoxing.com")
+	req.Header.Add("Connection", "keep-alive")
+
+	res, err := client.Do(req)
+	if err != nil {
+		fmt.Println(err)
+		return cache.ChangeFaceIdApi(objectId, retry-1, err)
+	}
+	defer res.Body.Close()
+
+	body, err := ioutil.ReadAll(res.Body)
+	if err != nil {
+		fmt.Println(err)
+		return cache.ChangeFaceIdApi(objectId, retry-1, err)
+	}
+	result := gojsonq.New().JSONString(string(body)).Find("result")
+	switch v := result.(type) {
+	case float64:
+		if int(v) != 1 {
+			return string(body), fmt.Errorf("更换基准FaceId失败: %s", responseSummary(body))
+		}
+	case string:
+		if v != "1" {
+			return string(body), fmt.Errorf("更换基准FaceId失败: %s", responseSummary(body))
+		}
+	default:
+		return string(body), fmt.Errorf("更换基准FaceId失败: %s", responseSummary(body))
+	}
+	log2.Print(log2.DEBUG, "更换人脸基准成功 objectId=", objectId)
+	return string(body), nil
 }
 
 // 根据PUID查找人脸图片上传

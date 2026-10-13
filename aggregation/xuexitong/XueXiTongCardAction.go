@@ -72,6 +72,10 @@ func PageMobileChapterCardAction(
 				break
 			}
 		}
+		if err1 != nil && strings.Contains(err1.Error(), "用户图片信息出错") {
+			//新接口彻底失败 → 回退老接口
+			ObjectId, err1 = PassFacePhoneOldAction(cache, fmt.Sprintf("%d", courseId), fmt.Sprintf("%d", classId), fmt.Sprintf("%d", cpi), fmt.Sprintf("%d", knowledgeId), "", "", "")
+		}
 		if err1 != nil {
 			log.Println(ObjectId, err1.Error())
 			return nil, "", err1

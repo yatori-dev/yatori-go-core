@@ -314,14 +314,23 @@ func (cache *XueXiTUserCache) XueXiTSliderVerificationCodeApi(captchaId string, 
 	return string(body), nil
 }
 
+// 生成滑块动态iv - 对齐官方前端JS: iv=md5(captchaId+"slide"+当前毫秒+uuid)
+// image接口上报后服务器记录，check时必须传同一iv，否则报 verification error
+func NewSliderCaptchaIv(captchaId string) string {
+	ivHash := md5.Sum([]byte(fmt.Sprintf("%s%s%d%s", captchaId, "slide", time.Now().UnixMilli(), uuid.New().String())))
+	return hex.EncodeToString(ivHash[:])
+}
+
 // 拉取验证码图片等信息
-func (cache *XueXiTUserCache) XueXiTSliderVerificationImgApi(captchaId, serverTime, referer string, retry int, lastErr error) (string, error) {
+// iv: 动态iv(NewSliderCaptchaIv生成)，会随URL上报并在check时必须复用；为空时自动生成
+func (cache *XueXiTUserCache) XueXiTSliderVerificationImgApi(captchaId, serverTime, referer, iv string, retry int, lastErr error) (string, error) {
 	// 计算 MD5
 	captchaKeyHash := md5.Sum([]byte(serverTime + uuid.New().String()))
 	captchaKey := hex.EncodeToString(captchaKeyHash[:])
 
-	//ivHash := md5.Sum([]byte(fmt.Sprintf("%s%s%d%s", captchaId, "slide", time.Now().UnixMilli(), uuid.New().String())))
-	//iv := hex.EncodeToString(ivHash[:])
+	if iv == "" {
+		iv = NewSliderCaptchaIv(captchaId)
+	}
 
 	// 计算token
 	sum := md5.Sum([]byte(fmt.Sprintf("%s%s%s%s", serverTime, captchaId, "slide", captchaKey)))
@@ -329,7 +338,7 @@ func (cache *XueXiTUserCache) XueXiTSliderVerificationImgApi(captchaId, serverTi
 	serverTimeInt, _ := strconv.ParseInt(serverTime, 10, 64)
 	token := fmt.Sprintf("%s:%d", md5hex, serverTimeInt+300000)
 	version := "1.1.20"
-	urlStr := "https://captcha.chaoxing.com/captcha/get/verification/image?callback=cx_captcha_function&captchaId=" + captchaId + "&type=slide&version=" + version + "&captchaKey=" + captchaKey + "&token=" + token + "&referer=" + url.QueryEscape(referer)
+	urlStr := "https://captcha.chaoxing.com/captcha/get/verification/image?callback=cx_captcha_function&captchaId=" + captchaId + "&type=slide&version=" + version + "&captchaKey=" + captchaKey + "&token=" + token + "&referer=" + url.QueryEscape(referer) + "&iv=" + iv + "&_=" + fmt.Sprintf("%d", time.Now().UnixMilli())
 	method := "GET"
 
 	tr := &http.Transport{
@@ -357,6 +366,10 @@ func (cache *XueXiTUserCache) XueXiTSliderVerificationImgApi(captchaId, serverTi
 	for _, cookie := range cache.cookies {
 		req.AddCookie(cookie)
 	}
+	if referer != "" {
+		// 浏览器请求image接口时自带来源页Referer头
+		req.Header.Add("Referer", referer)
+	}
 	req.Header.Add("Accept", "*/*")
 	req.Header.Add("Host", "captcha.chaoxing.com")
 	req.Header.Add("Connection", "keep-alive")
@@ -364,14 +377,14 @@ func (cache *XueXiTUserCache) XueXiTSliderVerificationImgApi(captchaId, serverTi
 	res, err := client.Do(req)
 	if err != nil {
 		fmt.Println(err)
-		return "", err
+		return cache.XueXiTSliderVerificationImgApi(captchaId, serverTime, referer, iv, retry-1, err)
 	}
 	defer res.Body.Close()
 
 	body, err := ioutil.ReadAll(res.Body)
 	if err != nil {
 		fmt.Println(err)
-		return cache.XueXiTSliderVerificationImgApi(captchaId, serverTime, referer, retry-1, err)
+		return cache.XueXiTSliderVerificationImgApi(captchaId, serverTime, referer, iv, retry-1, err)
 	}
 	//fmt.Println(string(body))
 	return string(body), nil
@@ -425,45 +438,49 @@ func (cache *XueXiTUserCache) PullSliderImgApi(imgUrl string, retry int, lastErr
 }
 
 // 过滑块接口
-func (cache *XueXiTUserCache) PassSliderApi(captchaId, token, xPoint, runEnv string, retry int, lastErr error) (string, error) {
+// referer: 触发滑块的页面地址(浏览器发起check时会自动携带来源页Referer)
+// iv: 与image接口一致的动态iv(NewSliderCaptchaIv生成)
+// 注意: 该请求不携带任何cookie(仅代理+UA)。check接口启TLS指纹风控，
+// 必须用Chrome指纹客户端(完整ClientHello+HTTP/1.1，服务器协商h2时降级HTTP/2)
+func (cache *XueXiTUserCache) PassSliderApi(captchaId, token, xPoint, runEnv, referer, iv string, retry int, lastErr error) (string, error) {
 	if retry < 0 {
 		return "", lastErr
 	}
-	urlStr := "https://captcha.chaoxing.com/captcha/check/verification/result?callback=cx_captcha_function&captchaId=" + captchaId + "&type=slide&token=" + token + "&textClickArr=" + url.QueryEscape(`[{"x":`+xPoint+`}]`) + "&coordinate=" + url.QueryEscape(`[]`) + "&runEnv=10&version=1.1.20&t=a&iv=cdd9bfb9e7805d0d2d5f1ad4498f70e1&_=1764584636040"
-	method := "GET"
-
-	tr := &http.Transport{
-		TLSClientConfig: &tls.Config{},
+	if iv == "" {
+		iv = "cdd9bfb9e7805d0d2d5f1ad4498f70e1"
 	}
-	client := newRequestClient(tr)
-	req, err := http.NewRequest(method, urlStr, nil)
+	urlStr := "https://captcha.chaoxing.com/captcha/check/verification/result?callback=cx_captcha_function&captchaId=" + captchaId + "&type=slide&token=" + token + "&textClickArr=" + url.QueryEscape(`[{"x":`+xPoint+`}]`) + "&coordinate=" + url.QueryEscape(`[]`) + "&runEnv=" + runEnv + "&version=1.1.20&t=a&iv=" + iv + "&_=" + fmt.Sprintf("%d", time.Now().UnixMilli())
 
-	if err != nil {
-		fmt.Println(err)
+	headers := map[string]string{
+		"User-Agent":       "Mozilla/5.0 (Linux; Android 8.1.0; MI 5X Build/OPM1.171019.019; wv) AppleWebKit/537.36 (KHTML, like Gecko) Version/4.0 Chrome/71.0.3578.99 Mobile Safari/537.36 (schild:ce5175d20950c8ee955fb03246f762da) (device:MI 5X) Language/zh_CN com.chaoxing.mobile/ChaoXingStudy_3_6.7.2_android_phone_10936_311 (@Kalimdor)_76c82452584d47e39ab79aa54ea86554",
+		"Accept-Language":  "zh-CN,en-US;q=0.9",
+		"X-Requested-With": "com.chaoxing.mobile",
+		"Accept":           "*/*",
+		"Connection":       "keep-alive",
+	}
+	if referer != "" {
+		headers["Referer"] = referer
+	}
+	proxyIP := ""
+	if cache.IpProxySW {
+		proxyIP = cache.ProxyIP
+	}
+
+	// 优先Chrome指纹(完整ClientHello, HTTP/1.1)；服务器协商h2时降级HTTP/2客户端
+	body, resp, autoErr := captchaFingerprintGet(urlStr, headers, proxyIP, fingerprintAuto)
+	if autoErr != nil {
+		body, resp, err := captchaFingerprintGet(urlStr, headers, proxyIP, fingerprintHTTP2)
+		if err != nil {
+			fmt.Println(err)
+			return cache.PassSliderApi(captchaId, token, xPoint, runEnv, referer, iv, retry-1, fmt.Errorf("HTTP/1.1: %v; HTTP/2: %v", autoErr, err))
+		}
+		if err := validateResponse("提交滑块验证码", resp, body); err != nil {
+			return "", err
+		}
+		return string(body), nil
+	}
+	if err := validateResponse("提交滑块验证码", resp, body); err != nil {
 		return "", err
 	}
-	req.Header.Add("User-Agent", "Mozilla/5.0 (Linux; Android 8.1.0; MI 5X Build/OPM1.171019.019; wv) AppleWebKit/537.36 (KHTML, like Gecko) Version/4.0 Chrome/71.0.3578.99 Mobile Safari/537.36 (schild:ce5175d20950c8ee955fb03246f762da) (device:MI 5X) Language/zh_CN com.chaoxing.mobile/ChaoXingStudy_3_6.7.2_android_phone_10936_311 (@Kalimdor)_76c82452584d47e39ab79aa54ea86554")
-	req.Header.Add("Accept-Language", "zh-CN,en-US;q=0.9")
-	req.Header.Add("X-Requested-With", "com.chaoxing.mobile")
-	req.Header.Add("Accept", "*/*")
-	req.Header.Add("Host", "captcha.chaoxing.com")
-	req.Header.Add("Connection", "keep-alive")
-
-	res, err := client.Do(req)
-	if err != nil {
-		fmt.Println(err)
-		return cache.PassSliderApi(captchaId, token, xPoint, runEnv, retry-1, err)
-	}
-	defer res.Body.Close()
-
-	body, err := ioutil.ReadAll(res.Body)
-	if err != nil {
-		fmt.Println(err)
-		return "", err
-	}
-	if err := validateResponse("提交滑块验证码", res, body); err != nil {
-		return "", err
-	}
-	//fmt.Println(string(body))
 	return string(body), nil
 }
