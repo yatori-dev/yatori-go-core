@@ -13,7 +13,7 @@ import (
 type QuesBank struct{}
 
 // GetQuestionAnswers 获取题库中的对应题目答案
-func (QuesBank) GetQuestionAnswers(queType qtype.QueType, content string, options []string) []string {
+func (QuesBank) GetQuestionAnswers(queType qtype.QType, content string, options []string) []string {
 	// TODO 这里对应QuesBank的url 但是目前console 设置没有读取配置题库的url设置
 	resp, err := http.PostForm("", url.Values{
 		"type":    {queType.String()},
