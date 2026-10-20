@@ -10,6 +10,7 @@ import (
 	"regexp"
 	"strconv"
 	"strings"
+	"time"
 
 	"github.com/PuerkitoBio/goquery"
 	"github.com/yatori-dev/yatori-go-core/api/xuexitong"
@@ -17,6 +18,7 @@ import (
 	"github.com/yatori-dev/yatori-go-core/que-core/aiq"
 	"github.com/yatori-dev/yatori-go-core/que-core/external"
 	"github.com/yatori-dev/yatori-go-core/que-core/qtype"
+	"github.com/yatori-dev/yatori-go-core/utils"
 	log2 "github.com/yatori-dev/yatori-go-core/utils/log"
 )
 
@@ -145,6 +147,8 @@ func EnterExamAction(cache *xuexitong.XueXiTUserCache, exam *XXTExam) error {
 		//fmt.Println(refererUrl)
 		return err
 	}
+	// 拟人化间隔: 打开考试页后稍作停顿再进行后续操作
+	utils.HumanDelay(400*time.Millisecond, 900*time.Millisecond)
 	//该考试教师已设置章节任务点未完成80%，不能参加考试
 	//记得处理上面这个情况
 	doc, err := goquery.NewDocumentFromReader(strings.NewReader(enterHtml))
@@ -223,13 +227,16 @@ func EnterExamAction(cache *xuexitong.XueXiTUserCache, exam *XXTExam) error {
 	}
 	//如果是重考状态那么就先进行重考请求
 	if isReExam {
-
+		// 拟人化间隔: 滑块通过后到发起重考请求之间停留
+		utils.HumanDelay(800*time.Millisecond, 1800*time.Millisecond)
 		_, err := cache.StartReExamApi(exam.ExamRelationId, exam.AnswerId, exam.CourseId, exam.ClazzId)
 		if err != nil {
 			return err
 		}
 
 	}
+	// 拟人化间隔: 过完滑块/重考后短暂停留再进入试卷
+	utils.HumanDelay(1000*time.Millisecond, 2500*time.Millisecond)
 	pullPaperHtml, err := cache.PullExamPaperHtmlApi(exam.CourseId, exam.ClazzId, exam.ExamRelationId, "0", exam.AnswerId, exam.Cpi, "1", xuexitong.IMEI, exam.Validate, "0", 3, nil)
 	if err != nil {
 		return err
@@ -253,6 +260,8 @@ func EnterExamAction(cache *xuexitong.XueXiTUserCache, exam *XXTExam) error {
 
 // 拉取题目
 func (exam *XXTExam) PullExamQuestionAction(cache *xuexitong.XueXiTUserCache, index int /*第几道题*/) (XXTExamQuestion, error) {
+	// 拟人化间隔: 模拟阅读/切题，避免连续拉题过快
+	utils.HumanDelay(800*time.Millisecond, 2000*time.Millisecond)
 	pullQuestion, err1 := cache.PullExamQuestionApi(exam.CourseId, exam.ClazzId, exam.ExamRelationId, exam.AnswerId, exam.Cpi, exam.EncRemainTime, exam.Enc, exam.EncLastUpdateTime, index)
 	if err1 != nil {
 		return XXTExamQuestion{}, err1
@@ -336,6 +345,8 @@ func (question *XXTExamQuestion) WriteQuestionForXXTAIAction(cache *xuexitong.Xu
 // 提交学习通考试答案
 func (question *XXTExamQuestion) SubmitExamAnswerAction(cache *xuexitong.XueXiTUserCache, isSubmit bool /*是否提交，true为提交，false为暂存*/) (string, error) {
 	//api, err := cache.SubmitExamAnswerApi(exam.ClazzId, exam.CourseId, exam.Paper.TestPaperId, exam.Paper.TestUserRelationId, exam.Cpi, exam.Paper.RemainTime, exam.Paper.EncRemainTime, exam.Paper.EncLastUpdateTime, exam.ExamRelationId, exam.AnswerId, exam.RemainTime, !isSubmit, exam.Paper.Enc, exam.Paper.EnterPageTime, exam.Paper.XXTExamQuestion.QuestionId, exam.Paper.Type, exam.Paper.XXTExamQuestion.TypeName, &exam.Paper)
+	// 拟人化间隔: 模拟作答停顿后再提交
+	utils.HumanDelay(800*time.Millisecond, 2200*time.Millisecond)
 	api, err := cache.SubmitExamAnswerApi(&question.XXTExamQuestionSubmitEntity, !isSubmit)
 	if isSubmit { //用于提交试卷后的处理
 		xuexitong.XXTEXAMUA = xuexitong.GetUA("mobile") //回复原ua

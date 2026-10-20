@@ -7,13 +7,13 @@ import (
 	"image"
 	"image/color"
 	"math"
-	"math/rand"
 	"regexp"
 	"strings"
 	"time"
 
 	"github.com/thedevsaddam/gojsonq"
 	xuexitongApi "github.com/yatori-dev/yatori-go-core/api/xuexitong"
+	"github.com/yatori-dev/yatori-go-core/utils"
 )
 
 type XueXiTSlider struct {
@@ -44,6 +44,8 @@ func (slider *XueXiTSlider) PassWithOffset(cache *xuexitongApi.XueXiTUserCache, 
 		slider.serverTime = tValue
 		//fmt.Println("captchaId:", captchaId)
 	}
+	// 拟人化间隔: 拉取配置后短暂停顿再请求图片
+	utils.HumanDelay(150*time.Millisecond, 450*time.Millisecond)
 	// 动态iv: 官方前端JS iv=md5(captchaId+"slide"+当前毫秒+uuid)，
 	// image接口上报后服务器记录，check时必须传同一iv，否则 verification error
 	iv := xuexitongApi.NewSliderCaptchaIv(slider.CaptchaId)
@@ -75,6 +77,8 @@ func (slider *XueXiTSlider) PassWithOffset(cache *xuexitongApi.XueXiTUserCache, 
 	if err1 != nil {
 		return "", fmt.Errorf("解析滑块图片响应失败: %w", err1)
 	}
+	// 拟人化间隔: 拿到图片地址后稍作停顿再下载
+	utils.HumanDelay(150*time.Millisecond, 400*time.Millisecond)
 
 	//fmt.Println("Token:", resp.Token)
 	//fmt.Println("Type:", resp.ImageVerificationVo.Type)
@@ -87,6 +91,8 @@ func (slider *XueXiTSlider) PassWithOffset(cache *xuexitongApi.XueXiTUserCache, 
 	if err != nil {
 		return "", err
 	}
+	// 拟人化间隔: 两张图片下载之间略作停顿
+	utils.HumanDelay(120*time.Millisecond, 350*time.Millisecond)
 	//拉取裁剪图
 	cutoutImg, err := cache.PullSliderImgApi(resp.ImageVerificationVo.CutoutImage, 5, nil)
 	if err != nil {
@@ -96,7 +102,7 @@ func (slider *XueXiTSlider) PassWithOffset(cache *xuexitongApi.XueXiTUserCache, 
 	x := DetectSlideOffset(shapeImg, cutoutImg) + offsetDelta
 	//fmt.Println("x:", x)
 	// 拟人延时: 真人滑动从拉图到提交至少间隔数百毫秒，立即提交易触发风控
-	time.Sleep(time.Duration(800+rand.Intn(1000)) * time.Millisecond)
+	utils.HumanDelay(800*time.Millisecond, 1800*time.Millisecond)
 	//runEnv参数中，web=10,android=20,ios=30,miniprogram=40
 	passResult, err := cache.PassSliderApi(slider.CaptchaId, resp.Token, fmt.Sprintf("%d", x), "10", slider.Referer, iv, 3, nil)
 	if err != nil {

@@ -66,7 +66,7 @@ func PageMobileChapterCardAction(
 		//人脸重试机制
 		for i := 0; i <= 8; i++ {
 			if err1 != nil && strings.Contains(err1.Error(), "用户图片信息出错") {
-				time.Sleep(1 * time.Second) //隔一下
+				utils.HumanDelay(800*time.Millisecond, 1500*time.Millisecond) //隔一下
 				ObjectId, err1 = PassFacePhoneAction(cache, fmt.Sprintf("%d", courseId), fmt.Sprintf("%d", classId), fmt.Sprintf("%d", cpi), fmt.Sprintf("%d", knowledgeId), "", "", "")
 			} else {
 				break
@@ -81,6 +81,7 @@ func PageMobileChapterCardAction(
 			return nil, "", err1
 		}
 		//过完人脸重新拉取章节信息
+		utils.HumanDelay(300*time.Millisecond, 800*time.Millisecond)
 		cardHtml, err = cache.PageMobileChapterCard(classId, courseId, knowledgeId, cardIndex, cpi, 3, nil)
 		if err != nil {
 			return nil, "", fmt.Errorf("人脸识别后拉取章节卡片失败: %w", err)
@@ -88,7 +89,7 @@ func PageMobileChapterCardAction(
 		//如果新版本人脸过不去，则再尝试旧版本人脸
 		if strings.Contains(cardHtml, `title : "人脸识别"`) {
 			ObjectId, err1 = PassFacePhoneOldAction(cache, fmt.Sprintf("%d", courseId), fmt.Sprintf("%d", classId), fmt.Sprintf("%d", cpi), fmt.Sprintf("%d", knowledgeId), "", "", "")
-			time.Sleep(1 * time.Second) //隔一下
+			utils.HumanDelay(800*time.Millisecond, 1500*time.Millisecond) //隔一下
 			cardHtml, err = cache.PageMobileChapterCard(classId, courseId, knowledgeId, cardIndex, cpi, 3, nil)
 			if err != nil {
 				return nil, "", fmt.Errorf("旧版人脸识别后拉取章节卡片失败: %w", err)

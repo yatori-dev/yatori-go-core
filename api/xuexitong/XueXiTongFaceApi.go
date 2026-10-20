@@ -896,10 +896,13 @@ func (cache *XueXiTUserCache) GetCourseFaceQrPlan5Api(classId, courseId, knowled
 	for _, cookie := range cache.cookies {
 		req.AddCookie(cookie)
 	}
-	req.Header.Add("Accept", "*/*")
+	req.Header.Add("Accept", "application/json, text/javascript, */*; q=0.01")
+	req.Header.Add("X-Requested-With", "XMLHttpRequest")
+	req.Header.Add("Origin", "https://mooc1-api.chaoxing.com")
 	req.Header.Add("Host", "mooc1-api.chaoxing.com")
 	req.Header.Add("Connection", "keep-alive")
-	//req.Header.Add("Content-Type", "application/x-www-form-urlencoded")
+	// POST表单必须携带Content-Type，否则服务端不解析表单参数(会返回"非法请求")
+	req.Header.Add("Content-Type", "application/x-www-form-urlencoded; charset=UTF-8")
 
 	res, err := client.Do(req)
 	if err != nil {

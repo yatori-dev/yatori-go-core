@@ -90,6 +90,82 @@ func fetchFaceUploadToken(cache *xuexitong.XueXiTUserCache) (string, error) {
 	return token, nil
 }
 
+// faceCheckResult 判断人脸校验接口响应是否通过，并返回失败原因
+func faceCheckResult(body string) (bool, string) {
+	if strings.Contains(body, "活体检测不通过") {
+		return false, "活体检测不通过"
+	}
+	if strings.Contains(body, "用户图片信息出错") {
+		return false, "用户图片信息出错"
+	}
+	if msgVal := gojsonq.New().JSONString(body).Find("msg"); msgVal != nil {
+		msg, _ := msgVal.(string)
+		if msg == "通过" || msg == "识别通过" {
+			return true, ""
+		}
+		if msg == "" {
+			msg = responseSummary(body)
+		}
+		return false, msg
+	}
+	if statusVal := gojsonq.New().JSONString(body).Find("status"); statusVal != nil {
+		if status, ok := statusVal.(bool); ok && !status {
+			return false, responseSummary(body)
+		}
+	}
+	return true, ""
+}
+
+// passFacePhoneCheck 依次尝试手机端人脸校验接口。
+// 不同账号/课程可能只接受其中某一套接口(例如其中一套返回"非法请求")，
+// 主接口被拒时自动切换备用接口，避免直接失败。
+func passFacePhoneCheck(cache *xuexitong.XueXiTUserCache, classId, courseId, chapterId, cpi, objectId string) (bool, string) {
+	type candidate struct {
+		name string
+		call func() (string, error)
+	}
+	candidates := []candidate{
+		{"clientfacecheckstatus(GET)", func() (string, error) {
+			return cache.PassFaceQrPlanPhoneNewApi(classId, courseId, chapterId, cpi, objectId)
+		}},
+		{"clientfacecheckstatus(POST)", func() (string, error) {
+			return cache.GetCourseFaceQrPlan5Api(classId, courseId, chapterId, cpi, objectId)
+		}},
+		{"clientfacecheckstatus(POST2)", func() (string, error) {
+			return cache.PassFaceQrPlanPhoneNew2Api(classId, courseId, chapterId, cpi, objectId)
+		}},
+		{"uploadInfo(老接口)", func() (string, error) {
+			return cache.PassFaceQrPlanPhoneOldApi(classId, courseId, chapterId, cpi, objectId)
+		}},
+	}
+	var failures []string
+	for index, candidate := range candidates {
+		if index > 0 {
+			// 接口切换之间保持拟人化间隔
+			utils.HumanDelay(500*time.Millisecond, 1200*time.Millisecond)
+		}
+		body, err := candidate.call()
+		if err != nil {
+			failures = append(failures, candidate.name+": "+err.Error())
+			continue
+		}
+		passed, reason := faceCheckResult(body)
+		if passed {
+			return true, ""
+		}
+		failures = append(failures, candidate.name+": "+reason)
+		// 图片质量问题换接口无意义，交由上层重试
+		if reason == "用户图片信息出错" {
+			break
+		}
+		// 需要活体检测的接口报活体失败时同样换接口无意义(静默比对接口除外)
+		if reason == "活体检测不通过" && index < 2 {
+			break
+		}
+	}
+	return false, strings.Join(failures, "; ")
+}
+
 // 人脸识别1
 func PassFaceAction1(cache *xuexitong.XueXiTUserCache, courseId, classId, cpi, chapterId, enc, videojobid, chaptervideoobjectid, mid, videoRandomCollectTime string, face image.Image) (string, string, string, string /*识别状态*/, error) {
 	//uuid, qrEnc, err := cache.GetFaceQrCodeApi2(courseId, classId, cpi)
@@ -106,6 +182,7 @@ func PassFaceAction1(cache *xuexitong.XueXiTUserCache, courseId, classId, cpi, c
 		return "", "", "", "", err
 	}
 
+	utils.HumanDelay(500*time.Millisecond, 1200*time.Millisecond)
 	//上传人脸
 	ObjectId, err := cache.UploadFaceImageApi(token, face)
 	if err != nil {
@@ -114,38 +191,29 @@ func PassFaceAction1(cache *xuexitong.XueXiTUserCache, courseId, classId, cpi, c
 	if ObjectId == "" {
 		return "", "", "", "", errors.New("ObjectId is empty")
 	}
+	utils.HumanDelay(500*time.Millisecond, 1200*time.Millisecond)
 	//更换基准FaceId为新上传的照片(新版APP过人脸的核心: 先换基准再比对，绕过历史基准照片限制)
 	if _, err := cache.ChangeFaceIdApi(ObjectId, 3, nil); err != nil {
 		return "", "", "", "", err
 	}
-	//暂时先用plan3的过人脸（进入课程扫通过的）
-	//plan2Api, err := cache.GetCourseFaceQrPlan3Api(classId, courseId, uuid, qrEnc, cpi, ObjectId)
-	plan2Api, err := cache.PassFaceQrPlanPhoneNewApi(classId, courseId, chapterId, cpi, ObjectId)
-	//plan3Api, err := cache.GetCourseFaceQrPlan1Api(courseId, classId, uuid, ObjectId, qrEnc, "0")
-	log2.Print(log2.DEBUG, plan2Api)
-	passMsg := gojsonq.New().JSONString(plan2Api).Find("msg")
-	if err != nil {
-		return "", "", "", "", err
-	}
-	if passMsg != nil {
-		if passMsg != "识别通过" {
-			return "", "", "", "", errors.New(plan2Api)
-		}
+	utils.HumanDelay(600*time.Millisecond, 1400*time.Millisecond)
+	//多接口依次校验: 主接口被拒(如"非法请求")时自动切换备用接口
+	passed, detail := passFacePhoneCheck(cache, classId, courseId, chapterId, cpi, ObjectId)
+	if !passed {
+		return "", "", "", "", fmt.Errorf("人脸校验失败: %s", detail)
 	}
 	//获取人脸状态
 	stateApi, err := cache.GetCourseFaceQrStateApi(uuid, qrEnc, classId, courseId, cpi, mid, videojobid, videoRandomCollectTime, chapterId)
 	if err != nil {
 		return "", "", "", "", err
 	}
-	stateCode := gojsonq.New().JSONString(plan2Api).Find("code")
-	if stateCode != nil {
-
-		if int(stateCode.(float64)) != 0 {
-			return "", "", "", "", errors.New(stateApi)
+	//successEnc := gojsonq.New().JSONString(stateApi).Find("videoFaceCaptureSuccessEnc")
+	status := ""
+	if statusVal := gojsonq.New().JSONString(stateApi).Find("status"); statusVal != nil {
+		if statusFloat, ok := statusVal.(float64); ok {
+			status = strconv.Itoa(int(statusFloat))
 		}
 	}
-	//successEnc := gojsonq.New().JSONString(stateApi).Find("videoFaceCaptureSuccessEnc")
-	status := strconv.Itoa(int(gojsonq.New().JSONString(stateApi).Find("status").(float64)))
 	return uuid, qrEnc, ObjectId, status, nil
 }
 
@@ -167,7 +235,7 @@ func PassFacePhoneAction(cache *xuexitong.XueXiTUserCache, courseId, classId, cp
 	if err != nil {
 		return "", err
 	}
-	time.Sleep(1 * time.Second) //隔一下
+	utils.HumanDelay(800*time.Millisecond, 1800*time.Millisecond) //隔一下
 	//上传人脸
 	ObjectId, err := cache.UploadFaceImageApi(token, disturbImage)
 	if err != nil {
@@ -176,30 +244,16 @@ func PassFacePhoneAction(cache *xuexitong.XueXiTUserCache, courseId, classId, cp
 	if ObjectId == "" {
 		return "", errors.New("ObjectId is empty")
 	}
-	time.Sleep(1 * time.Second)
+	utils.HumanDelay(600*time.Millisecond, 1500*time.Millisecond)
 	//更换基准FaceId为新上传的照片(新版APP过人脸的核心: 先换基准再比对，绕过历史基准照片限制)
 	if _, err := cache.ChangeFaceIdApi(ObjectId, 3, nil); err != nil {
 		return "", err
 	}
-	time.Sleep(1 * time.Second)
-	plan3Api, err := cache.PassFaceQrPlanPhoneNewApi(classId, courseId, chapterId, cpi, ObjectId)
-	//暂时先用plan3的过人脸（进入课程扫通过的）
-
-	passMsg := gojsonq.New().JSONString(plan3Api).Find("msg")
-	if err != nil {
-		return "", err
-	}
-
-	if strings.Contains(plan3Api, "活体检测不通过") {
-		return "", errors.New(plan3Api)
-	}
-	if strings.Contains(plan3Api, "用户图片信息出错") {
-		return "", errors.New(plan3Api)
-	}
-	if passMsg != nil {
-		if passMsg != "通过" && passMsg != "识别通过" {
-			return "", errors.New(plan3Api)
-		}
+	utils.HumanDelay(800*time.Millisecond, 1600*time.Millisecond)
+	//多接口依次校验: 主接口被拒(如"非法请求")时自动切换备用接口
+	passed, detail := passFacePhoneCheck(cache, classId, courseId, chapterId, cpi, ObjectId)
+	if !passed {
+		return "", fmt.Errorf("人脸校验失败: %s", detail)
 	}
 	//获取人脸状态
 
@@ -224,7 +278,7 @@ func PassFacePhoneOldAction(cache *xuexitong.XueXiTUserCache, courseId, classId,
 	if err != nil {
 		return "", err
 	}
-	time.Sleep(1 * time.Second) //隔一下
+	utils.HumanDelay(800*time.Millisecond, 1800*time.Millisecond) //隔一下
 	//上传人脸
 	ObjectId, err := cache.UploadFaceImageApi(token, disturbImage)
 	if err != nil {
@@ -233,12 +287,12 @@ func PassFacePhoneOldAction(cache *xuexitong.XueXiTUserCache, courseId, classId,
 	if ObjectId == "" {
 		return "", errors.New("ObjectId is empty")
 	}
-	time.Sleep(1 * time.Second)
+	utils.HumanDelay(600*time.Millisecond, 1500*time.Millisecond)
 	//更换基准FaceId为新上传的照片(新版APP过人脸的核心: 先换基准再比对，绕过历史基准照片限制)
 	if _, err := cache.ChangeFaceIdApi(ObjectId, 3, nil); err != nil {
 		return "", err
 	}
-	time.Sleep(1 * time.Second)
+	utils.HumanDelay(800*time.Millisecond, 1600*time.Millisecond)
 	//plan3Api, err := cache.GetCourseFaceQrPlan4Api( classId,courseId, chapterId,"", "", ObjectId)
 	plan3Api, err := cache.PassFaceQrPlanPhoneOldApi(classId, courseId, chapterId, cpi, ObjectId)
 	//暂时先用plan3的过人脸（进入课程扫通过的）
@@ -281,6 +335,7 @@ func PassFacePCAction(cache *xuexitong.XueXiTUserCache, courseId, classId, cpi, 
 		return "", "", "", "", err
 	}
 
+	utils.HumanDelay(500*time.Millisecond, 1200*time.Millisecond)
 	//上传人脸
 	ObjectId, err := cache.UploadFaceImageApi(token, face)
 	if err != nil {
@@ -289,22 +344,24 @@ func PassFacePCAction(cache *xuexitong.XueXiTUserCache, courseId, classId, cpi, 
 	if ObjectId == "" {
 		return "", "", "", "", errors.New("ObjectId is empty")
 	}
+	utils.HumanDelay(500*time.Millisecond, 1200*time.Millisecond)
 	//更换基准FaceId为新上传的照片(新版APP过人脸的核心: 先换基准再比对，绕过历史基准照片限制)
 	if _, err := cache.ChangeFaceIdApi(ObjectId, 3, nil); err != nil {
 		return "", "", "", "", err
 	}
+	utils.HumanDelay(600*time.Millisecond, 1400*time.Millisecond)
 	//plan3Api, err := cache.PassFaceQrPlanPhoneApi(classId, courseId, chapterId, cpi, ObjectId)
 	//暂时先用plan3的过人脸（进入课程扫通过的）
 	plan3Api, err := cache.GetCourseFaceQrPlan3Api(classId, courseId, uuid, qrEnc, cpi, ObjectId)
 
-	//plan3Api, err := cache.GetCourseFaceQrPlan3Api(uuid, classId, courseId, qrEnc, ObjectId)
-	passMsg := gojsonq.New().JSONString(plan3Api).Find("msg")
 	if err != nil {
 		return "", "", "", "", err
 	}
-	if passMsg != nil {
-		if passMsg != "通过" {
-			return "", "", "", "", errors.New(plan3Api)
+	//PC扫码接口被拒(如"非法请求")时，回退手机端多接口校验
+	if passed, reason := faceCheckResult(plan3Api); !passed {
+		ok, detail := passFacePhoneCheck(cache, classId, courseId, chapterId, cpi, ObjectId)
+		if !ok {
+			return "", "", "", "", fmt.Errorf("人脸校验失败: %s; PC接口: %s", detail, reason)
 		}
 	}
 	//获取人脸状态
@@ -314,12 +371,11 @@ func PassFacePCAction(cache *xuexitong.XueXiTUserCache, courseId, classId, cpi, 
 	}
 	stateCode := gojsonq.New().JSONString(plan3Api).Find("code")
 	if stateCode != nil {
-
-		if int(stateCode.(float64)) != 0 {
+		if code, ok := stateCode.(float64); ok && int(code) != 0 {
 			return "", "", "", "", errors.New(stateApi)
 		}
 	}
-	successEnc := gojsonq.New().JSONString(stateApi).Find("videoFaceCaptureSuccessEnc").(string)
+	successEnc, _ := gojsonq.New().JSONString(stateApi).Find("videoFaceCaptureSuccessEnc").(string)
 
 	return uuid, qrEnc, ObjectId, successEnc, nil
 }

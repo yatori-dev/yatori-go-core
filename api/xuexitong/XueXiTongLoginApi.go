@@ -7,11 +7,14 @@ import (
 	"crypto/md5"
 	"crypto/tls"
 	"encoding/base64"
+	"encoding/json"
 	"fmt"
 	"io/ioutil"
 	"math/rand"
 	"net/http"
 	"net/url"
+	"os"
+	"path/filepath"
 	"strings"
 	"time"
 
@@ -21,18 +24,53 @@ import (
 // 注意Api类文件主需要写最原始的接口请求和最后的json的string形式返回，不需要用结构体序列化。
 // 序列化和具体的功能实现请移步到Action代码文件中
 const (
-	KEY         = "u2oh6Vu^HWe4_AES" // 注意 Go 语言中字符串默认就是 UTF-8 编码
-	APP_VERSION = "6.7.2"
-	//APP_VERSION = "6.7.5"
-	//APP_VERSION   = "6.6.4"
-	DEVICE_VENDOR = "MI10"
-	//BUILD         = "10831_263" //这个对应6.6.4版本
-	BUILD = "10941_314" //这个对应6.7.5版本
-	//BUILD           = "10936_311"
-	ANDROID_VERSION = "Android 16"
+	KEY             = "u2oh6Vu^HWe4_AES" // 注意 Go 语言中字符串默认就是 UTF-8 编码
+	APP_VERSION     = "6.7.5"
+	DEVICE_VENDOR   = "MI10"
+	BUILD           = "10941_314" //这个对应6.7.5版本
+	ANDROID_VERSION = "Android 11"
 )
 
-var IMEI = utils.TokenHex(16)
+// xxtDeviceConfigPath 设备指纹持久化路径: 优先用户配置目录，避免污染工作目录
+func xxtDeviceConfigPath() string {
+	if dir, err := os.UserConfigDir(); err == nil && dir != "" {
+		return filepath.Join(dir, "yatori", "xxt_device.json")
+	}
+	return filepath.Join(".", "config", "xxt_device.json")
+}
+
+// loadOrCreateIMEI 固定设备指纹(32位hex): 首次运行生成后持久化。
+// 每次启动随机生成会导致同一账号多会话"设备漂移"，容易被风控判定为设备异常。
+func loadOrCreateIMEI() string {
+	filePath := xxtDeviceConfigPath()
+	if data, err := ioutil.ReadFile(filePath); err == nil {
+		var payload struct {
+			IMEI string `json:"imei"`
+		}
+		if json.Unmarshal(data, &payload) == nil {
+			value := strings.ToLower(strings.TrimSpace(payload.IMEI))
+			if len(value) == 32 {
+				valid := true
+				for _, c := range value {
+					if !((c >= '0' && c <= '9') || (c >= 'a' && c <= 'f')) {
+						valid = false
+						break
+					}
+				}
+				if valid {
+					return value
+				}
+			}
+		}
+	}
+	value := utils.TokenHex(16)
+	if err := os.MkdirAll(filepath.Dir(filePath), os.ModePerm); err == nil {
+		_ = ioutil.WriteFile(filePath, []byte(fmt.Sprintf(`{"imei":%q}`, value)), 0644)
+	}
+	return value
+}
+
+var IMEI = loadOrCreateIMEI()
 var XXTEXAMUA = GetUA("mobile") //专门用于学习通考试用的UA，如果签名UA用不了就用普通UA，傻逼学习通又在搞什么哟蛾子。
 // var XXTEXAMUA = GetUA("iphone") //专门用于学习通考试用的UA，如果签名UA用不了就用普通UA，傻逼学习通又在搞什么哟蛾子。
 type XueXiTUserCache struct {
@@ -68,8 +106,8 @@ func GetUA(uaType string) string {
 		//}, " ")
 
 		return strings.Join([]string{
-			fmt.Sprintf("Mozilla/5.0 (Linux; %s; %s Build/OPM1.171019.019; wv)", ANDROID_VERSION, DEVICE_VENDOR),
-			fmt.Sprintf("AppleWebKit/537.36 (KHTML, like Gecko) Version/4.0 Chrome/71.0.3578.99 Mobile Safari/537.36"),
+			fmt.Sprintf("Mozilla/5.0 (Linux; %s; %s Build/QKQ1.190929.002; wv)", ANDROID_VERSION, DEVICE_VENDOR),
+			fmt.Sprintf("AppleWebKit/537.36 (KHTML, like Gecko) Version/4.0 Chrome/79.0.3945.116 Mobile Safari/537.36"),
 			fmt.Sprintf("(schild:%s)", MobileUASign(DEVICE_VENDOR, "zh_CN", APP_VERSION, BUILD, IMEI)),
 			fmt.Sprintf("(device:%s)", DEVICE_VENDOR),
 			"Language/zh_CN",

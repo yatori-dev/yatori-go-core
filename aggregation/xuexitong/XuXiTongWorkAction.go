@@ -11,6 +11,7 @@ import (
 	"regexp"
 	"strconv"
 	"strings"
+	"time"
 
 	"github.com/PuerkitoBio/goquery"
 	"github.com/yatori-dev/yatori-go-core/api/xuexitong"
@@ -18,6 +19,7 @@ import (
 	"github.com/yatori-dev/yatori-go-core/que-core/aiq"
 	"github.com/yatori-dev/yatori-go-core/que-core/external"
 	"github.com/yatori-dev/yatori-go-core/que-core/qtype"
+	"github.com/yatori-dev/yatori-go-core/utils"
 	log2 "github.com/yatori-dev/yatori-go-core/utils/log"
 )
 
@@ -115,6 +117,8 @@ func EnterWorkAction(cache *xuexitong.XueXiTUserCache, exam *XXTWork) error {
 		//fmt.Println(refererUrl)
 		return err
 	}
+	// 拟人化间隔: 打开作业页后稍作停顿再进行后续操作
+	utils.HumanDelay(400*time.Millisecond, 900*time.Millisecond)
 
 	re := regexp.MustCompile(`共包含\s*(\d+)\s*道题目`)
 	match := re.FindStringSubmatch(enterHtml)
@@ -189,6 +193,8 @@ func EnterWorkAction(cache *xuexitong.XueXiTUserCache, exam *XXTWork) error {
 	exam.Cpi = cpi
 	exam.AnswerId = answerId
 	exam.Enc = enc
+	// 拟人化间隔: 过完滑块后短暂停留再进入作业
+	utils.HumanDelay(1000*time.Millisecond, 2500*time.Millisecond)
 	//pullPaperHtml, err := cache.PullExamPaperHtmlApi(exam.CourseId, exam.ClazzId, exam.ExamRelationId, "0", exam.AnswerId, exam.Cpi, "1", xuexitong.IMEI, exam.Validate, "0", 3, nil)
 	pullPaperHtml, err := cache.PullWorkPaperHtmlApi(exam.CourseId, exam.ClazzId, exam.TaskRefId, "0", exam.MsgId, exam.Cpi, exam.AnswerId, exam.Enc, "1", 3, nil)
 	if err != nil {
@@ -234,6 +240,8 @@ func extractParams(js string) (cpi, workAnswerId, enc string) {
 
 // 拉取题目
 func (exam *XXTWork) PullWorkQuestionAction(cache *xuexitong.XueXiTUserCache, index int /*第几道题*/) (XXTWorkQuestion, error) {
+	// 拟人化间隔: 模拟阅读/切题，避免连续拉题过快
+	utils.HumanDelay(800*time.Millisecond, 2000*time.Millisecond)
 	pullQuestion, err1 := cache.PullWorkQuestionApi(exam.CourseId, exam.ClazzId, exam.TaskRefId, "0", exam.MsgId, exam.Cpi, exam.AnswerId, exam.Enc, "1", index, 3, nil)
 	if err1 != nil {
 		return XXTWorkQuestion{}, err1
@@ -319,6 +327,8 @@ func (question *XXTWorkQuestion) WriteQuestionForXXTAIAction(cache *xuexitong.Xu
 // 提交学习通考试答案
 func (question *XXTWorkQuestion) SubmitWorkAnswerAction(cache *xuexitong.XueXiTUserCache, isSubmit bool /*是否提交，true为提交，false为暂存*/) (string, error) {
 	//api, err := cache.SubmitExamAnswerApi(exam.ClazzId, exam.CourseId, exam.Paper.TestPaperId, exam.Paper.TestUserRelationId, exam.Cpi, exam.Paper.RemainTime, exam.Paper.EncRemainTime, exam.Paper.EncLastUpdateTime, exam.ExamRelationId, exam.AnswerId, exam.RemainTime, !isSubmit, exam.Paper.Enc, exam.Paper.EnterPageTime, exam.Paper.XXTExamQuestion.QuestionId, exam.Paper.Type, exam.Paper.XXTExamQuestion.TypeName, &exam.Paper)
+	// 拟人化间隔: 模拟作答停顿后再提交
+	utils.HumanDelay(800*time.Millisecond, 2200*time.Millisecond)
 	api, err := cache.SubmitWorkAnswerApi(&question.XXTWorkQuestionSubmitEntity, !isSubmit, 3, nil)
 	if err != nil {
 		return "", err
