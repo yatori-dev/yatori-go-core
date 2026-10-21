@@ -9,9 +9,9 @@ import (
 	"strings"
 	"testing"
 
-	action "github.com/yatori-dev/yatori-go-core/aggregation/icve"
-	"github.com/yatori-dev/yatori-go-core/api/icve"
 	"github.com/yatori-dev/yatori-go-core/global"
+	action "github.com/yatori-dev/yatori-go-core/internal/aggregation/icve"
+	"github.com/yatori-dev/yatori-go-core/internal/api/icve"
 	"github.com/yatori-dev/yatori-go-core/utils"
 )
 

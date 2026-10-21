@@ -4,9 +4,9 @@ import (
 	"fmt"
 	"testing"
 
-	action "github.com/yatori-dev/yatori-go-core/aggregation/weiban"
-	"github.com/yatori-dev/yatori-go-core/api/weiban"
 	"github.com/yatori-dev/yatori-go-core/global"
+	action "github.com/yatori-dev/yatori-go-core/internal/aggregation/weiban"
+	"github.com/yatori-dev/yatori-go-core/internal/api/weiban"
 	"github.com/yatori-dev/yatori-go-core/utils"
 )
 

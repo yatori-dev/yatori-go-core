@@ -16,9 +16,9 @@ import (
 	time2 "time"
 
 	"github.com/thedevsaddam/gojsonq"
-	"github.com/yatori-dev/yatori-go-core/aggregation/yinghua"
-	yinghuaApi "github.com/yatori-dev/yatori-go-core/api/yinghua"
 	"github.com/yatori-dev/yatori-go-core/global"
+	"github.com/yatori-dev/yatori-go-core/internal/aggregation/yinghua"
+	yinghuaApi "github.com/yatori-dev/yatori-go-core/internal/api/yinghua"
 	"github.com/yatori-dev/yatori-go-core/utils"
 	log2 "github.com/yatori-dev/yatori-go-core/utils/log"
 )

@@ -4,9 +4,9 @@ import (
 	"fmt"
 	"testing"
 
-	zxcpks2 "github.com/yatori-dev/yatori-go-core/aggregation/haiqikeji"
-	"github.com/yatori-dev/yatori-go-core/api/haiqikeji"
 	"github.com/yatori-dev/yatori-go-core/global"
+	zxcpks2 "github.com/yatori-dev/yatori-go-core/internal/aggregation/haiqikeji"
+	"github.com/yatori-dev/yatori-go-core/internal/api/haiqikeji"
 	"github.com/yatori-dev/yatori-go-core/utils"
 )
 

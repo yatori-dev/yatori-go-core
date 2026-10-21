@@ -5,9 +5,9 @@ import (
 	"testing"
 	time2 "time"
 
-	"github.com/yatori-dev/yatori-go-core/aggregation/enaea"
-	enaeaApi "github.com/yatori-dev/yatori-go-core/api/enaea"
 	"github.com/yatori-dev/yatori-go-core/global"
+	"github.com/yatori-dev/yatori-go-core/internal/aggregation/enaea"
+	enaeaApi "github.com/yatori-dev/yatori-go-core/internal/api/enaea"
 	"github.com/yatori-dev/yatori-go-core/utils"
 )
 

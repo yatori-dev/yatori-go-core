@@ -7,9 +7,9 @@ import (
 
 	ddddocr "github.com/Changbaiqi/ddddocr-go/utils"
 	"github.com/thedevsaddam/gojsonq"
-	qsxt "github.com/yatori-dev/yatori-go-core/aggregation/qingshuxuetang"
-	"github.com/yatori-dev/yatori-go-core/api/qingshuxuetang"
 	"github.com/yatori-dev/yatori-go-core/global"
+	qsxt "github.com/yatori-dev/yatori-go-core/internal/aggregation/qingshuxuetang"
+	"github.com/yatori-dev/yatori-go-core/internal/api/qingshuxuetang"
 	"github.com/yatori-dev/yatori-go-core/utils"
 )
 

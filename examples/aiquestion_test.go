@@ -5,9 +5,9 @@ import (
 	"fmt"
 	"testing"
 
-	"github.com/yatori-dev/yatori-go-core/aggregation/xuexitong"
-	xuexitong2 "github.com/yatori-dev/yatori-go-core/api/xuexitong"
 	"github.com/yatori-dev/yatori-go-core/global"
+	"github.com/yatori-dev/yatori-go-core/internal/aggregation/xuexitong"
+	xuexitong2 "github.com/yatori-dev/yatori-go-core/internal/api/xuexitong"
 	"github.com/yatori-dev/yatori-go-core/que-core/aiq"
 	"github.com/yatori-dev/yatori-go-core/que-core/qtype"
 	"github.com/yatori-dev/yatori-go-core/utils"

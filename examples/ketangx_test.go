@@ -8,9 +8,9 @@ import (
 	"time"
 
 	"github.com/thedevsaddam/gojsonq"
-	action "github.com/yatori-dev/yatori-go-core/aggregation/ketangx"
-	"github.com/yatori-dev/yatori-go-core/api/ketangx"
 	"github.com/yatori-dev/yatori-go-core/global"
+	action "github.com/yatori-dev/yatori-go-core/internal/aggregation/ketangx"
+	"github.com/yatori-dev/yatori-go-core/internal/api/ketangx"
 	"github.com/yatori-dev/yatori-go-core/utils"
 )
 

@@ -1,0 +1,69 @@
+package yinghua
+
+import (
+	"errors"
+	"fmt"
+	"strings"
+
+	ddddocr "github.com/Changbaiqi/ddddocr-go/utils"
+	"github.com/thedevsaddam/gojsonq"
+	ort "github.com/yalue/onnxruntime_go"
+	yinghuaApi "github.com/yatori-dev/yatori-go-core/internal/api/yinghua"
+	"github.com/yatori-dev/yatori-go-core/utils"
+	"github.com/yatori-dev/yatori-go-core/utils/log"
+)
+
+// YingHuaLoginAction 登录API聚合整理
+// {"refresh_code":1,"status":false,"msg":"账号密码不正确"}
+// {"_code": 1, "status": false,"msg": "账号登录超时，请重新登录", "result": {}}
+func YingHuaLoginAction(cache *yinghuaApi.YingHuaUserCache) error {
+	for {
+		path, _ := cache.VerificationCodeApi(10) //获取验证码
+		if path == "" {                          //如果path为空，那么可能是账号问题
+			return errors.New("无法正常获取对应网站验证码，请检查对应url是否正常")
+		}
+		img, _ := utils.ReadImg(path) //读取验证码图片
+		//codeResult := utils.AutoVerification(img, ort.NewShape(1, 18)) //自动识别
+		codeResult := ddddocr.SemiOCRVerification(img, ort.NewShape(1, 18))
+		utils.DeleteFile(path)                //删除验证码文件
+		cache.SetVerCode(codeResult)          //填写验证码
+		jsonStr, _ := cache.LoginApi(10, nil) //执行登录
+		log.Print(log.DEBUG, "["+cache.Account+"] "+"LoginAction---"+jsonStr)
+		if gojsonq.New().JSONString(jsonStr).Find("msg") == "验证码有误！" {
+			continue
+		} else if strings.Contains(jsonStr, ">选择学校<") {
+			return fmt.Errorf("请填写正确的url链接，英华的url可能首页和登录后的是不一样的，以登录后的url为准。")
+		} else if gojsonq.New().JSONString(jsonStr).Find("redirect") == nil {
+			if gojsonq.New().JSONString(jsonStr).Find("msg") == nil { // 如果登录不成功并且msg也返回空那么直接重新再登录一遍
+				continue
+			}
+			return errors.New(gojsonq.New().JSONString(jsonStr).Find("msg").(string))
+		}
+		cache.SetToken(
+			strings.Split(
+				strings.Split(
+					gojsonq.New().JSONString(jsonStr).
+						Find("redirect").(string), "token=")[1], "&")[0]) //设置Token
+		cache.SetSign(
+			strings.Split(
+				gojsonq.New().JSONString(jsonStr).Find("redirect").(string), "&sign=")[1]) //设置签名
+		//log.Print(log.INFO, "["+cache.Account+"] "+" 登录成功")
+		break
+	}
+	return nil
+}
+
+// LoginTimeoutAfreshAction 超时重登逻辑
+func LoginTimeoutAfreshAction(cache *yinghuaApi.YingHuaUserCache, backJson string) {
+	//未超时则直接return
+	if !strings.Contains(backJson, "账号登录超时，请重新登录") {
+		return
+	}
+	log.Print(log.INFO, "["+cache.Account+"] ", log.BoldRed, "检测到登录超时，正在进行重新登录逻辑...")
+	err := YingHuaLoginAction(cache)
+	if err != nil {
+		log.Print(log.INFO, "["+cache.Account+"] ", log.BoldRed, "超时重登失败")
+		return
+	}
+	log.Print(log.INFO, "["+cache.Account+"] ", log.BoldGreen, "超时重登成功")
+}

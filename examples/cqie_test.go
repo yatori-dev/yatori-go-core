@@ -5,9 +5,9 @@ import (
 	"testing"
 	"time"
 
-	cqie "github.com/yatori-dev/yatori-go-core/aggregation/cqie"
-	cqieApi "github.com/yatori-dev/yatori-go-core/api/cqie"
 	"github.com/yatori-dev/yatori-go-core/global"
+	cqie "github.com/yatori-dev/yatori-go-core/internal/aggregation/cqie"
+	cqieApi "github.com/yatori-dev/yatori-go-core/internal/api/cqie"
 	"github.com/yatori-dev/yatori-go-core/utils"
 )
 

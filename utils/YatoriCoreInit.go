@@ -116,3 +116,24 @@ func loadNodeModules() {
 
 	//log.Println("node_modules 已成功加载到 assets 文件夹")
 }
+
+// ExtractAssets writes the named embedded legacy assets to dir.
+//
+// Library callers can use this to materialize only the helper binaries a
+// platform needs instead of calling YatoriCoreInit, which extracts the
+// complete legacy asset bundle into the process working directory.
+func ExtractAssets(dir string, names ...string) error {
+	if err := os.MkdirAll(dir, 0755); err != nil {
+		return err
+	}
+	for _, name := range names {
+		data, err := assets.ReadFile("assets/" + name)
+		if err != nil {
+			return err
+		}
+		if err := os.WriteFile(filepath.Join(dir, name), data, 0644); err != nil {
+			return err
+		}
+	}
+	return nil
+}
