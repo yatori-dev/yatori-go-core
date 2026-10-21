@@ -6,6 +6,31 @@
 
 Yatori-go-core 是 yatori 系列的 Go 核心库。它把多个在线学习平台的登录、课程、章节、学习、作业和考试能力收敛到同一套接口，第三方项目可以直接导入并做二次开发。
 
+> 文档站：[使用教程](https://yatori-dev.github.io/yatori-docs/yatori-go-core/docs.html) · [开发手册](https://yatori-dev.github.io/yatori-docs/yatori-go-core/dev/) · [新增平台教程](https://yatori-dev.github.io/yatori-docs/yatori-go-core/dev/new-platform.html)
+
+## 官方文档
+
+完整文档站：**[https://yatori-dev.github.io/yatori-docs/](https://yatori-dev.github.io/yatori-docs/)**
+
+使用文档：
+
+- [V2 总览](https://yatori-dev.github.io/yatori-docs/yatori-go-core/docs.html)
+- [快速开始](https://yatori-dev.github.io/yatori-docs/yatori-go-core/v2/getting-started.html)
+- [Client API](https://yatori-dev.github.io/yatori-docs/yatori-go-core/v2/client-api.html)
+- [平台说明与账号参数](https://yatori-dev.github.io/yatori-docs/yatori-go-core/v2/platforms.html)
+- [完整示例](https://yatori-dev.github.io/yatori-docs/yatori-go-core/v2/examples.html)
+- [常见问题](https://yatori-dev.github.io/yatori-docs/yatori-go-core/v2/faq.html)
+
+开发文档：
+
+- [开发手册总览](https://yatori-dev.github.io/yatori-docs/yatori-go-core/dev/)
+- [架构与分层](https://yatori-dev.github.io/yatori-docs/yatori-go-core/dev/architecture.html)
+- [新增平台完整教程](https://yatori-dev.github.io/yatori-docs/yatori-go-core/dev/new-platform.html)
+- [Adapter API 规范](https://yatori-dev.github.io/yatori-docs/yatori-go-core/dev/adapter-api.html)
+- [数据映射规范](https://yatori-dev.github.io/yatori-docs/yatori-go-core/dev/data-mapping.html)
+- [测试与验收](https://yatori-dev.github.io/yatori-docs/yatori-go-core/dev/testing.html)
+- [代码风格与 PR](https://yatori-dev.github.io/yatori-docs/yatori-go-core/dev/style-and-pr.html)
+
 ## 安装
 
 ```bash
@@ -85,6 +110,8 @@ func main() {
 
 > Study 是进度原语：不同平台粒度不同。学习通/英华/CQIE/TTCDW 接受 `Position` 进度；职教云/课堂行/WeLearn 会直接完成整个节点；青书/海旗按平台会话提交。请以返回的 `StudyResult` 为准，不要把某个平台的循环节奏套到所有平台。
 
+更多配置、错误处理和完整流程见 [快速开始文档](https://yatori-dev.github.io/yatori-docs/yatori-go-core/v2/getting-started.html)。
+
 ## 统一接口
 
 所有平台都实现同一个 `yatori.Client`：
@@ -119,7 +146,7 @@ type Client interface {
 平台不支持的操作返回 `yatori.ErrUnsupported`，调用前可用 `client.Capabilities()` 判断：
 
 ```go
-if yatori.Supports(client, yatori.CapWorks) {
+	if yatori.Supports(client, yatori.CapWorks) {
 	works, _ := client.Works(ctx, course)
 	for _, work := range works {
 		_, _ = client.DoWork(ctx, yatori.WorkRequest{
@@ -131,6 +158,8 @@ if yatori.Supports(client, yatori.CapWorks) {
 	}
 }
 ```
+
+逐方法说明见 [Client API 文档](https://yatori-dev.github.io/yatori-docs/yatori-go-core/v2/client-api.html)，能力位的完整矩阵见 [能力与错误](https://yatori-dev.github.io/yatori-docs/yatori-go-core/v2/capabilities.html)。
 
 ## 平台能力
 
@@ -184,6 +213,8 @@ if ok {
 }
 ```
 
+更详细的账号参数、平台限制和扫码流程见 [平台说明文档](https://yatori-dev.github.io/yatori-docs/yatori-go-core/v2/platforms.html)。
+
 ## 动态调用
 
 对于配置驱动或 Web 后端场景，可以用 `Call` 免去类型分支：
@@ -198,6 +229,8 @@ result, err = client.Call(ctx, yatori.ActionStudy, map[string]any{
 	"position": "60s",
 })
 ```
+
+完整的 Action、参数和返回类型表见 [动态调用文档](https://yatori-dev.github.io/yatori-docs/yatori-go-core/v2/dynamic-call.html)。
 
 ## 目录结构
 
@@ -221,6 +254,8 @@ yatori-go-core
 > 运行目录提示：部分平台仍沿用旧实现的相对路径（验证码图片、职教云辅助 exe、学习通人脸素材），默认写入当前工作目录下的 `./assets`。请确保运行目录可写；OCR 模型只在首次登录相关平台时释放。
 
 ## 开发
+
+贡献代码前请先阅读 [开发手册总览](https://yatori-dev.github.io/yatori-docs/yatori-go-core/dev/)。新增平台请按 [新增平台完整教程](https://yatori-dev.github.io/yatori-docs/yatori-go-core/dev/new-platform.html) 操作，并遵循 [Adapter API 规范](https://yatori-dev.github.io/yatori-docs/yatori-go-core/dev/adapter-api.html)、[数据映射规范](https://yatori-dev.github.io/yatori-docs/yatori-go-core/dev/data-mapping.html) 和 [代码风格与 PR 清单](https://yatori-dev.github.io/yatori-docs/yatori-go-core/dev/style-and-pr.html)。
 
 ```bash
 go build ./...
