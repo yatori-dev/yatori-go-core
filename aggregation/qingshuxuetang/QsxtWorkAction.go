@@ -40,10 +40,10 @@ func PullWorkListAction(cache *qingshuxuetang.QsxtUserCache, course QsxtCourse) 
 	//异常处理
 	pullStatus := gojsonq.New().JSONString(workListJson).Find("hr")
 	if pullStatus == nil {
-		return workList, fmt.Errorf(workListJson)
+		return workList, fmt.Errorf("%s", workListJson)
 	}
 	if int(pullStatus.(float64)) != 0 {
-		return workList, fmt.Errorf(workListJson)
+		return workList, fmt.Errorf("%s", workListJson)
 	}
 
 	if worksJson, ok := gojsonq.New().JSONString(workListJson).Find("data.rows").([]interface{}); ok {
@@ -91,10 +91,10 @@ func WriteWorkAction(cache *qingshuxuetang.QsxtUserCache, work QsxtWork, isSubmi
 	//异常处理
 	pullStatus := gojsonq.New().JSONString(workQuestionsJson).Find("hr")
 	if pullStatus == nil {
-		return "", fmt.Errorf(workQuestionsJson)
+		return "", fmt.Errorf("%s", workQuestionsJson)
 	}
 	if int(pullStatus.(float64)) != 0 {
-		return "", fmt.Errorf(workQuestionsJson)
+		return "", fmt.Errorf("%s", workQuestionsJson)
 	}
 
 	type QsxtAnswer struct {
@@ -144,10 +144,10 @@ func WriteWorkAction(cache *qingshuxuetang.QsxtUserCache, work QsxtWork, isSubmi
 				//异常处理
 				pullStatus = gojsonq.New().JSONString(submitJson).Find("hr")
 				if pullStatus == nil {
-					return "", fmt.Errorf(submitJson)
+					return "", fmt.Errorf("%s", submitJson)
 				}
 				if int(pullStatus.(float64)) != 0 {
-					return "", fmt.Errorf(submitJson)
+					return "", fmt.Errorf("%s", submitJson)
 				}
 				answers = append(answers, QsxtAnswer{
 					Answer:     solution,

@@ -8,6 +8,7 @@ import (
 	"log"
 	"os"
 	"path/filepath"
+	"sync"
 
 	ddddocr "github.com/Changbaiqi/ddddocr-go/utils"
 )
@@ -29,15 +30,19 @@ var assetsList = []string{
 	"glyfHashed.json",
 }
 
+var coreInitOnce sync.Once
+
 func YatoriCoreInit() {
-	//加载必要的文件资源
-	loadAssets()
-	//加载AI环境
-	loadAiEnvironment()
-	//加载必要nodejs模块
-	loadNodeModules()
-	//创建faces文件夹
-	PathExistForCreate("./assets/faces")
+	coreInitOnce.Do(func() {
+		//加载必要的文件资源
+		loadAssets()
+		//加载AI环境
+		loadAiEnvironment()
+		//加载必要nodejs模块
+		loadNodeModules()
+		//创建faces文件夹
+		PathExistForCreate("./assets/faces")
+	})
 }
 
 // 加载必要的文件资源

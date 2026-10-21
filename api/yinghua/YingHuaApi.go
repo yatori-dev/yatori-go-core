@@ -505,7 +505,7 @@ func CourseVideListApi(cache YingHuaUserCache, courseId string /*课程ID*/, ret
 	if strings.Contains(string(body), "502 Bad Gateway") || strings.Contains(string(body), "504 Gateway Time-out") || strings.Contains(string(body), `"status":false,"_code":500`) {
 		res.Body.Close()                   //立即释放
 		time.Sleep(time.Millisecond * 150) //延迟
-		return CourseVideListApi(cache, courseId, retry-1, fmt.Errorf(string(body)))
+		return CourseVideListApi(cache, courseId, retry-1, fmt.Errorf("%s", string(body)))
 	}
 	if string(body) == "" { //防止为空的情况
 		return CourseVideListApi(cache, courseId, retry-1, fmt.Errorf("拉取课程视屏列表服务器返回数据为空"))

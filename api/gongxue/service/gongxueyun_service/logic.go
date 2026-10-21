@@ -35,7 +35,7 @@ func (m *MoguDing) Run(runType string) {
 		return
 	}
 	if err := m.GetJobInfo(); err != nil {
-		global.Log.Warn("Failed to get job info: %v", err)
+		global.Log.Warnf("Failed to get job info: %v", err)
 		return
 	}
 	m.getWeeksTime()
@@ -177,7 +177,7 @@ func (mogu *MoguDing) Login() error {
 	}
 	json.Unmarshal(body, &login)
 	if login.Code != 200 {
-		return fmt.Errorf(login.Msg)
+		return fmt.Errorf("%s", login.Msg)
 
 	}
 	decrypt, err := padding.Decrypt(login.Data)
@@ -216,7 +216,7 @@ func (mogu *MoguDing) GetPlanId() error {
 		mogu.PlanName = planData.Data[i].PlanName
 	}
 	if strings.EqualFold(mogu.PlanID, defaultId) {
-		return fmt.Errorf(mogu.PlanName)
+		return fmt.Errorf("%s", mogu.PlanName)
 	}
 	//global.Log.Info("================")
 	log2.Print(log2.INFO, "================")

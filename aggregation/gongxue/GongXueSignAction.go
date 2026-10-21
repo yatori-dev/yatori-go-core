@@ -49,7 +49,7 @@ func GongXueSignAction(signUser SignUser) {
 		return
 	}
 	if err := m.GetJobInfo(); err != nil {
-		global.Log.Warn("Failed to get job info: %v", err)
+		global.Log.Warnf("Failed to get job info: %v", err)
 		return
 	}
 

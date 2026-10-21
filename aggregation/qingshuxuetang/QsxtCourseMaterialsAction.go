@@ -37,10 +37,10 @@ func PullCourseMaterialListAction(cache *qingshuxuetang.QsxtUserCache, course Qs
 	//异常处理
 	pullStatus := gojsonq.New().JSONString(materialListJson).Find("hr")
 	if pullStatus == nil {
-		return nil, fmt.Errorf(materialListJson)
+		return nil, fmt.Errorf("%s", materialListJson)
 	}
 	if int(pullStatus.(float64)) != 0 {
-		return nil, fmt.Errorf(materialListJson)
+		return nil, fmt.Errorf("%s", materialListJson)
 	}
 	materialsJson := gojsonq.New().JSONString(materialListJson).Find("data")
 	if materialJson, ok := materialsJson.(map[string]interface{}); ok {
@@ -130,10 +130,10 @@ func (node QsxtCourseMaterial) StartStudyTimeAction(cache *qingshuxuetang.QsxtUs
 	//异常处理
 	pullStatus := gojsonq.New().JSONString(startResult).Find("hr")
 	if pullStatus == nil {
-		return "", fmt.Errorf(startResult)
+		return "", fmt.Errorf("%s", startResult)
 	}
 	if int(pullStatus.(float64)) != 0 {
-		return "", fmt.Errorf(startResult)
+		return "", fmt.Errorf("%s", startResult)
 	}
 
 	startId := gojsonq.New().JSONString(startResult).Find("data").(string)

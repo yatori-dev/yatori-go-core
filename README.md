@@ -4,7 +4,7 @@
 
 <div align="center"><h2>Yatori-go-core</h2></div>
 
-<div align="center"><img width="125px" src="https://img.shields.io/badge/GO1.24.0-building-r.svg?logo=go"></img> <img width="80px" src="https://img.shields.io/github/stars/yatori-dev/yatori-go-core.svg"></img> <img width="90px" src="https://img.shields.io/github/downloads/yatori-dev/yatori-go-core/total.svg"></img> <img width="70px" src="https://img.shields.io/github/license/yatori-dev/yatori-go-core.svg"></img></div>
+<div align="center"><img width="125px" src="https://img.shields.io/badge/GO1.26.4-building-r.svg?logo=go"></img> <img width="80px" src="https://img.shields.io/github/stars/yatori-dev/yatori-go-core.svg"></img> <img width="90px" src="https://img.shields.io/github/downloads/yatori-dev/yatori-go-core/total.svg"></img> <img width="70px" src="https://img.shields.io/github/license/yatori-dev/yatori-go-core.svg"></img></div>
 
 
 * 这是一个yatori-core系列的yatori-go-core核心，其他所有go衍生的yatori系列产品都会通过这个core核心进行衍生开发
@@ -30,7 +30,7 @@ yatori-go-core
 ```
 
 ## ⚒️代码运行环境（以下只提供Windows环境下载直连）
-* go: [1.23.4](https://studygolang.com/dl/golang/go1.23.4.windows-amd64.zip)
+* go: [1.26.4](https://studygolang.com/dl/golang/go1.26.4.windows-amd64.zip)
 * gcc: [11.2.0](https://github.com/cristianadam/mingw-builds/releases/download/v11.2.0-rev1/x86_64-11.2.0-release-posix-seh-rt_v9-rev1.7z)
 
 ## 🎉贡献者

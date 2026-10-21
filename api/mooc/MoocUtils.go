@@ -120,7 +120,7 @@ func MOOCEncMS4(content string) string {
 	key, err := hex.DecodeString(publicKey)
 	out, err := sm4.Sm4Ecb(key, []byte(content), true)
 	if err != nil {
-		error.Error(err)
+		_ = error.Error(err)
 	}
 	fmt.Printf("cipher (hex): %x\n", out)
 	return fmt.Sprintf("%x", out)

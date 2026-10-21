@@ -63,10 +63,10 @@ func PullCourseListAction(cache *qingshuxuetang.QsxtUserCache) ([]QsxtCourse, er
 	//异常处理
 	pullStatus := gojsonq.New().JSONString(coursesJson).Find("hr")
 	if pullStatus == nil {
-		return nil, fmt.Errorf(coursesJson)
+		return nil, fmt.Errorf("%s", coursesJson)
 	}
 	if int(pullStatus.(float64)) != 0 {
-		return nil, fmt.Errorf(coursesJson)
+		return nil, fmt.Errorf("%s", coursesJson)
 	}
 
 	courseListJson := gojsonq.New().JSONString(coursesJson).Find("data")
@@ -139,15 +139,15 @@ func PullCourseNodeListAction(cache *qingshuxuetang.QsxtUserCache, course QsxtCo
 	//异常处理
 	pullStatus := gojsonq.New().JSONString(courseDetailJson).Find("hr")
 	if pullStatus == nil {
-		return nil, fmt.Errorf(courseDetailJson)
+		return nil, fmt.Errorf("%s", courseDetailJson)
 	}
 	if int(pullStatus.(float64)) != 0 {
-		return nil, fmt.Errorf(courseDetailJson)
+		return nil, fmt.Errorf("%s", courseDetailJson)
 	}
 
 	detailJson := gojsonq.New().JSONString(courseDetailJson).Find("data")
 	if _, ok := detailJson.(map[string]interface{}); !ok {
-		return nil, fmt.Errorf(courseDetailJson)
+		return nil, fmt.Errorf("%s", courseDetailJson)
 	}
 
 	//拉取任务点---------------------------------------
@@ -158,10 +158,10 @@ func PullCourseNodeListAction(cache *qingshuxuetang.QsxtUserCache, course QsxtCo
 	//异常处理
 	pullStatus = gojsonq.New().JSONString(nodesJson).Find("hr")
 	if pullStatus == nil {
-		return nil, fmt.Errorf(courseDetailJson)
+		return nil, fmt.Errorf("%s", courseDetailJson)
 	}
 	if int(pullStatus.(float64)) != 0 {
-		return nil, fmt.Errorf(courseDetailJson)
+		return nil, fmt.Errorf("%s", courseDetailJson)
 	}
 	nodeListJson := gojsonq.New().JSONString(nodesJson).Find("data")
 
@@ -184,10 +184,10 @@ func PullCourseNodeListAction(cache *qingshuxuetang.QsxtUserCache, course QsxtCo
 	//异常处理
 	pullStatus = gojsonq.New().JSONString(courseDetailJson).Find("hr")
 	if pullStatus == nil {
-		return nil, fmt.Errorf(recordResult)
+		return nil, fmt.Errorf("%s", recordResult)
 	}
 	if int(pullStatus.(float64)) != 0 {
-		return nil, fmt.Errorf(recordResult)
+		return nil, fmt.Errorf("%s", recordResult)
 	}
 	recordListJson := gojsonq.New().JSONString(recordResult).Find("data")
 	if objJson, ok := recordListJson.([]interface{}); ok {
@@ -253,10 +253,10 @@ func UpdateCourseScore(cache *qingshuxuetang.QsxtUserCache, course *QsxtCourse) 
 	}
 	pullStatus := gojsonq.New().JSONString(scoreJson).Find("hr")
 	if pullStatus == nil {
-		return "", fmt.Errorf(scoreJson)
+		return "", fmt.Errorf("%s", scoreJson)
 	}
 	if int(pullStatus.(float64)) != 0 {
-		return "", fmt.Errorf(scoreJson)
+		return "", fmt.Errorf("%s", scoreJson)
 	}
 	if scoresArrayJson, ok := gojsonq.New().JSONString(scoreJson).Find("data.rows").([]interface{}); ok {
 		for _, courseJson := range scoresArrayJson {
@@ -304,10 +304,10 @@ func (node QsxtNode) StartStudyTimeAction(cache *qingshuxuetang.QsxtUserCache) (
 	//异常处理
 	pullStatus := gojsonq.New().JSONString(startResult).Find("hr")
 	if pullStatus == nil {
-		return "", fmt.Errorf(startResult)
+		return "", fmt.Errorf("%s", startResult)
 	}
 	if int(pullStatus.(float64)) != 0 {
-		return "", fmt.Errorf(startResult)
+		return "", fmt.Errorf("%s", startResult)
 	}
 
 	startId := gojsonq.New().JSONString(startResult).Find("data").(string)
