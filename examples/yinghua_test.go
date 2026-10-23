@@ -1,6 +1,7 @@
 package examples
 
 import (
+	"context"
 	"crypto/tls"
 	"fmt"
 	"io"
@@ -16,6 +17,7 @@ import (
 	time2 "time"
 
 	"github.com/thedevsaddam/gojsonq"
+	"github.com/yatori-dev/yatori-go-core"
 	"github.com/yatori-dev/yatori-go-core/global"
 	"github.com/yatori-dev/yatori-go-core/internal/aggregation/yinghua"
 	yinghuaApi "github.com/yatori-dev/yatori-go-core/internal/api/yinghua"
@@ -432,4 +434,54 @@ func TestCapterImg(t *testing.T) {
 	}
 
 	fmt.Println("✅ 验证码图片保存成功: captcha.png")
+}
+
+// 测试V2版本函数
+func TestV2brush(t *testing.T) {
+	//测试账号
+	setup()
+	user := global.Config.Users[77]
+	client, err := yatori.New(yatori.Config{
+		Platform: yatori.YingHua,
+		Account: yatori.Account{
+			URL:      user.URL,
+			Username: user.Account,
+			Password: user.Password,
+		},
+	})
+	if err != nil {
+		log.Fatal(err)
+	}
+	defer client.Close()
+	ctx := context.Background()
+	if err := client.Login(ctx); err != nil {
+		panic(err)
+	}
+	courses, err := client.Courses(ctx)
+	if err != nil {
+		log.Fatal(err)
+	}
+	for _, cours := range courses {
+		fmt.Println(cours.Name, cours.Progress)
+		nodes, err := client.Tree(ctx, cours)
+		if err != nil {
+			continue
+		}
+		for _, node := range yatori.Flatten(nodes) {
+			if node.Completed || node.Kind == yatori.NodeChapter {
+				continue
+			}
+			study, err := client.Study(ctx, yatori.StudyRequest{
+				Course:   cours,
+				Node:     node,
+				Action:   yatori.StudyActionProgress,
+				Position: 60 * time2.Second,
+				Mode:     yatori.StudyModeNormal,
+			})
+			if err != nil {
+				continue
+			}
+			fmt.Println(study)
+		}
+	}
 }

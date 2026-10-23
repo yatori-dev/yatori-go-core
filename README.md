@@ -2,7 +2,7 @@
 
 <div align="center"><h2>Yatori-go-core</h2></div>
 
-<div align="center"><img width="125px" src="https://img.shields.io/badge/GO1.26-building-r.svg?logo=go"></img> <img width="80px" src="https://img.shields.io/github/stars/yatori-dev/yatori-go-core.svg"></img> <img width="90px" src="https://img.shields.io/github/downloads/yatori-dev/yatori-go-core/total.svg"></img> <img width="70px" src="https://img.shields.io/github/license/yatori-dev/yatori-go-core.svg"></div>
+<div align="center"><img width="125px" src="https://img.shields.io/badge/GO1.27-building-r.svg?logo=go"></img> <img width="80px" src="https://img.shields.io/github/stars/yatori-dev/yatori-go-core.svg"></img> <img width="90px" src="https://img.shields.io/github/downloads/yatori-dev/yatori-go-core/total.svg"></img> <img width="70px" src="https://img.shields.io/github/license/yatori-dev/yatori-go-core.svg"></div>
 
 Yatori-go-core 是 yatori 系列的 Go 核心库。它把多个在线学习平台的登录、课程、章节、学习、作业和考试能力收敛到同一套接口，第三方项目可以直接导入并做二次开发。
 
@@ -37,7 +37,7 @@ Yatori-go-core 是 yatori 系列的 Go 核心库。它把多个在线学习平�
 go get github.com/yatori-dev/yatori-go-core
 ```
 
-要求 Go 1.26+ 和 CGO（部分平台依赖 SQLite / ONNX Runtime）。
+要求 Go 1.27+ 和 CGO（部分平台依赖 SQLite / ONNX Runtime）。
 
 ## 快速开始
 
