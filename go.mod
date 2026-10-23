@@ -1,6 +1,6 @@
 module github.com/yatori-dev/yatori-go-core
 
-go 1.26.0
+go 1.27.3
 
 require (
 	github.com/Changbaiqi/ddddocr-go v0.1.5-0.20251217103242-1896343369f8 //0.1.4.5
