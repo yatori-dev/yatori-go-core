@@ -61,7 +61,7 @@ func PageMobileChapterCardAction(
 		return nil, "", ChapterNotOpened{}
 	}
 	//如果遇到人脸,则进行过人脸
-	if strings.Contains(cardHtml, `title : "人脸识别"`) {
+	if faceRequired(cardHtml) {
 		ObjectId, err1 := PassFacePhoneAction(cache, fmt.Sprintf("%d", courseId), fmt.Sprintf("%d", classId), fmt.Sprintf("%d", cpi), fmt.Sprintf("%d", knowledgeId), "", "", "")
 		//人脸重试机制
 		for i := 0; i <= 8; i++ {
@@ -80,24 +80,30 @@ func PageMobileChapterCardAction(
 			log.Println(ObjectId, err1.Error())
 			return nil, "", err1
 		}
-		//过完人脸重新拉取章节信息
-		utils.HumanDelay(300*time.Millisecond, 800*time.Millisecond)
-		cardHtml, err = cache.PageMobileChapterCard(classId, courseId, knowledgeId, cardIndex, cpi, 3, nil)
+		//过完人脸重新拉取章节信息。
+		//人脸校验接口返回通过后，服务端状态同步可能有延迟，单次拉取容易误判为"仍需要人脸"，
+		//导致明明校验已通过却直接报错停止，这里做短轮询等待状态同步。
+		cardHtml, err = waitFaceCardPassed(cache, classId, courseId, knowledgeId, cardIndex, cpi)
 		if err != nil {
 			return nil, "", fmt.Errorf("人脸识别后拉取章节卡片失败: %w", err)
 		}
 		//如果新版本人脸过不去，则再尝试旧版本人脸
-		if strings.Contains(cardHtml, `title : "人脸识别"`) {
-			ObjectId, err1 = PassFacePhoneOldAction(cache, fmt.Sprintf("%d", courseId), fmt.Sprintf("%d", classId), fmt.Sprintf("%d", cpi), fmt.Sprintf("%d", knowledgeId), "", "", "")
-			utils.HumanDelay(800*time.Millisecond, 1500*time.Millisecond) //隔一下
-			cardHtml, err = cache.PageMobileChapterCard(classId, courseId, knowledgeId, cardIndex, cpi, 3, nil)
+		if faceRequired(cardHtml) {
+			ObjectId, oldErr := PassFacePhoneOldAction(cache, fmt.Sprintf("%d", courseId), fmt.Sprintf("%d", classId), fmt.Sprintf("%d", cpi), fmt.Sprintf("%d", knowledgeId), "", "", "")
+			if oldErr != nil {
+				// 旧接口也失败时保留原因，最终报错里带上，方便定位
+				log2.Print(log2.INFO, "[", cache.Name, "] 旧版人脸兜底失败: ", oldErr)
+			} else {
+				log2.Print(log2.DEBUG, "[", cache.Name, "] 旧版人脸兜底通过 objectId=", ObjectId)
+			}
+			cardHtml, err = waitFaceCardPassed(cache, classId, courseId, knowledgeId, cardIndex, cpi)
 			if err != nil {
 				return nil, "", fmt.Errorf("旧版人脸识别后拉取章节卡片失败: %w", err)
 			}
 		}
 
-		if strings.Contains(cardHtml, `title : "人脸识别"`) {
-			return nil, "", errors.New("通过人脸识别失败")
+		if faceRequired(cardHtml) {
+			return nil, "", errors.New("通过人脸识别失败: 人脸接口已返回通过，但章节仍然要求人脸识别(服务端状态未同步)")
 		}
 
 	}
@@ -121,6 +127,44 @@ func PageMobileChapterCardAction(
 	}
 
 	return parseAttachmentSetting(cardHtml)
+}
+
+// faceRequired 判断章节卡片是否仍要求人脸识别
+func faceRequired(cardHtml string) bool {
+	return strings.Contains(cardHtml, `title : "人脸识别"`)
+}
+
+// waitFaceCardPassed 人脸校验通过后重新拉取章节卡片。
+// 服务端人脸状态同步存在延迟，单次拉取可能仍返回人脸弹窗，
+// 这里做短轮询等待状态同步，避免"接口已通过却直接判定失败"。
+func waitFaceCardPassed(cache *xuexitong.XueXiTUserCache, classId, courseId, knowledgeId, cardIndex, cpi int) (string, error) {
+	const attempts = 4
+	var cardHtml string
+	var err error
+	for i := 0; i < attempts; i++ {
+		if i > 0 {
+			utils.HumanDelay(1500*time.Millisecond, 2500*time.Millisecond)
+		}
+		cardHtml, err = cache.PageMobileChapterCard(classId, courseId, knowledgeId, cardIndex, cpi, 3, nil)
+		if err != nil {
+			if err.Error() == "触发验证码" {
+				if i == attempts-1 {
+					return "", err
+				}
+				log2.Print(log2.DEBUG, utils.RunFuncName(), "触发验证码，正在进行AI智能识别绕过.....")
+				if capErr := passImageCaptcha(context.Background(), cache); capErr != nil {
+					return "", capErr
+				}
+				continue
+			}
+			return "", err
+		}
+		if !faceRequired(cardHtml) {
+			return cardHtml, nil
+		}
+		log2.Print(log2.DEBUG, "[", cache.Name, "] 人脸状态尚未同步，第", i+1, "次拉取章节卡片仍要求人脸识别")
+	}
+	return cardHtml, nil
 }
 
 func parseAttachmentSetting(cardHtml string) (map[string]interface{}, string, error) {

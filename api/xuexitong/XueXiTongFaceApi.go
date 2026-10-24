@@ -603,16 +603,23 @@ func (cache *XueXiTUserCache) GetFaceQrCodeApi3(courseId, clazzid, chapterId, cp
 		fmt.Println(err)
 		return "", "", nil
 	}
-	//fmt.Println(string(body1))
+	log2.Print(log2.DEBUG, "qr/produce响应: ", responseSummary(body1))
+	// status 可能是 bool/字符串/数字，直接 .(bool) 会在类型不符时 panic 导致程序退出
 	jsonStatus := gojsonq.New().JSONString(string(body1)).Find("status")
-	if jsonStatus == nil {
+	statusOK := false
+	switch v := jsonStatus.(type) {
+	case bool:
+		statusOK = v
+	case string:
+		statusOK = strings.EqualFold(v, "true") || v == "1"
+	case float64:
+		statusOK = int(v) == 1
+	}
+	if !statusOK {
 		return "", "", nil
 	}
-	if jsonStatus.(bool) == false {
-		return "", "", nil
-	}
-	newEnc := gojsonq.New().JSONString(string(body1)).Find("newEnc").(string)
-	newUuid := gojsonq.New().JSONString(string(body1)).Find("newUuid").(string)
+	newEnc, _ := gojsonq.New().JSONString(string(body1)).Find("newEnc").(string)
+	newUuid, _ := gojsonq.New().JSONString(string(body1)).Find("newUuid").(string)
 	utils.CookiesAddNoRepetition(&cache.cookies, res.Cookies()) //赋值cookie
 	return newUuid, newEnc, nil
 }

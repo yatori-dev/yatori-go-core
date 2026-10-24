@@ -1,6 +1,7 @@
 package xuexitong
 
 import (
+	"encoding/json"
 	"errors"
 	"fmt"
 	"image"
@@ -90,35 +91,139 @@ func fetchFaceUploadToken(cache *xuexitong.XueXiTUserCache) (string, error) {
 	return token, nil
 }
 
-// faceCheckResult 判断人脸校验接口响应是否通过，并返回失败原因
+// faceCheckResult 判断人脸校验接口响应是否通过，并返回失败原因。
+//
+// 判定顺序必须是先 status/result/success、后 msg：
+// 老接口(uploadInfo)成功时既可能返回字面量 true，也可能返回
+// {"status":true,"msg":"上传成功"} 这类响应；如果先看 msg，
+// 会因为 msg 不是"通过"而把已经成功的校验误判为失败。
 func faceCheckResult(body string) (bool, string) {
+	trimmed := strings.TrimSpace(body)
+	if trimmed == "" {
+		return false, "接口返回空响应"
+	}
+	// 老接口(uploadInfo)成功时会直接返回字面量 true
+	switch strings.ToLower(trimmed) {
+	case "true", `"true"`, "1":
+		return true, ""
+	case "false", `"false"`, "0":
+		return false, "接口返回 false"
+	}
 	if strings.Contains(body, "活体检测不通过") {
 		return false, "活体检测不通过"
 	}
 	if strings.Contains(body, "用户图片信息出错") {
 		return false, "用户图片信息出错"
 	}
-	if msgVal := gojsonq.New().JSONString(body).Find("msg"); msgVal != nil {
-		msg, _ := msgVal.(string)
-		if msg == "通过" || msg == "识别通过" {
-			return true, ""
+
+	// 兼容 JSONP 包裹的响应
+	jsonBody := trimmed
+	if start, end := strings.Index(jsonBody, "{"), strings.LastIndex(jsonBody, "}"); start >= 0 && end > start {
+		jsonBody = jsonBody[start : end+1]
+	}
+	var payload map[string]interface{}
+	if err := json.Unmarshal([]byte(jsonBody), &payload); err != nil {
+		// 登录页/验证码页等非JSON响应不能当作通过，否则会造成
+		// "接口通过但章节仍要求人脸"的假成功
+		return false, "非JSON响应: " + responseSummary(body)
+	}
+
+	// status/result/success 是明确结果，优先于 msg
+	for _, key := range []string{"status", "result", "success"} {
+		value, exists := payload[key]
+		if !exists || value == nil {
+			continue
 		}
-		if msg == "" {
-			msg = responseSummary(body)
+		if s, ok := value.(string); ok && strings.TrimSpace(s) == "" {
+			continue
+		}
+		if passed, known := faceBoolValue(value); known {
+			if passed {
+				return true, ""
+			}
+			return false, faceFailureMessage(payload, body)
+		}
+		// 字段存在但含义不明确(如状态机数字)，保持旧版行为：不算失败
+		return true, ""
+	}
+
+	// 仅返回 code 的接口：code=0 视为成功
+	if code, exists := payload["code"]; exists {
+		switch v := code.(type) {
+		case float64:
+			if int(v) == 0 {
+				return true, ""
+			}
+		case string:
+			if v == "0" {
+				return true, ""
+			}
+		}
+		return false, faceFailureMessage(payload, body)
+	}
+
+	// 只有 msg 的接口：通过/成功类文案算通过，其余算失败
+	if msg := faceFailureMessage(payload, body); msg != "" {
+		if isPositiveFaceMessage(msg) {
+			return true, ""
 		}
 		return false, msg
 	}
-	if statusVal := gojsonq.New().JSONString(body).Find("status"); statusVal != nil {
-		if status, ok := statusVal.(bool); ok && !status {
-			return false, responseSummary(body)
+	return true, ""
+}
+
+// faceBoolValue 把接口里常见的布尔表达(true/false、1/0、"true"/"false")统一解析
+func faceBoolValue(value interface{}) (bool, bool) {
+	switch v := value.(type) {
+	case bool:
+		return v, true
+	case string:
+		switch strings.ToLower(strings.TrimSpace(v)) {
+		case "true", "1":
+			return true, true
+		case "false", "0":
+			return false, true
+		}
+	case float64:
+		if v == 0 {
+			return false, true
+		}
+		if v == 1 {
+			return true, true
 		}
 	}
-	return true, ""
+	return false, false
+}
+
+// faceFailureMessage 从响应里提取失败原因，提取不到时回退为原始响应摘要
+func faceFailureMessage(payload map[string]interface{}, body string) string {
+	for _, key := range []string{"msg", "message", "errorMsg", "error"} {
+		if msg, ok := payload[key].(string); ok && strings.TrimSpace(msg) != "" {
+			return strings.TrimSpace(msg)
+		}
+	}
+	return responseSummary(body)
+}
+
+// isPositiveFaceMessage 判断仅返回 msg 的接口是否为成功文案
+func isPositiveFaceMessage(msg string) bool {
+	lower := strings.ToLower(msg)
+	for _, word := range []string{"通过", "成功", "正确", "success"} {
+		if strings.Contains(lower, word) {
+			return true
+		}
+	}
+	return false
 }
 
 // passFacePhoneCheck 依次尝试手机端人脸校验接口。
 // 不同账号/课程可能只接受其中某一套接口(例如其中一套返回"非法请求")，
 // 主接口被拒时自动切换备用接口，避免直接失败。
+//
+// 注意：这里不能在"活体检测不通过"/"用户图片信息出错"时提前 break。
+// 前面的 clientfacecheckstatus 接口带活体检测参数，用静态照片调用会报活体失败；
+// 真正能过的往往是最后的静默比对接口(uploadInfo 老接口)，
+// 提前退出会导致明明老接口返回 true 却判定整次人脸校验失败。
 func passFacePhoneCheck(cache *xuexitong.XueXiTUserCache, classId, courseId, chapterId, cpi, objectId string) (bool, string) {
 	type candidate struct {
 		name string
@@ -149,19 +254,13 @@ func passFacePhoneCheck(cache *xuexitong.XueXiTUserCache, classId, courseId, cha
 			failures = append(failures, candidate.name+": "+err.Error())
 			continue
 		}
+		log2.Print(log2.DEBUG, "人脸校验接口 ", candidate.name, " 响应: ", responseSummary(body))
 		passed, reason := faceCheckResult(body)
 		if passed {
+			log2.Print(log2.DEBUG, "人脸校验通过接口: ", candidate.name)
 			return true, ""
 		}
 		failures = append(failures, candidate.name+": "+reason)
-		// 图片质量问题换接口无意义，交由上层重试
-		if reason == "用户图片信息出错" {
-			break
-		}
-		// 需要活体检测的接口报活体失败时同样换接口无意义(静默比对接口除外)
-		if reason == "活体检测不通过" && index < 2 {
-			break
-		}
 	}
 	return false, strings.Join(failures, "; ")
 }
@@ -296,22 +395,14 @@ func PassFacePhoneOldAction(cache *xuexitong.XueXiTUserCache, courseId, classId,
 	//plan3Api, err := cache.GetCourseFaceQrPlan4Api( classId,courseId, chapterId,"", "", ObjectId)
 	plan3Api, err := cache.PassFaceQrPlanPhoneOldApi(classId, courseId, chapterId, cpi, ObjectId)
 	//暂时先用plan3的过人脸（进入课程扫通过的）
-
-	passMsg := gojsonq.New().JSONString(plan3Api).Find("msg")
 	if err != nil {
 		return "", err
 	}
-
-	if strings.Contains(plan3Api, "活体检测不通过") {
-		return "", errors.New(plan3Api)
-	}
-	if strings.Contains(plan3Api, "用户图片信息出错") {
-		return "", errors.New(plan3Api)
-	}
-	if passMsg != nil {
-		if passMsg != "通过" && passMsg != "识别通过" {
-			return "", errors.New(plan3Api)
-		}
+	log2.Print(log2.DEBUG, "老接口uploadInfo响应: ", responseSummary(plan3Api))
+	//统一走 faceCheckResult：status:true 优先于 msg，
+	//避免老接口返回 {"status":true,"msg":"..."} 却被误判为失败
+	if passed, reason := faceCheckResult(plan3Api); !passed {
+		return "", fmt.Errorf("老接口人脸校验失败: %s", reason)
 	}
 	//获取人脸状态
 

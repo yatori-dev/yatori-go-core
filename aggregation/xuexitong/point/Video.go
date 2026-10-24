@@ -14,6 +14,14 @@ import (
 	log2 "github.com/yatori-dev/yatori-go-core/utils/log"
 )
 
+// playReportPassed 安全读取播放上报结果。
+// 响应异常(空响应、验证码页、字段缺失)时 Find 返回 nil，
+// 直接 .(bool) 会 panic 并让整个程序退出。
+func playReportPassed(report string) bool {
+	passed, ok := gojsonq.New().JSONString(report).Find("isPassed").(bool)
+	return ok && passed
+}
+
 // 常规刷视屏逻辑
 func ExecuteVideoTest(cache *api.XueXiTUserCache, p *api.PointVideoDto, key, courseCpi int) {
 	if p.Type == ctype.Video {
@@ -37,14 +45,14 @@ func ExecuteVideoTest(cache *api.XueXiTUserCache, p *api.PointVideoDto, key, cou
 								disturbImage := utils.ImageRGBDisturb(img)
 								uuid, qrEnc, ObjectId, _, err := action.PassFacePCAction(cache, p.CourseID, p.ClassID, p.Cpi, fmt.Sprintf("%d", p.KnowledgeID), p.Enc, p.JobID, p.ObjectID, p.Mid, p.RandomCaptureTime, disturbImage)
 								if err != nil {
-									log.Println(uuid, qrEnc, ObjectId, err.Error())
+									log.Printf("人脸识别失败: %v (uuid=%s qrEnc=%s objectId=%s)", err, uuid, qrEnc, ObjectId)
+								} else {
+									log.Printf("人脸识别通过 objectId=%s", ObjectId)
 								}
 								//p.VideoFaceCaptureEnc = successEnc
-								log.Println("绕过成功")
 								time.Sleep(5 * time.Second)
 							}
 							stopVal += 1
-							log.Println("绕过成功")
 
 							continue
 						}
@@ -53,7 +61,7 @@ func ExecuteVideoTest(cache *api.XueXiTUserCache, p *api.PointVideoDto, key, cou
 					//playReport, _ := cache.VideoSubmitStudyTime(p, playingTime, 3, 8, nil)
 					playingTime += flag
 					flag = 0
-					if gojsonq.New().JSONString(playReport).Find("isPassed").(bool) == true {
+					if playReportPassed(playReport) {
 						log.Println("播放结束")
 						playingTime = p.Duration
 						break
@@ -101,20 +109,20 @@ func ExecuteVideoTest(cache *api.XueXiTUserCache, p *api.PointVideoDto, key, cou
 								disturbImage := utils.ImageRGBDisturb(img)
 								uuid, qrEnc, ObjectId, _, err := action.PassFaceAction1(cache, p.CourseID, p.ClassID, p.Cpi, fmt.Sprintf("%d", p.KnowledgeID), p.Enc, p.JobID, p.ObjectID, p.Mid, p.RandomCaptureTime, disturbImage)
 								if err != nil {
-									log.Println(uuid, qrEnc, ObjectId, err.Error())
+									log.Printf("人脸识别失败: %v (uuid=%s qrEnc=%s objectId=%s)", err, uuid, qrEnc, ObjectId)
+								} else {
+									log.Printf("人脸识别通过 objectId=%s", ObjectId)
 								}
 								//p.VideoFaceCaptureEnc = successEnc
-								log.Println("绕过成功")
 								time.Sleep(5 * time.Second)
 							}
 
 							stopVal += 1
-							log.Println("绕过成功")
 							continue
 						}
 					}
 					stopVal = 0
-					if gojsonq.New().JSONString(playReport).Find("isPassed").(bool) == true {
+					if playReportPassed(playReport) {
 						log.Println("播放结束")
 						playingTime = p.Duration
 						break
@@ -149,14 +157,14 @@ func ExecuteVideoTest(cache *api.XueXiTUserCache, p *api.PointVideoDto, key, cou
 								disturbImage := utils.ImageRGBDisturb(img)
 								uuid, qrEnc, ObjectId, _, err := action.PassFacePCAction(cache, p.CourseID, p.ClassID, p.Cpi, fmt.Sprintf("%d", p.KnowledgeID), p.Enc, p.JobID, p.ObjectID, p.Mid, p.RandomCaptureTime, disturbImage)
 								if err != nil {
-									log.Println(uuid, qrEnc, ObjectId, err.Error())
+									log.Printf("人脸识别失败: %v (uuid=%s qrEnc=%s objectId=%s)", err, uuid, qrEnc, ObjectId)
+								} else {
+									log.Printf("人脸识别通过 objectId=%s", ObjectId)
 								}
 								//p.VideoFaceCaptureEnc = successEnc
-								log.Println("绕过成功")
 								time.Sleep(5 * time.Second)
 							}
 							stopVal += 1
-							log.Println("绕过成功")
 
 							continue
 						}
@@ -165,7 +173,7 @@ func ExecuteVideoTest(cache *api.XueXiTUserCache, p *api.PointVideoDto, key, cou
 					//playReport, _ := cache.VideoSubmitStudyTime(p, playingTime, 3, 8, nil)
 					playingTime += flag
 					flag = 0
-					if gojsonq.New().JSONString(playReport).Find("isPassed").(bool) == true {
+					if playReportPassed(playReport) {
 						log.Println("播放结束")
 						playingTime = p.Duration
 						break
@@ -187,20 +195,20 @@ func ExecuteVideoTest(cache *api.XueXiTUserCache, p *api.PointVideoDto, key, cou
 								disturbImage := utils.ImageRGBDisturb(img)
 								uuid, qrEnc, ObjectId, _, err := action.PassFaceAction1(cache, p.CourseID, p.ClassID, p.Cpi, fmt.Sprintf("%d", p.KnowledgeID), p.Enc, p.JobID, p.ObjectID, p.Mid, p.RandomCaptureTime, disturbImage)
 								if err != nil {
-									log.Println(uuid, qrEnc, ObjectId, err.Error())
+									log.Printf("人脸识别失败: %v (uuid=%s qrEnc=%s objectId=%s)", err, uuid, qrEnc, ObjectId)
+								} else {
+									log.Printf("人脸识别通过 objectId=%s", ObjectId)
 								}
 								//p.VideoFaceCaptureEnc = successEnc
-								log.Println("绕过成功")
 								time.Sleep(5 * time.Second)
 							}
 
 							stopVal += 1
-							log.Println("绕过成功")
 							continue
 						}
 					}
 					stopVal = 0
-					if gojsonq.New().JSONString(playReport).Find("isPassed").(bool) == true {
+					if playReportPassed(playReport) {
 						log.Println("播放结束")
 						playingTime = p.Duration
 						break
