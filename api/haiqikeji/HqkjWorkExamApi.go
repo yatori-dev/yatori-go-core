@@ -3,6 +3,7 @@ package haiqikeji
 import (
 	"crypto/tls"
 	"encoding/json"
+	"errors"
 	"io"
 	"net/http"
 	"net/url"
@@ -18,8 +19,9 @@ import (
 //     └→ work_detail / exam_detail     拉详情，取 paperId / classId / recordId
 //     └→ work_start / exam_start       开考，拉题面 + 选项
 //     └→ work_record_consult_list / exam_record_consult_list  查看已答记录（老式作业回退拉题）
-//     └→ work_answer_add / exam_answer_add                    逐题提交
-//     └→ exam_answer_finish                                   交卷（state=2）
+//     └→ work_answer_add / work_answer_addText / work_answer_addBlank    逐题暂存（作业）
+//     └→ exam_answer_add / exam_answer_addText / exam_answer_addBlank    逐题暂存（考试）
+//     └→ work_answer_finish / exam_answer_finish                         提交作业 / 交卷（state=2）
 //
 // 所有接口统一复用 cache 的会话信息（Token / SchoolId / UserId / PreUrl / IP 代理）。
 // ============================================================================
@@ -125,11 +127,23 @@ func (cache *HqkjUserCache) PullExamConsultApi(recordId, courseId string, retry 
 	return cache.hqkjRequestWithRetry("GET", reqUrl, "", "", retry, lastErr)
 }
 
-// SubmitWorkAnswerApi 提交作业答案（yee_work_answer_add）。
+// requireAnswerRecordId recordId 是学生作答记录的唯一定位。
+// 传 0 时服务端仍可能返回 code=200，但答案会写进无效记录，网页上看不到——
+// 因此这里直接拒绝，避免“控制台提示提交成功，网站却没有答案”。
+func requireAnswerRecordId(recordId string) (string, error) {
+	recordId = strings.TrimSpace(recordId)
+	if recordId == "" || recordId == "0" || recordId == "null" {
+		return "", errors.New("recordId为空或为0，已拒绝提交（答案无法写入学生作答记录）")
+	}
+	return recordId, nil
+}
+
+// SubmitWorkAnswerApi 提交作业客观题答案（yee_work_answer_add，type=1/2/3）。
 // payload 与真实抓包一致：8 字段、不带 wrId/waId。
 func (cache *HqkjUserCache) SubmitWorkAnswerApi(courseId, workId, topicId, recordId, questionType string, answers []string, retry int, lastErr error) (string, error) {
-	if recordId == "" { // 兜底，避免拼出非法 JSON（正常 recordId 来自 work_start 响应的 recordId）
-		recordId = "0"
+	recordId, err := requireAnswerRecordId(recordId)
+	if err != nil {
+		return "", err
 	}
 	answersData, err := json.Marshal(answers)
 	if err != nil {
@@ -141,11 +155,46 @@ func (cache *HqkjUserCache) SubmitWorkAnswerApi(courseId, workId, topicId, recor
 	return cache.hqkjRequestWithRetry("POST", cache.PreUrl+"/api/user/yee_work_answer_add", "application/json", payload, retry, lastErr)
 }
 
-// SubmitExamAnswerApi 提交考试答案（yee_exam_answer_add）。
+// SubmitWorkAnswerTextApi 提交作业简答题答案（yee_work_answer_addText，type=4）。
+// 简答题的 answer 是字符串而不是数组；images/files 为附件数组，无附件时传空数组。
+func (cache *HqkjUserCache) SubmitWorkAnswerTextApi(courseId, workId, topicId, recordId, questionType, text string, retry int, lastErr error) (string, error) {
+	recordId, err := requireAnswerRecordId(recordId)
+	if err != nil {
+		return "", err
+	}
+	answerData, err := json.Marshal(text)
+	if err != nil {
+		return "", err
+	}
+	payload := `{"schoolId":` + cache.SchoolId + `,"courseId":` + courseId + `,"userId":` + cache.UserId +
+		`,"workId":` + workId + `,"topicId":` + topicId + `,"answer":` + string(answerData) +
+		`,"recordId":` + recordId + `,"type":` + questionType + `,"images":[],"files":[]}`
+	return cache.hqkjRequestWithRetry("POST", cache.PreUrl+"/api/user/yee_work_answer_addText", "application/json", payload, retry, lastErr)
+}
+
+// SubmitWorkAnswerBlankApi 提交作业填空题答案（yee_work_answer_addBlank，type=5）。
+// 填空题的 answer 是 {"a1":"...","a2":"..."} 形式的对象，按空位顺序编号。
+func (cache *HqkjUserCache) SubmitWorkAnswerBlankApi(courseId, workId, topicId, recordId, questionType string, answers map[string]string, retry int, lastErr error) (string, error) {
+	recordId, err := requireAnswerRecordId(recordId)
+	if err != nil {
+		return "", err
+	}
+	answerData, err := json.Marshal(answers)
+	if err != nil {
+		return "", err
+	}
+	payload := `{"schoolId":` + cache.SchoolId + `,"courseId":` + courseId + `,"userId":` + cache.UserId +
+		`,"workId":` + workId + `,"topicId":` + topicId + `,"answer":` + string(answerData) +
+		`,"recordId":` + recordId + `,"type":` + questionType + `}`
+	return cache.hqkjRequestWithRetry("POST", cache.PreUrl+"/api/user/yee_work_answer_addBlank", "application/json", payload, retry, lastErr)
+}
+
+// SubmitExamAnswerApi 提交考试客观题答案（yee_exam_answer_add，type=1/2/3）。
 // 字段与真实抓包一致：{schoolId,courseId,userId,examId,topicId,answer,recordId,type}，不带 wrId/waId。
 func (cache *HqkjUserCache) SubmitExamAnswerApi(courseId, examId, topicId, recordId, questionType string, answers []string, retry int, lastErr error) (string, error) {
-	if recordId == "" { // 兜底，避免拼出非法 JSON（正常 recordId 来自 exam_start 响应的 examTopics[].recordId）
-		recordId = "0"
+	recordId, err := requireAnswerRecordId(recordId)
+	if err != nil {
+		return "", err
 	}
 	answersData, err := json.Marshal(answers)
 	if err != nil {
@@ -157,11 +206,58 @@ func (cache *HqkjUserCache) SubmitExamAnswerApi(courseId, examId, topicId, recor
 	return cache.hqkjRequestWithRetry("POST", cache.PreUrl+"/api/user/yee_exam_answer_add", "application/json", payload, retry, lastErr)
 }
 
+// SubmitExamAnswerTextApi 提交考试简答题答案（yee_exam_answer_addText，type=4）。
+func (cache *HqkjUserCache) SubmitExamAnswerTextApi(courseId, examId, topicId, recordId, questionType, text string, retry int, lastErr error) (string, error) {
+	recordId, err := requireAnswerRecordId(recordId)
+	if err != nil {
+		return "", err
+	}
+	answerData, err := json.Marshal(text)
+	if err != nil {
+		return "", err
+	}
+	payload := `{"schoolId":` + cache.SchoolId + `,"courseId":` + courseId + `,"userId":` + cache.UserId +
+		`,"examId":` + examId + `,"topicId":` + topicId + `,"answer":` + string(answerData) +
+		`,"recordId":` + recordId + `,"type":` + questionType + `,"images":[],"files":[]}`
+	return cache.hqkjRequestWithRetry("POST", cache.PreUrl+"/api/user/yee_exam_answer_addText", "application/json", payload, retry, lastErr)
+}
+
+// SubmitExamAnswerBlankApi 提交考试填空题答案（yee_exam_answer_addBlank，type=5）。
+func (cache *HqkjUserCache) SubmitExamAnswerBlankApi(courseId, examId, topicId, recordId, questionType string, answers map[string]string, retry int, lastErr error) (string, error) {
+	recordId, err := requireAnswerRecordId(recordId)
+	if err != nil {
+		return "", err
+	}
+	answerData, err := json.Marshal(answers)
+	if err != nil {
+		return "", err
+	}
+	payload := `{"schoolId":` + cache.SchoolId + `,"courseId":` + courseId + `,"userId":` + cache.UserId +
+		`,"examId":` + examId + `,"topicId":` + topicId + `,"answer":` + string(answerData) +
+		`,"recordId":` + recordId + `,"type":` + questionType + `}`
+	return cache.hqkjRequestWithRetry("POST", cache.PreUrl+"/api/user/yee_exam_answer_addBlank", "application/json", payload, retry, lastErr)
+}
+
+// FinishWorkAnswerApi 提交作业（yee_work_answer_finish, state=2）。
+// 逐题 yee_work_answer_add 只是暂存，调用此接口后作业才变成“已提交”。
+// 参数与网页端一致：schoolId/studentId/userId/workId/state=2/recordId/courseId。
+func (cache *HqkjUserCache) FinishWorkAnswerApi(courseId, workId, recordId string, retry int, lastErr error) (string, error) {
+	recordId, err := requireAnswerRecordId(recordId)
+	if err != nil {
+		return "", err
+	}
+	reqUrl := cache.PreUrl + "/api/user/yee_work_answer_finish?schoolId=" + cache.SchoolId +
+		"&studentId=" + cache.UserId + "&userId=" + cache.UserId + "&workId=" + workId +
+		"&state=2&recordId=" + recordId + "&courseId=" + courseId
+	return cache.hqkjRequestWithRetry("GET", reqUrl, "", "", retry, lastErr)
+}
+
 // FinishExamAnswerApi 交卷（yee_exam_answer_finish, state=2）。逐题 yee_exam_answer_add 仅暂存，
 // 此接口才正式交卷出成绩。参数按真实抓包：workId=examId、studentId=userId=cache.UserId。
 func (cache *HqkjUserCache) FinishExamAnswerApi(courseId, examId, recordId string, retry int, lastErr error) (string, error) {
-	if recordId == "" { // 兜底，避免拼出非法 URL
-		recordId = "0"
+	recordId, err := requireAnswerRecordId(recordId)
+	if err != nil {
+		return "", err
 	}
 	reqUrl := cache.PreUrl + "/api/user/yee_exam_answer_finish?schoolId=" + cache.SchoolId +
 		"&studentId=" + cache.UserId + "&userId=" + cache.UserId + "&workId=" + examId +

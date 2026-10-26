@@ -13,13 +13,15 @@ package haiqikeji
 //
 //   work_list / exam_list（HqkjApi.go 已有）→ 拿 workId / examId
 //        └→ work_detail / exam_detail → 取 paperId（部分作业绑定固定试卷，start 时需带上）
-//        └→ work_start / exam_start（HqkjWorkExamApi.go）→ 题面 + 选项
-//             └→ qentity.Question → aiq 算答案 → qutils 匹配回选项 idx → SubmitWork/ExamAnswerApi 提交
+//        └→ work_start / exam_start（HqkjWorkExamApi.go）→ 题面 + 选项 + recordId
+//             └→ qentity.Question → aiq 算答案 → qutils 匹配回选项 idx → 按题型调用 answer_add / addText / addBlank
+//                  └→ work_answer_finish / exam_answer_finish(state=2) 正式提交/交卷
 //
-// ⚠️ 以下为「运行时假设」，已用日志暴露，实跑一次即可校准：
-//   1. 提交答案的 recordId 采用 work_start/exam_start 返回中的 recordId；
-//   2. 题型编码 mapHqkjType 目前仅确认 type=1 为单选，其余为推测；
-//   3. 逐题 AnswerApi 提交后即落库，考试需再调 yee_exam_answer_finish 才算交卷；
+// 已按网页端抓包确认：
+//   1. 提交答案的 recordId 来自 work_start/exam_start（兼容 topics[0].recordId、data.recordId、id 等位置）；
+//   2. 题型编码：1单选 2多选 3判断 4简答 5填空；
+//   3. 逐题 answer_add 只是暂存，作业需 work_answer_finish、考试需 exam_answer_finish 才会变成“已提交”；
+//      examAutoSubmit=0 时只保存不调用 finish，=1 时才正式提交/交卷；
 //   4. consult_list 需该作业/考试存在答题记录方能返回题目（首次可能需网页进入一次）。
 // ============================================================================
 
@@ -47,7 +49,7 @@ type HqkjAnswerSetting struct {
 	AccountType    string           // 平台展示名（日志前缀，如“海旗科技”）
 	Account        string           // 账号展示名（可传备注名）
 	AutoExam       int              // 0=不答题，1=AI答题（内置标答模式忽略此字段）
-	ExamAutoSubmit int              // 0=只答题不交卷，1=自动交卷
+	ExamAutoSubmit int              // 0=只保存不提交，1=正式提交作业/交卷
 	AiSetting      config.AiSetting // AI 配置（内置标答模式忽略）
 }
 
@@ -60,7 +62,7 @@ type HqkjQuizAnswerResult struct {
 	Submitted int    `json:"submitted"` // 成功提交数
 	Skipped   int    `json:"skipped"`   // 没有内置标答而跳过数（仅内置标答模式）
 	Failed    int    `json:"failed"`    // 提交失败数
-	Finished  bool   `json:"finished"`  // 考试是否已交卷
+	Finished  bool   `json:"finished"`  // 是否已正式提交作业/交卷（examAutoSubmit=1）
 	Message   string `json:"message,omitempty"`
 }
 
@@ -77,6 +79,12 @@ func hqkjAnswerTag(setting HqkjAnswerSetting, source hqkjAnswerSource) string {
 		return "<内置标答>"
 	}
 	return fmt.Sprintf("<%s>", setting.AiSetting.AiType)
+}
+
+// shouldSubmit 正式提交开关：只有 examAutoSubmit=1 才调用 finish；
+// 0（默认）只逐题保存为暂存，不提交作业/不交卷。
+func (s HqkjAnswerSetting) shouldSubmit() bool {
+	return s.ExamAutoSubmit == 1
 }
 
 // hqkjQuiz 作业/考试条目（仅取答题所需字段）
@@ -104,16 +112,17 @@ func (q hqkjQuiz) completed() bool {
 
 // hqkjTopic 单道题目
 type hqkjTopic struct {
-	TopicId    string           // 题目 id（提交用）
-	RecordId   string           // work_start / exam_start 的整卷记录 id
-	WrId       string           // consult 的作答记录 id
-	WaId       string           // consult 的单题答案槽 id
-	CateBid    string           // consult 题目大分类 id
-	CateMid    string           // consult 题目中分类 id
-	TypeInt    int              // 海旗原始题型编码（提交用）
-	Question   qentity.Question // 交给 AI 的标准题目结构
-	OptionIdx  []string         // 与 Question.Options 一一对应的选项 idx（A/B/C/D）
-	CorrectIdx []string         // scale>=100 的选项 idx（平台返回的标准答案标记；为空时回退 AI）
+	TopicId     string           // 题目 id（提交用）
+	RecordId    string           // work_start / exam_start 的整卷记录 id
+	WrId        string           // consult 的作答记录 id
+	WaId        string           // consult 的单题答案槽 id
+	CateBid     string           // consult 题目大分类 id
+	CateMid     string           // consult 题目中分类 id
+	TypeInt     int              // 海旗原始题型编码（提交用）
+	Question    qentity.Question // 交给 AI 的标准题目结构
+	OptionIdx   []string         // 与 Question.Options 一一对应的选项 idx（A/B/C/D）
+	CorrectIdx  []string         // scale>=100 的选项 idx（平台返回的标准答案标记；为空时回退 AI）
+	BuiltinText []string         // 简答/填空题的平台参考文本（referenceAnswer / option[].answer）
 }
 
 // HqkjAutoAnswerAction 海旗 AI 自动答题总入口（作业 + 考试）。
@@ -136,7 +145,7 @@ func HqkjAutoAnswerAction(cache *hqkjApi.HqkjUserCache, course HqkjCourse, nodeL
 // 说明：
 //   - 作业、考试都会处理；同一 workId/examId 自动去重。
 //   - 已完成的作业/考试会跳过，避免重复提交；进行中的考试可继续作答。
-//   - 考试是否交卷由 setting.ExamAutoSubmit 控制（1=自动交卷）。
+//   - 作业/考试是否正式提交由 setting.ExamAutoSubmit 控制（0=只保存，1=提交/交卷）。
 //   - 没有内置标答的题目会跳过并计入 Skipped；返回结果可直接序列化给调用方。
 func HqkjAutoFillBuiltinAnswerAction(cache *hqkjApi.HqkjUserCache, course HqkjCourse, nodeList []HqkjNode, setting HqkjAnswerSetting) []HqkjQuizAnswerResult {
 	if setting.AccountType == "" {
@@ -268,7 +277,18 @@ func answerQuiz(cache *hqkjApi.HqkjUserCache, course HqkjCourse, node HqkjNode, 
 		res.Message = "拉取题目失败：" + err.Error()
 		return res
 	}
+	// 保留 start 原始响应：后续即使回退 consult_list 拉题，recordId 仍要从 start 响应里取。
+	startResp := rawResp
 	topics := parseStartQuestions(rawResp)
+	// 整卷 recordId：优先取题目里的，其次从 start 响应的多个可能位置兜底
+	// （网页端同样兼容 data.workTopics[0]/data.recordId/recordId/data.id/id）。
+	recordId := ""
+	if len(topics) > 0 {
+		recordId = topics[0].RecordId
+	}
+	if recordId == "" {
+		recordId = parseStartRecordId(startResp)
+	}
 	// work_start 没出题时（老式作业可能不吃 paperId=0），回退 consult_list 拉题
 	if len(topics) == 0 {
 		for _, r := range records {
@@ -276,9 +296,14 @@ func answerQuiz(cache *hqkjApi.HqkjUserCache, course HqkjCourse, node HqkjNode, 
 			if cerr != nil {
 				continue
 			}
-			rawResp = consultResult
 			if t2 := parseStartQuestions(consultResult); len(t2) > 0 {
 				topics = t2
+				if recordId == "" {
+					recordId = t2[0].RecordId
+				}
+				if recordId == "" {
+					recordId = parseStartRecordId(consultResult)
+				}
 				break
 			}
 		}
@@ -333,6 +358,18 @@ func answerQuiz(cache *hqkjApi.HqkjUserCache, course HqkjCourse, node HqkjNode, 
 		res.Message = reason
 		return res
 	}
+	if recordId == "" {
+		// 没有 recordId 时，服务端仍可能对 answer_add 返回 200，但答案不会挂到学生作答记录上，
+		// 网页端看起来就是“没答题”。这里直接停止，避免继续产生假成功。
+		kindStr := "作业"
+		if kind == "exam" {
+			kindStr = "考试"
+		}
+		reason := "未获取到作答记录 recordId，已停止提交（避免答案写入无效记录）"
+		lg.Print(lg.INFO, fmt.Sprintf("[%s]", setting.AccountType), "[", lg.Green, setting.Account, lg.Default, "] ", "【", node.Name, "】", "【", quiz.Title, "】 ", lg.BoldRed, kindStr, reason)
+		res.Message = reason
+		return res
+	}
 	res.Total = len(topics)
 	for _, t := range topics {
 		// 答案来源：开考接口若已带标答(scale=100→CorrectIdx)则直接采用、跳过 AI；
@@ -347,23 +384,54 @@ func answerQuiz(cache *hqkjApi.HqkjUserCache, course HqkjCourse, node HqkjNode, 
 		} else {
 			answers = aiAnswerTopic(setting, t)
 		}
+		if len(answers) == 0 {
+			res.Failed++
+			lg.Print(lg.INFO, fmt.Sprintf("[%s]", setting.AccountType), "[", lg.Green, setting.Account, lg.Default, "] ", lg.BoldRed, "题目 ", t.TopicId, " 没有可用答案，已跳过")
+			continue
+		}
+		typeInt := t.TypeInt
 		var subResult string
-		if kind == "work" { // 作业走 work_answer_add（8 字段不带 wrId/waId）
-			subResult, err = cache.SubmitWorkAnswerApi(course.Id, quiz.Id, t.TopicId, t.RecordId, strconv.Itoa(t.TypeInt), answers, 10, nil)
-		} else { // 考试走 exam_answer_add（同样 8 字段，不带 wrId/waId）
-			if examDryRun { // 【考试 dry-run】只打印将提交的 payload，绝不真正提交；有开放考试核对无误后把 examDryRun 改为 false 放开
-				lg.Print(lg.INFO, fmt.Sprintf("[%s]", setting.AccountType), "[", lg.Green, setting.Account, lg.Default, "] ",
-					lg.Yellow, "【考试DRY-RUN·未提交】", examAnswerPayload(cache, course.Id, quiz.Id, t.TopicId, t.RecordId, strconv.Itoa(t.TypeInt), answers))
-				continue
+		if examDryRun && kind == "exam" { // 【考试 dry-run】只打印，不提交
+			lg.Print(lg.INFO, fmt.Sprintf("[%s]", setting.AccountType), "[", lg.Green, setting.Account, lg.Default, "] ",
+				lg.Yellow, "【考试DRY-RUN·未提交】type=", strconv.Itoa(typeInt), " topicId=", t.TopicId, " recordId=", recordId, " 答案=", fmt.Sprintf("%v", answers))
+			continue
+		}
+		// 海旗按题型使用不同提交接口（与网页端一致）：
+		//   type 1/2/3 → yee_*_answer_add
+		//   type 4(简答) → yee_*_answer_addText（answer 为字符串）
+		//   type 5(填空) → yee_*_answer_addBlank（answer 为 {"a1":..,"a2":..} 对象）
+		switch typeInt {
+		case 1, 2, 3:
+			if kind == "work" {
+				subResult, err = cache.SubmitWorkAnswerApi(course.Id, quiz.Id, t.TopicId, recordId, strconv.Itoa(typeInt), answers, 10, nil)
+			} else {
+				subResult, err = cache.SubmitExamAnswerApi(course.Id, quiz.Id, t.TopicId, recordId, strconv.Itoa(typeInt), answers, 10, nil)
 			}
-			subResult, err = cache.SubmitExamAnswerApi(course.Id, quiz.Id, t.TopicId, t.RecordId, strconv.Itoa(t.TypeInt), answers, 10, nil)
+		case 4:
+			text := strings.Join(answers, "\n")
+			if kind == "work" {
+				subResult, err = cache.SubmitWorkAnswerTextApi(course.Id, quiz.Id, t.TopicId, recordId, strconv.Itoa(typeInt), text, 10, nil)
+			} else {
+				subResult, err = cache.SubmitExamAnswerTextApi(course.Id, quiz.Id, t.TopicId, recordId, strconv.Itoa(typeInt), text, 10, nil)
+			}
+		case 5:
+			blankAnswers := hqkjBlankAnswers(answers)
+			if kind == "work" {
+				subResult, err = cache.SubmitWorkAnswerBlankApi(course.Id, quiz.Id, t.TopicId, recordId, strconv.Itoa(typeInt), blankAnswers, 10, nil)
+			} else {
+				subResult, err = cache.SubmitExamAnswerBlankApi(course.Id, quiz.Id, t.TopicId, recordId, strconv.Itoa(typeInt), blankAnswers, 10, nil)
+			}
+		default:
+			res.Failed++
+			lg.Print(lg.INFO, fmt.Sprintf("[%s]", setting.AccountType), "[", lg.Green, setting.Account, lg.Default, "] ", lg.BoldRed, "未知题型(", strconv.Itoa(typeInt), ")，已跳过 topicId=", t.TopicId)
+			continue
 		}
 		if err != nil {
 			res.Failed++
 			lg.Print(lg.INFO, fmt.Sprintf("[%s]", setting.AccountType), "[", lg.Green, setting.Account, lg.Default, "] ", lg.BoldRed, "提交答案异常：", err.Error())
 			continue
 		}
-		if code, ok := gojsonq.New().JSONString(subResult).Find("code").(float64); ok && int(code) == 200 {
+		if hqkjResponseOK(subResult) {
 			res.Submitted++
 			kindStr := "作业"
 			if kind == "exam" {
@@ -372,7 +440,7 @@ func answerQuiz(cache *hqkjApi.HqkjUserCache, course HqkjCourse, node HqkjNode, 
 			lg.Print(lg.INFO, fmt.Sprintf("[%s]", setting.AccountType), "[", lg.Green, setting.Account, lg.Default, "] ", lg.Green, kindStr, "题目 ", t.TopicId, " 提交成功（", strconv.Itoa(res.Submitted), "/", strconv.Itoa(len(topics)), "）")
 		} else {
 			res.Failed++
-			lg.Print(lg.INFO, fmt.Sprintf("[%s]", setting.AccountType), "[", lg.Green, setting.Account, lg.Default, "] ", lg.Red, "提交答案返回异常：", subResult, " workId：", quiz.Id, " topicId：", t.TopicId, " wrId：", t.WrId, " waId：", t.WaId, " 题型：", strconv.Itoa(t.TypeInt), " 答案：", fmt.Sprintf("%v", answers))
+			lg.Print(lg.INFO, fmt.Sprintf("[%s]", setting.AccountType), "[", lg.Green, setting.Account, lg.Default, "] ", lg.Red, "提交答案返回异常：", subResult, " recordId：", recordId, " workId：", quiz.Id, " topicId：", t.TopicId, " 题型：", strconv.Itoa(typeInt), " 答案：", fmt.Sprintf("%v", answers))
 		}
 	}
 	doneName := "AI答题"
@@ -381,36 +449,84 @@ func answerQuiz(cache *hqkjApi.HqkjUserCache, course HqkjCourse, node HqkjNode, 
 	}
 	lg.Print(lg.INFO, fmt.Sprintf("[%s]", setting.AccountType), "[", lg.Green, setting.Account, lg.Default, "] ", "【", course.Name, "】", "【", node.Name, "】 >>> ", lg.Green, doneName, "完毕，成功提交 ", strconv.Itoa(res.Submitted), "/", strconv.Itoa(res.Total), " 题，跳过 ", strconv.Itoa(res.Skipped), " 题，失败 ", strconv.Itoa(res.Failed), " 题")
 
-	// 考试交卷：逐题 yee_exam_answer_add 仅暂存，需 yee_exam_answer_finish(state=2) 才正式交卷出成绩。
-	// 双重保险：仅 kind==exam 且 setting.ExamAutoSubmit==1 且至少成功提交一题才交卷；examDryRun 下只打印不真正交卷。
-	if kind == "exam" && setting.ExamAutoSubmit == 1 && res.Submitted > 0 {
-		recordId := topics[0].RecordId // 整卷同一 recordId（开考接口返回）
-		if examDryRun {
-			lg.Print(lg.INFO, fmt.Sprintf("[%s]", setting.AccountType), "[", lg.Green, setting.Account, lg.Default, "] ", lg.Yellow, "【考试DRY-RUN】跳过交卷(yee_exam_answer_finish)，recordId=", recordId)
-		} else {
-			finRes, ferr := cache.FinishExamAnswerApi(course.Id, quiz.Id, recordId, 10, nil)
+	// 逐题 answer_add 只是暂存：examAutoSubmit=1 才调用 finish 正式提交作业/交卷；
+	// examAutoSubmit=0（默认）只保存答案，不提交。
+	if res.Submitted > 0 {
+		if !setting.shouldSubmit() {
+			kindStr := "作业"
+			if kind == "exam" {
+				kindStr = "考试"
+			}
+			res.Message = fmt.Sprintf("%s答案已保存为暂存（examAutoSubmit=%d，未提交）", kindStr, setting.ExamAutoSubmit)
+			lg.Print(lg.INFO, fmt.Sprintf("[%s]", setting.AccountType), "[", lg.Green, setting.Account, lg.Default, "] ", lg.Yellow, kindStr, "答案已逐题保存为暂存；examAutoSubmit=", strconv.Itoa(setting.ExamAutoSubmit), "（只保存不提交），如需自动提交请设为 1")
+		} else if kind == "work" {
+			finRes, ferr := cache.FinishWorkAnswerApi(course.Id, quiz.Id, recordId, 10, nil)
 			if ferr != nil {
-				res.Message = "考试交卷异常：" + ferr.Error()
-				lg.Print(lg.INFO, fmt.Sprintf("[%s]", setting.AccountType), "[", lg.Green, setting.Account, lg.Default, "] ", lg.BoldRed, "考试交卷异常：", ferr.Error())
-			} else if code, ok := gojsonq.New().JSONString(finRes).Find("code").(float64); ok && int(code) == 200 {
+				res.Message = "作业提交异常：" + ferr.Error()
+				lg.Print(lg.INFO, fmt.Sprintf("[%s]", setting.AccountType), "[", lg.Green, setting.Account, lg.Default, "] ", lg.BoldRed, "作业提交异常：", ferr.Error())
+			} else if hqkjResponseOK(finRes) {
 				res.Finished = true
-				lg.Print(lg.INFO, fmt.Sprintf("[%s]", setting.AccountType), "[", lg.Green, setting.Account, lg.Default, "] ", lg.Green, "考试已正式交卷(state=2)，examId=", quiz.Id)
+				lg.Print(lg.INFO, fmt.Sprintf("[%s]", setting.AccountType), "[", lg.Green, setting.Account, lg.Default, "] ", lg.Green, "作业已正式提交(state=2)，workId=", quiz.Id)
 			} else {
-				res.Message = "考试交卷返回异常：" + finRes
-				lg.Print(lg.INFO, fmt.Sprintf("[%s]", setting.AccountType), "[", lg.Green, setting.Account, lg.Default, "] ", lg.Red, "考试交卷返回异常：", finRes)
+				res.Message = "作业提交返回异常：" + finRes
+				lg.Print(lg.INFO, fmt.Sprintf("[%s]", setting.AccountType), "[", lg.Green, setting.Account, lg.Default, "] ", lg.Red, "作业提交返回异常：", finRes)
+			}
+		} else if kind == "exam" {
+			if examDryRun {
+				lg.Print(lg.INFO, fmt.Sprintf("[%s]", setting.AccountType), "[", lg.Green, setting.Account, lg.Default, "] ", lg.Yellow, "【考试DRY-RUN】跳过交卷(yee_exam_answer_finish)，recordId=", recordId)
+			} else {
+				finRes, ferr := cache.FinishExamAnswerApi(course.Id, quiz.Id, recordId, 10, nil)
+				if ferr != nil {
+					res.Message = "考试交卷异常：" + ferr.Error()
+					lg.Print(lg.INFO, fmt.Sprintf("[%s]", setting.AccountType), "[", lg.Green, setting.Account, lg.Default, "] ", lg.BoldRed, "考试交卷异常：", ferr.Error())
+				} else if hqkjResponseOK(finRes) {
+					res.Finished = true
+					lg.Print(lg.INFO, fmt.Sprintf("[%s]", setting.AccountType), "[", lg.Green, setting.Account, lg.Default, "] ", lg.Green, "考试已正式交卷(state=2)，examId=", quiz.Id)
+				} else {
+					res.Message = "考试交卷返回异常：" + finRes
+					lg.Print(lg.INFO, fmt.Sprintf("[%s]", setting.AccountType), "[", lg.Green, setting.Account, lg.Default, "] ", lg.Red, "考试交卷返回异常：", finRes)
+				}
 			}
 		}
 	}
 	return res
 }
 
+// hqkjBlankAnswers 把按空位顺序的答案数组转成网页端要求的 {"a1":"...","a2":"..."} 结构。
+func hqkjBlankAnswers(answers []string) map[string]string {
+	result := make(map[string]string, len(answers))
+	for i, ans := range answers {
+		result[fmt.Sprintf("a%d", i+1)] = ans
+	}
+	return result
+}
+
+// hqkjResponseOK 判断海旗接口是否返回 code=200（兼容数字/字符串两种编码）。
+func hqkjResponseOK(body string) bool {
+	switch code := gojsonq.New().JSONString(body).Find("code").(type) {
+	case float64:
+		return int(code) == 200
+	case string:
+		return code == "200"
+	}
+	return false
+}
+
 // hqkjBuiltinAnswers 取海旗题目自带的标准答案，并归一化为提交格式（选项 idx）。
 // 单选/判断题只取第一个正确项，多选题保留全部正确项并去重。
 func hqkjBuiltinAnswers(t hqkjTopic) []string {
+	qt := qtype.Index(t.Question.Type)
+	// 简答/填空的答案不是选项 idx，使用平台参考文本（referenceAnswer / option[].answer）；
+	// 没有解析到参考文本时返回 nil，由内置标答模式计入 Skipped。
+	if qt == qtype.ShortAnswer || qt == qtype.FillInTheBlank {
+		if len(t.BuiltinText) == 0 {
+			return nil
+		}
+		return t.BuiltinText
+	}
 	if len(t.CorrectIdx) == 0 {
 		return nil
 	}
-	qt := qtype.Index(t.Question.Type)
 	if qt == qtype.SingleChoice || qt == qtype.TrueOrFalse {
 		if t.CorrectIdx[0] == "" {
 			return nil
@@ -491,7 +607,7 @@ func matchOptionIdx(content string, t hqkjTopic) string {
 }
 
 // mapHqkjType 海旗题型编码(int) → qtype 中文题型（用于构造喂给 AI 的题目）。
-// ⚠️假设2：目前仅确认 type=1 为单选；2/3/4/5 为按常见编码的推测，遇未知类型默认按单选处理。
+// 题型编码已按网页端确认：1单选 2多选 3判断 4简答 5填空。
 func mapHqkjType(t int) string {
 	switch t {
 	case 1:
@@ -501,9 +617,9 @@ func mapHqkjType(t int) string {
 	case 3:
 		return qtype.TrueOrFalse.String() // 判断题
 	case 4:
-		return qtype.FillInTheBlank.String() // 填空题
+		return qtype.ShortAnswer.String() // 简答题（yee_*_answer_addText）
 	case 5:
-		return qtype.ShortAnswer.String() // 简答题
+		return qtype.FillInTheBlank.String() // 填空题（yee_*_answer_addBlank）
 	default:
 		return qtype.SingleChoice.String()
 	}
@@ -569,30 +685,28 @@ func parseStartQuestions(jsonStr string) []hqkjTopic {
 			continue
 		}
 		var t hqkjTopic
-		if v, ok := m["id"].(float64); ok { // work_start: 题目 id → 提交用 topicId
-			t.TopicId = strconv.Itoa(int(v))
+		if id := hqkjIdString(m["id"]); id != "" { // work_start: 题目 id → 提交用 topicId
+			t.TopicId = id
 		}
-		if v, ok := m["topicId"].(float64); ok { // consult_list: topicId → 提交用 topicId
-			t.TopicId = strconv.Itoa(int(v))
+		if id := hqkjIdString(m["topicId"]); id != "" { // consult_list: topicId → 提交用 topicId
+			t.TopicId = id
 		}
-		if v, ok := m["recordId"].(float64); ok { // work_start: 整卷记录 id
-			t.RecordId = strconv.Itoa(int(v))
+		if id := hqkjIdString(m["recordId"]); id != "" { // work_start: 整卷记录 id
+			t.RecordId = id
 		}
-		if v, ok := m["wrId"].(float64); ok { // consult_list: 作答记录 id
-			t.WrId = strconv.Itoa(int(v))
+		if id := hqkjIdString(m["wrId"]); id != "" { // consult_list: 作答记录 id
+			t.WrId = id
 		}
-		if v, ok := m["waId"].(float64); ok { // consult_list: 单题答案槽 id
-			t.WaId = strconv.Itoa(int(v))
+		if id := hqkjIdString(m["waId"]); id != "" { // consult_list: 单题答案槽 id
+			t.WaId = id
 		}
-		if v, ok := m["cateBid"].(float64); ok { // consult_list: 题目大分类 id
-			t.CateBid = strconv.Itoa(int(v))
+		if id := hqkjIdString(m["cateBid"]); id != "" { // consult_list: 题目大分类 id
+			t.CateBid = id
 		}
-		if v, ok := m["cateMid"].(float64); ok { // consult_list: 题目中分类 id
-			t.CateMid = strconv.Itoa(int(v))
+		if id := hqkjIdString(m["cateMid"]); id != "" { // consult_list: 题目中分类 id
+			t.CateMid = id
 		}
-		if v, ok := m["type"].(float64); ok {
-			t.TypeInt = int(v)
-		}
+		t.TypeInt = hqkjIntValue(m["type"])
 		if v, ok := m["topic"].(string); ok {
 			t.Question.Content = stripHTML(v)
 		}
@@ -605,20 +719,94 @@ func parseStartQuestions(jsonStr string) []hqkjTopic {
 				}
 				ans, _ := om["answer"].(string)
 				idx, _ := om["idx"].(string)
-				t.Question.Options = append(t.Question.Options, ans)
-				t.OptionIdx = append(t.OptionIdx, idx)
-				// 平台在 option.scale 标注正确项：scale>=100 即满分正确答案。
-				// 收集所有满分项 idx 作为标准答案（多选可能多个），供 answerQuiz 优先采用、跳过 AI。
-				if scale, ok := om["scale"].(float64); ok && scale >= 100 && idx != "" {
-					t.CorrectIdx = append(t.CorrectIdx, idx)
+				switch {
+				case t.TypeInt == 1 || t.TypeInt == 2 || t.TypeInt == 3:
+					t.Question.Options = append(t.Question.Options, ans)
+					t.OptionIdx = append(t.OptionIdx, idx)
+					// 平台在 option.scale 标注正确项：scale>=100 即满分正确答案。
+					// 收集所有满分项 idx 作为标准答案（多选可能多个），供 answerQuiz 优先采用、跳过 AI。
+					if hqkjIntValue(om["scale"]) >= 100 && idx != "" {
+						t.CorrectIdx = append(t.CorrectIdx, idx)
+					}
+				case t.TypeInt == 5:
+					// 填空题的 option[] 是各空位的参考答案，不是选项，不能塞进 Question.Options
+					if strings.TrimSpace(ans) != "" {
+						t.BuiltinText = append(t.BuiltinText, strings.TrimSpace(ans))
+					}
 				}
 			}
 		}
-		if t.TopicId != "" && len(t.Question.Options) > 0 {
-			topics = append(topics, t)
+		// 简答题的平台参考文本
+		if t.TypeInt == 4 && len(t.BuiltinText) == 0 {
+			if ref, ok := m["referenceAnswer"].(string); ok && strings.TrimSpace(ref) != "" {
+				t.BuiltinText = []string{strings.TrimSpace(ref)}
+			}
 		}
+		// 客观题必须有选项；简答/填空题允许没有 option 数组（这类题提交格式也不同）
+		isChoice := t.TypeInt == 1 || t.TypeInt == 2 || t.TypeInt == 3
+		if t.TopicId == "" || (isChoice && len(t.Question.Options) == 0) {
+			continue
+		}
+		topics = append(topics, t)
 	}
 	return topics
+}
+
+// hqkjIdString 兼容数字/字符串两种 id 返回格式，统一转成非空字符串。
+func hqkjIdString(value interface{}) string {
+	switch v := value.(type) {
+	case float64:
+		if v <= 0 {
+			return ""
+		}
+		return strconv.Itoa(int(v))
+	case string:
+		v = strings.TrimSpace(v)
+		if v == "" || v == "0" || strings.EqualFold(v, "null") {
+			return ""
+		}
+		// 兼容 "12345.0" 这类数字字符串（网页端用 Number() 转换后提交）
+		if n, err := strconv.ParseFloat(v, 64); err == nil {
+			if n <= 0 {
+				return ""
+			}
+			return strconv.Itoa(int(n))
+		}
+		return v
+	}
+	return ""
+}
+
+// hqkjIntValue 兼容数字/字符串两种数值返回格式。
+func hqkjIntValue(value interface{}) int {
+	switch v := value.(type) {
+	case float64:
+		return int(v)
+	case string:
+		n, _ := strconv.Atoi(strings.TrimSpace(v))
+		return n
+	}
+	return 0
+}
+
+// parseStartRecordId 从 work_start / exam_start 响应中提取整卷记录 id。
+// 网页端兼容多种位置，这里保持一致：
+// data.workTopics[0].recordId / data.examTopics[0].recordId / data.recordId / recordId / data.id / id。
+func parseStartRecordId(jsonStr string) string {
+	for _, path := range []string{
+		"data.workTopics.[0].recordId",
+		"data.examTopics.[0].recordId",
+		"data.workResult.[0].recordId",
+		"data.recordId",
+		"recordId",
+		"data.id",
+		"id",
+	} {
+		if id := hqkjIdString(gojsonq.New().JSONString(jsonStr).Find(path)); id != "" {
+			return id
+		}
+	}
+	return ""
 }
 
 // htmlTagRe 匹配 HTML 标签，用于清洗题面。
@@ -708,20 +896,8 @@ func pullConsultApi(cache *hqkjApi.HqkjUserCache, kind, recordId, courseId strin
 
 // examDryRun 考试专用 dry-run 开关：true=考试只打印将提交的 payload、绝不真正发请求（验证用）；false=真实提交。
 // 作业已实测打通、恒真实提交，不受此开关影响。payload 与交卷接口已用抓包逐字节验证无误，故放开为 false 真实提交。
-// 交卷(yee_exam_answer_finish)另受 setting.ExamAutoSubmit 控制（默认 0=只答题不交卷）。
+// 作业提交/考试交卷另受 setting.ExamAutoSubmit 控制（0=只保存，1=提交/交卷）。
 const examDryRun = false
-
-// examAnswerPayload 构造考试提交 payload。字段与真实抓包(yee_exam_answer_add)完全一致：
-// {schoolId,courseId,userId,examId,topicId,answer,recordId,type}——考试不带 wrId/waId（那是作业 work_answer_add 才需要的）。
-func examAnswerPayload(cache *hqkjApi.HqkjUserCache, courseId, examId, topicId, recordId, qType string, answers []string) string {
-	if recordId == "" { // 兜底，避免拼出非法 JSON（正常 recordId 来自 exam_start 响应的 examTopics[].recordId）
-		recordId = "0"
-	}
-	answersData, _ := json.Marshal(answers)
-	return `{"schoolId":` + cache.SchoolId + `,"courseId":` + courseId + `,"userId":` + cache.UserId +
-		`,"examId":` + examId + `,"topicId":` + topicId + `,"answer":` + string(answersData) +
-		`,"recordId":` + recordId + `,"type":` + qType + `}`
-}
 
 // parseConsultScore 从 consult_list 返回的 JSON 中提取实际得分（studentResult[0].score）。
 func parseConsultScore(jsonStr string) float64 {
