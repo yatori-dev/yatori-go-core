@@ -8,7 +8,7 @@ import (
 	"time"
 
 	"github.com/thedevsaddam/gojsonq"
-	"github.com/yatori-dev/yatori-go-core/que-core/qentity"
+	"github.com/yatori-dev/yatori-go-core/v3/que-core/qentity"
 )
 
 var ExternalSem = make(chan struct{}, 2)

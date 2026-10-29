@@ -1,7 +1,7 @@
 package xuexitong
 
 import (
-	"github.com/yatori-dev/yatori-go-core/que-core/qentity"
+	"github.com/yatori-dev/yatori-go-core/v3/que-core/qentity"
 )
 
 // 选择题转换成标准question

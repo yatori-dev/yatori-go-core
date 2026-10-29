@@ -3,9 +3,9 @@ package examples
 import (
 	"testing"
 
-	"github.com/yatori-dev/yatori-go-core/global"
-	"github.com/yatori-dev/yatori-go-core/internal/api/mooc"
-	"github.com/yatori-dev/yatori-go-core/utils"
+	"github.com/yatori-dev/yatori-go-core/v3/global"
+	"github.com/yatori-dev/yatori-go-core/v3/internal/api/mooc"
+	"github.com/yatori-dev/yatori-go-core/v3/utils"
 )
 
 // MOOC登录接口测试

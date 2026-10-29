@@ -2,7 +2,7 @@ package global
 
 import (
 	"github.com/sirupsen/logrus"
-	"github.com/yatori-dev/yatori-go-core/internal/api/gongxue/config"
+	"github.com/yatori-dev/yatori-go-core/v3/internal/api/gongxue/config"
 	"gopkg.in/gomail.v2"
 	"gorm.io/gorm"
 )

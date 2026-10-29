@@ -11,9 +11,9 @@ import (
 	"strings"
 
 	"github.com/thedevsaddam/gojsonq"
-	"github.com/yatori-dev/yatori-go-core/internal/api/xuexitong"
-	"github.com/yatori-dev/yatori-go-core/utils"
-	log2 "github.com/yatori-dev/yatori-go-core/utils/log"
+	"github.com/yatori-dev/yatori-go-core/v3/internal/api/xuexitong"
+	"github.com/yatori-dev/yatori-go-core/v3/utils"
+	log2 "github.com/yatori-dev/yatori-go-core/v3/utils/log"
 )
 
 type XueXiTCourse struct {

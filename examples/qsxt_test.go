@@ -7,10 +7,10 @@ import (
 
 	ddddocr "github.com/Changbaiqi/ddddocr-go/utils"
 	"github.com/thedevsaddam/gojsonq"
-	"github.com/yatori-dev/yatori-go-core/global"
-	qsxt "github.com/yatori-dev/yatori-go-core/internal/aggregation/qingshuxuetang"
-	"github.com/yatori-dev/yatori-go-core/internal/api/qingshuxuetang"
-	"github.com/yatori-dev/yatori-go-core/utils"
+	"github.com/yatori-dev/yatori-go-core/v3/global"
+	qsxt "github.com/yatori-dev/yatori-go-core/v3/internal/aggregation/qingshuxuetang"
+	"github.com/yatori-dev/yatori-go-core/v3/internal/api/qingshuxuetang"
+	"github.com/yatori-dev/yatori-go-core/v3/utils"
 )
 
 // 青书学堂登录

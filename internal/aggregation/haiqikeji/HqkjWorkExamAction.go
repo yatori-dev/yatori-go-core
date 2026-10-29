@@ -34,13 +34,13 @@ import (
 	"time"
 
 	"github.com/thedevsaddam/gojsonq"
-	"github.com/yatori-dev/yatori-go-core/config"
-	hqkjApi "github.com/yatori-dev/yatori-go-core/internal/api/haiqikeji"
-	"github.com/yatori-dev/yatori-go-core/que-core/aiq"
-	"github.com/yatori-dev/yatori-go-core/que-core/qentity"
-	"github.com/yatori-dev/yatori-go-core/que-core/qtype"
-	lg "github.com/yatori-dev/yatori-go-core/utils/log"
-	"github.com/yatori-dev/yatori-go-core/utils/qutils"
+	"github.com/yatori-dev/yatori-go-core/v3/config"
+	hqkjApi "github.com/yatori-dev/yatori-go-core/v3/internal/api/haiqikeji"
+	"github.com/yatori-dev/yatori-go-core/v3/que-core/aiq"
+	"github.com/yatori-dev/yatori-go-core/v3/que-core/qentity"
+	"github.com/yatori-dev/yatori-go-core/v3/que-core/qtype"
+	lg "github.com/yatori-dev/yatori-go-core/v3/utils/log"
+	"github.com/yatori-dev/yatori-go-core/v3/utils/qutils"
 )
 
 // HqkjAnswerSetting 答题运行设置（AI 与内置标答模式共用）。

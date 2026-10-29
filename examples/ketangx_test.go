@@ -8,10 +8,10 @@ import (
 	"time"
 
 	"github.com/thedevsaddam/gojsonq"
-	"github.com/yatori-dev/yatori-go-core/global"
-	action "github.com/yatori-dev/yatori-go-core/internal/aggregation/ketangx"
-	"github.com/yatori-dev/yatori-go-core/internal/api/ketangx"
-	"github.com/yatori-dev/yatori-go-core/utils"
+	"github.com/yatori-dev/yatori-go-core/v3/global"
+	action "github.com/yatori-dev/yatori-go-core/v3/internal/aggregation/ketangx"
+	"github.com/yatori-dev/yatori-go-core/v3/internal/api/ketangx"
+	"github.com/yatori-dev/yatori-go-core/v3/utils"
 )
 
 var pv = "v1.32.0"

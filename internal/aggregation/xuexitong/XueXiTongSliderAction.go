@@ -12,8 +12,8 @@ import (
 	"time"
 
 	"github.com/thedevsaddam/gojsonq"
-	xuexitongApi "github.com/yatori-dev/yatori-go-core/internal/api/xuexitong"
-	"github.com/yatori-dev/yatori-go-core/utils"
+	xuexitongApi "github.com/yatori-dev/yatori-go-core/v3/internal/api/xuexitong"
+	"github.com/yatori-dev/yatori-go-core/v3/utils"
 )
 
 type XueXiTSlider struct {

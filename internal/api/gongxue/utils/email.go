@@ -2,7 +2,7 @@ package utils
 
 import (
 	"fmt"
-	"github.com/yatori-dev/yatori-go-core/internal/api/gongxue/global"
+	"github.com/yatori-dev/yatori-go-core/v3/internal/api/gongxue/global"
 	"gopkg.in/gomail.v2"
 	"time"
 )

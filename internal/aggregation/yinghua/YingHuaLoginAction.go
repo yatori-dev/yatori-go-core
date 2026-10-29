@@ -8,9 +8,9 @@ import (
 	ddddocr "github.com/Changbaiqi/ddddocr-go/utils"
 	"github.com/thedevsaddam/gojsonq"
 	ort "github.com/yalue/onnxruntime_go"
-	yinghuaApi "github.com/yatori-dev/yatori-go-core/internal/api/yinghua"
-	"github.com/yatori-dev/yatori-go-core/utils"
-	"github.com/yatori-dev/yatori-go-core/utils/log"
+	yinghuaApi "github.com/yatori-dev/yatori-go-core/v3/internal/api/yinghua"
+	"github.com/yatori-dev/yatori-go-core/v3/utils"
+	"github.com/yatori-dev/yatori-go-core/v3/utils/log"
 )
 
 // YingHuaLoginAction 登录API聚合整理

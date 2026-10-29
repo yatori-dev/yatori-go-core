@@ -18,9 +18,9 @@ import (
 	"strings"
 
 	"github.com/PuerkitoBio/goquery"
-	"github.com/yatori-dev/yatori-go-core/que-core/qtype"
-	"github.com/yatori-dev/yatori-go-core/utils"
-	"github.com/yatori-dev/yatori-go-core/utils/qutils"
+	"github.com/yatori-dev/yatori-go-core/v3/que-core/qtype"
+	"github.com/yatori-dev/yatori-go-core/v3/utils"
+	"github.com/yatori-dev/yatori-go-core/v3/utils/qutils"
 
 	"io/ioutil"
 	"mime/multipart"

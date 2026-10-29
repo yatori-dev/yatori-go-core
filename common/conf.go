@@ -4,9 +4,9 @@ import (
 	"log"
 
 	"github.com/spf13/viper"
-	"github.com/yatori-dev/yatori-go-core/config"
-	"github.com/yatori-dev/yatori-go-core/global"
-	log2 "github.com/yatori-dev/yatori-go-core/utils/log"
+	"github.com/yatori-dev/yatori-go-core/v3/config"
+	"github.com/yatori-dev/yatori-go-core/v3/global"
+	log2 "github.com/yatori-dev/yatori-go-core/v3/utils/log"
 )
 
 // InitConfig 初始化配置文件

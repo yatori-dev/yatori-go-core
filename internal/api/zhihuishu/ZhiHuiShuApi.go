@@ -11,7 +11,7 @@ import (
 	"strings"
 
 	"github.com/thedevsaddam/gojsonq"
-	"github.com/yatori-dev/yatori-go-core/utils"
+	"github.com/yatori-dev/yatori-go-core/v3/utils"
 )
 
 type ZhiDaoUserCache struct {

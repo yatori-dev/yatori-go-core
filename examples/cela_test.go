@@ -7,9 +7,9 @@ import (
 	ddddocr "github.com/Changbaiqi/ddddocr-go/utils"
 	"github.com/thedevsaddam/gojsonq"
 	ort "github.com/yalue/onnxruntime_go"
-	"github.com/yatori-dev/yatori-go-core/global"
-	"github.com/yatori-dev/yatori-go-core/internal/api/cela"
-	"github.com/yatori-dev/yatori-go-core/utils"
+	"github.com/yatori-dev/yatori-go-core/v3/global"
+	"github.com/yatori-dev/yatori-go-core/v3/internal/api/cela"
+	"github.com/yatori-dev/yatori-go-core/v3/utils"
 )
 
 func Test_MD5(t *testing.T) {

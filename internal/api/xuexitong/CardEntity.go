@@ -9,8 +9,8 @@ import (
 	"strconv"
 	"strings"
 
-	"github.com/yatori-dev/yatori-go-core/models/ctype"
-	log2 "github.com/yatori-dev/yatori-go-core/utils/log"
+	"github.com/yatori-dev/yatori-go-core/v3/models/ctype"
+	log2 "github.com/yatori-dev/yatori-go-core/v3/utils/log"
 )
 
 type IAttachment interface {

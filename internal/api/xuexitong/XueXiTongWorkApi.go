@@ -9,9 +9,9 @@ import (
 	"net/url"
 	"strings"
 
-	"github.com/yatori-dev/yatori-go-core/que-core/qentity"
-	"github.com/yatori-dev/yatori-go-core/que-core/qtype"
-	"github.com/yatori-dev/yatori-go-core/utils/qutils"
+	"github.com/yatori-dev/yatori-go-core/v3/que-core/qentity"
+	"github.com/yatori-dev/yatori-go-core/v3/que-core/qtype"
+	"github.com/yatori-dev/yatori-go-core/v3/utils/qutils"
 )
 
 // 学习通题目

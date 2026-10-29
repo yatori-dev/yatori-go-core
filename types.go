@@ -1,6 +1,6 @@
 package yatori
 
-import "github.com/yatori-dev/yatori-go-core/core"
+import "github.com/yatori-dev/yatori-go-core/v3/core"
 
 // Platform identifies a supported upstream learning platform.
 type Platform = core.Platform

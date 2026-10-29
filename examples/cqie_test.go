@@ -5,10 +5,10 @@ import (
 	"testing"
 	"time"
 
-	"github.com/yatori-dev/yatori-go-core/global"
-	cqie "github.com/yatori-dev/yatori-go-core/internal/aggregation/cqie"
-	cqieApi "github.com/yatori-dev/yatori-go-core/internal/api/cqie"
-	"github.com/yatori-dev/yatori-go-core/utils"
+	"github.com/yatori-dev/yatori-go-core/v3/global"
+	cqie "github.com/yatori-dev/yatori-go-core/v3/internal/aggregation/cqie"
+	cqieApi "github.com/yatori-dev/yatori-go-core/v3/internal/api/cqie"
+	"github.com/yatori-dev/yatori-go-core/v3/utils"
 )
 
 // 测试加密函数

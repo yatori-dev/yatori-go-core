@@ -5,11 +5,11 @@ import (
 
 	ddddocr "github.com/Changbaiqi/ddddocr-go/utils"
 	ort "github.com/yalue/onnxruntime_go"
-	"github.com/yatori-dev/yatori-go-core/internal/api/xuexitong"
-	"github.com/yatori-dev/yatori-go-core/models/ctype"
-	"github.com/yatori-dev/yatori-go-core/utils"
-	log2 "github.com/yatori-dev/yatori-go-core/utils/log"
-	"github.com/yatori-dev/yatori-go-core/utils/qutils"
+	"github.com/yatori-dev/yatori-go-core/v3/internal/api/xuexitong"
+	"github.com/yatori-dev/yatori-go-core/v3/models/ctype"
+	"github.com/yatori-dev/yatori-go-core/v3/utils"
+	log2 "github.com/yatori-dev/yatori-go-core/v3/utils/log"
+	"github.com/yatori-dev/yatori-go-core/v3/utils/qutils"
 )
 
 // WorkNewSubmitAnswerAction 提交答题

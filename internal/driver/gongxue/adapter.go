@@ -5,11 +5,11 @@ import (
 	"strings"
 
 	"github.com/sirupsen/logrus"
-	"github.com/yatori-dev/yatori-go-core/core"
-	agg "github.com/yatori-dev/yatori-go-core/internal/aggregation/gongxue"
-	gongxueConfig "github.com/yatori-dev/yatori-go-core/internal/api/gongxue/config"
-	gongxueGlobal "github.com/yatori-dev/yatori-go-core/internal/api/gongxue/global"
-	"github.com/yatori-dev/yatori-go-core/internal/driver/driverutil"
+	"github.com/yatori-dev/yatori-go-core/v3/core"
+	agg "github.com/yatori-dev/yatori-go-core/v3/internal/aggregation/gongxue"
+	gongxueConfig "github.com/yatori-dev/yatori-go-core/v3/internal/api/gongxue/config"
+	gongxueGlobal "github.com/yatori-dev/yatori-go-core/v3/internal/api/gongxue/global"
+	"github.com/yatori-dev/yatori-go-core/v3/internal/driver/driverutil"
 )
 
 func init() {

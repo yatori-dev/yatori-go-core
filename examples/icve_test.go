@@ -9,10 +9,10 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/yatori-dev/yatori-go-core/global"
-	action "github.com/yatori-dev/yatori-go-core/internal/aggregation/icve"
-	"github.com/yatori-dev/yatori-go-core/internal/api/icve"
-	"github.com/yatori-dev/yatori-go-core/utils"
+	"github.com/yatori-dev/yatori-go-core/v3/global"
+	action "github.com/yatori-dev/yatori-go-core/v3/internal/aggregation/icve"
+	"github.com/yatori-dev/yatori-go-core/v3/internal/api/icve"
+	"github.com/yatori-dev/yatori-go-core/v3/utils"
 )
 
 // 测试登录

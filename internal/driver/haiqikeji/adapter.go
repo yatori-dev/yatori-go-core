@@ -5,12 +5,12 @@ import (
 	"strconv"
 	"strings"
 
-	"github.com/yatori-dev/yatori-go-core/config"
-	"github.com/yatori-dev/yatori-go-core/core"
-	agg "github.com/yatori-dev/yatori-go-core/internal/aggregation/haiqikeji"
-	api "github.com/yatori-dev/yatori-go-core/internal/api/haiqikeji"
-	"github.com/yatori-dev/yatori-go-core/internal/driver/driverutil"
-	"github.com/yatori-dev/yatori-go-core/models/ctype"
+	"github.com/yatori-dev/yatori-go-core/v3/config"
+	"github.com/yatori-dev/yatori-go-core/v3/core"
+	agg "github.com/yatori-dev/yatori-go-core/v3/internal/aggregation/haiqikeji"
+	api "github.com/yatori-dev/yatori-go-core/v3/internal/api/haiqikeji"
+	"github.com/yatori-dev/yatori-go-core/v3/internal/driver/driverutil"
+	"github.com/yatori-dev/yatori-go-core/v3/models/ctype"
 )
 
 func init() {

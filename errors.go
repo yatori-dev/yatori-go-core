@@ -1,6 +1,6 @@
 package yatori
 
-import "github.com/yatori-dev/yatori-go-core/core"
+import "github.com/yatori-dev/yatori-go-core/v3/core"
 
 var (
 	// ErrUnsupported means the platform does not implement the operation.

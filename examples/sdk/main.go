@@ -15,7 +15,7 @@ import (
 	"os"
 	"time"
 
-	"github.com/yatori-dev/yatori-go-core"
+	"github.com/yatori-dev/yatori-go-core/v3"
 )
 
 func main() {

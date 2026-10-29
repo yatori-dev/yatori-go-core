@@ -17,12 +17,12 @@ import (
 	time2 "time"
 
 	"github.com/thedevsaddam/gojsonq"
-	"github.com/yatori-dev/yatori-go-core"
-	"github.com/yatori-dev/yatori-go-core/global"
-	"github.com/yatori-dev/yatori-go-core/internal/aggregation/yinghua"
-	yinghuaApi "github.com/yatori-dev/yatori-go-core/internal/api/yinghua"
-	"github.com/yatori-dev/yatori-go-core/utils"
-	log2 "github.com/yatori-dev/yatori-go-core/utils/log"
+	"github.com/yatori-dev/yatori-go-core/v3"
+	"github.com/yatori-dev/yatori-go-core/v3/global"
+	"github.com/yatori-dev/yatori-go-core/v3/internal/aggregation/yinghua"
+	yinghuaApi "github.com/yatori-dev/yatori-go-core/v3/internal/api/yinghua"
+	"github.com/yatori-dev/yatori-go-core/v3/utils"
+	log2 "github.com/yatori-dev/yatori-go-core/v3/utils/log"
 )
 
 // 账号登录测试

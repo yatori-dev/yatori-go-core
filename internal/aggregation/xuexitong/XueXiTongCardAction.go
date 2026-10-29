@@ -14,11 +14,11 @@ import (
 
 	"github.com/PuerkitoBio/goquery"
 	"github.com/thedevsaddam/gojsonq"
-	"github.com/yatori-dev/yatori-go-core/internal/api/xuexitong"
-	que_core "github.com/yatori-dev/yatori-go-core/que-core/aiq"
-	"github.com/yatori-dev/yatori-go-core/que-core/qtype"
-	"github.com/yatori-dev/yatori-go-core/utils"
-	log2 "github.com/yatori-dev/yatori-go-core/utils/log"
+	"github.com/yatori-dev/yatori-go-core/v3/internal/api/xuexitong"
+	que_core "github.com/yatori-dev/yatori-go-core/v3/que-core/aiq"
+	"github.com/yatori-dev/yatori-go-core/v3/que-core/qtype"
+	"github.com/yatori-dev/yatori-go-core/v3/utils"
+	log2 "github.com/yatori-dev/yatori-go-core/v3/utils/log"
 	"golang.org/x/net/html"
 )
 

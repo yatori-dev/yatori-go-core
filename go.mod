@@ -1,4 +1,4 @@
-module github.com/yatori-dev/yatori-go-core
+module github.com/yatori-dev/yatori-go-core/v3
 
 go 1.27.3
 
@@ -9,6 +9,7 @@ require (
 	github.com/google/uuid v1.6.0
 	github.com/makiuchi-d/gozxing v0.1.1
 	github.com/nfnt/resize v0.0.0-20180221191011-83c6a9932646
+	github.com/refraction-networking/utls v1.8.2
 	github.com/robfig/cron/v3 v3.0.1
 	github.com/sirupsen/logrus v1.10.2
 	github.com/skip2/go-qrcode v0.0.0-20200617195104-da1b6568686e
@@ -16,15 +17,11 @@ require (
 	github.com/thedevsaddam/gojsonq v2.3.0+incompatible
 	github.com/tjfoc/gmsm v1.4.1
 	github.com/yalue/onnxruntime_go v1.24.0
+	golang.org/x/image v0.47.0
 	golang.org/x/net v0.61.0
 	gopkg.in/gomail.v2 v2.0.0-20160411212932-81ebce5c23df
 	gorm.io/driver/sqlite v1.6.0
 	gorm.io/gorm v1.31.2
-)
-
-require (
-	github.com/refraction-networking/utls v1.8.2
-	golang.org/x/image v0.47.0
 )
 
 require (

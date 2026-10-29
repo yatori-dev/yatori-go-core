@@ -9,8 +9,8 @@ import (
 	"strings"
 
 	"github.com/thedevsaddam/gojsonq"
-	"github.com/yatori-dev/yatori-go-core/que-core/qentity"
-	"github.com/yatori-dev/yatori-go-core/utils"
+	"github.com/yatori-dev/yatori-go-core/v3/que-core/qentity"
+	"github.com/yatori-dev/yatori-go-core/v3/utils"
 )
 
 // 全能免费题库

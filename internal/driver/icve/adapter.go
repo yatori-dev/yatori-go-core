@@ -5,11 +5,11 @@ import (
 	"strconv"
 	"strings"
 
-	"github.com/yatori-dev/yatori-go-core/core"
-	agg "github.com/yatori-dev/yatori-go-core/internal/aggregation/icve"
-	api "github.com/yatori-dev/yatori-go-core/internal/api/icve"
-	"github.com/yatori-dev/yatori-go-core/internal/driver/driverutil"
-	"github.com/yatori-dev/yatori-go-core/utils"
+	"github.com/yatori-dev/yatori-go-core/v3/core"
+	agg "github.com/yatori-dev/yatori-go-core/v3/internal/aggregation/icve"
+	api "github.com/yatori-dev/yatori-go-core/v3/internal/api/icve"
+	"github.com/yatori-dev/yatori-go-core/v3/internal/driver/driverutil"
+	"github.com/yatori-dev/yatori-go-core/v3/utils"
 )
 
 func init() {

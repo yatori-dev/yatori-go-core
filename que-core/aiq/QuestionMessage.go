@@ -5,8 +5,8 @@ import (
 	"fmt"
 	"strings"
 
-	"github.com/yatori-dev/yatori-go-core/que-core/qentity"
-	"github.com/yatori-dev/yatori-go-core/que-core/qtype"
+	"github.com/yatori-dev/yatori-go-core/v3/que-core/qentity"
+	"github.com/yatori-dev/yatori-go-core/v3/que-core/qtype"
 )
 
 // 单选题处理策略

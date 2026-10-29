@@ -6,10 +6,10 @@ import (
 	"strings"
 	"time"
 
-	"github.com/yatori-dev/yatori-go-core/core"
-	agg "github.com/yatori-dev/yatori-go-core/internal/aggregation/cqie"
-	api "github.com/yatori-dev/yatori-go-core/internal/api/cqie"
-	"github.com/yatori-dev/yatori-go-core/internal/driver/driverutil"
+	"github.com/yatori-dev/yatori-go-core/v3/core"
+	agg "github.com/yatori-dev/yatori-go-core/v3/internal/aggregation/cqie"
+	api "github.com/yatori-dev/yatori-go-core/v3/internal/api/cqie"
+	"github.com/yatori-dev/yatori-go-core/v3/internal/driver/driverutil"
 )
 
 func init() {

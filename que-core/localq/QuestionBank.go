@@ -4,7 +4,7 @@ import (
 	"crypto/md5"
 	"errors"
 	"fmt"
-	log2 "github.com/yatori-dev/yatori-go-core/utils/log"
+	log2 "github.com/yatori-dev/yatori-go-core/v3/utils/log"
 	"gorm.io/driver/sqlite"
 	"gorm.io/gorm"
 	"log"

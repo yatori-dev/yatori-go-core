@@ -5,10 +5,10 @@ import (
 	"testing"
 	"time"
 
-	"github.com/yatori-dev/yatori-go-core/global"
-	action "github.com/yatori-dev/yatori-go-core/internal/aggregation/welearn"
-	"github.com/yatori-dev/yatori-go-core/internal/api/welearn"
-	"github.com/yatori-dev/yatori-go-core/utils"
+	"github.com/yatori-dev/yatori-go-core/v3/global"
+	action "github.com/yatori-dev/yatori-go-core/v3/internal/aggregation/welearn"
+	"github.com/yatori-dev/yatori-go-core/v3/internal/api/welearn"
+	"github.com/yatori-dev/yatori-go-core/v3/utils"
 )
 
 func TestWeLearnLogin(t *testing.T) {

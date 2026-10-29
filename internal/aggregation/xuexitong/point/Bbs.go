@@ -12,13 +12,13 @@ import (
 	"github.com/PuerkitoBio/goquery"
 	"github.com/thedevsaddam/gojsonq"
 	ort "github.com/yalue/onnxruntime_go"
-	"github.com/yatori-dev/yatori-go-core/config"
-	xuexitong2 "github.com/yatori-dev/yatori-go-core/internal/aggregation/xuexitong"
-	"github.com/yatori-dev/yatori-go-core/internal/api/xuexitong"
-	"github.com/yatori-dev/yatori-go-core/models/ctype"
-	"github.com/yatori-dev/yatori-go-core/que-core/qtype"
-	"github.com/yatori-dev/yatori-go-core/utils"
-	log2 "github.com/yatori-dev/yatori-go-core/utils/log"
+	"github.com/yatori-dev/yatori-go-core/v3/config"
+	xuexitong2 "github.com/yatori-dev/yatori-go-core/v3/internal/aggregation/xuexitong"
+	"github.com/yatori-dev/yatori-go-core/v3/internal/api/xuexitong"
+	"github.com/yatori-dev/yatori-go-core/v3/models/ctype"
+	"github.com/yatori-dev/yatori-go-core/v3/que-core/qtype"
+	"github.com/yatori-dev/yatori-go-core/v3/utils"
+	log2 "github.com/yatori-dev/yatori-go-core/v3/utils/log"
 )
 
 type BBsTopic struct {

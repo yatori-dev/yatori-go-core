@@ -6,7 +6,7 @@ import (
 	"strconv"
 
 	"github.com/PuerkitoBio/goquery"
-	"github.com/yatori-dev/yatori-go-core/internal/api/ketangx"
+	"github.com/yatori-dev/yatori-go-core/v3/internal/api/ketangx"
 )
 
 type KetangxCourse struct {

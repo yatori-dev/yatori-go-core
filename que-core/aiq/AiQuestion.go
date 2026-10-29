@@ -18,7 +18,7 @@ import (
 	"net/http"
 	"strings"
 
-	"github.com/yatori-dev/yatori-go-core/models/ctype"
+	"github.com/yatori-dev/yatori-go-core/v3/models/ctype"
 )
 
 const (

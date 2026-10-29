@@ -13,8 +13,8 @@ import (
 	"strings"
 	"time"
 
-	"github.com/yatori-dev/yatori-go-core/utils"
-	log2 "github.com/yatori-dev/yatori-go-core/utils/log"
+	"github.com/yatori-dev/yatori-go-core/v3/utils"
+	log2 "github.com/yatori-dev/yatori-go-core/v3/utils/log"
 )
 
 // PageMobileChapterCard 客户端章节任务卡片 原始html数据返回

@@ -18,7 +18,7 @@ import (
 	"strings"
 	"time"
 
-	"github.com/yatori-dev/yatori-go-core/utils"
+	"github.com/yatori-dev/yatori-go-core/v3/utils"
 )
 
 // 注意Api类文件主需要写最原始的接口请求和最后的json的string形式返回，不需要用结构体序列化。

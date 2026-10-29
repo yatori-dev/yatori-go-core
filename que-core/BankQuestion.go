@@ -2,8 +2,8 @@ package que_core
 
 import (
 	"encoding/json"
-	"github.com/yatori-dev/yatori-go-core/que-core/qtype"
-	"github.com/yatori-dev/yatori-go-core/utils/log"
+	"github.com/yatori-dev/yatori-go-core/v3/que-core/qtype"
+	"github.com/yatori-dev/yatori-go-core/v3/utils/log"
 	"io/ioutil"
 	"net/http"
 	"net/url"

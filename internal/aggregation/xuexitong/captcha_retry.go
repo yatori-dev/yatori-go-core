@@ -7,8 +7,8 @@ import (
 
 	ddddocr "github.com/Changbaiqi/ddddocr-go/utils"
 	ort "github.com/yalue/onnxruntime_go"
-	xuexitongApi "github.com/yatori-dev/yatori-go-core/internal/api/xuexitong"
-	"github.com/yatori-dev/yatori-go-core/utils"
+	xuexitongApi "github.com/yatori-dev/yatori-go-core/v3/internal/api/xuexitong"
+	"github.com/yatori-dev/yatori-go-core/v3/utils"
 )
 
 const defaultCaptchaAttempts = 5

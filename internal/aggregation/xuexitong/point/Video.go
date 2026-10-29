@@ -7,11 +7,11 @@ import (
 	"time"
 
 	"github.com/thedevsaddam/gojsonq"
-	action "github.com/yatori-dev/yatori-go-core/internal/aggregation/xuexitong"
-	api "github.com/yatori-dev/yatori-go-core/internal/api/xuexitong"
-	"github.com/yatori-dev/yatori-go-core/models/ctype"
-	"github.com/yatori-dev/yatori-go-core/utils"
-	log2 "github.com/yatori-dev/yatori-go-core/utils/log"
+	action "github.com/yatori-dev/yatori-go-core/v3/internal/aggregation/xuexitong"
+	api "github.com/yatori-dev/yatori-go-core/v3/internal/api/xuexitong"
+	"github.com/yatori-dev/yatori-go-core/v3/models/ctype"
+	"github.com/yatori-dev/yatori-go-core/v3/utils"
+	log2 "github.com/yatori-dev/yatori-go-core/v3/utils/log"
 )
 
 // playReportPassed 安全读取播放上报结果。

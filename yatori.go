@@ -23,8 +23,8 @@ package yatori
 import (
 	"context"
 
-	"github.com/yatori-dev/yatori-go-core/core"
-	_ "github.com/yatori-dev/yatori-go-core/internal/driver"
+	"github.com/yatori-dev/yatori-go-core/v3/core"
+	_ "github.com/yatori-dev/yatori-go-core/v3/internal/driver"
 )
 
 // New constructs a Client for cfg.Platform.

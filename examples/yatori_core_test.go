@@ -2,15 +2,15 @@ package examples
 
 import (
 	"fmt"
-	"github.com/yatori-dev/yatori-go-core/que-core/aiq"
+	"github.com/yatori-dev/yatori-go-core/v3/que-core/aiq"
 	"net/http"
 	"net/url"
 	"testing"
 	time2 "time"
 
-	"github.com/yatori-dev/yatori-go-core/common"
-	"github.com/yatori-dev/yatori-go-core/global"
-	"github.com/yatori-dev/yatori-go-core/utils"
+	"github.com/yatori-dev/yatori-go-core/v3/common"
+	"github.com/yatori-dev/yatori-go-core/v3/global"
+	"github.com/yatori-dev/yatori-go-core/v3/utils"
 )
 
 func setup() {

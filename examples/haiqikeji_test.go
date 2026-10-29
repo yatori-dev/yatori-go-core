@@ -4,10 +4,10 @@ import (
 	"fmt"
 	"testing"
 
-	"github.com/yatori-dev/yatori-go-core/global"
-	zxcpks2 "github.com/yatori-dev/yatori-go-core/internal/aggregation/haiqikeji"
-	"github.com/yatori-dev/yatori-go-core/internal/api/haiqikeji"
-	"github.com/yatori-dev/yatori-go-core/utils"
+	"github.com/yatori-dev/yatori-go-core/v3/global"
+	zxcpks2 "github.com/yatori-dev/yatori-go-core/v3/internal/aggregation/haiqikeji"
+	"github.com/yatori-dev/yatori-go-core/v3/internal/api/haiqikeji"
+	"github.com/yatori-dev/yatori-go-core/v3/utils"
 )
 
 // 测试登录

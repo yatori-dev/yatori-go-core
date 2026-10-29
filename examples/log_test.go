@@ -1,7 +1,7 @@
 package examples
 
 import (
-	"github.com/yatori-dev/yatori-go-core/utils/log"
+	"github.com/yatori-dev/yatori-go-core/v3/utils/log"
 	"testing"
 )
 

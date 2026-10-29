@@ -12,13 +12,13 @@ import (
 	"time"
 
 	"github.com/PuerkitoBio/goquery"
-	"github.com/yatori-dev/yatori-go-core/internal/api/xuexitong"
-	"github.com/yatori-dev/yatori-go-core/models/ctype"
-	"github.com/yatori-dev/yatori-go-core/que-core/aiq"
-	"github.com/yatori-dev/yatori-go-core/que-core/external"
-	"github.com/yatori-dev/yatori-go-core/que-core/qtype"
-	"github.com/yatori-dev/yatori-go-core/utils"
-	log2 "github.com/yatori-dev/yatori-go-core/utils/log"
+	"github.com/yatori-dev/yatori-go-core/v3/internal/api/xuexitong"
+	"github.com/yatori-dev/yatori-go-core/v3/models/ctype"
+	"github.com/yatori-dev/yatori-go-core/v3/que-core/aiq"
+	"github.com/yatori-dev/yatori-go-core/v3/que-core/external"
+	"github.com/yatori-dev/yatori-go-core/v3/que-core/qtype"
+	"github.com/yatori-dev/yatori-go-core/v3/utils"
+	log2 "github.com/yatori-dev/yatori-go-core/v3/utils/log"
 )
 
 // 学习通考试结构体

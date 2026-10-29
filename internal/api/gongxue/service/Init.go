@@ -2,9 +2,9 @@ package service
 
 import (
 	"github.com/robfig/cron/v3"
-	"github.com/yatori-dev/yatori-go-core/internal/api/gongxue/entity"
-	"github.com/yatori-dev/yatori-go-core/internal/api/gongxue/global"
-	gongxueyun_service2 "github.com/yatori-dev/yatori-go-core/internal/api/gongxue/service/gongxueyun_service"
+	"github.com/yatori-dev/yatori-go-core/v3/internal/api/gongxue/entity"
+	"github.com/yatori-dev/yatori-go-core/v3/internal/api/gongxue/global"
+	gongxueyun_service2 "github.com/yatori-dev/yatori-go-core/v3/internal/api/gongxue/service/gongxueyun_service"
 	"time"
 )
 

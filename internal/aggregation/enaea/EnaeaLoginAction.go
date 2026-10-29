@@ -4,9 +4,9 @@ import (
 	"errors"
 	"strings"
 
-	"github.com/yatori-dev/yatori-go-core/internal/api/enaea"
-	"github.com/yatori-dev/yatori-go-core/utils"
-	"github.com/yatori-dev/yatori-go-core/utils/log"
+	"github.com/yatori-dev/yatori-go-core/v3/internal/api/enaea"
+	"github.com/yatori-dev/yatori-go-core/v3/utils"
+	"github.com/yatori-dev/yatori-go-core/v3/utils/log"
 )
 
 // EnaeaLoginAction 学习公社登录

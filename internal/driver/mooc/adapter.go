@@ -4,9 +4,9 @@ import (
 	"context"
 	"strings"
 
-	"github.com/yatori-dev/yatori-go-core/core"
-	api "github.com/yatori-dev/yatori-go-core/internal/api/mooc"
-	"github.com/yatori-dev/yatori-go-core/internal/driver/driverutil"
+	"github.com/yatori-dev/yatori-go-core/v3/core"
+	api "github.com/yatori-dev/yatori-go-core/v3/internal/api/mooc"
+	"github.com/yatori-dev/yatori-go-core/v3/internal/driver/driverutil"
 )
 
 func init() {

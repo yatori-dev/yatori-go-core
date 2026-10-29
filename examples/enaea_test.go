@@ -5,10 +5,10 @@ import (
 	"testing"
 	time2 "time"
 
-	"github.com/yatori-dev/yatori-go-core/global"
-	"github.com/yatori-dev/yatori-go-core/internal/aggregation/enaea"
-	enaeaApi "github.com/yatori-dev/yatori-go-core/internal/api/enaea"
-	"github.com/yatori-dev/yatori-go-core/utils"
+	"github.com/yatori-dev/yatori-go-core/v3/global"
+	"github.com/yatori-dev/yatori-go-core/v3/internal/aggregation/enaea"
+	enaeaApi "github.com/yatori-dev/yatori-go-core/v3/internal/api/enaea"
+	"github.com/yatori-dev/yatori-go-core/v3/utils"
 )
 
 // 测试学习公社登录

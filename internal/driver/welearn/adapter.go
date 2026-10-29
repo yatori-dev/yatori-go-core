@@ -5,10 +5,10 @@ import (
 	"strconv"
 	"strings"
 
-	"github.com/yatori-dev/yatori-go-core/core"
-	agg "github.com/yatori-dev/yatori-go-core/internal/aggregation/welearn"
-	api "github.com/yatori-dev/yatori-go-core/internal/api/welearn"
-	"github.com/yatori-dev/yatori-go-core/internal/driver/driverutil"
+	"github.com/yatori-dev/yatori-go-core/v3/core"
+	agg "github.com/yatori-dev/yatori-go-core/v3/internal/aggregation/welearn"
+	api "github.com/yatori-dev/yatori-go-core/v3/internal/api/welearn"
+	"github.com/yatori-dev/yatori-go-core/v3/internal/driver/driverutil"
 )
 
 func init() {

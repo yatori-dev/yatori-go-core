@@ -6,7 +6,7 @@ import (
 	"strconv"
 
 	"github.com/thedevsaddam/gojsonq"
-	"github.com/yatori-dev/yatori-go-core/internal/api/haiqikeji"
+	"github.com/yatori-dev/yatori-go-core/v3/internal/api/haiqikeji"
 )
 
 // 登录

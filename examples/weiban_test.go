@@ -4,10 +4,10 @@ import (
 	"fmt"
 	"testing"
 
-	"github.com/yatori-dev/yatori-go-core/global"
-	action "github.com/yatori-dev/yatori-go-core/internal/aggregation/weiban"
-	"github.com/yatori-dev/yatori-go-core/internal/api/weiban"
-	"github.com/yatori-dev/yatori-go-core/utils"
+	"github.com/yatori-dev/yatori-go-core/v3/global"
+	action "github.com/yatori-dev/yatori-go-core/v3/internal/aggregation/weiban"
+	"github.com/yatori-dev/yatori-go-core/v3/internal/api/weiban"
+	"github.com/yatori-dev/yatori-go-core/v3/utils"
 )
 
 // 测试微伴登录

@@ -4,8 +4,8 @@ import (
 	"errors"
 
 	"github.com/thedevsaddam/gojsonq"
-	ttcdwApi "github.com/yatori-dev/yatori-go-core/internal/api/ttcdw"
-	"github.com/yatori-dev/yatori-go-core/utils"
+	ttcdwApi "github.com/yatori-dev/yatori-go-core/v3/internal/api/ttcdw"
+	"github.com/yatori-dev/yatori-go-core/v3/utils"
 )
 
 // 登录

@@ -10,7 +10,7 @@ import (
 
 	ddddocr "github.com/Changbaiqi/ddddocr-go/utils"
 
-	"github.com/yatori-dev/yatori-go-core/core"
+	"github.com/yatori-dev/yatori-go-core/v3/core"
 )
 
 // Base holds the state common to every adapter.

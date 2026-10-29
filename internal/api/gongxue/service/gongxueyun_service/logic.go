@@ -8,14 +8,14 @@ import (
 	"time"
 
 	"github.com/google/uuid"
-	"github.com/yatori-dev/yatori-go-core/internal/api/gongxue/api"
-	"github.com/yatori-dev/yatori-go-core/internal/api/gongxue/entity"
-	"github.com/yatori-dev/yatori-go-core/internal/api/gongxue/global"
-	data2 "github.com/yatori-dev/yatori-go-core/internal/api/gongxue/service/gongxueyun_service/data"
-	"github.com/yatori-dev/yatori-go-core/internal/api/gongxue/utils"
-	"github.com/yatori-dev/yatori-go-core/internal/api/gongxue/utils/blockPuzzle"
-	utils2 "github.com/yatori-dev/yatori-go-core/utils"
-	log2 "github.com/yatori-dev/yatori-go-core/utils/log"
+	"github.com/yatori-dev/yatori-go-core/v3/internal/api/gongxue/api"
+	"github.com/yatori-dev/yatori-go-core/v3/internal/api/gongxue/entity"
+	"github.com/yatori-dev/yatori-go-core/v3/internal/api/gongxue/global"
+	data2 "github.com/yatori-dev/yatori-go-core/v3/internal/api/gongxue/service/gongxueyun_service/data"
+	"github.com/yatori-dev/yatori-go-core/v3/internal/api/gongxue/utils"
+	"github.com/yatori-dev/yatori-go-core/v3/internal/api/gongxue/utils/blockPuzzle"
+	utils2 "github.com/yatori-dev/yatori-go-core/v3/utils"
+	log2 "github.com/yatori-dev/yatori-go-core/v3/utils/log"
 )
 
 func (m *MoguDing) Run(runType string) {

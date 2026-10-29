@@ -7,13 +7,13 @@ import (
 	"regexp"
 	"strconv"
 
-	//"github.com/yatori-dev/yatori-go-core/internal/api/xuexitong"
-	"github.com/yatori-dev/yatori-go-core/models/ctype"
-	"github.com/yatori-dev/yatori-go-core/que-core/aiq"
-	"github.com/yatori-dev/yatori-go-core/que-core/external"
-	"github.com/yatori-dev/yatori-go-core/que-core/qentity"
-	"github.com/yatori-dev/yatori-go-core/que-core/qtype"
-	"github.com/yatori-dev/yatori-go-core/utils/log"
+	//"github.com/yatori-dev/yatori-go-core/v3/internal/api/xuexitong"
+	"github.com/yatori-dev/yatori-go-core/v3/models/ctype"
+	"github.com/yatori-dev/yatori-go-core/v3/que-core/aiq"
+	"github.com/yatori-dev/yatori-go-core/v3/que-core/external"
+	"github.com/yatori-dev/yatori-go-core/v3/que-core/qentity"
+	"github.com/yatori-dev/yatori-go-core/v3/que-core/qtype"
+	"github.com/yatori-dev/yatori-go-core/v3/utils/log"
 )
 
 // XueXiTCourse 课程所有信息

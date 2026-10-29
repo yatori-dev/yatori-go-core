@@ -1,9 +1,9 @@
 package gongxue
 
 import (
-	"github.com/yatori-dev/yatori-go-core/internal/api/gongxue/entity"
-	"github.com/yatori-dev/yatori-go-core/internal/api/gongxue/global"
-	"github.com/yatori-dev/yatori-go-core/internal/api/gongxue/service"
+	"github.com/yatori-dev/yatori-go-core/v3/internal/api/gongxue/entity"
+	"github.com/yatori-dev/yatori-go-core/v3/internal/api/gongxue/global"
+	"github.com/yatori-dev/yatori-go-core/v3/internal/api/gongxue/service"
 )
 
 type SignUser struct {

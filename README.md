@@ -33,8 +33,10 @@ Yatori-go-core 是 yatori 系列的 Go 核心库。它把多个在线学习平�
 
 ## 安装
 
+> V3 的模块路径是 `github.com/yatori-dev/yatori-go-core/v3`，`go get` 和代码 import 都必须带 `/v3`。
+
 ```bash
-go get github.com/yatori-dev/yatori-go-core
+go get github.com/yatori-dev/yatori-go-core/v3
 ```
 
 要求 Go 1.27+ 和 CGO（部分平台依赖 SQLite / ONNX Runtime）。
@@ -49,7 +51,7 @@ import (
 	"fmt"
 	"time"
 
-	"github.com/yatori-dev/yatori-go-core"
+	"github.com/yatori-dev/yatori-go-core/v3"
 )
 
 func main() {

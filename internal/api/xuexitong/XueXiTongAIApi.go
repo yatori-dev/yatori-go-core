@@ -15,8 +15,8 @@ import (
 	"sync"
 
 	"github.com/PuerkitoBio/goquery"
-	"github.com/yatori-dev/yatori-go-core/que-core/aiq"
-	"github.com/yatori-dev/yatori-go-core/utils"
+	"github.com/yatori-dev/yatori-go-core/v3/que-core/aiq"
+	"github.com/yatori-dev/yatori-go-core/v3/utils"
 )
 
 // 学习通AI包装

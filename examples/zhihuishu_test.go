@@ -14,7 +14,7 @@ import (
 	"github.com/makiuchi-d/gozxing/qrcode"
 	goqr "github.com/skip2/go-qrcode"
 	"github.com/thedevsaddam/gojsonq"
-	"github.com/yatori-dev/yatori-go-core/internal/api/zhihuishu"
+	"github.com/yatori-dev/yatori-go-core/v3/internal/api/zhihuishu"
 )
 
 // 知到扫码登录测试

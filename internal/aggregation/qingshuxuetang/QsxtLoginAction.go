@@ -8,8 +8,8 @@ import (
 
 	ddddocr "github.com/Changbaiqi/ddddocr-go/utils"
 	"github.com/thedevsaddam/gojsonq"
-	"github.com/yatori-dev/yatori-go-core/internal/api/qingshuxuetang"
-	"github.com/yatori-dev/yatori-go-core/utils"
+	"github.com/yatori-dev/yatori-go-core/v3/internal/api/qingshuxuetang"
+	"github.com/yatori-dev/yatori-go-core/v3/utils"
 )
 
 // 登录

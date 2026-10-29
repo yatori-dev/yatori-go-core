@@ -7,9 +7,9 @@ import (
 	"time"
 
 	"github.com/thedevsaddam/gojsonq"
-	xuexitong2 "github.com/yatori-dev/yatori-go-core/internal/aggregation/xuexitong"
-	"github.com/yatori-dev/yatori-go-core/internal/api/xuexitong"
-	log2 "github.com/yatori-dev/yatori-go-core/utils/log"
+	xuexitong2 "github.com/yatori-dev/yatori-go-core/v3/internal/aggregation/xuexitong"
+	"github.com/yatori-dev/yatori-go-core/v3/internal/api/xuexitong"
+	log2 "github.com/yatori-dev/yatori-go-core/v3/utils/log"
 )
 
 // 外链任务点学习

@@ -5,9 +5,9 @@ import (
 	"time"
 
 	"github.com/thedevsaddam/gojsonq"
-	"github.com/yatori-dev/yatori-go-core/core"
-	api "github.com/yatori-dev/yatori-go-core/internal/api/zhihuishu"
-	"github.com/yatori-dev/yatori-go-core/internal/driver/driverutil"
+	"github.com/yatori-dev/yatori-go-core/v3/core"
+	api "github.com/yatori-dev/yatori-go-core/v3/internal/api/zhihuishu"
+	"github.com/yatori-dev/yatori-go-core/v3/internal/driver/driverutil"
 )
 
 func init() {

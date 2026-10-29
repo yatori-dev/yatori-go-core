@@ -3,8 +3,8 @@ package examples
 import (
 	"crypto/md5"
 	"fmt"
-	"github.com/yatori-dev/yatori-go-core/que-core/localq"
-	"github.com/yatori-dev/yatori-go-core/que-core/qtype"
+	"github.com/yatori-dev/yatori-go-core/v3/que-core/localq"
+	"github.com/yatori-dev/yatori-go-core/v3/que-core/qtype"
 	"testing"
 )
 

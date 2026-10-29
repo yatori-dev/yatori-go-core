@@ -9,7 +9,7 @@ import (
 	"net/url"
 	"strings"
 
-	"github.com/yatori-dev/yatori-go-core/utils"
+	"github.com/yatori-dev/yatori-go-core/v3/utils"
 )
 
 // 拉取课程列表json

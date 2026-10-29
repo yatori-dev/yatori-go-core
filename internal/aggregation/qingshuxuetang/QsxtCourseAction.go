@@ -5,7 +5,7 @@ import (
 	"strconv"
 
 	"github.com/thedevsaddam/gojsonq"
-	"github.com/yatori-dev/yatori-go-core/internal/api/qingshuxuetang"
+	"github.com/yatori-dev/yatori-go-core/v3/internal/api/qingshuxuetang"
 )
 
 type QsxtCourse struct {

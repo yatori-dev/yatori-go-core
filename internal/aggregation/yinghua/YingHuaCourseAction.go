@@ -11,15 +11,15 @@ import (
 	"time"
 
 	"github.com/thedevsaddam/gojsonq"
-	"github.com/yatori-dev/yatori-go-core/internal/api/xuexitong"
-	yinghuaApi "github.com/yatori-dev/yatori-go-core/internal/api/yinghua"
-	"github.com/yatori-dev/yatori-go-core/models/ctype"
-	"github.com/yatori-dev/yatori-go-core/que-core/aiq"
-	"github.com/yatori-dev/yatori-go-core/que-core/external"
-	"github.com/yatori-dev/yatori-go-core/que-core/qentity"
-	"github.com/yatori-dev/yatori-go-core/que-core/qtype"
-	"github.com/yatori-dev/yatori-go-core/utils/log"
-	"github.com/yatori-dev/yatori-go-core/utils/qutils"
+	"github.com/yatori-dev/yatori-go-core/v3/internal/api/xuexitong"
+	yinghuaApi "github.com/yatori-dev/yatori-go-core/v3/internal/api/yinghua"
+	"github.com/yatori-dev/yatori-go-core/v3/models/ctype"
+	"github.com/yatori-dev/yatori-go-core/v3/que-core/aiq"
+	"github.com/yatori-dev/yatori-go-core/v3/que-core/external"
+	"github.com/yatori-dev/yatori-go-core/v3/que-core/qentity"
+	"github.com/yatori-dev/yatori-go-core/v3/que-core/qtype"
+	"github.com/yatori-dev/yatori-go-core/v3/utils/log"
+	"github.com/yatori-dev/yatori-go-core/v3/utils/qutils"
 )
 
 // 课程必要数据得截取
