@@ -3,8 +3,8 @@ package examples
 import (
 	"testing"
 
-	"github.com/yatori-dev/yatori-go-core/api/mooc"
 	"github.com/yatori-dev/yatori-go-core/global"
+	"github.com/yatori-dev/yatori-go-core/internal/api/mooc"
 	"github.com/yatori-dev/yatori-go-core/utils"
 )
 

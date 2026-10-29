@@ -1,7 +1,7 @@
 package examples
 
 import (
-	"github.com/yatori-dev/yatori-go-core/aggregation/gongxue"
+	"github.com/yatori-dev/yatori-go-core/internal/aggregation/gongxue"
 	"testing"
 )
 

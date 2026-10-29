@@ -1,0 +1,458 @@
+package haiqikeji
+
+import (
+	"fmt"
+	"strconv"
+	"strings"
+	"time"
+
+	"github.com/thedevsaddam/gojsonq"
+	"github.com/yatori-dev/yatori-go-core/internal/api/haiqikeji"
+)
+
+type HqkjCourse struct {
+	Id         string      `json:"id"`
+	Name       string      `json:"name"`
+	Mode       int         `json:"mode"`
+	CollegeId  string      `json:"collegeId"`
+	CategoryId interface{} `json:"categoryId"`
+	Lecturers  string      `json:"lecturers"`
+	//StartDate     string      `json:"startDate"`
+	StartDate     time.Time   `json:"startDate"`
+	EndDate       time.Time   `json:"endDate"`
+	Cover         string      `json:"cover"`
+	Content       interface{} `json:"content"`
+	Credit        float64     `json:"credit"`
+	Allow         int         `json:"allow"`
+	Intro         string      `json:"intro"`
+	TeacherIntro  interface{} `json:"teacherIntro"`
+	Code          string      `json:"code"`
+	StuCount      int         `json:"stuCount"`
+	Proclamation  interface{} `json:"proclamation"`
+	ClusterId     int         `json:"clusterId"`
+	PeriodName    string      `json:"periodName"`
+	AddTime       string      `json:"addTime"`
+	CreateId      int         `json:"createId"`
+	SchoolId      int         `json:"schoolId"`
+	CateBid       int         `json:"cateBid"`
+	CateMid       int         `json:"cateMid"`
+	SignStartTime interface{} `json:"signStartTime"`
+	SignEndTime   interface{} `json:"signEndTime"`
+	SignScope     int         `json:"signScope"`
+	SignClass     string      `json:"signClass"`
+	LecturerName  string      `json:"lecturerName"`
+	Offline       int         `json:"offline"`
+	Mission       int         `json:"mission"`
+	SignLimit     int         `json:"signLimit"`
+	LineLock      int         `json:"lineLock"`
+	AddDate       string      `json:"addDate"`
+	TplId         int         `json:"tplId"`
+	TemplateId    int         `json:"templateId"`
+}
+
+type HqkjNode struct {
+	Id            string      `json:"id"`
+	Name          string      `json:"name"`
+	Type          interface{} `json:"type"`
+	ChapterId     string      `json:"chapterId"`
+	CourseId      string      `json:"courseId"`
+	VideoFile     interface{} `json:"videoFile"`
+	VideoDuration int         `json:"videoDuration"`
+	VotingPath    interface{} `json:"votingPath"`
+	TabVideo      int         `json:"tabVideo"`
+	TabFile       int         `json:"tabFile"`
+	TabVote       int         `json:"tabVote"`
+	TabWork       int         `json:"tabWork"`
+	TabExam       int         `json:"tabExam"`
+	Sort          int         `json:"sort"`
+	VideoMode     int         `json:"videoMode"`
+	LocalFile     string      `json:"localFile"`
+	SchoolId      int         `json:"schoolId"`
+	Lock          int         `json:"lock"`
+	UnlockTime    int         `json:"unlockTime"`
+}
+
+// 拉取课程列表
+func HqkjCourseListAction(cache *haiqikeji.HqkjUserCache) ([]HqkjCourse, error) {
+	courseList := make([]HqkjCourse, 0)
+	coursesResult, err := cache.PullCourseListApi(10, nil)
+	if err != nil {
+		return nil, err
+	}
+	//如果遇到挤号则重登
+	if strings.Contains(coursesResult, "令牌不匹配") || strings.Contains(coursesResult, "认证失败") {
+		for {
+			err := HqkjLoginAction(cache)
+			if err != nil {
+				return nil, err
+			}
+			coursesResult, err = cache.PullCourseListApi(10, nil)
+			if strings.Contains(coursesResult, "令牌不匹配") || strings.Contains(coursesResult, "认证失败") {
+				continue
+			}
+		}
+	}
+
+	if cslist, ok := gojsonq.New().JSONString(coursesResult).Find("data").([]any); ok {
+		for _, course := range cslist {
+			if cs, ok := course.(map[string]any); ok {
+				zxcpksCourse := HqkjCourse{
+					Id: strconv.Itoa(int(cs["id"].(float64))),
+				}
+				if name, ok := cs["name"].(string); ok {
+					zxcpksCourse.Name = name
+				}
+				if name, ok := cs["courseName"].(string); ok {
+					zxcpksCourse.Name = name
+				}
+				if intro, ok := cs["intro"].(string); ok {
+					zxcpksCourse.Intro = intro
+				}
+				if collegeId, ok := cs["collegeId"].(float64); ok {
+					zxcpksCourse.CollegeId = strconv.Itoa(int(collegeId))
+				}
+				if periodName, ok := cs["periodName"].(string); ok {
+					zxcpksCourse.PeriodName = periodName
+				}
+				if lecturerName, ok := cs["lecturerName"].(string); ok {
+					zxcpksCourse.LecturerName = lecturerName
+				}
+				if startDate, ok := cs["startDate"].(string); ok {
+					turn, err := time.Parse("2006-01-02", startDate)
+					if err == nil {
+						zxcpksCourse.StartDate = turn
+					}
+				}
+				if endDate, ok := cs["endDate"].(string); ok {
+					turn, err := time.Parse("2006-01-02", endDate)
+					if err == nil {
+						zxcpksCourse.EndDate = turn
+					}
+				}
+				courseList = append(courseList, zxcpksCourse)
+			}
+		}
+	}
+
+	return courseList, nil
+}
+
+// 节点列表
+func HqkjNodeListAction(cache *haiqikeji.HqkjUserCache, course HqkjCourse) ([]HqkjNode, error) {
+	nodeList := make([]HqkjNode, 0)
+	chapterResult, err := cache.PullChapterListApi(course.Id, 10, nil)
+	if err != nil {
+		return nil, err
+	}
+	//如果遇到挤号则重登
+	if strings.Contains(chapterResult, "令牌不匹配") || strings.Contains(chapterResult, "认证失败") {
+		for {
+			err := HqkjLoginAction(cache)
+			if err != nil {
+				return nodeList, err
+			}
+			chapterResult, err = cache.PullChapterListApi(course.Id, 10, nil)
+			if strings.Contains(chapterResult, "令牌不匹配") || strings.Contains(chapterResult, "认证失败") {
+				continue
+			}
+		}
+	}
+	//if cslist, ok := gojsonq.New().JSONString(chapterResult).Find("data").([]any); ok {
+	//	for _, chapter := range cslist {
+	//		if cp, ok := chapter.(map[string]any); ok {
+	//			chapterNodeResult, err := cache.PullChapterNodeListApi(course.Id,strconv.Itoa(int(cp["id"].(float64))), 5, nil)
+	//			if err != nil {
+	//				return nil, err
+	//			}
+	//			//如果遇到挤号则重登
+	//			if strings.Contains(chapterNodeResult, "令牌不匹配") || strings.Contains(chapterNodeResult, "认证失败") {
+	//				for i := 0; i < 3; i++ {
+	//					err := HqkjLoginAction(cache)
+	//					if err != nil {
+	//						return nodeList, err
+	//					}
+	//					chapterNodeResult, err = cache.PullChapterNodeListApi(course.Id,strconv.Itoa(int(cp["id"].(float64))), 5, nil)
+	//					if strings.Contains(chapterNodeResult, "令牌不匹配") || strings.Contains(chapterNodeResult, "认证失败") {
+	//						continue
+	//					}
+	//				}
+	//			}
+	//			if ndlist, ok := gojsonq.New().JSONString(chapterNodeResult).Find("data").([]any); ok {
+	//				for _, node := range ndlist {
+	//					if ndd, ok := node.(map[string]any); ok {
+	//						if chsNode,ok := ndd["children"].([]any); ok {
+	//							for _, chNode := range chsNode {
+	//								if nd, ok := chNode.(map[string]any); ok {
+	//									zxcpksNode := HqkjNode{
+	//										Id:   strconv.Itoa(int(nd["id"].(float64))),
+	//										Name: nd["name"].(string),
+	//										//ChapterId:     strconv.Itoa(int(nd["chapterId"].(float64))),
+	//										//CourseId:      strconv.Itoa(int(nd["courseId"].(float64))),
+	//										CourseId:      course.Id,
+	//										VideoDuration: 0,
+	//									}
+	//									if videoDuration, ok := nd["videoDuration"].(float64); ok {
+	//										zxcpksNode.VideoDuration = int(videoDuration)
+	//									}
+	//									if tabVideo, ok := nd["tabVideo"].(float64); ok {
+	//										zxcpksNode.TabVideo = int(tabVideo)
+	//									}
+	//									if tabFile, ok := nd["tabFile"].(float64); ok {
+	//										zxcpksNode.TabFile = int(tabFile)
+	//									}
+	//									if tabVote, ok := nd["tabVote"].(float64); ok {
+	//										zxcpksNode.TabVote = int(tabVote)
+	//									}
+	//									if tabWork, ok := nd["tabWork"].(float64); ok {
+	//										zxcpksNode.TabWork = int(tabWork)
+	//									}
+	//									if tabExam, ok := nd["tabExam"].(float64); ok {
+	//										zxcpksNode.TabExam = int(tabExam)
+	//									}
+	//									if sort, ok := nd["sort"].(float64); ok {
+	//										zxcpksNode.Sort = int(sort)
+	//									}
+	//									if videoMode, ok := nd["videoMode"].(float64); ok {
+	//										zxcpksNode.VideoMode = int(videoMode)
+	//									}
+	//									if schoolId, ok := nd["schoolId"].(float64); ok {
+	//										zxcpksNode.SchoolId = int(schoolId)
+	//									}
+	//									if lock, ok := nd["lock"].(float64); ok {
+	//										zxcpksNode.Lock = int(lock)
+	//									}
+	//									if unlock, ok := nd["unlock"].(float64); ok {
+	//										zxcpksNode.UnlockTime = int(unlock)
+	//									}
+	//									if videoDuration, ok := nd["videoDuration"].(float64); ok {
+	//										zxcpksNode.VideoDuration = int(videoDuration)
+	//									}
+	//									nodeList = append(nodeList, zxcpksNode)
+	//								}
+	//							}
+	//						}
+	//					}
+	//				}
+	//			}
+	//
+	//		}
+	//	}
+	//}
+
+	chapterNodeResult, err := cache.PullChapterNodeListApi(course.Id, 5, nil)
+	if err != nil {
+		return nil, err
+	}
+	//如果遇到挤号则重登
+	if strings.Contains(chapterNodeResult, "令牌不匹配") || strings.Contains(chapterNodeResult, "认证失败") {
+		for i := 0; i < 3; i++ {
+			err := HqkjLoginAction(cache)
+			if err != nil {
+				return nodeList, err
+			}
+			chapterNodeResult, err = cache.PullChapterNodeListApi(course.Id, 5, nil)
+			if strings.Contains(chapterNodeResult, "令牌不匹配") || strings.Contains(chapterNodeResult, "认证失败") {
+				continue
+			}
+		}
+	}
+	if ndlist, ok := gojsonq.New().JSONString(chapterNodeResult).Find("data").([]any); ok {
+		for _, node := range ndlist {
+			if ndd, ok := node.(map[string]any); ok {
+				if chsNode, ok := ndd["children"].([]any); ok {
+					for _, chNode := range chsNode {
+						if nd, ok := chNode.(map[string]any); ok {
+							zxcpksNode := HqkjNode{
+								Id:   strconv.Itoa(int(nd["id"].(float64))),
+								Name: nd["name"].(string),
+								//ChapterId:     strconv.Itoa(int(nd["chapterId"].(float64))),
+								//CourseId:      strconv.Itoa(int(nd["courseId"].(float64))),
+								CourseId:      course.Id,
+								VideoDuration: 0,
+							}
+							if videoDuration, ok := nd["videoDuration"].(float64); ok {
+								zxcpksNode.VideoDuration = int(videoDuration)
+							}
+							if tabVideo, ok := nd["tabVideo"].(float64); ok {
+								zxcpksNode.TabVideo = int(tabVideo)
+							}
+							if tabFile, ok := nd["tabFile"].(float64); ok {
+								zxcpksNode.TabFile = int(tabFile)
+							}
+							if tabVote, ok := nd["tabVote"].(float64); ok {
+								zxcpksNode.TabVote = int(tabVote)
+							}
+							if tabWork, ok := nd["tabWork"].(float64); ok {
+								zxcpksNode.TabWork = int(tabWork)
+							}
+							if tabExam, ok := nd["tabExam"].(float64); ok {
+								zxcpksNode.TabExam = int(tabExam)
+							}
+							if sort, ok := nd["sort"].(float64); ok {
+								zxcpksNode.Sort = int(sort)
+							}
+							if videoMode, ok := nd["videoMode"].(float64); ok {
+								zxcpksNode.VideoMode = int(videoMode)
+							}
+							if schoolId, ok := nd["schoolId"].(float64); ok {
+								zxcpksNode.SchoolId = int(schoolId)
+							}
+							if lock, ok := nd["lock"].(float64); ok {
+								zxcpksNode.Lock = int(lock)
+							}
+							if unlock, ok := nd["unlock"].(float64); ok {
+								zxcpksNode.UnlockTime = int(unlock)
+							}
+							if videoDuration, ok := nd["videoDuration"].(float64); ok {
+								zxcpksNode.VideoDuration = int(videoDuration)
+							}
+							nodeList = append(nodeList, zxcpksNode)
+						}
+					}
+				}
+			}
+		}
+	}
+	return nodeList, nil
+}
+
+// 提交学时，秒刷
+func HqkjSubmitFastStudyTimeAction(cache *haiqikeji.HqkjUserCache, node HqkjNode) (string, error) {
+	startResult, err := cache.StartStudyApi(node.Id, node.CourseId, 5, nil)
+	if err != nil {
+		return "", err
+	}
+
+	//拉取当前适配的观看进度
+	nowProgressResult, err := cache.PullLastProgressApi(node.Id, 10, nil)
+	nowProgress := gojsonq.New().JSONString(nowProgressResult).Find("data").(string)
+	fmt.Println("当前视频进度：", nowProgress)
+	if err != nil {
+		return "", err
+	}
+	sessionId := gojsonq.New().JSONString(startResult).Find("data").(string)
+	time.Sleep(30 * time.Second) //先隔30s
+	submitResult, err := cache.SubmitStudyTimeApi(sessionId, 100, 10, nil)
+	if err != nil {
+		return "", err
+	}
+	code := int(gojsonq.New().JSONString(submitResult).Find("code").(float64))
+	if code != 200 {
+		//fmt.Println("提交学时失败：", submitResult)
+		return "", fmt.Errorf("%s", nowProgressResult)
+	}
+	return submitResult, nil
+}
+
+// 获取节点进度
+func HqkjGetNodeProgressAction(cache *haiqikeji.HqkjUserCache, node HqkjNode) (int, error) {
+
+	//拉取当前适配的观看进度
+	nowProgressResult, err := cache.PullLastProgressApi(node.Id, 10, nil)
+	//如果遇到挤号则重登
+	if strings.Contains(nowProgressResult, "令牌不匹配") || strings.Contains(nowProgressResult, "认证失败") {
+		for {
+			err := HqkjLoginAction(cache)
+			if err != nil {
+				return 0, err
+			}
+			nowProgressResult, err = cache.PullLastProgressApi(node.Id, 10, nil)
+			if strings.Contains(nowProgressResult, "令牌不匹配") || strings.Contains(nowProgressResult, "认证失败") {
+				continue
+			}
+		}
+	}
+	if code, ok := gojsonq.New().JSONString(nowProgressResult).Find("code").(float64); ok {
+		if int(code) != 200 {
+			fmt.Println("获取进度失败：", nowProgressResult)
+			return 0, fmt.Errorf("拉取进度失败：%s", nowProgressResult)
+		}
+	} else {
+		return 0, fmt.Errorf("%s", nowProgressResult)
+	}
+
+	nowProgress := gojsonq.New().JSONString(nowProgressResult).Find("data").(string)
+	//fmt.Println("当前视频进度：", nowProgress)
+	if err != nil {
+		return 0, err
+	}
+
+	floatProgress, err := strconv.ParseFloat(nowProgress, 64)
+	return int(floatProgress * 100), nil
+}
+
+// 开始学习时访问的接口，获取session
+func HqkjStartStudyAction(cache *haiqikeji.HqkjUserCache, node HqkjNode) (string, error) {
+	startResult, err := cache.StartStudyApi(node.Id, node.CourseId, 10, nil)
+	if err != nil {
+		return "", err
+	}
+	//如果遇到挤号则重登
+	if strings.Contains(startResult, "令牌不匹配") || strings.Contains(startResult, "认证失败") {
+		for {
+			err := HqkjLoginAction(cache)
+			if err != nil {
+				return "", err
+			}
+			startResult, err = cache.StartStudyApi(node.Id, node.CourseId, 10, nil)
+			if strings.Contains(startResult, "令牌不匹配") || strings.Contains(startResult, "认证失败") {
+				continue
+			}
+		}
+	}
+	code := int(gojsonq.New().JSONString(startResult).Find("code").(float64))
+	if code != 200 {
+		return "", fmt.Errorf("%s", startResult)
+	}
+	sessionId := gojsonq.New().JSONString(startResult).Find("data").(string)
+	return sessionId, nil
+}
+
+// 提交学时
+func HqkjSubmitStudyTimeAction(cache *haiqikeji.HqkjUserCache, node HqkjNode, sessionId string, progress int) (string, error) {
+	submitResult, err := cache.SubmitStudyTimeApi(sessionId, progress, 10, nil)
+	if err != nil {
+		return "", err
+	}
+	//如果遇到挤号则重登
+	if strings.Contains(submitResult, "令牌不匹配") || strings.Contains(submitResult, "认证失败") {
+		for {
+			err := HqkjLoginAction(cache)
+			if err != nil {
+				return "", err
+			}
+			submitResult, err = cache.SubmitStudyTimeApi(sessionId, progress, 10, nil)
+			if strings.Contains(submitResult, "令牌不匹配") || strings.Contains(submitResult, "认证失败") {
+				continue
+			}
+		}
+	}
+
+	return submitResult, nil
+}
+
+// 结束学习
+func HqkjEndStudyAction(cache *haiqikeji.HqkjUserCache, sessionId string) (string, error) {
+	endResult, err := cache.EndStudyApi(sessionId, 10, nil)
+	if err != nil {
+		return "", err
+	}
+	//如果遇到挤号则重登
+	if strings.Contains(endResult, "令牌不匹配") || strings.Contains(endResult, "认证失败") {
+		for {
+			err := HqkjLoginAction(cache)
+			if err != nil {
+				return "", err
+			}
+			endResult, err = cache.EndStudyApi(sessionId, 10, nil)
+			if strings.Contains(endResult, "令牌不匹配") || strings.Contains(endResult, "认证失败") {
+				continue
+			}
+		}
+	}
+	code := int(gojsonq.New().JSONString(endResult).Find("code").(float64))
+	if code != 200 {
+		return "", fmt.Errorf("%s", endResult)
+	}
+	return endResult, nil
+}

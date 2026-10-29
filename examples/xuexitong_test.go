@@ -20,10 +20,10 @@ import (
 	"time"
 
 	"github.com/thedevsaddam/gojsonq"
-	"github.com/yatori-dev/yatori-go-core/aggregation/xuexitong"
-	"github.com/yatori-dev/yatori-go-core/aggregation/xuexitong/point"
-	xuexitongApi "github.com/yatori-dev/yatori-go-core/api/xuexitong"
 	"github.com/yatori-dev/yatori-go-core/global"
+	"github.com/yatori-dev/yatori-go-core/internal/aggregation/xuexitong"
+	"github.com/yatori-dev/yatori-go-core/internal/aggregation/xuexitong/point"
+	xuexitongApi "github.com/yatori-dev/yatori-go-core/internal/api/xuexitong"
 	"github.com/yatori-dev/yatori-go-core/utils"
 	log2 "github.com/yatori-dev/yatori-go-core/utils/log"
 	"golang.org/x/net/html"

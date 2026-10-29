@@ -5,9 +5,9 @@ import (
 	"testing"
 	"time"
 
-	action "github.com/yatori-dev/yatori-go-core/aggregation/welearn"
-	"github.com/yatori-dev/yatori-go-core/api/welearn"
 	"github.com/yatori-dev/yatori-go-core/global"
+	action "github.com/yatori-dev/yatori-go-core/internal/aggregation/welearn"
+	"github.com/yatori-dev/yatori-go-core/internal/api/welearn"
 	"github.com/yatori-dev/yatori-go-core/utils"
 )
 

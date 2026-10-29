@@ -5,9 +5,9 @@ import (
 	"log"
 	"testing"
 
-	ttcdw "github.com/yatori-dev/yatori-go-core/aggregation/ttcdw"
-	ttcdwApi "github.com/yatori-dev/yatori-go-core/api/ttcdw"
 	"github.com/yatori-dev/yatori-go-core/global"
+	ttcdw "github.com/yatori-dev/yatori-go-core/internal/aggregation/ttcdw"
+	ttcdwApi "github.com/yatori-dev/yatori-go-core/internal/api/ttcdw"
 	"github.com/yatori-dev/yatori-go-core/utils"
 )
 
