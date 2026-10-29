@@ -179,7 +179,6 @@ type Client interface {
 | CELA | ✅ | — | — | — | — | — | — |
 | MOOC | ✅ | — | — | — | — | — | — |
 | ZHIHUISHU | 扫码 | — | — | — | — | — | — |
-| GONGXUE | 签到 | — | — | — | — | — | — |
 
 ### 账号参数
 
@@ -198,7 +197,6 @@ type Client interface {
 | WEIBAN | School, Username, Password | `School` 为学校名称 |
 | CELA / MOOC | Username, Password | 登录验证码自动识别 |
 | ZHIHUISHU | 无 | 使用 `QRCodeLogin` 扫码 |
-| GONGXUE | Username, Password | `SignInRequest.Extra` 传国家/省/市/经纬度等 |
 
 智慧树使用扫码登录：
 
