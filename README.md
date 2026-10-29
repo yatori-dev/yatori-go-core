@@ -14,12 +14,12 @@ Yatori-go-core 是 yatori 系列的 Go 核心库。它把多个在线学习平�
 
 使用文档：
 
-- [V2 总览](https://yatori-dev.github.io/yatori-docs/yatori-go-core/docs.html)
-- [快速开始](https://yatori-dev.github.io/yatori-docs/yatori-go-core/v2/getting-started.html)
-- [Client API](https://yatori-dev.github.io/yatori-docs/yatori-go-core/v2/client-api.html)
-- [平台说明与账号参数](https://yatori-dev.github.io/yatori-docs/yatori-go-core/v2/platforms.html)
-- [完整示例](https://yatori-dev.github.io/yatori-docs/yatori-go-core/v2/examples.html)
-- [常见问题](https://yatori-dev.github.io/yatori-docs/yatori-go-core/v2/faq.html)
+- [V3 总览](https://yatori-dev.github.io/yatori-docs/yatori-go-core/docs.html)
+- [快速开始](https://yatori-dev.github.io/yatori-docs/yatori-go-core/v3/getting-started.html)
+- [Client API](https://yatori-dev.github.io/yatori-docs/yatori-go-core/v3/client-api.html)
+- [平台说明与账号参数](https://yatori-dev.github.io/yatori-docs/yatori-go-core/v3/platforms.html)
+- [完整示例](https://yatori-dev.github.io/yatori-docs/yatori-go-core/v3/examples.html)
+- [常见问题](https://yatori-dev.github.io/yatori-docs/yatori-go-core/v3/faq.html)
 
 开发文档：
 
@@ -110,7 +110,7 @@ func main() {
 
 > Study 是进度原语：不同平台粒度不同。学习通/英华/CQIE/TTCDW 接受 `Position` 进度；职教云/课堂行/WeLearn 会直接完成整个节点；青书/海旗按平台会话提交。请以返回的 `StudyResult` 为准，不要把某个平台的循环节奏套到所有平台。
 
-更多配置、错误处理和完整流程见 [快速开始文档](https://yatori-dev.github.io/yatori-docs/yatori-go-core/v2/getting-started.html)。
+更多配置、错误处理和完整流程见 [快速开始文档](https://yatori-dev.github.io/yatori-docs/yatori-go-core/v3/getting-started.html)。
 
 ## 统一接口
 
@@ -159,7 +159,7 @@ type Client interface {
 }
 ```
 
-逐方法说明见 [Client API 文档](https://yatori-dev.github.io/yatori-docs/yatori-go-core/v2/client-api.html)，能力位的完整矩阵见 [能力与错误](https://yatori-dev.github.io/yatori-docs/yatori-go-core/v2/capabilities.html)。
+逐方法说明见 [Client API 文档](https://yatori-dev.github.io/yatori-docs/yatori-go-core/v3/client-api.html)，能力位的完整矩阵见 [能力与错误](https://yatori-dev.github.io/yatori-docs/yatori-go-core/v3/capabilities.html)。
 
 ## 平台能力
 
@@ -213,7 +213,7 @@ if ok {
 }
 ```
 
-更详细的账号参数、平台限制和扫码流程见 [平台说明文档](https://yatori-dev.github.io/yatori-docs/yatori-go-core/v2/platforms.html)。
+更详细的账号参数、平台限制和扫码流程见 [平台说明文档](https://yatori-dev.github.io/yatori-docs/yatori-go-core/v3/platforms.html)。
 
 ## 动态调用
 
@@ -230,7 +230,7 @@ result, err = client.Call(ctx, yatori.ActionStudy, map[string]any{
 })
 ```
 
-完整的 Action、参数和返回类型表见 [动态调用文档](https://yatori-dev.github.io/yatori-docs/yatori-go-core/v2/dynamic-call.html)。
+完整的 Action、参数和返回类型表见 [动态调用文档](https://yatori-dev.github.io/yatori-docs/yatori-go-core/v3/dynamic-call.html)。
 
 ## 目录结构
 
