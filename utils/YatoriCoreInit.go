@@ -10,7 +10,7 @@ import (
 	"path/filepath"
 	"sync"
 
-	ddddocr "github.com/Changbaiqi/ddddocr-go/utils"
+	"github.com/yatori-dev/yatori-go-core/v3/internal/driver/driverutil"
 )
 
 // 首次调用必须要先进行初始化
@@ -75,8 +75,9 @@ func writeAssetsToDisk() {
 
 // 加载AI环境
 func loadAiEnvironment() {
-	//初始化AI库
-	ddddocr.DDDDOcrCoreInit()
+	// 统一走 driverutil.EnsureOCR，避免与 adapter 内部各自持有 sync.Once
+	// 导致 onnxruntime 被初始化两次而 panic。
+	driverutil.EnsureOCR()
 }
 
 // 加载nodejs必要模块
