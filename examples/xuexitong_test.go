@@ -951,7 +951,7 @@ func TestPullFaceImg(t *testing.T) {
 	}
 	//拉取用户照片
 	_, img, _ := userCache.GetHistoryFaceImg("")
-	utils.SaveImageAsJPEG(img, "./assets/18106919661.jpg")
+	utils.SaveImageAsJPEG(img, "./assets/history_face.jpg")
 }
 
 // 测试扫人脸

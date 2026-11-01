@@ -6,6 +6,7 @@ import (
 	"strconv"
 	"strings"
 
+	"github.com/thedevsaddam/gojsonq"
 	"github.com/yatori-dev/yatori-go-core/v3/core"
 	agg "github.com/yatori-dev/yatori-go-core/v3/internal/aggregation/ttcdw"
 	api "github.com/yatori-dev/yatori-go-core/v3/internal/api/ttcdw"
@@ -220,10 +221,10 @@ func (c *client) Study(ctx context.Context, req core.StudyRequest) (*core.StudyR
 	if position <= 0 {
 		position = video.StudyProgress
 	}
-	if req.Action == core.StudyActionFinish || position > video.Duration {
+	isFinish := req.Action == core.StudyActionFinish || req.Mode == core.StudyModeFast
+	if isFinish || position > video.Duration {
 		position = video.Duration
 	}
-	isFinish := req.Action == core.StudyActionFinish
 	report, err := c.cache.StudyTimeSubmitApi(
 		ref.Project.OrgId,
 		ref.Course.CourseId,
@@ -238,9 +239,25 @@ func (c *client) Study(ctx context.Context, req core.StudyRequest) (*core.StudyR
 	if err != nil {
 		return nil, core.Wrap(core.TTCDW, "study", err)
 	}
+	// 提交接口失败时仍可能返回 HTTP 200，success 字段存在且为 false 时视为失败。
+	if strings.HasPrefix(strings.TrimSpace(report), "<") {
+		return nil, core.Wrap(core.TTCDW, "study", fmt.Errorf("提交学时返回异常：%s", report))
+	}
+	if success, ok := gojsonq.New().JSONString(report).Find("success").(bool); ok && !success {
+		return nil, core.Wrap(core.TTCDW, "study", fmt.Errorf("提交学时失败：%s", report))
+	}
 	progress := float64(video.Progress)
 	if video.Duration > 0 {
 		progress = float64(position) / float64(video.Duration) * 100
+	}
+	if isFinish {
+		progress = 100
+	}
+	if progress < 0 {
+		progress = 0
+	}
+	if progress > 100 {
+		progress = 100
 	}
 	return &core.StudyResult{
 		CourseID:  req.Course.ID,

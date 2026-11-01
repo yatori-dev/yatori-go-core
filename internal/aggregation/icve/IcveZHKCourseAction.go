@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"io"
 	"net/http"
+	"strings"
 	"time"
 
 	"github.com/thedevsaddam/gojsonq"
@@ -218,10 +219,12 @@ func SubmitZYKStudyTimeAction(cache *icve.IcveUserCache, node IcveCourseNode) (s
 	//	return "", nil
 	//}
 	//参数完善-------------------
-	err2 := GetNodeDurationAction(cache, &node)
-	if err2 != nil {
-		//return nil, err2
-		return "", err2
+	if node.TotalNum <= 0 {
+		err2 := GetNodeDurationAction(cache, &node)
+		if err2 != nil {
+			//return nil, err2
+			return "", err2
+		}
 	}
 	//学习
 	studyResult, err := cache.SubmitZYKStudyTimeApi(node.CourseInfoId, "", node.ParentId, int(node.TotalNum), node.Id, cache.UserId, int(node.TotalNum), int(node.TotalNum), int(node.TotalNum), 5, nil)
@@ -229,7 +232,20 @@ func SubmitZYKStudyTimeAction(cache *icve.IcveUserCache, node IcveCourseNode) (s
 		//return nil, err
 		return "", err
 	}
-	//fmt.Println(api)
+	// 平台在 HTTP 200 下也可能返回业务失败，code 存在时必须是 200。
+	trimmed := strings.TrimSpace(studyResult)
+	if trimmed == "" {
+		return "", errors.New("提交学时返回为空")
+	}
+	if trimmed != "null" && !strings.HasPrefix(trimmed, "{") {
+		return "", errors.New("提交学时返回异常：" + studyResult)
+	}
+	if code := gojsonq.New().JSONString(studyResult).Find("code"); code != nil {
+		number, ok := code.(float64)
+		if !ok || int(number) != 200 {
+			return studyResult, errors.New(studyResult)
+		}
+	}
 	return studyResult, nil
 }
 
@@ -251,7 +267,7 @@ func GetNodeDurationAction(cache *icve.IcveUserCache, node *IcveCourseNode) erro
 	if urlShort != nil {
 		node.FileUrl = urlShort.(string)
 	}
-	switch node.FileType {
+	switch strings.ToLower(node.FileType) {
 	case "mp3":
 		fileUrl := gojsonq.New().JSONString(infoJson).Find("data.fileUrl")
 		if fileUrl == nil {

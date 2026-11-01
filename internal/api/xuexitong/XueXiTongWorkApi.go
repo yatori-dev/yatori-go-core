@@ -387,6 +387,9 @@ func (cache *XueXiTUserCache) SubmitWorkAnswerApi(question *XXTWorkQuestionSubmi
 		fmt.Println(err)
 		return "", err
 	}
+	if err := validateResponse("提交作业答案", res, body); err != nil {
+		return "", err
+	}
 	//fmt.Println(string(body))
 	return string(body), nil
 }

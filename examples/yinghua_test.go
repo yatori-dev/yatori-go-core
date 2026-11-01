@@ -436,8 +436,8 @@ func TestCapterImg(t *testing.T) {
 	fmt.Println("✅ 验证码图片保存成功: captcha.png")
 }
 
-// 测试V2版本函数
-func TestV2brush(t *testing.T) {
+// 测试V3版本函数
+func Test32brush(t *testing.T) {
 	//测试账号
 	setup()
 	user := global.Config.Users[77]

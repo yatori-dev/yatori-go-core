@@ -360,7 +360,9 @@ func (cache *IcveUserCache) PullZykNodeDurationApi(fileUrl string) (string, erro
 	req.Header.Add("Accept", "*/*")
 	req.Header.Add("Host", "upload.icve.com.cn")
 	req.Header.Add("Connection", "keep-alive")
-	req.Header.Add("Cookie", "acw_tc=1a0c380717597778746754908e0d86367b753f74c585e515faa32ee572a5e1; SERVERID=27b9eb8d6e551a69b5bfbbc79124ceca|1759777888|1759777874")
+	for _, cookie := range cache.Cookies {
+		req.AddCookie(cookie)
+	}
 
 	res, err := client.Do(req)
 	if err != nil {

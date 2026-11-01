@@ -146,5 +146,8 @@ func (node QsxtCourseMaterial) SubmitStudyTimeAction(cache *qingshuxuetang.QsxtU
 	if err1 != nil {
 		return "", err1
 	}
+	if err := checkQsxtResponse(submitResult); err != nil {
+		return submitResult, err
+	}
 	return submitResult, nil
 }

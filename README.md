@@ -260,13 +260,14 @@ yatori-go-core
 ```bash
 go build ./...
 go vet ./...
-go test ./...
+go test -run '^$' ./...        # 全仓编译检查
+go test . ./core ./internal/... # 单元测试
 ```
 
-`examples/` 中的旧测试依赖 `examples/TestData.yaml` 与真实账号，默认不参与普通单元测试。新代码的回归入口是：
+`examples/` 中的测试会读取 `examples/TestData.yaml` 或 `global.Config`，并访问真实平台账号；不要直接执行 `go test ./...`，否则可能触发真实登录、提交学时或刷课。需要联调时单独指定测试，例如：
 
 ```bash
-go test ./core ./internal/driver/... .
+go test ./examples -run TestXXT -v
 ```
 
 ## License

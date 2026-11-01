@@ -85,7 +85,10 @@ func (c *client) Courses(ctx context.Context) ([]core.Course, error) {
 	if !c.loggedIn {
 		return nil, core.NotLoggedIn(core.Ketangx, "courses")
 	}
-	list := agg.PullCourseListAction(c.cache)
+	list, err := agg.PullCourseListAction(c.cache)
+	if err != nil {
+		return nil, core.Wrap(core.Ketangx, "courses", err)
+	}
 	out := make([]core.Course, 0, len(list))
 	for _, item := range list {
 		c.courses[item.ActivityId] = item
@@ -118,15 +121,23 @@ func (c *client) Tree(ctx context.Context, course core.Course) ([]core.Node, err
 	if err != nil {
 		return nil, err
 	}
-	list := agg.PullNodeListAction(c.cache, &raw)
+	list, err := agg.PullNodeListAction(c.cache, &raw)
+	if err != nil {
+		return nil, core.Wrap(core.Ketangx, "tree", err)
+	}
 	out := make([]core.Node, 0, len(list))
 	for _, item := range list {
 		c.nodes[item.SectId] = item
+		progress := 0.0
+		if item.IsComplete {
+			progress = 100
+		}
 		out = append(out, core.Node{
 			ID:        item.SectId,
 			CourseID:  course.ID,
 			Name:      item.Title,
 			Kind:      nodeKind(item.Type),
+			Progress:  progress,
 			Completed: item.IsComplete,
 			Extra: map[string]string{
 				"activityId": course.ID,

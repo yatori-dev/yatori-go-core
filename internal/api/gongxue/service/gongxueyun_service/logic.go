@@ -274,7 +274,7 @@ func (mogu *MoguDing) SignIn() {
 
 }
 
-func (mogu *MoguDing) CusSignIn(signType string) {
+func (mogu *MoguDing) CusSignIn(signType string) (string, error) {
 	resdata := &data2.SaveData{}
 	filling := CusDataStructureFilling(signType, mogu)
 	sign := utils.CreateSign(filling["device"].(string), filling["type"].(string), mogu.PlanID, mogu.UserId, filling["address"].(string))
@@ -282,20 +282,19 @@ func (mogu *MoguDing) CusSignIn(signType string) {
 	addHeader("sign", sign)
 	request, _, err := client.SendRequest("POST", api.BaseApi+api.SignAPI, filling, headers)
 	if err != nil {
-		global.Log.Info(fmt.Sprintf("Failed to send request: %v", err))
+		return "", err
 	}
 
-	json.Unmarshal(request, &resdata)
+	if err := json.Unmarshal(request, &resdata); err != nil {
+		return "", err
+	}
 	log2.Print(log2.INFO, "================")
 	log2.Print(log2.INFO, resdata.Msg)
 	log2.Print(log2.INFO, "================")
-	if resdata.Msg == "success" {
-		//log2.Print(log2.INFO, "打卡成功：", resdata)
-	} else {
-		log2.Print(log2.INFO, "打卡失败：", resdata)
+	if resdata.Msg != "success" {
+		return resdata.Msg, fmt.Errorf("打卡失败：%s", resdata.Msg)
 	}
-	//utils.SendMail(mogu.Email, "检查是否打卡完成", resdata.Msg+"\n如果未成功请联系管理员")
-
+	return resdata.Msg, nil
 }
 
 func (mogu *MoguDing) updateSignState(state int) {

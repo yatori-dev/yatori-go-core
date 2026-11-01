@@ -168,5 +168,8 @@ func WriteWorkAction(cache *qingshuxuetang.QsxtUserCache, work QsxtWork, isSubmi
 	if err != nil {
 		return "", err
 	}
+	if err := checkQsxtResponse(saveJson); err != nil {
+		return saveJson, err
+	}
 	return saveJson, nil
 }

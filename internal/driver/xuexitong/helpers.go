@@ -1,6 +1,10 @@
 package xuexitong
 
 import (
+	"fmt"
+	"strings"
+
+	"github.com/thedevsaddam/gojsonq"
 	"github.com/yatori-dev/yatori-go-core/v3/core"
 	agg "github.com/yatori-dev/yatori-go-core/v3/internal/aggregation/xuexitong"
 	api "github.com/yatori-dev/yatori-go-core/v3/internal/api/xuexitong"
@@ -8,6 +12,26 @@ import (
 	"github.com/yatori-dev/yatori-go-core/v3/models/ctype"
 	qentity "github.com/yatori-dev/yatori-go-core/v3/que-core/qentity"
 )
+
+// validateReadReport 校验文档/外链完成接口返回的 status 字段。
+func validateReadReport(report string) error {
+	status := gojsonq.New().JSONString(report).Find("status")
+	if status == nil {
+		return fmt.Errorf("学习提交返回异常：%s", summarizeReport(report))
+	}
+	if flag, ok := status.(bool); !ok || !flag {
+		return fmt.Errorf("学习提交失败：%s", summarizeReport(report))
+	}
+	return nil
+}
+
+func summarizeReport(report string) string {
+	text := strings.Join(strings.Fields(report), " ")
+	if len(text) > 200 {
+		text = text[:200] + "..."
+	}
+	return text
+}
 
 func firstNonEmpty(values ...string) string {
 	for _, value := range values {

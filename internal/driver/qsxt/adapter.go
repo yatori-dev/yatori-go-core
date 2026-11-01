@@ -61,6 +61,7 @@ func (c *client) Login(ctx context.Context) error {
 	unlock := c.Lock()
 	defer unlock()
 	if strings.TrimSpace(c.Config.Account.Cookie) != "" {
+		c.cache.Password = c.Config.Account.Cookie
 		agg.QsxtCookieLoginAction(c.cache)
 		c.loggedIn = true
 		return nil
@@ -180,7 +181,7 @@ func (c *client) Tree(ctx context.Context, course core.Course) ([]core.Node, err
 			Kind:      nodeKind(item.NodeType),
 			Duration:  driverutil.Seconds(item.Duration / 1000),
 			Progress:  nodeProgress(item),
-			Completed: item.MaxStudyPosition > 0 && item.Duration > 0 && item.MaxStudyPosition >= item.Duration,
+			Completed: nodeCompleted(item),
 			Extra: map[string]string{
 				"classId":            item.ClassId,
 				"schoolId":           item.SchoolId,
@@ -198,7 +199,18 @@ func (c *client) Tree(ctx context.Context, course core.Course) ([]core.Node, err
 	}
 	out := make([]core.Node, 0, len(order))
 	for _, key := range order {
-		out = append(out, *byChapter[key])
+		chapter := byChapter[key]
+		if len(chapter.Children) > 0 {
+			completed := 0
+			for _, child := range chapter.Children {
+				if child.Completed {
+					completed++
+				}
+			}
+			chapter.Progress = float64(completed) / float64(len(chapter.Children)) * 100
+			chapter.Completed = completed == len(chapter.Children)
+		}
+		out = append(out, *chapter)
 	}
 	return out, nil
 }
@@ -244,7 +256,16 @@ func (c *client) Study(ctx context.Context, req core.StudyRequest) (*core.StudyR
 	if err != nil {
 		return nil, core.Wrap(core.QSXT, "study.submit", err)
 	}
+	progress := nodeProgress(node)
+	if node.Duration > 0 {
+		progress = float64(req.Position.Milliseconds()) / float64(node.Duration) * 100
+		if progress > 100 {
+			progress = 100
+		}
+	}
+	completed := isEnd || nodeCompleted(node)
 	if isEnd {
+		progress = 100
 		delete(c.startIDs, node.NodeId)
 	}
 	return &core.StudyResult{
@@ -252,8 +273,8 @@ func (c *client) Study(ctx context.Context, req core.StudyRequest) (*core.StudyR
 		NodeID:    req.Node.ID,
 		Kind:      req.Node.Kind,
 		Submitted: true,
-		Progress:  nodeProgress(node),
-		Completed: isEnd,
+		Progress:  progress,
+		Completed: completed,
 		Message:   report,
 		Raw:       report,
 	}, nil
@@ -390,6 +411,10 @@ func courseProgress(course agg.QsxtCourse) float64 {
 	return 0
 }
 
+// 文档/课件类节点的 Duration 为 0，平台按累计学时计算，
+// 沿用旧版逻辑：累计 350 秒视为完成。
+const qsxtDocumentCompleteSeconds = 350
+
 func nodeProgress(node agg.QsxtNode) float64 {
 	if node.Duration > 0 && node.MaxStudyPosition > 0 {
 		value := float64(node.MaxStudyPosition) / float64(node.Duration) * 100
@@ -405,7 +430,24 @@ func nodeProgress(node agg.QsxtNode) float64 {
 		}
 		return value
 	}
+	if node.Duration <= 0 && node.NodeType != "chapter" && node.TotalStudyDuration > 0 {
+		value := float64(node.TotalStudyDuration) / qsxtDocumentCompleteSeconds * 100
+		if value > 100 {
+			return 100
+		}
+		return value
+	}
 	return 0
+}
+
+func nodeCompleted(node agg.QsxtNode) bool {
+	if node.Duration > 0 {
+		if node.MaxStudyPosition > 0 {
+			return node.MaxStudyPosition >= node.Duration
+		}
+		return node.TotalStudyDuration >= node.Duration
+	}
+	return node.NodeType != "chapter" && node.TotalStudyDuration >= qsxtDocumentCompleteSeconds
 }
 
 func nodeKind(nodeType string) core.NodeKind {

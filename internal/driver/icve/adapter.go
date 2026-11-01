@@ -117,11 +117,16 @@ func (c *client) Courses(ctx context.Context) ([]core.Course, error) {
 		if item.Status == "3" {
 			status = core.CourseStatusFinished
 		}
+		progress := 0.0
+		if status == core.CourseStatusFinished {
+			progress = 100
+		}
 		out = append(out, core.Course{
-			ID:      id,
-			Name:    item.CourseName,
-			Teacher: item.TeacherName,
-			Status:  status,
+			ID:       id,
+			Name:     item.CourseName,
+			Teacher:  item.TeacherName,
+			Progress: progress,
+			Status:   status,
 			Extra: map[string]string{
 				"id":           item.Id,
 				"courseId":     item.CourseId,
@@ -153,14 +158,29 @@ func (c *client) Tree(ctx context.Context, course core.Course) ([]core.Node, err
 	}
 	out := make([]core.Node, 0, len(list))
 	for _, item := range list {
+		// 任务点列表不返回视频时长，需要按节点补拉一次。
+		// 只对视频/音频补拉，文档的 TotalNum 是页数，不能当秒数。
+		if item.TotalNum <= 0 {
+			switch strings.ToLower(item.FileType) {
+			case "mp4", "mp3":
+				if err := agg.GetNodeDurationAction(c.cache, &item); err != nil {
+					c.Logger.Debugf("icve: node duration for %s failed: %v", item.Id, err)
+				}
+			}
+		}
 		c.nodes[item.Id] = item
+		duration := driverutil.Seconds(0)
+		switch strings.ToLower(item.FileType) {
+		case "mp4", "mp3":
+			duration = driverutil.Seconds(int(item.TotalNum))
+		}
 		out = append(out, core.Node{
 			ID:        item.Id,
 			CourseID:  course.ID,
 			ParentID:  item.ParentId,
 			Name:      item.Name,
 			Kind:      nodeKind(item.FileType),
-			Duration:  driverutil.Seconds(int(item.TotalNum)),
+			Duration:  duration,
 			Progress:  item.Speed,
 			Completed: item.IsLook || item.Speed >= 100,
 			Extra: map[string]string{
@@ -202,7 +222,7 @@ func (c *client) Study(ctx context.Context, req core.StudyRequest) (*core.StudyR
 		NodeID:    req.Node.ID,
 		Kind:      nodeKind(node.FileType),
 		Submitted: true,
-		Progress:  node.Speed,
+		Progress:  100,
 		Completed: true,
 		Message:   report,
 		Raw:       report,

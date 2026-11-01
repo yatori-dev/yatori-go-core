@@ -233,7 +233,7 @@ func (cache *XueXiTUserCache) VideoSubmitStudyTimeApi(p *PointVideoDto, playingT
 	body, err := ioutil.ReadAll(res.Body)
 	if err != nil {
 		fmt.Println(err)
-		return "", nil
+		return "", err
 	}
 
 	if res.StatusCode != http.StatusOK {
@@ -276,7 +276,7 @@ func (cache *XueXiTUserCache) VideoSubmitStudyTimePEApi(p *PointVideoDto, playin
 	if err != nil {
 		//fmt.Println(err)
 		log2.Print(log2.INFO, err.Error())
-		return "", nil
+		return "", err
 	}
 
 	//req.Header.Add("User-Agent", "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/139.0.0.0 Safari/537.36 Edg/139.0.0.0")
@@ -968,7 +968,7 @@ func (cache *XueXiTUserCache) HyperlinkDtoCompleteReport(p *PointHyperlinkDto, r
 
 	if err != nil {
 		fmt.Println(err)
-		return "", nil
+		return "", err
 	}
 	req.Header.Add("User-Agent", utils.DefaultUserAgent)
 	req.Header.Add("Accept", "*/*")
@@ -992,7 +992,7 @@ func (cache *XueXiTUserCache) HyperlinkDtoCompleteReport(p *PointHyperlinkDto, r
 	body, err := ioutil.ReadAll(res.Body)
 	if err != nil {
 		fmt.Println(err)
-		return "", nil
+		return "", err
 	}
 	//fmt.Println(string(body))
 	return string(body), nil

@@ -20,7 +20,7 @@ type SignUser struct {
 }
 
 // GongXueSignAction 工学云签到动作
-func GongXueSignAction(signUser SignUser) {
+func GongXueSignAction(signUser SignUser) (string, error) {
 	signEntity := entity.SignEntity{
 		Username:  signUser.Username,
 		Password:  signUser.Password,
@@ -36,22 +36,22 @@ func GongXueSignAction(signUser SignUser) {
 	if err := m.HandleCaptcha(); err != nil {
 		//utils.SendMail(m.Email, "Block-Error", err.Error())
 		global.Log.Error(err.Error())
-		return
+		return "", err
 	}
 	if err := m.Login(); err != nil {
 		//utils.SendMail(m.Email, "Login-Error-测试邮件请勿回复", err.Error())
 		global.Log.Error(err.Error())
-		return
+		return "", err
 	}
 
 	if err := m.GetPlanId(); err != nil {
 		global.Log.Warning(err.Error())
-		return
+		return "", err
 	}
 	if err := m.GetJobInfo(); err != nil {
 		global.Log.Warnf("Failed to get job info: %v", err)
-		return
+		return "", err
 	}
 
-	m.CusSignIn(signUser.PlayType)
+	return m.CusSignIn(signUser.PlayType)
 }

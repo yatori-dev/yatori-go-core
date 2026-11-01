@@ -83,8 +83,14 @@ func ProjectListAction(cache *enaea.EnaeaUserCache) ([]EnaeaProject, error) {
 		for _, item := range items {
 			// 每个 item 是 map[string]interface{} 类型
 			if obj, ok := item.(map[string]interface{}); ok {
-				startTime, _ := time.Parse("2006.01.02", strings.Split(obj["startEndTime"].(string), "-")[0])
-				endTime, _ := time.Parse("2006.01.02", strings.Split(obj["startEndTime"].(string), "-")[1])
+				var startTime, endTime time.Time
+				if value, ok := obj["startEndTime"].(string); ok {
+					parts := strings.SplitN(value, "-", 2)
+					if len(parts) == 2 {
+						startTime, _ = time.Parse("2006.01.02", strings.TrimSpace(parts[0]))
+						endTime, _ = time.Parse("2006.01.02", strings.TrimSpace(parts[1]))
+					}
+				}
 				projects = append(projects, EnaeaProject{
 					CircleNameShort:  obj["circleNameShort"].(string),
 					CircleId:         strconv.Itoa(int(obj["circleId"].(float64))),

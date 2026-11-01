@@ -2,6 +2,7 @@ package mooc
 
 import (
 	"context"
+	"fmt"
 	"strings"
 
 	"github.com/yatori-dev/yatori-go-core/v3/core"
@@ -45,7 +46,16 @@ func (c *client) Login(ctx context.Context) error {
 	c.cache.InitCookiesApi()
 	c.cache.GtApi()
 	c.cache.PowGetPApi()
-	c.cache.LoginApi()
+	if !c.cache.LoginReady() {
+		return core.Wrap(core.MOOC, "login", fmt.Errorf("登录参数不完整，可能是账号、密码或验证流程失败"))
+	}
+	body, err := c.cache.LoginApi()
+	if err != nil {
+		return core.Wrap(core.MOOC, "login", err)
+	}
+	if len(c.cache.GetCookies()) == 0 {
+		return core.Wrap(core.MOOC, "login", fmt.Errorf("登录未返回 Cookie：%s", body))
+	}
 	c.loggedIn = true
 	return nil
 }

@@ -99,10 +99,11 @@ func (c *client) SignIn(ctx context.Context, req core.SignInRequest) (*core.Sign
 		Address:   firstNonEmpty(stringValue(extra, "address"), req.Location),
 		PlayType:  firstNonEmpty(stringValue(extra, "playType"), "START"),
 	}
-	// The legacy action logs failures and does not return them. Success here
-	// means the sign-in flow was executed, not that the server accepted it.
-	agg.GongXueSignAction(sign)
-	return &core.SignInResult{Success: true, Message: "sign-in submitted"}, nil
+	message, err := agg.GongXueSignAction(sign)
+	if err != nil {
+		return nil, core.Wrap(core.GongXue, "sign_in", err)
+	}
+	return &core.SignInResult{Success: true, Message: message}, nil
 }
 
 func (c *client) Call(ctx context.Context, action core.Action, params map[string]any) (any, error) {

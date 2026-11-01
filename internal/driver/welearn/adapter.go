@@ -155,12 +155,17 @@ func (c *client) Tree(ctx context.Context, course core.Course) ([]core.Node, err
 		}
 		for _, point := range points {
 			c.points[point.Id] = point
+			progress := 0.0
+			if isComplete(point) {
+				progress = 100
+			}
 			chapterNode.Children = append(chapterNode.Children, core.Node{
 				ID:        point.Id,
 				ParentID:  chapterNode.ID,
 				CourseID:  course.ID,
 				Name:      firstNonEmpty(point.Name, point.Location),
 				Kind:      core.NodeUnknown,
+				Progress:  progress,
 				Completed: isComplete(point),
 				Extra: map[string]string{
 					"chapterId":     chapter.Id,
@@ -175,6 +180,16 @@ func (c *client) Tree(ctx context.Context, course core.Course) ([]core.Node, err
 				},
 				Raw: point,
 			})
+		}
+		if len(chapterNode.Children) > 0 {
+			completed := 0
+			for _, child := range chapterNode.Children {
+				if child.Completed {
+					completed++
+				}
+			}
+			chapterNode.Progress = float64(completed) / float64(len(chapterNode.Children)) * 100
+			chapterNode.Completed = completed == len(chapterNode.Children)
 		}
 		c.nodesForChapter(chapterNode)
 		out = append(out, chapterNode)
@@ -230,9 +245,13 @@ func (c *client) Study(ctx context.Context, req core.StudyRequest) (*core.StudyR
 			Completed: true,
 		}, nil
 	}
-	report, progress, _, _, _, err := agg.WeLearnSubmitStudyTimeAction(c.cache, course, point)
+	completionStatus, progress, _, _, _, err := agg.WeLearnSubmitStudyTimeAction(c.cache, course, point)
 	if err != nil {
 		return nil, core.Wrap(core.WeLearn, "study", err)
+	}
+	completed := isCompletionStatus(completionStatus) || progress >= 100
+	if completed {
+		progress = 100
 	}
 	return &core.StudyResult{
 		CourseID:  req.Course.ID,
@@ -240,9 +259,9 @@ func (c *client) Study(ctx context.Context, req core.StudyRequest) (*core.StudyR
 		Kind:      req.Node.Kind,
 		Submitted: true,
 		Progress:  float64(progress),
-		Completed: progress >= 100,
-		Message:   report,
-		Raw:       report,
+		Completed: completed,
+		Message:   completionStatus,
+		Raw:       completionStatus,
 	}, nil
 }
 
@@ -296,7 +315,12 @@ func (c *client) resolveCourse(course core.Course) (agg.WeLearnCourse, error) {
 }
 
 func isComplete(point agg.WeLearnPoint) bool {
-	return point.IsComplete == "completed" || point.IsComplete == "已完成"
+	return isCompletionStatus(point.IsComplete)
+}
+
+func isCompletionStatus(status string) bool {
+	value := strings.ToLower(strings.TrimSpace(status))
+	return value == "completed" || value == "passed" || value == "已完成"
 }
 
 func firstNonEmpty(values ...string) string {

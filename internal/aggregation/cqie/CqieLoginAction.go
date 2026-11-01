@@ -111,6 +111,9 @@ func CqieLoginAction(cache *cqieApi.CqieUserCache) error {
 		if err != nil {
 			return err
 		}
+		if gojsonq.New().JSONString(userJson).Find("data.userId") == nil {
+			return errors.New("获取用户信息失败：" + userJson)
+		}
 		cache.SetUserId(gojsonq.New().JSONString(userJson).Find("data.userId").(string))
 		cache.SetDeptId(gojsonq.New().JSONString(userJson).Find("data.deptId").(string))
 		cache.SetStudentId(gojsonq.New().JSONString(userJson).Find("data.id").(string))
@@ -135,6 +138,9 @@ func CqieLoginTokenAction(cache *cqieApi.CqieUserCache, token string) error {
 	if err != nil {
 		return err
 	}
+	if gojsonq.New().JSONString(userJson).Find("data.userId") == nil {
+		return errors.New("token 登录失败，用户信息为空：" + userJson)
+	}
 	cache.SetUserId(gojsonq.New().JSONString(userJson).Find("data.userId").(string))
 	cache.SetDeptId(gojsonq.New().JSONString(userJson).Find("data.deptId").(string))
 	cache.SetStudentId(gojsonq.New().JSONString(userJson).Find("data.id").(string))
@@ -155,6 +161,7 @@ func CqiePullCourseListAction(cache *cqieApi.CqieUserCache) ([]CqieCourse, error
 	var courseList []CqieCourse
 	courseApi, err := cache.PullCourseListApiNew(5, nil)
 	if err != nil {
+		return courseList, err
 	}
 	if gojsonq.New().JSONString(courseApi).Find("msg") != "操作成功" {
 		return courseList, errors.New("获取数据失败：" + courseApi)

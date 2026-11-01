@@ -396,7 +396,6 @@ func (cache *XueXiTUserCache) StartReExamApi(examId, examAnswerId, courseId, cla
 	req.Header.Add("sec-ch-ua", "\"\"")
 	req.Header.Add("sec-ch-ua-mobile", "?1")
 	req.Header.Add("sec-ch-ua-platform", "\"\"")
-	//req.Header.Add("Cookie", "k8sexam=1765900728.881.24993.707635; jrose=F2858ED8BC6EA85595A608BD33F1164B.mooc-exam-2486724551-fmknb; tl=1; fanyamoocs=11401F839C536D9E; fid=6787; _uid=429262307; _d=1765899919966; UID=429262307; vc3=aS%2FYSORibX7l8xO%2BujOF8JEe0pBOFjYgDg5OrZyRH%2BoWydxijVw6%2BYrhcKeEyU8TLcnELdiuSifm6sRFmQlkHfxqQv0ziSZxtc%2F%2FngoyZeNmDdrivyoh4dnkDwgPpz9FueXc2JQDyR8ZqcbqUfsCq65eYx8lODGFPp7HypVSEfc%3D4d3c0ba677081916ea02d4cacdee795b; uf=fbe48ba271b0dbbd91cd9a0e960855f7b8ca773eb07e4328b52e7de4225e2fdc073647dc04afa82b9bd3f67c9461cd3281a6c9ddee30899fd807a544f7930b6aed1e6c11a143bb563b0339d97cdac4bac669f25c40cc3fa3713028f1ec42bf71b1188854805578cce2f10ebb6151c97cc98abd27392b42e553e2705741fab8423a2679a989dd9603c60c9ca3aa463e924df7ff280fcb29d10d8a4c92b12beb4b28a0f7dcce9f304154e4b3f39763e56a941095173d43e835e7fafd565af53bf2; cx_p_token=35ecf844d53ba2b4a864977f5defc3cc; p_auth_token=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1aWQiOiI0MjkyNjIzMDciLCJsb2dpblRpbWUiOjE3NjU4OTk5MTk5NjgsImV4cCI6MTc2NjUwNDcxOX0._L9YgTQt4lGPA5KSNCo4RR-cqW5Pm6VyR21C-xG9XR8; xxtenc=017945e4e5c6a6b918d59b906f304ca3; DSSTASH_LOG=C_38-UN_6051-US_429262307-T_1765899919968; source=\"\"; thirdRegist=0; route=f537d772be8122bff9ae56a564b98ff6")
 	req.Header.Add("Host", "mooc1-api.chaoxing.com")
 	for _, cookie := range cache.cookies {
 		req.AddCookie(cookie)
@@ -652,6 +651,9 @@ func (cache *XueXiTUserCache) SubmitExamAnswerApi(question *XXTExamQuestionSubmi
 	body, err := ioutil.ReadAll(res.Body)
 	if err != nil {
 		fmt.Println(err)
+		return "", err
+	}
+	if err := validateResponse("提交考试答案", res, body); err != nil {
 		return "", err
 	}
 	//fmt.Println(string(body))

@@ -146,12 +146,14 @@ func (cache *KetangxUserCache) SignVideoStatusApi(sectId string) (string, error)
 		fmt.Println(err)
 		return "", err
 	}
-	req.Header.Add("Cookie", "ASP.NET_SessionId=4rjzprtyowdj0zg321zymxzt; ZHYX=702720bb490846b8aec2b34500dae627_15213625522_2; acw_tc=0b32973617579140663533976e9240ae7b9485a649812e7944a71bfd3f310b; SERVERID=698319db3a2920f24616a79b4e94f782|1757914376|1757914066; SERVERID=6ca4eae317291c9402a558d8073fd296|1757963692|1757963692; ZHYX=702720bb490846b8aec2b34500dae627_15213625522_2")
-	req.Header.Add("User-Agent", "Apifox/1.0.0 (https://apifox.com)")
+	req.Header.Add("User-Agent", utils.DefaultUserAgent)
 	req.Header.Add("Accept", "*/*")
 	req.Header.Add("Host", "www.ketangx.cn")
 	req.Header.Add("Connection", "keep-alive")
-	req.Header.Add("Referer", "https://www.ketangx.cn/DoAct/GetSection?id=5df477aeb91a42ef83e0b34e00e88825&_=1757963262117")
+	req.Header.Add("Referer", "https://www.ketangx.cn/DoAct/GetSection?id="+sectId)
+	for _, cookie := range cache.Cookies {
+		req.AddCookie(cookie)
+	}
 
 	res, err := client.Do(req)
 	if err != nil {

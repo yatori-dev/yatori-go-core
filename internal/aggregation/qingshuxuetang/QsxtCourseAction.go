@@ -320,5 +320,22 @@ func (node QsxtNode) SubmitStudyTimeAction(cache *qingshuxuetang.QsxtUserCache, 
 	if err1 != nil {
 		return "", err1
 	}
+	if err := checkQsxtResponse(submitResult); err != nil {
+		return submitResult, err
+	}
 	return submitResult, nil
+}
+
+// checkQsxtResponse 检查青书学堂统一的 hr 返回码。
+// hr 为 0 表示成功，缺失或非 0 都视为业务失败。
+func checkQsxtResponse(body string) error {
+	value := gojsonq.New().JSONString(body).Find("hr")
+	if value == nil {
+		return fmt.Errorf("青书学堂返回异常：%s", body)
+	}
+	number, ok := value.(float64)
+	if !ok || int(number) != 0 {
+		return fmt.Errorf("青书学堂业务失败：%s", body)
+	}
+	return nil
 }

@@ -212,9 +212,7 @@ func ChapterFetchCardsAction(
 
 										}
 									}
-									if obj["playTime"] != nil {
-										pointObj.PointVideoDto.PlayTime = int(obj["playTime"].(float64)) / 1000
-									}
+									applyVideoAttachmentFields(&pointObj.PointVideoDto, obj)
 								}
 
 							}
@@ -548,9 +546,7 @@ func ChapterFetchCardsAction(
 
 										}
 									}
-									if obj["playTime"] != nil {
-										pointObj.PointVideoDto.PlayTime = int(obj["playTime"].(float64)) / 1000
-									}
+									applyVideoAttachmentFields(&pointObj.PointVideoDto, obj)
 								}
 
 							}
@@ -668,4 +664,22 @@ func parseIframeData(htmlString string) ([]IframeAttributes, error) {
 
 	traverse(node)
 	return iframes, nil
+}
+
+// applyVideoAttachmentFields 从 chapter cords 的 attachment 中补齐视频/音频的
+// 已观看位置和总时长。attDuration 的单位是秒，playTime 的单位是毫秒。
+func applyVideoAttachmentFields(p *xuexitong.PointVideoDto, obj map[string]interface{}) {
+	if obj["playTime"] != nil {
+		if playTime, ok := obj["playTime"].(float64); ok {
+			p.PlayTime = int(playTime) / 1000
+		}
+	}
+	if attDuration, ok := obj["attDuration"].(float64); ok {
+		p.Duration = int(attDuration)
+	}
+	if attDuration, ok := obj["attDuration"].(string); ok {
+		if duration, err := strconv.Atoi(attDuration); err == nil {
+			p.Duration = duration
+		}
+	}
 }

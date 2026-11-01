@@ -4,6 +4,7 @@ import (
 	"context"
 	"strconv"
 	"strings"
+	"time"
 
 	"github.com/yatori-dev/yatori-go-core/v3/config"
 	"github.com/yatori-dev/yatori-go-core/v3/core"
@@ -94,14 +95,23 @@ func (c *client) Courses(ctx context.Context) ([]core.Course, error) {
 	if err != nil {
 		return nil, core.Wrap(core.HaiQiKeJi, "courses", err)
 	}
+	now := time.Now()
 	out := make([]core.Course, 0, len(list))
 	for _, item := range list {
 		c.courses[item.Id] = item
+		status := core.CourseStatusActive
+		if !item.StartDate.IsZero() && now.Before(item.StartDate) {
+			status = core.CourseStatusNotStarted
+		}
+		if !item.EndDate.IsZero() && now.After(item.EndDate) {
+			status = core.CourseStatusFinished
+		}
 		out = append(out, core.Course{
 			ID:      item.Id,
 			Name:    item.Name,
 			Teacher: item.LecturerName,
 			Cover:   item.Cover,
+			Status:  status,
 			Extra: map[string]string{
 				"courseId":   item.Id,
 				"collegeId":  item.CollegeId,
@@ -137,12 +147,22 @@ func (c *client) Tree(ctx context.Context, course core.Course) ([]core.Node, err
 	out := make([]core.Node, 0, len(list))
 	for _, item := range list {
 		c.nodes[item.Id] = item
+		progress := 0
+		if item.TabVideo > 0 && item.VideoDuration > 0 {
+			if value, err := agg.HqkjGetNodeProgressAction(c.cache, item); err == nil {
+				progress = value
+			} else {
+				c.Logger.Debugf("haiqikeji: node progress for %s failed: %v", item.Id, err)
+			}
+		}
 		out = append(out, core.Node{
-			ID:       item.Id,
-			CourseID: course.ID,
-			Name:     item.Name,
-			Kind:     nodeKind(item),
-			Duration: driverutil.Seconds(item.VideoDuration),
+			ID:        item.Id,
+			CourseID:  course.ID,
+			Name:      item.Name,
+			Kind:      nodeKind(item),
+			Duration:  driverutil.Seconds(item.VideoDuration),
+			Progress:  float64(progress),
+			Completed: progress >= 100,
 			Extra: map[string]string{
 				"nodeId":        item.Id,
 				"courseId":      item.CourseId,
@@ -209,11 +229,13 @@ func (c *client) Study(ctx context.Context, req core.StudyRequest) (*core.StudyR
 			Raw:      sessionID,
 		}, nil
 	}
+	duration := node.VideoDuration
+	if duration <= 0 && req.Duration > 0 {
+		duration = int(req.Duration.Seconds())
+	}
 	progress := 0
-	if node.VideoDuration > 0 {
-		progress = int(float64(req.Position.Seconds()) / float64(node.VideoDuration) * 100)
-	} else {
-		progress = int(req.Position.Seconds())
+	if duration > 0 {
+		progress = int(float64(req.Position.Seconds()) / float64(duration) * 100)
 	}
 	if req.Action == core.StudyActionFinish {
 		progress = 100

@@ -56,10 +56,10 @@ func Test_KetangxLogin(t *testing.T) {
 		fmt.Println(err)
 		panic(err)
 	}
-	courseList := action.PullCourseListAction(&cache)
+	courseList, _ := action.PullCourseListAction(&cache)
 	for _, course := range courseList {
 		fmt.Println(course)
-		nodeList := action.PullNodeListAction(&cache, &course)
+		nodeList, _ := action.PullNodeListAction(&cache, &course)
 		for _, node := range nodeList {
 			if node.IsComplete {
 				fmt.Printf("(%s)该任务点已经完成，已自动跳过\n", node.Title)

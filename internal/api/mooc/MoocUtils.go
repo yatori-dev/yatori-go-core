@@ -220,14 +220,14 @@ type Data struct {
 func VdfAsync(data Data) (int, int64, int, string, uint32) {
 	startTime := time.Now()
 
-	// 解析大整数
+	// 解析大整数；参数异常时返回零值，避免直接 panic。
 	bigx, ok := new(big.Int).SetString(data.Args.X, 16)
 	if !ok {
-		panic("解析 x 失败")
+		return 0, 0, 0, "", 0
 	}
 	bigmod, ok := new(big.Int).SetString(data.Args.Mod, 16)
 	if !ok {
-		panic("解析 mod 失败")
+		return 0, 0, 0, "", 0
 	}
 
 	count := 0

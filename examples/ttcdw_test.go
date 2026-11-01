@@ -3,6 +3,7 @@ package examples
 import (
 	"fmt"
 	"log"
+	"os"
 	"testing"
 
 	"github.com/yatori-dev/yatori-go-core/v3/global"
@@ -74,7 +75,7 @@ func TestTtcdwTestCourseBrush(t *testing.T) {
 	user := global.Config.Users[58]
 	//cache := ttcdwApi.TtcdwUserCache{Account: user.Account, Password: user.Password}
 	//err2 := ttcdw.TTCDWLoginAction(&cache) //登录账号
-	cache := ttcdwApi.TtcdwUserCache{Account: user.Account, Password: "CNZZDATA1273209267=2118013400-1757946520-%7C1760943926; HWWAFSESID=6146c73229b89198f1; HWWAFSESTIME=1761842593979; passport=https://www.ttcdw.cn/p/passport; u-lastLoginTime=1761842830610; u-activeState=1; u-mobileState=0; u-mobile=13875993221; u-preLoginTime=1761842763611; u-token=eyJhbGciOiJIUzI1NiJ9.eyJqdGkiOiIwY2NmNzc2MC05ZDJlLTQ1MjAtODdlMS0yMDhjZWUwOGFjYzIiLCJpYXQiOjE3NjE4NDI4MzAsInN1YiI6Ijk1NTYwNDIxNTQ3NzE1Nzg4OCIsImlzcyI6Imd1b3JlbnQiLCJhdHRlc3RTdGF0ZSI6MCwic3JjIjoid2ViIiwiYWN0aXZlU3RhdGUiOjEsIm1vYmlsZSI6IjEzODc1OTkzMjIxIiwicGxhdGZvcm1JZCI6IjEzMTQ1ODU0OTgzMzExIiwiYWNjb3VudCI6IjEzODc1OTkzMjIxIiwiZXhwIjoxNzYxODc4ODMwfQ.ymsB6x5ENCGyxg-J5jGQvDbbK3y_9VCp2N-MFwWL1YY; u-token-legacy=eyJhbGciOiJIUzI1NiJ9.eyJqdGkiOiIwY2NmNzc2MC05ZDJlLTQ1MjAtODdlMS0yMDhjZWUwOGFjYzIiLCJpYXQiOjE3NjE4NDI4MzAsInN1YiI6Ijk1NTYwNDIxNTQ3NzE1Nzg4OCIsImlzcyI6Imd1b3JlbnQiLCJhdHRlc3RTdGF0ZSI6MCwic3JjIjoid2ViIiwiYWN0aXZlU3RhdGUiOjEsIm1vYmlsZSI6IjEzODc1OTkzMjIxIiwicGxhdGZvcm1JZCI6IjEzMTQ1ODU0OTgzMzExIiwiYWNjb3VudCI6IjEzODc1OTkzMjIxIiwiZXhwIjoxNzYxODc4ODMwfQ.ymsB6x5ENCGyxg-J5jGQvDbbK3y_9VCp2N-MFwWL1YY; u-id=955604215477157888; u-account=13875993221; ufo-urn=MTM4NzU5OTMyMjE=; ufo-un=5Y2i5a2j5p2+; ufo-id=955604215477157888; u-name=web_user_FQYX2QyH; ufo-nk=5Y2i5a2j5p2%2B"}
+	cache := ttcdwApi.TtcdwUserCache{Account: user.Account, Password: os.Getenv("YATORI_COOKIE")}
 	err2 := ttcdw.TTCDWCookieLoginAction(&cache) //登录账号
 	if err2 != nil {
 		log.Fatal(err2)

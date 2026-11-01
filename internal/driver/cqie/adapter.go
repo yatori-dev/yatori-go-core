@@ -217,7 +217,7 @@ func (c *client) Study(ctx context.Context, req core.StudyRequest) (*core.StudyR
 			Raw:      video,
 		}, nil
 	}
-	if req.Action == core.StudyActionFinish || position > video.TimeLength {
+	if req.Action == core.StudyActionFinish || req.Mode == core.StudyModeFast || position > video.TimeLength {
 		position = video.TimeLength
 	}
 	start := video.StudyTime
@@ -246,14 +246,19 @@ func (c *client) Study(ctx context.Context, req core.StudyRequest) (*core.StudyR
 		video.MaxCurrentPos = maxPos
 	}
 	c.videos[video.VideoId] = video
+	finished := req.Action == core.StudyActionFinish || req.Mode == core.StudyModeFast
+	reportedProgress := progress(video)
+	if finished {
+		reportedProgress = 100
+	}
 	return &core.StudyResult{
 		CourseID:  req.Course.ID,
 		NodeID:    req.Node.ID,
 		Kind:      core.NodeVideo,
 		Submitted: true,
 		Position:  driverutil.Seconds(stop),
-		Progress:  progress(video),
-		Completed: video.TimeLength > 0 && stop >= video.TimeLength,
+		Progress:  reportedProgress,
+		Completed: finished || (video.TimeLength > 0 && stop >= video.TimeLength),
 	}, nil
 }
 

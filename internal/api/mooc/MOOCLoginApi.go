@@ -112,7 +112,7 @@ func (cache *MOOCUserCache) PowGetPApi() {
 
 	urlStr := "https://reg.icourse163.org/dl/zj/yd/powGetP"
 	method := "POST"
-	encStr := MOOCEncMS4(BuildPowGetPParams("imooc", "cjJVGQM", "18973485974", "5722fb36-7665-4510-8281-c202f414978c", 1, "https://www.icourse163.org/member/login.htm?returnUrl=aHR0cHM6Ly93d3cuaWNvdXJzZTE2My5vcmcvaW5kZXguaHRt#/webLoginIndex", BuildRtId()))
+	encStr := MOOCEncMS4(BuildPowGetPParams("imooc", "cjJVGQM", cache.Account, "5722fb36-7665-4510-8281-c202f414978c", 1, "https://www.icourse163.org/member/login.htm?returnUrl=aHR0cHM6Ly93d3cuaWNvdXJzZTE2My5vcmcvaW5kZXguaHRt#/webLoginIndex", BuildRtId()))
 	payload := strings.NewReader(`{"encParams":"` + encStr + `"}`)
 	tr := &http.Transport{
 		TLSClientConfig: &tls.Config{
@@ -157,14 +157,20 @@ func (cache *MOOCUserCache) PowGetPApi() {
 		fmt.Println(err)
 		return
 	}
-	if gojsonq.New().JSONString(string(body)).Find("ret").(string) == "201" {
-		cache.MaxTime = int64(gojsonq.New().JSONString(string(body)).Find("pVInfo.maxTime").(float64))
-		cache.MinTime = int64(gojsonq.New().JSONString(string(body)).Find("pVInfo.minTime").(float64))
-		cache.Sid = gojsonq.New().JSONString(string(body)).Find("pVInfo.sid").(string)
-		cache.Puzzle = gojsonq.New().JSONString(string(body)).Find("pVInfo.args.puzzle").(string)
-		cache.X = gojsonq.New().JSONString(string(body)).Find("pVInfo.args.x").(string)
-		cache.T = int(gojsonq.New().JSONString(string(body)).Find("pVInfo.args.t").(float64))
-		cache.Mod = gojsonq.New().JSONString(string(body)).Find("pVInfo.args.mod").(string)
+	if ret, ok := gojsonq.New().JSONString(string(body)).Find("ret").(string); ok && ret == "201" {
+		if value, ok := gojsonq.New().JSONString(string(body)).Find("pVInfo.maxTime").(float64); ok {
+			cache.MaxTime = int64(value)
+		}
+		if value, ok := gojsonq.New().JSONString(string(body)).Find("pVInfo.minTime").(float64); ok {
+			cache.MinTime = int64(value)
+		}
+		cache.Sid, _ = gojsonq.New().JSONString(string(body)).Find("pVInfo.sid").(string)
+		cache.Puzzle, _ = gojsonq.New().JSONString(string(body)).Find("pVInfo.args.puzzle").(string)
+		cache.X, _ = gojsonq.New().JSONString(string(body)).Find("pVInfo.args.x").(string)
+		if value, ok := gojsonq.New().JSONString(string(body)).Find("pVInfo.args.t").(float64); ok {
+			cache.T = int(value)
+		}
+		cache.Mod, _ = gojsonq.New().JSONString(string(body)).Find("pVInfo.args.mod").(string)
 	}
 	fmt.Println(string(body))
 }
@@ -218,13 +224,20 @@ func (cache *MOOCUserCache) GtApi() {
 		return
 	}
 	fmt.Println(string(body))
-	if gojsonq.New().JSONString(string(body)).Find("ret").(string) == "201" {
-		cache.TK = gojsonq.New().JSONString(string(body)).Find("tk").(string)
+	if ret, ok := gojsonq.New().JSONString(string(body)).Find("ret").(string); ok && ret == "201" {
+		cache.TK, _ = gojsonq.New().JSONString(string(body)).Find("tk").(string)
 	}
 	utils.CookiesAddNoRepetition(&cache.cookies, res.Cookies())
 }
 
-func (cache *MOOCUserCache) LoginApi() {
+// LoginReady 报告 PowGetP 阶段是否拿到了完整的登录参数。
+func (cache *MOOCUserCache) LoginReady() bool {
+	return strings.TrimSpace(cache.X) != "" &&
+		strings.TrimSpace(cache.Sid) != "" &&
+		strings.TrimSpace(cache.Mod) != ""
+}
+
+func (cache *MOOCUserCache) LoginApi() (string, error) {
 
 	urlStr := "https://reg.icourse163.org/dl/zj/yd/pwd/l"
 	method := "POST"
@@ -265,7 +278,7 @@ func (cache *MOOCUserCache) LoginApi() {
 
 	if err != nil {
 		fmt.Println(err)
-		return
+		return "", err
 	}
 	for _, cookie := range cache.cookies {
 		req.AddCookie(cookie)
@@ -280,17 +293,35 @@ func (cache *MOOCUserCache) LoginApi() {
 	res, err := client.Do(req)
 	if err != nil {
 		fmt.Println(err)
-		return
+		return "", err
 	}
 	defer res.Body.Close()
 
 	body, err := ioutil.ReadAll(res.Body)
 	if err != nil {
 		fmt.Println(err)
-		return
+		return "", err
 	}
-	fmt.Println(string(body))
+	bodyText := string(body)
+	fmt.Println(bodyText)
 	utils.CookiesAddNoRepetition(&cache.cookies, res.Cookies())
+
+	if strings.TrimSpace(bodyText) == "" {
+		return bodyText, fmt.Errorf("MOOC 登录返回为空")
+	}
+	if ret := gojsonq.New().JSONString(bodyText).Find("ret"); ret != nil {
+		switch value := ret.(type) {
+		case string:
+			if value != "0" && value != "200" && value != "201" {
+				return bodyText, fmt.Errorf("MOOC 登录失败：%s", bodyText)
+			}
+		case float64:
+			if int(value) != 0 && int(value) != 200 && int(value) != 201 {
+				return bodyText, fmt.Errorf("MOOC 登录失败：%s", bodyText)
+			}
+		}
+	}
+	return bodyText, nil
 }
 
 func (cache *MOOCUserCache) GetCookies() []*http.Cookie { return cache.cookies }

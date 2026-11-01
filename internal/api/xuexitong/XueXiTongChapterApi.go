@@ -220,7 +220,7 @@ func (cache *XueXiTUserCache) FetchChapterCords(nodes []int, index, courseId int
 	body, err := ioutil.ReadAll(res.Body)
 	if err != nil {
 		fmt.Println(err)
-		return "", nil
+		return "", err
 	}
 	if strings.Contains(string(body), "请输入验证码") || strings.Contains(string(body), "请输入图片中的验证码") {
 		return "", errors.New("触发验证码")
@@ -286,7 +286,7 @@ func (cache *XueXiTUserCache) FetchChapterCords2(clazzid, courseid, knowledgeid,
 	//}
 	if err != nil {
 		fmt.Println(err)
-		return "", nil
+		return "", err
 	}
 	sprintf := fmt.Sprintf(`mArg = ([^;]{6,})`)
 	compile := regexp.MustCompile(sprintf)

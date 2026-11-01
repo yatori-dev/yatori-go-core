@@ -160,8 +160,20 @@ func PullCourseAction(cache *ttcdw.TtcdwUserCache, class TtcdwClassRoom) ([]Ttcd
 					userId = strings.Split(strings.Split(kv, "userId=")[1], "&")[0]
 				}
 
-				progress, _ := strconv.ParseFloat(obj["progress"].(string), 32)
-				duration, _ := strconv.Atoi(obj["duration"].(string))
+				progress := 0.0
+				switch value := obj["progress"].(type) {
+				case string:
+					progress, _ = strconv.ParseFloat(value, 64)
+				case float64:
+					progress = value
+				}
+				duration := 0
+				switch value := obj["duration"].(type) {
+				case string:
+					duration, _ = strconv.Atoi(value)
+				case float64:
+					duration = int(value)
+				}
 				courses = append(courses, TtcdwCourse{
 					CourseId:      obj["id"].(string),
 					Name:          obj["name"].(string),
@@ -198,6 +210,20 @@ func PullVideoListAction(cache *ttcdw.TtcdwUserCache, project TtcdwProject, clas
 	if items, ok := videoListJson.([]interface{}); ok {
 		for _, item := range items {
 			if obj, ok := item.(map[string]interface{}); ok {
+				studyProgress := 0
+				switch value := obj["studyProgress"].(type) {
+				case float64:
+					studyProgress = int(value)
+				case string:
+					studyProgress, _ = strconv.Atoi(value)
+				}
+				progress := 0.0
+				switch value := obj["progress"].(type) {
+				case float64:
+					progress = value
+				case string:
+					progress, _ = strconv.ParseFloat(value, 64)
+				}
 				video := TtcdwVideo{
 					Id:             obj["id"].(string),
 					ParentId:       obj["parentId"].(string),
@@ -205,17 +231,19 @@ func PullVideoListAction(cache *ttcdw.TtcdwUserCache, project TtcdwProject, clas
 					Name:           obj["name"].(string),
 					DurationText:   obj["durationText"].(string),
 					FreeTime:       int(obj["freetime"].(float64)),
-					StudyProgress:  int(obj["studyProgress"].(float64)),
+					StudyProgress:  studyProgress,
 					VideoId:        obj["videoId"].(string),
-					Progress:       float32(obj["progress"].(float64)),
+					Progress:       float32(progress),
 					CourseWareType: int(obj["coursewareType"].(float64)),
 					VideoType:      int(obj["videoType"].(float64)),
 					Token:          obj["token"].(string),
 					Duration:       0,
 				}
-				duration, err1 := strconv.Atoi(obj["duration"].(string))
-				if err1 == nil {
-					video.Duration = duration
+				switch value := obj["duration"].(type) {
+				case string:
+					video.Duration, _ = strconv.Atoi(value)
+				case float64:
+					video.Duration = int(value)
 				}
 				videos = append(videos, video)
 			}

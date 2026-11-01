@@ -2,6 +2,7 @@ package examples
 
 import (
 	"fmt"
+	"os"
 	"testing"
 	"time"
 
@@ -77,7 +78,7 @@ func TestCqieVideosBrush(t *testing.T) {
 	users := global.Config.Users[4]
 
 	cache := cqieApi.CqieUserCache{Account: users.Account, Password: users.Password} //构建用户
-	//token := "eyJhbGciOiJIUzUxMiJ9.eyIwIjoiMSIsInVzZXJfaWQiOiJiODc5N2FkNjdhMGNmZDk2N2ViNGJhOWM4ODBkOWY5MCIsImFwcElkIjoiMjAyNDEyMDIwMTA3NTY5MTY4MiIsInVzZXJfa2V5IjoiYmU5ZDFjZjAtMWExNi00ZTUxLWE0YTgtYTQwYzRhNDA0ODFjIiwidXNlcm5hbWUiOiLlrovlhYPlhbUifQ.Z5on9z6u2kODw737WpIHwcQQr1G1GVMAYcwivh0zmdYBOx9i9shiLJTS8cwQpPLL9RJm2rCYzD5LnovO2nRQxQ"
+	//token := os.Getenv("YATORI_CQIE_TOKEN")
 	//cqie.CqieLoginTokenAction(&cache, token)
 	cqie.CqieLoginAction(&cache)
 	//登录
@@ -140,7 +141,7 @@ func TestCqieVideosBrushFast(t *testing.T) {
 
 	cache := cqieApi.CqieUserCache{Account: users.Account, Password: users.Password} //构建用户
 	//cqie.CqieLoginAction(&cache)
-	token := "eyJhbGciOiJIUzUxMiJ9.eyIwIjoiMSIsInVzZXJfaWQiOiI1MTY4MmNjMGVhMjk3MWJiNjI3Nzg5NTQ5NzJmNjYxMyIsImFwcElkIjoiMjAyNTEyMDQwMTc0MjY5ODMxNiIsInVzZXJfa2V5IjoiOGNhZmMzNzAtN2Y2ZC00OWQyLTgzZTctNTcyYTY1MWYxODA2IiwidXNlcm5hbWUiOiLlrovnqIvplKYifQ.1gYFFMTq7dJRwPVXVEIXthNRL3YQAuaokrkrZUk6A3ppuR4Azxm_6VeHVGYABmiGkc17Lc6JuNJbyqsDPFGQbg"
+	token := os.Getenv("YATORI_CQIE_TOKEN")
 	cqie.CqieLoginTokenAction(&cache, token)               //登录
 	courseList, _ := cqie.CqiePullCourseListAction(&cache) //拉取课程列表
 	for _, course := range courseList {

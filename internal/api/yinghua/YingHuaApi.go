@@ -325,14 +325,12 @@ func (cache *YingHuaUserCache) CourseListApi(retry int, lastError error) (string
 		Transport: tr,
 	}
 	req, err := http.NewRequest(method, urlStr, payload)
-	//req.Header.Set("Cookie", cache.cookie)
-	for _, cookie := range cache.cookies {
-		req.AddCookie(cookie)
-	}
 	if err != nil {
 		return "", err
 	}
-	req.Header.Add("Cookie", "tgw_I7_route=3d5c4e13e7d88bb6849295ab943042a2")
+	for _, cookie := range cache.cookies {
+		req.AddCookie(cookie)
+	}
 	req.Header.Add("User-Agent", utils.DefaultUserAgent)
 
 	req.Header.Set("Content-Type", writer.FormDataContentType())

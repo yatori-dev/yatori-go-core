@@ -31,10 +31,14 @@ type WeiBanCache struct {
 	Cookies    []*http.Cookie
 }
 
+func weibanTimestamp() string {
+	return fmt.Sprintf("%.3f", float64(time.Now().UnixMilli())/1000)
+}
+
 // PullTenantCodeApi 拉取学校列表
 func (cache *WeiBanCache) PullTenantCodeApi() (string, error) {
 
-	urlStr := "https://weiban.mycourse.cn/pharos/login/getTenantListWithLetter.do?timestamp=1758343815.004"
+	urlStr := "https://weiban.mycourse.cn/pharos/login/getTenantListWithLetter.do?timestamp=" + weibanTimestamp()
 	method := "POST"
 
 	tr := &http.Transport{
@@ -75,6 +79,7 @@ func (cache *WeiBanCache) PullTenantCodeApi() (string, error) {
 		fmt.Println(err)
 		return "", err
 	}
+	utils.CookiesAddNoRepetition(&cache.Cookies, res.Cookies())
 	fmt.Println(string(body))
 	return string(body), nil
 }
@@ -82,7 +87,7 @@ func (cache *WeiBanCache) PullTenantCodeApi() (string, error) {
 // 拉取学校配置
 func (cache *WeiBanCache) PullTenantConfigApi() (string, error) {
 
-	urlStr := "https://weiban.mycourse.cn/pharos/tenantconfig/getSimpleConfig.do?timestamp=1758343997.34"
+	urlStr := "https://weiban.mycourse.cn/pharos/tenantconfig/getSimpleConfig.do?timestamp=" + weibanTimestamp()
 	method := "POST"
 
 	payload := strings.NewReader("tenantCode=" + cache.TenantCode)
@@ -270,6 +275,7 @@ func (cache *WeiBanCache) LoginApi() (string, error) {
 	if err != nil {
 		return "", err
 	}
+	utils.CookiesAddNoRepetition(&cache.Cookies, resp.Cookies())
 
 	return string(body), nil
 }

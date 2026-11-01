@@ -325,21 +325,23 @@ func HqkjSubmitFastStudyTimeAction(cache *haiqikeji.HqkjUserCache, node HqkjNode
 
 	//拉取当前适配的观看进度
 	nowProgressResult, err := cache.PullLastProgressApi(node.Id, 10, nil)
-	nowProgress := gojsonq.New().JSONString(nowProgressResult).Find("data").(string)
-	fmt.Println("当前视频进度：", nowProgress)
 	if err != nil {
 		return "", err
 	}
-	sessionId := gojsonq.New().JSONString(startResult).Find("data").(string)
+	nowProgress, _ := gojsonq.New().JSONString(nowProgressResult).Find("data").(string)
+	fmt.Println("当前视频进度：", nowProgress)
+	sessionId, ok := gojsonq.New().JSONString(startResult).Find("data").(string)
+	if !ok || sessionId == "" {
+		return "", fmt.Errorf("开始学习失败：%s", startResult)
+	}
 	time.Sleep(30 * time.Second) //先隔30s
 	submitResult, err := cache.SubmitStudyTimeApi(sessionId, 100, 10, nil)
 	if err != nil {
 		return "", err
 	}
-	code := int(gojsonq.New().JSONString(submitResult).Find("code").(float64))
-	if code != 200 {
-		//fmt.Println("提交学时失败：", submitResult)
-		return "", fmt.Errorf("%s", nowProgressResult)
+	code, ok := gojsonq.New().JSONString(submitResult).Find("code").(float64)
+	if !ok || int(code) != 200 {
+		return "", fmt.Errorf("提交学时失败：%s", submitResult)
 	}
 	return submitResult, nil
 }
@@ -371,14 +373,27 @@ func HqkjGetNodeProgressAction(cache *haiqikeji.HqkjUserCache, node HqkjNode) (i
 		return 0, fmt.Errorf("%s", nowProgressResult)
 	}
 
-	nowProgress := gojsonq.New().JSONString(nowProgressResult).Find("data").(string)
+	nowProgress, ok := gojsonq.New().JSONString(nowProgressResult).Find("data").(string)
 	//fmt.Println("当前视频进度：", nowProgress)
+	if !ok {
+		return 0, fmt.Errorf("%s", nowProgressResult)
+	}
 	if err != nil {
 		return 0, err
 	}
 
 	floatProgress, err := strconv.ParseFloat(nowProgress, 64)
-	return int(floatProgress * 100), nil
+	if err != nil {
+		return 0, err
+	}
+	value := int(floatProgress * 100)
+	if value < 0 {
+		value = 0
+	}
+	if value > 100 {
+		value = 100
+	}
+	return value, nil
 }
 
 // 开始学习时访问的接口，获取session
@@ -400,11 +415,14 @@ func HqkjStartStudyAction(cache *haiqikeji.HqkjUserCache, node HqkjNode) (string
 			}
 		}
 	}
-	code := int(gojsonq.New().JSONString(startResult).Find("code").(float64))
-	if code != 200 {
+	code, ok := gojsonq.New().JSONString(startResult).Find("code").(float64)
+	if !ok || int(code) != 200 {
 		return "", fmt.Errorf("%s", startResult)
 	}
-	sessionId := gojsonq.New().JSONString(startResult).Find("data").(string)
+	sessionId, ok := gojsonq.New().JSONString(startResult).Find("data").(string)
+	if !ok || sessionId == "" {
+		return "", fmt.Errorf("%s", startResult)
+	}
 	return sessionId, nil
 }
 
@@ -426,6 +444,10 @@ func HqkjSubmitStudyTimeAction(cache *haiqikeji.HqkjUserCache, node HqkjNode, se
 				continue
 			}
 		}
+	}
+	// 普通模式提交也必须校验业务返回码，否则失败会被当成成功。
+	if code, ok := gojsonq.New().JSONString(submitResult).Find("code").(float64); !ok || int(code) != 200 {
+		return "", fmt.Errorf("提交学时失败：%s", submitResult)
 	}
 
 	return submitResult, nil
@@ -450,8 +472,8 @@ func HqkjEndStudyAction(cache *haiqikeji.HqkjUserCache, sessionId string) (strin
 			}
 		}
 	}
-	code := int(gojsonq.New().JSONString(endResult).Find("code").(float64))
-	if code != 200 {
+	code, ok := gojsonq.New().JSONString(endResult).Find("code").(float64)
+	if !ok || int(code) != 200 {
 		return "", fmt.Errorf("%s", endResult)
 	}
 	return endResult, nil

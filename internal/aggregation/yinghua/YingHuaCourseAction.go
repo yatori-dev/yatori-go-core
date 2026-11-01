@@ -304,6 +304,15 @@ func SubmitStudyTimeAction(userCache *yinghuaApi.YingHuaUserCache, nodeId string
 	if err != nil { //其他错误
 		return "", err
 	}
+	// 平台在 HTTP 200 下也会返回业务失败（例如解锁时间未到），
+	// 这里必须校验 msg，否则上层会把失败当成提交成功。
+	msg, ok := gojsonq.New().JSONString(sub).Find("msg").(string)
+	if !ok || strings.TrimSpace(msg) == "" {
+		return sub, fmt.Errorf("提交学时返回异常：%s", sub)
+	}
+	if msg != "提交学时成功!" {
+		return sub, fmt.Errorf("提交学时失败：%s", msg)
+	}
 	return sub, nil
 }
 
@@ -417,11 +426,11 @@ func StartExamAction(
 		//结束考试
 		subWorkApi, err := yinghuaApi.SubmitExamApi(*userCache, exam.ExamId, lastProblem.AnswerId, lastProblem.Question, "1", 10, nil)
 		//如果结束做题服务器端返回信息异常
-		if gojsonq.New().JSONString(subWorkApi).Find("msg") != "提交试卷成功" || err != nil {
-			log.Print(log.INFO, log.BoldRed, `[`, userCache.Account, `] `, log.BoldRed, "提交试卷异常，返回信息：", subWorkApi)
-			if err != nil {
-				log.Print(log.INFO, err.Error())
-			}
+		if err != nil {
+			return fmt.Errorf("提交试卷失败：%v，返回：%s", err, subWorkApi)
+		}
+		if msg := gojsonq.New().JSONString(subWorkApi).Find("msg"); msg != "提交试卷成功" {
+			return fmt.Errorf("提交试卷失败：%v，返回：%s", msg, subWorkApi)
 		}
 	}
 	return nil
@@ -479,11 +488,11 @@ func StartExamForExternalAction(
 		//结束考试
 		subWorkApi, err1 := yinghuaApi.SubmitExamApi(*userCache, exam.ExamId, lastProblem.AnswerId, lastProblem.Question, "1", 10, nil)
 		//如果结束做题服务器端返回信息异常
-		if gojsonq.New().JSONString(subWorkApi).Find("msg") != "提交试卷成功" || err1 != nil {
-			log.Print(log.INFO, log.BoldRed, `[`, userCache.Account, `] `, log.BoldRed, "提交试卷异常，返回信息：", subWorkApi)
-			if err1 != nil {
-				log.Print(log.INFO, err.Error())
-			}
+		if err1 != nil {
+			return fmt.Errorf("提交试卷失败：%v，返回：%s", err1, subWorkApi)
+		}
+		if msg := gojsonq.New().JSONString(subWorkApi).Find("msg"); msg != "提交试卷成功" {
+			return fmt.Errorf("提交试卷失败：%v，返回：%s", msg, subWorkApi)
 		}
 	}
 	return nil
@@ -630,12 +639,10 @@ func StartWorkAction(userCache *yinghuaApi.YingHuaUserCache,
 		subWorkApi, err1 := yinghuaApi.SubmitWorkApi(*userCache, work.WorkId, lastProblem.AnswerId, lastProblem.Question, "1", 10, nil)
 		//如果结束做题服务器端返回信息异常
 		if err1 != nil {
-			log.Print(log.INFO, log.BoldRed, `[`, userCache.Account, `] `, log.BoldRed, "提交试卷异常，返回信息：", subWorkApi, fmt.Sprintf("%+v", err1.Error()))
+			return fmt.Errorf("提交作业失败：%v，返回：%s", err1, subWorkApi)
 		}
-		if gojsonq.New().JSONString(subWorkApi).Find("msg") != nil {
-			if gojsonq.New().JSONString(subWorkApi).Find("msg") != "提交作业成功" {
-				log.Print(log.INFO, log.BoldRed, `[`, userCache.Account, `] `, log.BoldRed, "提交试卷异常，返回信息：", subWorkApi)
-			}
+		if msg := gojsonq.New().JSONString(subWorkApi).Find("msg"); msg != "提交作业成功" {
+			return fmt.Errorf("提交作业失败：%v，返回：%s", msg, subWorkApi)
 		}
 	}
 
@@ -733,12 +740,10 @@ func StartWorkForExternalAction(userCache *yinghuaApi.YingHuaUserCache,
 		subWorkApi, err1 := yinghuaApi.SubmitWorkApi(*userCache, work.WorkId, lastProblem.AnswerId, lastProblem.Question, "1", 10, nil)
 		//如果结束做题服务器端返回信息异常
 		if err1 != nil {
-			log.Print(log.INFO, log.BoldRed, `[`, userCache.Account, `] `, log.BoldRed, "提交试卷异常，返回信息：", subWorkApi, fmt.Sprintf("%+v", err.Error()))
+			return fmt.Errorf("提交作业失败：%v，返回：%s", err1, subWorkApi)
 		}
-		if gojsonq.New().JSONString(subWorkApi).Find("msg") != nil {
-			if gojsonq.New().JSONString(subWorkApi).Find("msg") != "提交作业成功" {
-				log.Print(log.INFO, log.BoldRed, `[`, userCache.Account, `] `, log.BoldRed, "提交试卷异常，返回信息：", subWorkApi)
-			}
+		if msg := gojsonq.New().JSONString(subWorkApi).Find("msg"); msg != "提交作业成功" {
+			return fmt.Errorf("提交作业失败：%v，返回：%s", msg, subWorkApi)
 		}
 	}
 	return nil

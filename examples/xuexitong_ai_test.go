@@ -3,12 +3,18 @@ package examples
 import (
 	"bufio"
 	"bytes"
+	"context"
 	"encoding/json"
 	"fmt"
 	"io"
 	"net/http"
+	"os"
 	"strings"
 	"testing"
+	"time"
+
+	"github.com/yatori-dev/yatori-go-core/v3"
+	"github.com/yatori-dev/yatori-go-core/v3/global"
 )
 
 type RespChunk struct {
@@ -72,7 +78,7 @@ D. 2002年10月1日
 	req.Header.Add("Sec-Fetch-Dest", "empty")
 	req.Header.Add("Referer", "https://stat2-ans.chaoxing.com/bot/index?fromWorkbench=true&upload=true&clazzid=134204187&showToolbox=false&bgColorNone=true&app_id=1192651262850&courseid=258101827&cpi=411545273&bot_id=7438777570621653018&ut=s")
 	req.Header.Add("Accept-Language", "zh-CN,zh;q=0.9,en;q=0.8,en-GB;q=0.7,en-US;q=0.6")
-	req.Header.Add("Cookie", "tl=1; fanyamoocs=11401F839C536D9E; fid=10596; _uid=346635955; _d=1765424983114; UID=346635955; vc3=WJVDBtvmkUEaY0HsSmz%2Bleu2m5HukYPTw7PB%2FTZKTZjYnxx2qYIDT%2BmHnhaQkE58YFQ0CD01IGQVsiyoLkcweY91pAnogBmn1p1V0RZaxXcJBfJcSmcGFbOYFAAl%2F3PqTI6jAu7NUqfaMaRzUAy75kmarCFVqmqBcbs3i0IytNo%3D105778862c0e2bf79d8b479d117e895d; uf=b2d2c93beefa90dc495549838143a13b264677447b1a2384b8cd17c4874b05f58a6d64458f94593ccfd0e74dd1db6b4ab7f7d292066fbd0bc49d67c0c30ca5043ad701c8b4cc548c0234d89f51c3dccfb0f1a1db51ab43f5fb98ce0e6210c3884a878d0a9a7b05da6103a97f8cd189bc0ecd8afc9e03f695363fdc8451f0c870a8a2139068a68c9d5d1b47daef7984b1da9735baa04d8d5fce71fc6e59483dd39b16e3a7097306130b46772558e12a315adddf55eab87d53e9fdc681bdf07734; cx_p_token=ce364ca7460a4a413cb03059b7d0a3ed; p_auth_token=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1aWQiOiIzNDY2MzU5NTUiLCJsb2dpblRpbWUiOjE3NjU0MjQ5ODMxMTUsImV4cCI6MTc2NjAyOTc4M30.Uq9A5gcOUEB6HkxVP4WfGczFiURBghQTt_0NxamBKPg; xxtenc=f8c84ceb53bc45f40b7d9bfaaa413810; DSSTASH_LOG=C_38-UN_10038-US_346635955-T_1765424983116; source=\"\"; thirdRegist=0; k8s=1765425012.682.1508.646214; jrose=4898A8A76C9F0B11111E9891394B03C3.mooc-statistics2-1746325997-srq6z; route=bca6486eee9aca907e6257b7921729c3")
+	req.Header.Add("Cookie", os.Getenv("YATORI_COOKIE"))
 	req.Header.Add("Content-Type", "application/json")
 	req.Header.Add("Accept", "*/*")
 	req.Header.Add("Host", "stat2-ans.chaoxing.com")
@@ -131,4 +137,62 @@ D. 2002年10月1日
 	}
 
 	fmt.Println("最终回复内容：", finalAnswer)
+}
+
+func TestXXT(t *testing.T) {
+	//测试账号
+	setup()
+	user := global.Config.Users[78]
+	client, err := yatori.New(yatori.Config{
+		Platform: yatori.XueXiTong,
+		Account: yatori.Account{
+			Username: user.Account,
+			Password: user.Password,
+			// 英华、海旗等平台需要填写 URL：
+			// URL: "https://example.com",
+		},
+		Options: yatori.Options{
+			// ProxyURL: "http://127.0.0.1:7890",
+			// AI: &yatori.AIConfig{
+			// 	Type:   yatori.AIDeepSeek,
+			// 	Model:  "MODEL",
+			// 	APIKey: "KEY",
+			// },
+		},
+	})
+	if err != nil {
+		panic(err)
+	}
+	defer client.Close()
+
+	ctx := context.Background()
+	if err := client.Login(ctx); err != nil {
+		panic(err)
+	}
+
+	courses, err := client.Courses(ctx)
+	if err != nil {
+		panic(err)
+	}
+	for _, course := range courses {
+		fmt.Println(course.Name, course.Progress)
+		nodes, err := client.Tree(ctx, course)
+		if err != nil {
+			continue
+		}
+		for _, node := range yatori.Flatten(nodes) {
+			if node.Completed || node.Kind == yatori.NodeChapter {
+				continue
+			}
+			// Study 是“提交一次学习进度”的原语：
+			// 调用方自行控制循环、间隔和风控节奏。
+			_, _ = client.Study(ctx, yatori.StudyRequest{
+				Course:   course,
+				Node:     node,
+				Action:   yatori.StudyActionProgress,
+				Position: 60 * time.Second,
+				Mode:     yatori.StudyModeNormal,
+			})
+		}
+	}
 }

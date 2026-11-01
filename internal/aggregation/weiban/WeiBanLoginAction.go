@@ -2,6 +2,7 @@ package weiban
 
 import (
 	"fmt"
+	"strings"
 
 	ddddocr "github.com/Changbaiqi/ddddocr-go/utils"
 	"github.com/thedevsaddam/gojsonq"
@@ -34,6 +35,9 @@ func WeiBanLoginAction(cache *weiban.WeiBanCache) (string, error) {
 		}
 	}
 	fmt.Println(tenantList)
+	if strings.TrimSpace(cache.TenantCode) == "" {
+		return "", fmt.Errorf("未找到学校对应的 tenantCode：%s", cache.School)
+	}
 	// 拉取验证码
 	codePath, err := cache.PullCapterApi(3, nil)
 	if err != nil {
@@ -49,6 +53,22 @@ func WeiBanLoginAction(cache *weiban.WeiBanCache) (string, error) {
 		return "", err
 	}
 	fmt.Println(api)
+	if err := validateWeiBanLogin(api); err != nil {
+		return api, err
+	}
 
-	return "", nil
+	return api, nil
+}
+
+func validateWeiBanLogin(body string) error {
+	if strings.TrimSpace(body) == "" {
+		return fmt.Errorf("微伴登录返回为空")
+	}
+	if success, ok := gojsonq.New().JSONString(body).Find("success").(bool); ok && !success {
+		return fmt.Errorf("微伴登录失败：%s", body)
+	}
+	if code, ok := gojsonq.New().JSONString(body).Find("code").(float64); ok && int(code) != 200 && int(code) != 0 {
+		return fmt.Errorf("微伴登录失败：%s", body)
+	}
+	return nil
 }

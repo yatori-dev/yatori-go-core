@@ -6,6 +6,7 @@ import (
 	"strconv"
 
 	"github.com/PuerkitoBio/goquery"
+	"github.com/thedevsaddam/gojsonq"
 	"github.com/yatori-dev/yatori-go-core/v3/internal/api/ketangx"
 )
 
@@ -23,16 +24,16 @@ type KetangxNode struct {
 	Type       string `json:"type"`
 }
 
-func PullCourseListAction(cache *ketangx.KetangxUserCache) []KetangxCourse {
+func PullCourseListAction(cache *ketangx.KetangxUserCache) ([]KetangxCourse, error) {
 	course, err2 := cache.PullCourseListHTMLApi()
 	if err2 != nil {
-		fmt.Println(err2)
+		return []KetangxCourse{}, err2
 	}
 	courseList := []KetangxCourse{}
 
 	doc, err := goquery.NewDocumentFromReader(bytes.NewReader([]byte(course)))
 	if err != nil {
-		fmt.Println(err)
+		return []KetangxCourse{}, err
 	}
 	doc.Find("div.course-history").Each(func(i int, s *goquery.Selection) {
 		title := ""
@@ -59,18 +60,21 @@ func PullCourseListAction(cache *ketangx.KetangxUserCache) []KetangxCourse {
 			Progress:   progress,
 		})
 	})
-	return courseList
+	return courseList, nil
 }
 
 // 拉取对应课程视屏列表
-func PullNodeListAction(cache *ketangx.KetangxUserCache, course *KetangxCourse) []KetangxNode {
+func PullNodeListAction(cache *ketangx.KetangxUserCache, course *KetangxCourse) ([]KetangxNode, error) {
 	html, err := cache.PullVideoListHTMLApi(course.ActivityId)
 	videoList := []KetangxNode{}
 	if err != nil {
-		fmt.Println(err)
+		return videoList, err
 	}
 
 	doc, err := goquery.NewDocumentFromReader(bytes.NewReader([]byte(html)))
+	if err != nil {
+		return videoList, err
+	}
 	doc.Find("li.wis-leftNodeItem[sectli]").Each(func(i int, s *goquery.Selection) {
 		text := s.Find("div.wis-iconActive-tit").Text()
 		if text != "视频" && text != "文档" {
@@ -93,7 +97,7 @@ func PullNodeListAction(cache *ketangx.KetangxUserCache, course *KetangxCourse) 
 		videoData.Type = text
 		videoList = append(videoList, videoData)
 	})
-	return videoList
+	return videoList, nil
 }
 
 // 直接完成视屏
@@ -105,6 +109,10 @@ func CompleteVideoAction(cache *ketangx.KetangxUserCache, video *KetangxNode) (s
 	api, err := cache.CompleteVideoApi(video.SectId, cache.Id, 114514, 114514)
 	if err != nil {
 		return "", err
+	}
+	// 课堂派的完成接口即使失败也会返回 HTTP 200，需要检查 Success 字段。
+	if success, ok := gojsonq.New().JSONString(api).Find("Success").(bool); !ok || !success {
+		return api, fmt.Errorf("完成任务点失败：%s", api)
 	}
 	return api, nil
 }

@@ -104,17 +104,18 @@ func (c *client) Courses(ctx context.Context) ([]core.Course, error) {
 	out := make([]core.Course, 0, len(list))
 	for _, item := range list {
 		c.courses[item.Id] = item
+		progress := percent(item.Progress)
 		status := core.CourseStatusActive
 		if !item.StartDate.IsZero() && now.Before(item.StartDate) {
 			status = core.CourseStatusNotStarted
 		}
-		if item.Progress >= 1 || (!item.EndDate.IsZero() && now.After(item.EndDate)) {
+		if progress >= 100 || (!item.EndDate.IsZero() && now.After(item.EndDate)) {
 			status = core.CourseStatusFinished
 		}
 		out = append(out, core.Course{
 			ID:       item.Id,
 			Name:     item.Name,
-			Progress: percent(item.Progress),
+			Progress: progress,
 			Status:   status,
 			Extra: map[string]string{
 				"mode":         strconv.Itoa(item.Mode),
@@ -208,7 +209,7 @@ func (c *client) Study(ctx context.Context, req core.StudyRequest) (*core.StudyR
 	if req.Action == core.StudyActionStart {
 		position = node.ViewedDuration
 	}
-	if req.Action == core.StudyActionFinish {
+	if req.Action == core.StudyActionFinish || req.Mode == core.StudyModeFast {
 		position = node.VideoDuration
 	}
 	if node.VideoDuration > 0 && position > node.VideoDuration {
@@ -221,6 +222,9 @@ func (c *client) Study(ctx context.Context, req core.StudyRequest) (*core.StudyR
 	progress := float64(node.Progress)
 	if node.VideoDuration > 0 {
 		progress = float64(position) / float64(node.VideoDuration) * 100
+	}
+	if req.Action == core.StudyActionFinish || req.Mode == core.StudyModeFast {
+		progress = 100
 	}
 	return &core.StudyResult{
 		CourseID:  req.Course.ID,
@@ -267,6 +271,7 @@ func (c *client) Works(ctx context.Context, course core.Course) ([]core.Work, er
 				ID:       id,
 				CourseID: course.ID,
 				Name:     item.Title,
+				Status:   timeWindowStatus(item.StartTime, item.EndTime),
 				Deadline: item.EndTime,
 				Extra: map[string]string{
 					"nodeId":    item.NodeId,
@@ -358,6 +363,7 @@ func (c *client) Exams(ctx context.Context, course core.Course) ([]core.Exam, er
 				ID:       id,
 				CourseID: course.ID,
 				Name:     item.Title,
+				Status:   timeWindowStatus(item.StartTime, item.EndTime),
 				StartAt:  item.StartTime,
 				EndAt:    item.EndTime,
 				Duration: time.Duration(float64(item.LimitedTime) * float64(time.Minute)),
@@ -465,7 +471,24 @@ func nodeKind(node agg.YingHuaNode) core.NodeKind {
 	if node.TabFile {
 		return core.NodeDocument
 	}
+	if node.TabWork {
+		return core.NodeWork
+	}
+	if node.TabExam {
+		return core.NodeExam
+	}
 	return core.NodeUnknown
+}
+
+func timeWindowStatus(start, end time.Time) string {
+	now := time.Now()
+	if !start.IsZero() && now.Before(start) {
+		return "not_started"
+	}
+	if !end.IsZero() && now.After(end) {
+		return "finished"
+	}
+	return "active"
 }
 
 func percent(value float64) float64 {

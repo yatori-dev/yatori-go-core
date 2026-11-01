@@ -209,7 +209,7 @@ func (c *client) Study(ctx context.Context, req core.StudyRequest) (*core.StudyR
 	}
 	model := int64(0)
 	value := time.Now().UnixMilli()
-	if req.Mode == core.StudyModeFast {
+	if req.Mode == core.StudyModeFast || req.Action == core.StudyActionFinish {
 		model = 1
 		minutes := int64(req.Position.Minutes())
 		if minutes <= 0 {

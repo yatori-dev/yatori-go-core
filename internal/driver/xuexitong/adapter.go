@@ -6,6 +6,7 @@ import (
 	"strconv"
 	"strings"
 
+	"github.com/thedevsaddam/gojsonq"
 	"github.com/yatori-dev/yatori-go-core/v3/core"
 	agg "github.com/yatori-dev/yatori-go-core/v3/internal/aggregation/xuexitong"
 	api "github.com/yatori-dev/yatori-go-core/v3/internal/api/xuexitong"
@@ -207,6 +208,18 @@ func (c *client) Tree(ctx context.Context, course core.Course) ([]core.Node, err
 		} else {
 			chapterNode.Children = c.mapPoints(course.ID, cpi, key, points)
 		}
+		// 学习通的 myjobsnodesmap 对部分课程会返回空的任务点统计，
+		// 此时用子节点完成情况回推章节进度，避免章节一直显示 0%。
+		if item.PointTotal == 0 && len(chapterNode.Children) > 0 {
+			completed := 0
+			for _, child := range chapterNode.Children {
+				if child.Completed {
+					completed++
+				}
+			}
+			chapterNode.Progress = float64(completed) / float64(len(chapterNode.Children)) * 100
+			chapterNode.Completed = completed == len(chapterNode.Children)
+		}
 		for _, child := range chapterNode.Children {
 			c.nodes[child.ID] = child
 		}
@@ -226,7 +239,8 @@ func (c *client) mapPoints(courseID string, cpi, classID int, points []api.Point
 		if p.Type == ctype.InsertAudio {
 			kind = core.NodeAudio
 		}
-		id := fmt.Sprintf("video:%d:%d:%s", p.KnowledgeID, p.CardIndex, firstNonEmpty(p.ObjectID, p.JobID))
+		id := fmt.Sprintf("video:%d:%d:%s:%s", p.KnowledgeID, p.CardIndex, p.ObjectID, p.JobID)
+		completed := p.IsPassed || (p.Duration > 0 && p.PlayTime >= p.Duration)
 		out = append(out, core.Node{
 			ID:        id,
 			CourseID:  courseID,
@@ -234,7 +248,7 @@ func (c *client) mapPoints(courseID string, cpi, classID int, points []api.Point
 			Kind:      kind,
 			Duration:  driverutil.Seconds(p.Duration),
 			Progress:  videoProgress(p),
-			Completed: p.IsPassed,
+			Completed: completed,
 			Extra: map[string]string{
 				"knowledgeId": strconv.Itoa(p.KnowledgeID),
 				"cardIndex":   strconv.Itoa(p.CardIndex),
@@ -254,7 +268,7 @@ func (c *client) mapPoints(courseID string, cpi, classID int, points []api.Point
 	for i := range works {
 		p := &works[i]
 		out = append(out, core.Node{
-			ID:       fmt.Sprintf("work:%d:%d:%s", p.KnowledgeID, p.CardIndex, p.WorkID),
+			ID:       fmt.Sprintf("work:%d:%d:%s:%s", p.KnowledgeID, p.CardIndex, p.WorkID, p.JobID),
 			CourseID: courseID,
 			Name:     "work",
 			Kind:     core.NodeWork,
@@ -273,11 +287,16 @@ func (c *client) mapPoints(courseID string, cpi, classID int, points []api.Point
 	}
 	for i := range documents {
 		p := &documents[i]
+		progress := 0.0
+		if p.Read {
+			progress = 100
+		}
 		out = append(out, core.Node{
-			ID:        fmt.Sprintf("document:%d:%d:%s", p.KnowledgeID, p.CardIndex, firstNonEmpty(p.ObjectID, p.JobID)),
+			ID:        fmt.Sprintf("document:%d:%d:%s:%s", p.KnowledgeID, p.CardIndex, p.ObjectID, p.JobID),
 			CourseID:  courseID,
 			Name:      p.Title,
 			Kind:      core.NodeDocument,
+			Progress:  progress,
 			Completed: p.Read,
 			Extra: map[string]string{
 				"knowledgeId": strconv.Itoa(p.KnowledgeID),
@@ -296,7 +315,7 @@ func (c *client) mapPoints(courseID string, cpi, classID int, points []api.Point
 	for i := range hyperlinks {
 		p := &hyperlinks[i]
 		out = append(out, core.Node{
-			ID:       fmt.Sprintf("link:%d:%d:%s", p.KnowledgeID, p.CardIndex, firstNonEmpty(p.ObjectID, p.JobID)),
+			ID:       fmt.Sprintf("link:%d:%d:%s:%s", p.KnowledgeID, p.CardIndex, p.ObjectID, p.JobID),
 			CourseID: courseID,
 			Name:     p.Title,
 			Kind:     core.NodeLink,
@@ -316,7 +335,7 @@ func (c *client) mapPoints(courseID string, cpi, classID int, points []api.Point
 	for i := range lives {
 		p := &lives[i]
 		out = append(out, core.Node{
-			ID:        fmt.Sprintf("live:%d:%d:%s", p.KnowledgeID, p.CardIndex, firstNonEmpty(p.LiveId, p.JobID)),
+			ID:        fmt.Sprintf("live:%d:%d:%s:%s", p.KnowledgeID, p.CardIndex, p.LiveId, p.JobID),
 			CourseID:  courseID,
 			Name:      p.Title,
 			Kind:      core.NodeLive,
@@ -434,7 +453,7 @@ func (c *client) studyVideo(req core.StudyRequest, p *api.PointVideoDto, result 
 	if position <= 0 {
 		position = p.PlayTime
 	}
-	if req.Action == core.StudyActionFinish {
+	if req.Action == core.StudyActionFinish || req.Mode == core.StudyModeFast {
 		position = p.Duration
 	}
 	if position > p.Duration {
@@ -463,10 +482,28 @@ func (c *client) studyVideo(req core.StudyRequest, p *api.PointVideoDto, result 
 	if err != nil {
 		return nil, core.Wrap(core.XueXiTong, "study.video", err)
 	}
+	passed := p.IsPassed
+	isPassed := gojsonq.New().JSONString(report).Find("isPassed")
+	if isPassed == nil {
+		return nil, core.Wrap(core.XueXiTong, "study.video", fmt.Errorf("提交学时返回异常：%s", summarizeReport(report)))
+	}
+	if flag, ok := isPassed.(bool); ok {
+		passed = flag
+	}
+	progress := videoProgress(p)
+	if p.Duration > 0 {
+		progress = float64(position) / float64(p.Duration) * 100
+		if progress > 100 {
+			progress = 100
+		}
+	}
+	if req.Action == core.StudyActionFinish || req.Mode == core.StudyModeFast {
+		progress = 100
+	}
 	result.Submitted = true
 	result.Position = driverutil.Seconds(position)
-	result.Progress = videoProgress(p)
-	result.Completed = p.IsPassed || position >= p.Duration
+	result.Progress = progress
+	result.Completed = passed || position >= p.Duration
 	result.Message = report
 	result.Raw = report
 	return result, nil
@@ -477,15 +514,26 @@ func (c *client) studyDocument(req core.StudyRequest, p *api.PointDocumentDto, r
 		report string
 		err    error
 	)
-	if req.Mode == core.StudyModeFast {
-		report, err = c.cache.ReadV2PointPeReport(p, 3, nil)
-	} else {
-		report, err = c.cache.ReadV2PointWebReport(p, 3, nil)
+	switch p.Type {
+	case ctype.InsertBook:
+		report, err = c.cache.DocumentDtoReadingBookReport(p, 3, nil)
+	case ctype.InsertReadV2:
+		if req.Mode == core.StudyModeFast {
+			report, err = c.cache.ReadV2PointPeReport(p, 3, nil)
+		} else {
+			report, err = c.cache.ReadV2PointWebReport(p, 3, nil)
+		}
+	default:
+		report, err = c.cache.DocumentDtoReadingReport(p, 3, nil)
 	}
 	if err != nil {
 		return nil, core.Wrap(core.XueXiTong, "study.document", err)
 	}
+	if err := validateReadReport(report); err != nil {
+		return nil, core.Wrap(core.XueXiTong, "study.document", err)
+	}
 	result.Submitted = true
+	result.Progress = 100
 	result.Completed = true
 	result.Message = report
 	result.Raw = report
@@ -497,7 +545,11 @@ func (c *client) studyHyperlink(req core.StudyRequest, p *api.PointHyperlinkDto,
 	if err != nil {
 		return nil, core.Wrap(core.XueXiTong, "study.hyperlink", err)
 	}
+	if err := validateReadReport(report); err != nil {
+		return nil, core.Wrap(core.XueXiTong, "study.hyperlink", err)
+	}
 	result.Submitted = true
+	result.Progress = 100
 	result.Completed = true
 	result.Message = report
 	result.Raw = report
@@ -561,6 +613,9 @@ func (c *client) DoWork(ctx context.Context, req core.WorkRequest) (*core.Answer
 		return nil, core.Invalid(core.XueXiTong, "work", "work raw data is missing; call Works first")
 	}
 	work := *raw
+	if work.QuestionTotal <= 0 {
+		return nil, core.Invalid(core.XueXiTong, "work", "作业题目数量为 0，可能是作业未开放或列表数据不完整")
+	}
 	if err := agg.EnterWorkAction(c.cache, &work); err != nil {
 		return nil, core.Wrap(core.XueXiTong, "work.enter", err)
 	}
@@ -643,6 +698,9 @@ func (c *client) DoExam(ctx context.Context, req core.ExamRequest) (*core.Answer
 		return nil, core.Invalid(core.XueXiTong, "exam", "exam raw data is missing; call Exams first")
 	}
 	exam := *raw
+	if exam.QuestionTotal <= 0 {
+		return nil, core.Invalid(core.XueXiTong, "exam", "考试题目数量为 0，可能是考试未开放或列表数据不完整")
+	}
 	if err := agg.EnterExamAction(c.cache, &exam); err != nil {
 		return nil, core.Wrap(core.XueXiTong, "exam.enter", err)
 	}
