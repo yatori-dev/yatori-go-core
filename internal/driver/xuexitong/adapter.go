@@ -478,7 +478,7 @@ func (c *client) studyVideo(req core.StudyRequest, p *api.PointVideoDto, result 
 	// mobile card carries the attachment metadata (otherInfo/rt/face enc)
 	// required by the submit endpoint, so fetch it once before submitting.
 	if p.DToken == "" {
-		card, _, err := agg.PageMobileChapterCardAction(
+		card, err := fetchMobileCardCached(
 			c.cache,
 			driverutil.Int(p.ClassID),
 			driverutil.Int(p.CourseID),
@@ -487,6 +487,12 @@ func (c *client) studyVideo(req core.StudyRequest, p *api.PointVideoDto, result 
 			driverutil.Int(p.Cpi),
 		)
 		if err != nil {
+			// 多任务点并发拉卡片时容易触发图片验证码。验证码不是节点本身
+			// 的错误，这里返回一个未完成的普通结果，让调用方稍后重试。
+			if strings.Contains(err.Error(), "验证码") {
+				result.Message = "章节卡片触发验证码，已跳过本次学习"
+				return result, nil
+			}
 			// 人脸锁/章节未开放等错误必须上抛，否则会继续用一个空的
 			// DToken 去请求视频状态，最终只看到 203 这种误导性错误。
 			return nil, core.Wrap(core.XueXiTong, "study.video.card", err)
@@ -555,7 +561,7 @@ func (c *client) studyVideo(req core.StudyRequest, p *api.PointVideoDto, result 
 	// 要求先完成一次人脸采集并把 videoFaceCaptureSuccessEnc 带回。
 	if !passed && !p.VideoFaceCaptured && p.VideoFaceCaptureEnc != "" && videoFaceCaptureDue(p, position) {
 		if p.CardEnc == "" {
-			if card, _, cardErr := agg.PageMobileChapterCardAction(c.cache, driverutil.Int(p.ClassID), driverutil.Int(p.CourseID), p.KnowledgeID, p.CardIndex, driverutil.Int(p.Cpi)); cardErr == nil {
+			if card, cardErr := fetchMobileCardCached(c.cache, driverutil.Int(p.ClassID), driverutil.Int(p.CourseID), p.KnowledgeID, p.CardIndex, driverutil.Int(p.Cpi)); cardErr == nil {
 				_, _ = p.AttachmentsDetection(card)
 			}
 		}
@@ -602,7 +608,7 @@ func (c *client) studyDocument(req core.StudyRequest, p *api.PointDocumentDto, r
 	// iframe data 不带；缺 jtoken 时 ananas/job/document 会返回
 	// “无效的请求参数”。这里按卡片索引补拉一次手机端卡片。
 	if p.Jtoken == "" {
-		if card, _, err := agg.PageMobileChapterCardAction(
+		if card, err := fetchMobileCardCached(
 			c.cache,
 			driverutil.Int(p.ClassID),
 			driverutil.Int(p.CourseID),
@@ -613,6 +619,10 @@ func (c *client) studyDocument(req core.StudyRequest, p *api.PointDocumentDto, r
 			_, _ = p.AttachmentsDetection(card)
 		} else {
 			c.Logger.Debugf("xuexitong: document card for %s failed: %v", p.ObjectID, err)
+			if strings.Contains(err.Error(), "验证码") {
+				result.Message = "章节卡片触发验证码，已跳过本次文档"
+				return result, nil
+			}
 		}
 	}
 	var (
@@ -642,7 +652,8 @@ func (c *client) studyDocument(req core.StudyRequest, p *api.PointDocumentDto, r
 			result.Submitted = false
 			result.Progress = 100
 			result.Completed = true
-			result.Message = report
+			result.Message = "非任务点文档，已跳过"
+			result.Raw = report
 			return result, nil
 		}
 		return nil, core.Wrap(core.XueXiTong, "study.document", err)

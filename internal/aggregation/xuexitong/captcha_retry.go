@@ -5,10 +5,7 @@ import (
 	"errors"
 	"fmt"
 
-	ddddocr "github.com/Changbaiqi/ddddocr-go/utils"
-	ort "github.com/yalue/onnxruntime_go"
 	xuexitongApi "github.com/yatori-dev/yatori-go-core/v3/internal/api/xuexitong"
-	"github.com/yatori-dev/yatori-go-core/v3/utils"
 )
 
 const defaultCaptchaAttempts = 5
@@ -53,18 +50,34 @@ func retryCaptcha(ctx context.Context, kind string, attempts int, attempt func()
 }
 
 func passImageCaptcha(ctx context.Context, cache *xuexitongApi.XueXiTUserCache) error {
-	return retryCaptcha(ctx, "图片验证码", defaultCaptchaAttempts, func() (bool, error) {
-		img, err := cache.XueXiTVerificationCodeApi(7, nil)
-		if err != nil {
-			return false, err
+	// 先处理反爬验证码：processVerifyPng.ac + processVerify.ac(GET)。
+	err := retryCaptcha(ctx, "反爬图片验证码", defaultCaptchaAttempts, func() (bool, error) {
+		img, imgErr := cache.XueXiTProcessVerifyImage(2, nil)
+		if imgErr != nil {
+			return false, imgErr
 		}
-		_, width, _ := utils.GetImageShape(img)
-		shape := ort.NewShape(1, 30)
-		if width == 140 {
-			shape = ort.NewShape(1, 23)
+		code := ocrCaptchaImage(img)
+		if code == "" {
+			return false, errors.New("验证码识别为空")
 		}
-		codeResult := ddddocr.SemiOCRVerification(img, shape)
-		return cache.XueXiTPassVerificationCode(codeResult, 7, nil)
+		return cache.XueXiTPassVerificationCode(code, 2, nil)
+	})
+	if err == nil {
+		return nil
+	}
+
+	// 反爬验证码接口不可用时，回退到章节图片验证码：
+	// kaptcha-img/code + kaptcha-img/ajaxValidate2。
+	return retryCaptcha(ctx, "章节图片验证码", defaultCaptchaAttempts, func() (bool, error) {
+		img, imgErr := cache.XueXiTChapterVerificationCodeApi(2, nil)
+		if imgErr != nil {
+			return false, imgErr
+		}
+		code := ocrCaptchaImage(img)
+		if code == "" {
+			return false, errors.New("验证码识别为空")
+		}
+		return cache.XueXiTPassCahpterVerificationCode(code, 2, nil)
 	})
 }
 

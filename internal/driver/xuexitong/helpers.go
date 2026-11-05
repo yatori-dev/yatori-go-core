@@ -3,6 +3,8 @@ package xuexitong
 import (
 	"fmt"
 	"strings"
+	"sync"
+	"time"
 
 	"github.com/thedevsaddam/gojsonq"
 	"github.com/yatori-dev/yatori-go-core/v3/core"
@@ -75,6 +77,69 @@ func videoFaceCaptureDue(p *api.PointVideoDto, position int) bool {
 		}
 	}
 	return false
+}
+
+const (
+	mobileCardTTL         = 2 * time.Minute
+	mobileCardMinInterval = 3 * time.Second
+)
+
+type mobileCardCacheEntry struct {
+	card any
+	at   time.Time
+}
+
+var (
+	mobileCardCache     sync.Map
+	mobileCardRateMu    sync.Mutex
+	mobileCardLastFetch = map[string]time.Time{}
+)
+
+// fetchMobileCardCached 缓存并限速手机端章节卡片请求。
+//
+// 学习通在多任务点模式下会同时开多个 Client，每个任务点都去拉一次
+// 同一个卡片时很容易触发图片验证码。这里按账号串行化卡片请求，
+// 并对同一张卡片做短 TTL 缓存，显著降低触发验证码的概率。
+func fetchMobileCardCached(cache *api.XueXiTUserCache, classID, courseID, knowledgeID, cardIndex, cpi int) (any, error) {
+	key := fmt.Sprintf("%s|%d|%d|%d|%d", cache.Name, classID, courseID, knowledgeID, cardIndex)
+	if card, ok := loadMobileCard(key); ok {
+		return card, nil
+	}
+
+	mobileCardRateMu.Lock()
+	defer mobileCardRateMu.Unlock()
+
+	if last, ok := mobileCardLastFetch[cache.Name]; ok {
+		if wait := mobileCardMinInterval - time.Since(last); wait > 0 {
+			time.Sleep(wait)
+		}
+	}
+	mobileCardLastFetch[cache.Name] = time.Now()
+
+	// 等待期间别的 worker 可能已经拉过同一张卡片。
+	if card, ok := loadMobileCard(key); ok {
+		return card, nil
+	}
+
+	card, _, err := agg.PageMobileChapterCardAction(cache, classID, courseID, knowledgeID, cardIndex, cpi)
+	if err != nil {
+		return nil, err
+	}
+	mobileCardCache.Store(key, mobileCardCacheEntry{card: card, at: time.Now()})
+	return card, nil
+}
+
+func loadMobileCard(key string) (any, bool) {
+	value, ok := mobileCardCache.Load(key)
+	if !ok {
+		return nil, false
+	}
+	entry, ok := value.(mobileCardCacheEntry)
+	if !ok || time.Since(entry.at) >= mobileCardTTL {
+		mobileCardCache.Delete(key)
+		return nil, false
+	}
+	return entry.card, true
 }
 
 type questionWriter interface {

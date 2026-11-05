@@ -3,7 +3,7 @@ module github.com/yatori-dev/yatori-go-core/v3
 go 1.27.3
 
 require (
-	github.com/Changbaiqi/ddddocr-go v0.1.5-0.20251217103242-1896343369f8 //0.1.4.5
+	github.com/Changbaiqi/ddddocr-go v0.0.0-20261105171522-8d0e8f159482 //0.1.4.6
 	github.com/PuerkitoBio/goquery v1.13.0
 	github.com/dop251/goja v0.0.0-20261021140635-64adc8bb4d51
 	github.com/google/uuid v1.6.0
@@ -52,3 +52,5 @@ require (
 	golang.org/x/xerrors v0.0.0-20220907171357-04be3eba64a2 // indirect
 	gopkg.in/alexcesaro/quotedprintable.v3 v3.0.0-20150716171945-2caba252f4dc // indirect
 )
+
+replace github.com/Changbaiqi/ddddocr-go => ../ddddocr-go

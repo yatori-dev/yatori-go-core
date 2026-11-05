@@ -1,49 +1,51 @@
 package xuexitong
 
 import (
-	"bytes"
 	"crypto/md5"
 	"crypto/tls"
 	"encoding/hex"
+	"encoding/json"
 	"fmt"
 	"image"
 
 	"io/ioutil"
 
-	"mime/multipart"
 	"net/http"
 	"net/url"
 	"strconv"
+	"strings"
 	"time"
 
 	"github.com/google/uuid"
+	"github.com/yatori-dev/yatori-go-core/v3/utils"
 )
 
 var randChar []string = []string{"0", "1", "2", "3", "4", "5", "6", "7", "8", "9", "a", "b", "c", "d", "e", "f", "A", "B", "C", "D", "E", "F"}
 
 // 获取学习通验证码
-func (cache *XueXiTUserCache) XueXiTVerificationCodeApi(retry int, lastErr error) (image.Image, error) {
+// XueXiTProcessVerifyImage 只拉取反爬验证码（processVerifyPng.ac）。
+//
+// 注意：这个接口只有会话被重定向到 antispiderShowVerify.ac 时才返回图片；
+// 正常会话会返回 404 HTML，因此不能和章节图片验证码混在一起重试。
+func (cache *XueXiTUserCache) XueXiTProcessVerifyImage(retry int, lastErr error) (image.Image, error) {
 	if retry < 0 {
 		return nil, lastErr
 	}
 
-	urlStr := "https://mooc1-api.chaoxing.com/processVerifyPng.ac?t=" + fmt.Sprintf("%d", time.Now().UnixMilli())
+	urlStr := "https://mooc1.chaoxing.com/processVerifyPng.ac?t=" + fmt.Sprintf("%d", time.Now().UnixMilli())
 	method := "GET"
 
 	tr := &http.Transport{
 		TLSClientConfig: &tls.Config{},
 	}
-	//如果开启了IP代理，那么就直接添加代理
 	if cache.IpProxySW {
 		tr.Proxy = func(req *http.Request) (*url.URL, error) {
-			return url.Parse("http://" + cache.ProxyIP) // 设置代理
+			return url.Parse("http://" + cache.ProxyIP)
 		}
 	}
 	client := newRequestClient(tr)
 	req, err := http.NewRequest(method, urlStr, nil)
-
 	if err != nil {
-		fmt.Println(err)
 		return nil, err
 	}
 	for _, cookie := range cache.cookies {
@@ -51,23 +53,30 @@ func (cache *XueXiTUserCache) XueXiTVerificationCodeApi(retry int, lastErr error
 	}
 	req.Header.Add("User-Agent", GetUA("mobile"))
 	req.Header.Add("Accept", "*/*")
-	req.Header.Add("Host", "mooc1-api.chaoxing.com")
+	req.Header.Add("Host", "mooc1.chaoxing.com")
 	req.Header.Add("Connection", "keep-alive")
 
 	res, err := client.Do(req)
 	if err != nil {
-		return cache.XueXiTChapterVerificationCodeApi(retry-1, err)
+		return cache.XueXiTProcessVerifyImage(retry-1, err)
 	}
 	defer res.Body.Close()
+	utils.CookiesAddNoRepetition(&cache.cookies, res.Cookies())
 
-	// 直接 decode 图片
 	img, _, err := image.Decode(res.Body)
 	if err != nil {
-		// 可能是坏图，尝试重试
-		return cache.XueXiTChapterVerificationCodeApi(retry-1, err)
+		return cache.XueXiTProcessVerifyImage(retry-1, err)
 	}
-
 	return img, nil
+}
+
+// XueXiTVerificationCodeApi 兼容旧调用：先取反爬验证码，失败再取章节图片验证码。
+func (cache *XueXiTUserCache) XueXiTVerificationCodeApi(retry int, lastErr error) (image.Image, error) {
+	img, err := cache.XueXiTProcessVerifyImage(retry, lastErr)
+	if err == nil {
+		return img, nil
+	}
+	return cache.XueXiTChapterVerificationCodeApi(retry, err)
 }
 
 // 获取学习通验证码
@@ -113,6 +122,7 @@ func (cache *XueXiTUserCache) XueXiTChapterVerificationCodeApi(retry int, lastEr
 		return cache.XueXiTChapterVerificationCodeApi(retry-1, err)
 	}
 	defer res.Body.Close()
+	utils.CookiesAddNoRepetition(&cache.cookies, res.Cookies())
 
 	// 直接 decode 图片
 	img, _, err := image.Decode(res.Body)
@@ -124,45 +134,32 @@ func (cache *XueXiTUserCache) XueXiTChapterVerificationCodeApi(retry int, lastEr
 	return img, nil
 }
 
-// 提交学习通验证码
+// 提交学习通反爬验证码（processVerify）。
+//
+// 对应 antispiderShowVerify.ac 页面表单：GET /html/processVerify.ac
+// 参数 ucode/app，成功返回 302 到原请求地址；POST 会被 405 拒绝。
 func (cache *XueXiTUserCache) XueXiTPassVerificationCode(code string, retry int, lastErr error) (bool, error) {
 	if retry < 0 {
 		return false, lastErr
 	}
-	urlStr := "https://mooc1-api.chaoxing.com/html/processVerify.ac"
-	method := "POST"
-
-	payload := &bytes.Buffer{}
-	writer := multipart.NewWriter(payload)
-	_ = writer.WriteField("app", "0")
-	_ = writer.WriteField("ucode", code)
-	err := writer.Close()
-	if err != nil {
-		fmt.Println(err)
-		return false, err
-	}
+	urlStr := "https://mooc1.chaoxing.com/html/processVerify.ac?ucode=" + url.QueryEscape(code) + "&app=0"
 
 	tr := &http.Transport{
 		TLSClientConfig: &tls.Config{},
 	}
-	//如果开启了IP代理，那么就直接添加代理
 	if cache.IpProxySW {
 		tr.Proxy = func(req *http.Request) (*url.URL, error) {
-			return url.Parse("http://" + cache.ProxyIP) // 设置代理
+			return url.Parse("http://" + cache.ProxyIP)
 		}
 	}
 	client := &http.Client{
 		Transport: tr,
-		// 禁止自动重定向
 		CheckRedirect: func(req *http.Request, via []*http.Request) error {
-			// 返回 http.ErrUseLastResponse 表示不要跟随重定向
 			return http.ErrUseLastResponse
 		},
 	}
-	req, err := http.NewRequest(method, urlStr, payload)
-
+	req, err := http.NewRequest("GET", urlStr, nil)
 	if err != nil {
-		fmt.Println(err)
 		return false, err
 	}
 	for _, cookie := range cache.cookies {
@@ -170,70 +167,45 @@ func (cache *XueXiTUserCache) XueXiTPassVerificationCode(code string, retry int,
 	}
 	req.Header.Add("User-Agent", GetUA("mobile"))
 	req.Header.Add("Accept", "*/*")
-	req.Header.Add("Host", "mooc1-api.chaoxing.com")
+	req.Header.Add("Host", "mooc1.chaoxing.com")
 	req.Header.Add("Connection", "keep-alive")
-	req.Header.Add("Content-Type", "multipart/form-data; boundary=--------------------------114712911338779046453834")
+	req.Header.Add("Referer", "https://mooc1.chaoxing.com/antispiderShowVerify.ac")
 
-	req.Header.Set("Content-Type", writer.FormDataContentType())
 	res, err := client.Do(req)
 	if err != nil {
-		fmt.Println(err)
-		return cache.XueXiTPassVerificationCode(code, retry-1, fmt.Errorf("failed to create HTTP request: %v", err))
+		return cache.XueXiTPassVerificationCode(code, retry-1, err)
 	}
 	defer res.Body.Close()
-
-	//body, err := ioutil.ReadAll(res.Body)
-	//if err != nil {
-	//	fmt.Println(err)
-	//	return false, err
-	//}
-	//fmt.Println(string(body))
-	if res.StatusCode == 302 {
+	utils.CookiesAddNoRepetition(&cache.cookies, res.Cookies())
+	if res.StatusCode == http.StatusFound || res.StatusCode == http.StatusMovedPermanently {
 		return true, nil
 	}
 	return false, nil
 }
 
-// 提交学习通验证码(章节内）
+// 提交学习通章节图片验证码（kaptcha-img）。
+//
+// 图片来自 /mooc-ans/kaptcha-img/code，提交到同目录的 ajaxValidate2，
+// 返回 {"status":true/false}。
 func (cache *XueXiTUserCache) XueXiTPassCahpterVerificationCode(code string, retry int, lastErr error) (bool, error) {
 	if retry < 0 {
 		return false, lastErr
 	}
-	//urlStr := "https://mooc1.chaoxing.com/mooc-ans/kaptcha-img/ajaxValidate2"
-	urlStr := "https://mooc1.chaoxing.com/mooc-ans/verifyCode/studychapter"
-	method := "POST"
-
-	payload := &bytes.Buffer{}
-	writer := multipart.NewWriter(payload)
-	//_ = writer.WriteField("app", "0")
-	_ = writer.WriteField("code", code)
-	err := writer.Close()
-	if err != nil {
-		fmt.Println(err)
-		return false, err
-	}
+	urlStr := "https://mooc1.chaoxing.com/mooc-ans/kaptcha-img/ajaxValidate2"
+	form := url.Values{}
+	form.Set("code", code)
 
 	tr := &http.Transport{
 		TLSClientConfig: &tls.Config{},
 	}
-	//如果开启了IP代理，那么就直接添加代理
 	if cache.IpProxySW {
 		tr.Proxy = func(req *http.Request) (*url.URL, error) {
-			return url.Parse("http://" + cache.ProxyIP) // 设置代理
+			return url.Parse("http://" + cache.ProxyIP)
 		}
 	}
-	client := &http.Client{
-		Transport: tr,
-		// 禁止自动重定向
-		CheckRedirect: func(req *http.Request, via []*http.Request) error {
-			// 返回 http.ErrUseLastResponse 表示不要跟随重定向
-			return http.ErrUseLastResponse
-		},
-	}
-	req, err := http.NewRequest(method, urlStr, payload)
-
+	client := &http.Client{Transport: tr}
+	req, err := http.NewRequest("POST", urlStr, strings.NewReader(form.Encode()))
 	if err != nil {
-		fmt.Println(err)
 		return false, err
 	}
 	for _, cookie := range cache.cookies {
@@ -241,28 +213,30 @@ func (cache *XueXiTUserCache) XueXiTPassCahpterVerificationCode(code string, ret
 	}
 	req.Header.Add("User-Agent", GetUA("mobile"))
 	req.Header.Add("Accept", "*/*")
-	req.Header.Add("Host", "mooc1-api.chaoxing.com")
+	req.Header.Add("Host", "mooc1.chaoxing.com")
 	req.Header.Add("Connection", "keep-alive")
-	req.Header.Add("Content-Type", "multipart/form-data; boundary=--------------------------114712911338779046453834")
+	req.Header.Add("Content-Type", "application/x-www-form-urlencoded")
+	req.Header.Add("Referer", "https://mooc1.chaoxing.com/mooc-ans/mycourse/studentstudy")
+	req.Header.Add("X-Requested-With", "XMLHttpRequest")
 
-	req.Header.Set("Content-Type", writer.FormDataContentType())
 	res, err := client.Do(req)
 	if err != nil {
-		fmt.Println(err)
 		return cache.XueXiTPassCahpterVerificationCode(code, retry-1, err)
 	}
 	defer res.Body.Close()
+	utils.CookiesAddNoRepetition(&cache.cookies, res.Cookies())
 
 	body, err := ioutil.ReadAll(res.Body)
 	if err != nil {
-		fmt.Println(err)
 		return false, err
 	}
-	fmt.Println(string(body))
-	if string(body) != `{"status":true}` {
-		return true, nil
+	var payload struct {
+		Status bool `json:"status"`
 	}
-	return false, nil
+	if err := json.Unmarshal(body, &payload); err != nil {
+		return false, nil
+	}
+	return payload.Status, nil
 }
 
 // XueXiTSliderVerificationCodeApi 获取学习通滑块验证码相关信息，返回信息cx_captcha_function({"t":1764584640340,"captchaId":"Ew0z9skxsLzVKQjmeObQiRVLxkxbPkRF"})
