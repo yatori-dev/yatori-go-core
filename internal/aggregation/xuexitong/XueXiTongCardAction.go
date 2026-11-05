@@ -62,50 +62,66 @@ func PageMobileChapterCardAction(
 	}
 	//如果遇到人脸,则进行过人脸
 	if faceRequired(cardHtml) {
-		ObjectId, err1 := PassFacePhoneAction(cache, fmt.Sprintf("%d", courseId), fmt.Sprintf("%d", classId), fmt.Sprintf("%d", cpi), fmt.Sprintf("%d", knowledgeId), "", "", "")
-		//人脸重试机制
-		for i := 0; i <= 8; i++ {
-			if err1 != nil && strings.Contains(err1.Error(), "用户图片信息出错") {
-				utils.HumanDelay(800*time.Millisecond, 1500*time.Millisecond) //隔一下
-				ObjectId, err1 = PassFacePhoneAction(cache, fmt.Sprintf("%d", courseId), fmt.Sprintf("%d", classId), fmt.Sprintf("%d", cpi), fmt.Sprintf("%d", knowledgeId), "", "", "")
-			} else {
-				break
-			}
-		}
-		if err1 != nil && strings.Contains(err1.Error(), "用户图片信息出错") {
-			//新接口彻底失败 → 回退老接口
-			ObjectId, err1 = PassFacePhoneOldAction(cache, fmt.Sprintf("%d", courseId), fmt.Sprintf("%d", classId), fmt.Sprintf("%d", cpi), fmt.Sprintf("%d", knowledgeId), "", "", "")
-		}
-		if err1 != nil {
-			log.Println(ObjectId, err1.Error())
-			return nil, "", err1
-		}
-		//过完人脸重新拉取章节信息。
-		//人脸校验接口返回通过后，服务端状态同步可能有延迟，单次拉取容易误判为"仍需要人脸"，
-		//导致明明校验已通过却直接报错停止，这里做短轮询等待状态同步。
-		cardHtml, err = waitFaceCardPassed(cache, classId, courseId, knowledgeId, cardIndex, cpi)
-		if err != nil {
-			return nil, "", fmt.Errorf("人脸识别后拉取章节卡片失败: %w", err)
-		}
-		//如果新版本人脸过不去，则再尝试旧版本人脸
-		if faceRequired(cardHtml) {
-			ObjectId, oldErr := PassFacePhoneOldAction(cache, fmt.Sprintf("%d", courseId), fmt.Sprintf("%d", classId), fmt.Sprintf("%d", cpi), fmt.Sprintf("%d", knowledgeId), "", "", "")
-			if oldErr != nil {
-				// 旧接口也失败时保留原因，最终报错里带上，方便定位
-				log2.Print(log2.INFO, "[", cache.Name, "] 旧版人脸兜底失败: ", oldErr)
-			} else {
-				log2.Print(log2.DEBUG, "[", cache.Name, "] 旧版人脸兜底通过 objectId=", ObjectId)
+		// 章节人脸锁：卡片返回的是跳转 knowledge/startface 的页面，
+		// 必须用章节级接口(chapterId + type=1 + type=4 签名)解锁。
+		if strings.Contains(cardHtml, "knowledge/startface") {
+			ObjectId, faceErr := PassFaceChapterAction(cache, fmt.Sprintf("%d", courseId), fmt.Sprintf("%d", classId), fmt.Sprintf("%d", cpi), fmt.Sprintf("%d", knowledgeId))
+			if faceErr != nil {
+				log.Println(ObjectId, faceErr.Error())
+				return nil, "", faceErr
 			}
 			cardHtml, err = waitFaceCardPassed(cache, classId, courseId, knowledgeId, cardIndex, cpi)
 			if err != nil {
-				return nil, "", fmt.Errorf("旧版人脸识别后拉取章节卡片失败: %w", err)
+				return nil, "", fmt.Errorf("章节人脸识别后拉取章节卡片失败: %w", err)
+			}
+			if faceRequired(cardHtml) {
+				return nil, "", errors.New("通过章节人脸识别失败: 接口已返回通过，但章节仍然要求人脸识别(服务端状态未同步)")
+			}
+		} else {
+			ObjectId, err1 := PassFacePhoneAction(cache, fmt.Sprintf("%d", courseId), fmt.Sprintf("%d", classId), fmt.Sprintf("%d", cpi), fmt.Sprintf("%d", knowledgeId), "", "", "")
+			//人脸重试机制
+			for i := 0; i <= 8; i++ {
+				if err1 != nil && strings.Contains(err1.Error(), "用户图片信息出错") {
+					utils.HumanDelay(800*time.Millisecond, 1500*time.Millisecond) //隔一下
+					ObjectId, err1 = PassFacePhoneAction(cache, fmt.Sprintf("%d", courseId), fmt.Sprintf("%d", classId), fmt.Sprintf("%d", cpi), fmt.Sprintf("%d", knowledgeId), "", "", "")
+				} else {
+					break
+				}
+			}
+			if err1 != nil && strings.Contains(err1.Error(), "用户图片信息出错") {
+				//新接口彻底失败 → 回退老接口
+				ObjectId, err1 = PassFacePhoneOldAction(cache, fmt.Sprintf("%d", courseId), fmt.Sprintf("%d", classId), fmt.Sprintf("%d", cpi), fmt.Sprintf("%d", knowledgeId), "", "", "")
+			}
+			if err1 != nil {
+				log.Println(ObjectId, err1.Error())
+				return nil, "", err1
+			}
+			//过完人脸重新拉取章节信息。
+			//人脸校验接口返回通过后，服务端状态同步可能有延迟，单次拉取容易误判为"仍需要人脸"，
+			//导致明明校验已通过却直接报错停止，这里做短轮询等待状态同步。
+			cardHtml, err = waitFaceCardPassed(cache, classId, courseId, knowledgeId, cardIndex, cpi)
+			if err != nil {
+				return nil, "", fmt.Errorf("人脸识别后拉取章节卡片失败: %w", err)
+			}
+			//如果新版本人脸过不去，则再尝试旧版本人脸
+			if faceRequired(cardHtml) {
+				ObjectId, oldErr := PassFacePhoneOldAction(cache, fmt.Sprintf("%d", courseId), fmt.Sprintf("%d", classId), fmt.Sprintf("%d", cpi), fmt.Sprintf("%d", knowledgeId), "", "", "")
+				if oldErr != nil {
+					// 旧接口也失败时保留原因，最终报错里带上，方便定位
+					log2.Print(log2.INFO, "[", cache.Name, "] 旧版人脸兜底失败: ", oldErr)
+				} else {
+					log2.Print(log2.DEBUG, "[", cache.Name, "] 旧版人脸兜底通过 objectId=", ObjectId)
+				}
+				cardHtml, err = waitFaceCardPassed(cache, classId, courseId, knowledgeId, cardIndex, cpi)
+				if err != nil {
+					return nil, "", fmt.Errorf("旧版人脸识别后拉取章节卡片失败: %w", err)
+				}
+			}
+
+			if faceRequired(cardHtml) {
+				return nil, "", errors.New("通过人脸识别失败: 人脸接口已返回通过，但章节仍然要求人脸识别(服务端状态未同步)")
 			}
 		}
-
-		if faceRequired(cardHtml) {
-			return nil, "", errors.New("通过人脸识别失败: 人脸接口已返回通过，但章节仍然要求人脸识别(服务端状态未同步)")
-		}
-
 	}
 
 	//探测又进度控制的

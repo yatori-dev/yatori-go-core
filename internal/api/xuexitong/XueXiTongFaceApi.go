@@ -2,19 +2,28 @@ package xuexitong
 
 import (
 	"bytes"
+	"crypto"
 	"crypto/md5"
+	"crypto/rand"
+	"crypto/rsa"
+	"crypto/sha256"
 	"crypto/tls"
+	"crypto/x509"
+	"encoding/base64"
 	"encoding/hex"
 	"encoding/json"
+	"encoding/pem"
 	"errors"
 	"fmt"
 	"image"
 	"image/jpeg"
 	"io/ioutil"
+	mrand "math/rand"
 	"mime/multipart"
 	"net/http"
 	"net/url"
 	"regexp"
+	"strconv"
 	"strings"
 	"time"
 
@@ -185,7 +194,16 @@ func (cache *XueXiTUserCache) GetHistoryFaceImg(puid string) (string, image.Imag
 // 上传人脸图片
 func (cache *XueXiTUserCache) UploadFaceImageApi(token string, image image.Image) (string, error) {
 
-	urlStr := "https://pan-yz.chaoxing.com/upload"
+	// 新版 App 使用 /upload/v2 + appid/timestamp/nonce/signature 注册人脸。
+	// 旧版 /upload 上传的 objectId 会被服务端判为“非法请求”。
+	const uploadAppID = "B44F2B1D-03D0-47FF-A458-B734A9BF1FD2"
+	const uploadSecret = "E39AB4163EC677E5BF3F80199945B1B4"
+	ts := time.Now().UnixMilli()
+	nonce := int64(mrand.Int31())
+	rawSign := fmt.Sprintf("appid#%s#nonce#%d#timestamp#%d#uploadtype#face#%s", uploadAppID, nonce, ts, uploadSecret)
+	sum := md5.Sum([]byte(rawSign))
+	uploadSign := strings.ToUpper(hex.EncodeToString(sum[:]))
+	urlStr := fmt.Sprintf("https://pan-yz.chaoxing.com/upload/v2?uploadtype=face&timestamp=%d&appid=%s&nonce=%d&signature=%s", ts, uploadAppID, nonce, uploadSign)
 	method := "POST"
 
 	body := &bytes.Buffer{}
@@ -199,9 +217,7 @@ func (cache *XueXiTUserCache) UploadFaceImageApi(token string, image image.Image
 			break
 		}
 	}
-	// 添加参数字段
-	_ = writer.WriteField("uploadtype", "face") //还有一种normal类型，一般用于上传文件
-	_ = writer.WriteField("_token", token)
+	// v2 签名只覆盖 query 参数，puid 放在 multipart 表单里
 	_ = writer.WriteField("puid", puid)
 
 	part, err := writer.CreateFormFile("file", fmt.Sprintf("%d", time.Now().UnixMilli())+".jpg")
@@ -869,7 +885,7 @@ func (cache *XueXiTUserCache) GetCourseFaceQrPlan5Api(classId, courseId, knowled
 	form.Set("clazzId", classId)
 	form.Set("cpi", cpi)
 	form.Set("chapterId", knowledgeId)
-	form.Set("liveDetectionStatus", "1")
+	form.Set("liveDetectionStatus", "0")
 	form.Set("objectId", objectId)
 	form.Set("signt", "")
 	form.Set("signk", "")
@@ -1163,4 +1179,172 @@ func (cache *XueXiTUserCache) GetCourseFaceQrStateApi(uuid, enc, clazzid, course
 	log2.Print(log2.DEBUG, string(body))
 	utils.CookiesAddNoRepetition(&cache.cookies, res.Cookies()) //赋值cookie
 	return string(body), nil
+}
+
+// FaceSign 是学习通新版课程人脸校验所需的签名参数。
+// 其中 Cxcid/CxTime/SignK/SignT 对应前端 clientfacecheckstatus 的
+// cxcid / cxtime / signk / signt 字段。
+type FaceSign struct {
+	Cxcid  string `json:"cxcid"`
+	CxTime string `json:"cxtime"`
+	SignK  string `json:"signk"`
+	SignT  string `json:"signt"`
+}
+
+// PassFaceQrPlanPhoneSignedApi 使用新版课程人脸签名调用 clientfacecheckstatus。
+// 对应 startface 页面 saveStuFaceCollectLog 的请求：courseId2 + type=0。
+func (cache *XueXiTUserCache) PassFaceQrPlanPhoneSignedApi(classId, courseId, cpi, objectId string, sign FaceSign) (string, error) {
+	urlStr := "https://mooc1-api.chaoxing.com/mooc-ans/facephoto/clientfacecheckstatus?courseId2=" + courseId
+
+	form := url.Values{}
+	form.Set("courseId", courseId)
+	form.Set("clazzId", classId)
+	form.Set("cpi", cpi)
+	form.Set("objectId", objectId)
+	form.Set("liveDetectionStatus", "0")
+	form.Set("signt", sign.SignT)
+	form.Set("signk", sign.SignK)
+	form.Set("cxtime", sign.CxTime)
+	form.Set("cxcid", sign.Cxcid)
+	form.Set("type", "0")
+
+	tr := &http.Transport{
+		TLSClientConfig: &tls.Config{},
+	}
+	if cache.IpProxySW {
+		tr.Proxy = func(req *http.Request) (*url.URL, error) {
+			return url.Parse("http://" + cache.ProxyIP)
+		}
+	}
+	client := &http.Client{Transport: tr}
+	req, err := http.NewRequest("POST", urlStr, strings.NewReader(form.Encode()))
+	if err != nil {
+		return "", err
+	}
+	req.Header.Add("User-Agent", GetUA("mobile"))
+	for _, cookie := range cache.cookies {
+		req.AddCookie(cookie)
+	}
+	req.Header.Add("Accept", "application/json, text/javascript, */*; q=0.01")
+	req.Header.Add("X-Requested-With", "XMLHttpRequest")
+	req.Header.Add("Origin", "https://mooc1-api.chaoxing.com")
+	req.Header.Add("Referer", "https://mooc1-api.chaoxing.com/visit/course/startface?courseId="+courseId+"&clazzId="+classId+"&cpi="+cpi)
+	req.Header.Add("Content-Type", "application/x-www-form-urlencoded; charset=UTF-8")
+	req.Header.Add("Host", "mooc1-api.chaoxing.com")
+	req.Header.Add("Connection", "keep-alive")
+
+	res, err := client.Do(req)
+	if err != nil {
+		return "", err
+	}
+	defer res.Body.Close()
+	body, err := ioutil.ReadAll(res.Body)
+	if err != nil {
+		return "", err
+	}
+	utils.CookiesAddNoRepetition(&cache.cookies, res.Cookies())
+	return string(body), nil
+}
+
+// PassFaceQrPlanChapterSignedApi 使用章节级人脸签名调用 clientfacecheckstatus。
+// 对应 knowledge/startface 页面 clientfacecheckstatus 的请求：courseId2 + chapterId + type=1。
+// 签名必须由 startFaceSignature(fn, 4) 生成（funckey 为 chapterFaceCollect），
+// 且签名时的 liveDetectionStatus 必须与请求一致，否则服务端返回“非法请求”。
+func (cache *XueXiTUserCache) PassFaceQrPlanChapterSignedApi(classId, courseId, cpi, chapterId, objectId string, sign FaceSign) (string, error) {
+	urlStr := "https://mooc1-api.chaoxing.com/mooc-ans/facephoto/clientfacecheckstatus?courseId2=" + courseId
+
+	form := url.Values{}
+	form.Set("courseId", courseId)
+	form.Set("clazzId", classId)
+	form.Set("cpi", cpi)
+	form.Set("chapterId", chapterId)
+	form.Set("objectId", objectId)
+	form.Set("liveDetectionStatus", "0")
+	form.Set("signt", sign.SignT)
+	form.Set("signk", sign.SignK)
+	form.Set("cxtime", sign.CxTime)
+	form.Set("cxcid", sign.Cxcid)
+	form.Set("type", "1")
+
+	tr := &http.Transport{
+		TLSClientConfig: &tls.Config{},
+	}
+	if cache.IpProxySW {
+		tr.Proxy = func(req *http.Request) (*url.URL, error) {
+			return url.Parse("http://" + cache.ProxyIP)
+		}
+	}
+	client := &http.Client{Transport: tr}
+	req, err := http.NewRequest("POST", urlStr, strings.NewReader(form.Encode()))
+	if err != nil {
+		return "", err
+	}
+	req.Header.Add("User-Agent", GetUA("mobile"))
+	for _, cookie := range cache.cookies {
+		req.AddCookie(cookie)
+	}
+	req.Header.Add("Accept", "application/json, text/javascript, */*; q=0.01")
+	req.Header.Add("X-Requested-With", "XMLHttpRequest")
+	req.Header.Add("Origin", "https://mooc1-api.chaoxing.com")
+	req.Header.Add("Referer", "https://mooc1-api.chaoxing.com/mooc-ans/knowledge/startface?clazzid="+classId+"&courseid="+courseId+"&knowledgeid="+chapterId+"&cpi="+cpi+"&type=1")
+	req.Header.Add("Content-Type", "application/x-www-form-urlencoded; charset=UTF-8")
+	req.Header.Add("Host", "mooc1-api.chaoxing.com")
+	req.Header.Add("Connection", "keep-alive")
+
+	res, err := client.Do(req)
+	if err != nil {
+		return "", err
+	}
+	defer res.Body.Close()
+	body, err := ioutil.ReadAll(res.Body)
+	if err != nil {
+		return "", err
+	}
+	utils.CookiesAddNoRepetition(&cache.cookies, res.Cookies())
+	return string(body), nil
+}
+
+// SignFaceParam 纯本地生成章节人脸校验所需的 signk/signt。
+//
+// paramToken = base64(RSA_PKCS1v15_SHA256(key, "param"+dataParam))
+// signToken  = md5("cxcid"+cxcid+"cxtime"+cxtime+"param"+dataParam+"paramToken"+paramToken+sc)
+//
+// 其中 cxcid/sc 是设备常量（DeviceInfo.cid / DeviceInfo.sc），
+// 一次采集后可长期复用；keyPEM 是 App 内置的 RSA-1024 私钥。
+func SignFaceParam(dataParam, cxcid, sc string, keyPEM []byte, now time.Time) (FaceSign, error) {
+	var out FaceSign
+	block, _ := pem.Decode(keyPEM)
+	if block == nil {
+		return out, errors.New("人脸签名私钥解析失败")
+	}
+	keyAny, err := x509.ParsePKCS8PrivateKey(block.Bytes)
+	if err != nil {
+		return out, fmt.Errorf("人脸签名私钥解析失败: %w", err)
+	}
+	priv, ok := keyAny.(*rsa.PrivateKey)
+	if !ok {
+		return out, errors.New("人脸签名私钥不是 RSA")
+	}
+
+	digest := sha256.Sum256([]byte("param" + dataParam))
+	sig, err := rsa.SignPKCS1v15(rand.Reader, priv, crypto.SHA256, digest[:])
+	if err != nil {
+		return out, err
+	}
+	paramToken := base64.StdEncoding.EncodeToString(sig)
+	cxtime := strconv.FormatInt(now.UnixMilli(), 10)
+
+	sb := "cxcid" + cxcid +
+		"cxtime" + cxtime +
+		"param" + dataParam +
+		"paramToken" + paramToken +
+		sc
+	sum := md5.Sum([]byte(sb))
+	out = FaceSign{
+		Cxcid:  cxcid,
+		CxTime: cxtime,
+		SignK:  paramToken,
+		SignT:  hex.EncodeToString(sum[:]),
+	}
+	return out, nil
 }

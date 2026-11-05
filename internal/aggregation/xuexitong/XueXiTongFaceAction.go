@@ -229,20 +229,40 @@ func passFacePhoneCheck(cache *xuexitong.XueXiTUserCache, classId, courseId, cha
 		name string
 		call func() (string, error)
 	}
-	candidates := []candidate{
-		{"clientfacecheckstatus(GET)", func() (string, error) {
+	candidates := make([]candidate, 0, 5)
+	// 新版课程（faceNeedSignature=true）必须先走签名接口。
+	sign := cache.FaceSign
+	if sign != nil && sign.Cxcid != "" && cache.FaceSc != "" && len(cache.FaceKeyPEM) > 0 {
+		// 新版签名要求把上传得到的 objectId 和 liveDetectionStatus 一起签进去：
+		// faceCollect-<clazzId>-<userId>-<objectId>-<liveDetectionStatus>
+		dataParam := "faceCollect-" + classId + "-" + faceUID(cache) + "-" + objectId + "-0"
+		computed, signErr := xuexitong.SignFaceParam(dataParam, sign.Cxcid, cache.FaceSc, cache.FaceKeyPEM, time.Now())
+		if signErr != nil {
+			log2.Print(log2.INFO, "[", cache.Name, "] 课程级人脸签名生成失败: ", signErr)
+		} else {
+			sign = &computed
+		}
+	}
+	if sign != nil {
+		signCopy := *sign
+		candidates = append(candidates, candidate{"clientfacecheckstatus(signed)", func() (string, error) {
+			return cache.PassFaceQrPlanPhoneSignedApi(classId, courseId, cpi, objectId, signCopy)
+		}})
+	}
+	candidates = append(candidates,
+		candidate{"clientfacecheckstatus(GET)", func() (string, error) {
 			return cache.PassFaceQrPlanPhoneNewApi(classId, courseId, chapterId, cpi, objectId)
 		}},
-		{"clientfacecheckstatus(POST)", func() (string, error) {
+		candidate{"clientfacecheckstatus(POST)", func() (string, error) {
 			return cache.GetCourseFaceQrPlan5Api(classId, courseId, chapterId, cpi, objectId)
 		}},
-		{"clientfacecheckstatus(POST2)", func() (string, error) {
+		candidate{"clientfacecheckstatus(POST2)", func() (string, error) {
 			return cache.PassFaceQrPlanPhoneNew2Api(classId, courseId, chapterId, cpi, objectId)
 		}},
-		{"uploadInfo(老接口)", func() (string, error) {
+		candidate{"uploadInfo(老接口)", func() (string, error) {
 			return cache.PassFaceQrPlanPhoneOldApi(classId, courseId, chapterId, cpi, objectId)
 		}},
-	}
+	)
 	var failures []string
 	for index, candidate := range candidates {
 		if index > 0 {
@@ -357,6 +377,112 @@ func PassFacePhoneAction(cache *xuexitong.XueXiTUserCache, courseId, classId, cp
 	//获取人脸状态
 
 	return ObjectId, nil
+}
+
+// PassFaceChapterAction 章节级人脸校验（knowledge/startface 页面）。
+//
+// 被章节人脸锁住的课程，卡片接口会返回一段跳转 knowledge/startface 的
+// HTML；该页面调用的是 clientfacecheckstatus?courseId2=... 且带
+// chapterId、type=1，签名类型为 chapterFaceCollect(type=4)。
+// 仅做课程级校验（type=0）无法解锁章节。
+func PassFaceChapterAction(cache *xuexitong.XueXiTUserCache, courseId, classId, cpi, chapterId string) (string, error) {
+	sign := cache.FaceSignChapter
+	cxcid := ""
+	if sign != nil {
+		cxcid = sign.Cxcid
+	}
+	if cxcid == "" && cache.FaceSign != nil {
+		cxcid = cache.FaceSign.Cxcid
+	}
+	faceImg, err := loadFaceImage(cache)
+	if err != nil {
+		return "", err
+	}
+
+	// 章节校验依赖课程级的“已通过”状态。App 进入课程时会先做一次
+	// 课程级校验(type=0)，状态过期后再做章节校验会直接返回“非法请求”。
+	// 因此这里先用课程级签名补一次课程级校验；失败也不阻断章节校验。
+	if cache.FaceSign != nil {
+		courseObj, uploadErr := uploadDisturbedFace(cache, faceImg)
+		if uploadErr != nil {
+			log2.Print(log2.INFO, "[", cache.Name, "] 课程级人脸图片上传失败(继续章节校验): ", uploadErr)
+		} else {
+			courseSign := *cache.FaceSign
+			if courseSign.Cxcid != "" && cache.FaceSc != "" && len(cache.FaceKeyPEM) > 0 {
+				dataParam := "faceCollect-" + classId + "-" + faceUID(cache) + "-" + courseObj + "-0"
+				if computed, signErr := xuexitong.SignFaceParam(dataParam, courseSign.Cxcid, cache.FaceSc, cache.FaceKeyPEM, time.Now()); signErr != nil {
+					log2.Print(log2.INFO, "[", cache.Name, "] 课程级人脸签名生成失败: ", signErr)
+				} else {
+					courseSign = computed
+				}
+			}
+			courseBody, callErr := cache.PassFaceQrPlanPhoneSignedApi(classId, courseId, cpi, courseObj, courseSign)
+			if callErr != nil {
+				log2.Print(log2.INFO, "[", cache.Name, "] 课程级人脸校验调用失败(继续章节校验): ", callErr)
+			} else if ok, reason := faceCheckResult(courseBody); !ok {
+				log2.Print(log2.INFO, "[", cache.Name, "] 课程级人脸校验未通过(继续章节校验): ", reason)
+			}
+		}
+	}
+
+	// 必须上传一张新图（LSB 扰动后 objectId 才会变）。
+	// 新版签名要求 objectId 参与 data.param：faceCollect-<clazzId>-<uid>-<objectId>-<live>
+	objectId, err := uploadDisturbedFace(cache, faceImg)
+	if err != nil {
+		return "", err
+	}
+	utils.HumanDelay(500*time.Millisecond, 1000*time.Millisecond)
+
+	if cxcid != "" && cache.FaceSc != "" && len(cache.FaceKeyPEM) > 0 {
+		dataParam := "faceCollect-" + classId + "-" + faceUID(cache) + "-" + objectId + "-0"
+		computed, signErr := xuexitong.SignFaceParam(dataParam, cxcid, cache.FaceSc, cache.FaceKeyPEM, time.Now())
+		if signErr != nil {
+			return "", signErr
+		}
+		sign = &computed
+	}
+	if sign == nil {
+		return "", errors.New("缺少章节人脸签名：请配置 FaceSignature.Cxcid + FaceSignature.Sc + FaceSignature.KeyPEM（纯本地签名），或先在 App 人脸页面抓一次 type=4 签名")
+	}
+
+	body, err := cache.PassFaceQrPlanChapterSignedApi(classId, courseId, cpi, chapterId, objectId, *sign)
+	if err != nil {
+		return "", err
+	}
+	if passed, reason := faceCheckResult(body); !passed {
+		return "", fmt.Errorf("章节人脸校验失败: %s", reason)
+	}
+	return objectId, nil
+}
+
+// faceUID 取当前会话的用户 ID（UID cookie 优先），用于拼 data.param。
+func faceUID(cache *xuexitong.XueXiTUserCache) string {
+	for _, c := range cache.GetCookies() {
+		if c.Name == "UID" && c.Value != "" {
+			return c.Value
+		}
+	}
+	if cache.UserID != "" {
+		return cache.UserID
+	}
+	return cache.Name
+}
+
+// uploadDisturbedFace 上传一张 LSB 扰动后的人脸图并返回新的 objectId。
+func uploadDisturbedFace(cache *xuexitong.XueXiTUserCache, faceImg image.Image) (string, error) {
+	token, err := fetchFaceUploadToken(cache)
+	if err != nil {
+		return "", err
+	}
+	utils.HumanDelay(500*time.Millisecond, 1000*time.Millisecond)
+	objectId, err := cache.UploadFaceImageApi(token, utils.ImageRGBDisturb(faceImg))
+	if err != nil {
+		return "", err
+	}
+	if objectId == "" {
+		return "", errors.New("ObjectId is empty")
+	}
+	return objectId, nil
 }
 
 // 手机端过人脸接口(老接口）

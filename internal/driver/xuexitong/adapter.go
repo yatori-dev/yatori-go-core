@@ -43,6 +43,28 @@ func New(cfg core.Config) (core.Client, error) {
 		cache.IpProxySW = true
 		cache.ProxyIP = proxy
 	}
+	if sign := cfg.Options.FaceSignature; sign != nil {
+		cache.FaceSc = sign.Sc
+		if sign.KeyPEM != "" {
+			cache.FaceKeyPEM = []byte(sign.KeyPEM)
+		}
+		if sign.Cxcid != "" || sign.SignT != "" {
+			cache.FaceSign = &api.FaceSign{
+				Cxcid:  sign.Cxcid,
+				CxTime: sign.CxTime,
+				SignK:  sign.SignK,
+				SignT:  sign.SignT,
+			}
+		}
+		if ch := sign.Chapter; ch != nil {
+			cache.FaceSignChapter = &api.FaceSign{
+				Cxcid:  ch.Cxcid,
+				CxTime: ch.CxTime,
+				SignK:  ch.SignK,
+				SignT:  ch.SignT,
+			}
+		}
+	}
 	return &client{
 		Base:     driverutil.NewBase(cfg),
 		cache:    cache,
@@ -431,8 +453,11 @@ func (c *client) studyVideo(req core.StudyRequest, p *api.PointVideoDto, result 
 			driverutil.Int(p.Cpi),
 		)
 		if err != nil {
-			c.Logger.Debugf("xuexitong: mobile card for %s failed: %v", p.ObjectID, err)
-		} else if _, err := p.AttachmentsDetection(card); err != nil {
+			// 人脸锁/章节未开放等错误必须上抛，否则会继续用一个空的
+			// DToken 去请求视频状态，最终只看到 203 这种误导性错误。
+			return nil, core.Wrap(core.XueXiTong, "study.video.card", err)
+		}
+		if _, err := p.AttachmentsDetection(card); err != nil {
 			c.Logger.Debugf("xuexitong: attachment detection for %s failed: %v", p.ObjectID, err)
 		}
 	}

@@ -71,6 +71,9 @@ type Logger = core.Logger
 // Options controls runtime behaviour shared by all adapters.
 type Options = core.Options
 
+// FaceSignature is the optional XueXiTong face-check signature tuple.
+type FaceSignature = core.FaceSignature
+
 // Config is the complete input to New.
 type Config = core.Config
 

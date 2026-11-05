@@ -83,6 +83,16 @@ type XueXiTUserCache struct {
 	cookie      string //验证码用的session
 	IpProxySW   bool   // 是否开启代理
 	ProxyIP     string //代理IP
+
+	// FaceSign 是可选的课程人脸签名（新版 faceNeedSignature 课程需要）。
+	// 由学习通 App 的 CLIENT_FORM_SIGN 生成，可通过 cmd/facesign 采集。
+	FaceSign *FaceSign
+	// FaceSignChapter 是章节级人脸签名（knowledge/startface 页面，type=4）。
+	// 章节被人脸锁住时（卡页返回 knowledge/startface）必须提供。
+	FaceSignChapter *FaceSign
+	// FaceSc / FaceKeyPEM 用于纯本地生成签名（不再依赖 App 抓包）。
+	FaceSc     string
+	FaceKeyPEM []byte
 }
 
 func (cache *XueXiTUserCache) GetCookie() string {

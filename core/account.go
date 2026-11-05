@@ -112,6 +112,28 @@ type Options struct {
 	AI *AIConfig
 	// QuestionBank configures an external answer source.
 	QuestionBank *QuestionBankConfig
+	// FaceSignature is the optional signed parameters for XueXiTong courses
+	// whose face page sets faceNeedSignature=true. Capture it with
+	// `go run ./cmd/facesign` while the phone app is on the face page.
+	FaceSignature *FaceSignature
+}
+
+// FaceSignature is the signature tuple required by the new XueXiTong
+// `facephoto/clientfacecheckstatus` page (faceNeedSignature=true).
+type FaceSignature struct {
+	Cxcid  string
+	CxTime string
+	SignK  string
+	SignT  string
+	// Sc and KeyPEM enable pure local signing: when both are set, the SDK
+	// computes signk/signt itself instead of using CxTime/SignK/SignT.
+	// Sc is DeviceInfo.sc (32 hex), device bound; KeyPEM is the App's
+	// embedded RSA-1024 private key (PKCS#8 PEM).
+	Sc     string
+	KeyPEM string
+	// Chapter is the type-4 tuple used by chapter-level face checks
+	// (knowledge/startface). Courses with chapterCapture/章节人脸锁需要它。
+	Chapter *FaceSignature
 }
 
 // Resolve fills in defaults and returns a copy of the options.
