@@ -44,16 +44,38 @@ func New(cfg core.Config) (core.Client, error) {
 		cache.ProxyIP = proxy
 	}
 	if sign := cfg.Options.FaceSignature; sign != nil {
-		cache.FaceSc = sign.Sc
-		if sign.KeyPEM != "" {
-			cache.FaceKeyPEM = []byte(sign.KeyPEM)
+		// 纯本地签名所需的三件套允许放在顶层或 Chapter 里，二者取并集。
+		sc := sign.Sc
+		keyPEM := sign.KeyPEM
+		cxcid := sign.Cxcid
+		if ch := sign.Chapter; ch != nil {
+			if ch.Sc != "" {
+				sc = ch.Sc
+			}
+			if ch.KeyPEM != "" {
+				keyPEM = ch.KeyPEM
+			}
+			if ch.Cxcid != "" {
+				cxcid = ch.Cxcid
+			}
 		}
-		if sign.Cxcid != "" || sign.SignT != "" {
+		// App 内置私钥已随 SDK 一起发布；调用方只需提供设备 cxcid 与当前 sc。
+		if keyPEM == "" && cxcid != "" && sc != "" {
+			keyPEM = api.DefaultFaceKeyPEM()
+		}
+		cache.FaceSc = sc
+		if keyPEM != "" {
+			cache.FaceKeyPEM = []byte(keyPEM)
+		}
+		if sign.Cxcid != "" || sign.SignT != "" || sign.SignK != "" {
 			cache.FaceSign = &api.FaceSign{
 				Cxcid:  sign.Cxcid,
 				CxTime: sign.CxTime,
 				SignK:  sign.SignK,
 				SignT:  sign.SignT,
+			}
+			if cache.FaceSign.Cxcid == "" {
+				cache.FaceSign.Cxcid = cxcid
 			}
 		}
 		if ch := sign.Chapter; ch != nil {
@@ -62,6 +84,18 @@ func New(cfg core.Config) (core.Client, error) {
 				CxTime: ch.CxTime,
 				SignK:  ch.SignK,
 				SignT:  ch.SignT,
+			}
+			if cache.FaceSignChapter.Cxcid == "" {
+				cache.FaceSignChapter.Cxcid = cxcid
+			}
+		}
+		// 只配置了 Cxcid/Sc（没有显式 Chapter）时，也为章节校验创建纯算入口。
+		if cxcid != "" && sc != "" {
+			if cache.FaceSign == nil {
+				cache.FaceSign = &api.FaceSign{Cxcid: cxcid}
+			}
+			if cache.FaceSignChapter == nil {
+				cache.FaceSignChapter = &api.FaceSign{Cxcid: cxcid}
 			}
 		}
 	}
@@ -514,6 +548,33 @@ func (c *client) studyVideo(req core.StudyRequest, p *api.PointVideoDto, result 
 	}
 	if flag, ok := isPassed.(bool); ok {
 		passed = flag
+	}
+	// 视频随机人脸抓拍：服务器在 isPassed=false 且已到抓拍时间时，
+	// 要求先完成一次人脸采集并把 videoFaceCaptureSuccessEnc 带回。
+	if !passed && !p.VideoFaceCaptured && p.VideoFaceCaptureEnc != "" && videoFaceCaptureDue(p, position) {
+		if p.CardEnc == "" {
+			if card, _, cardErr := agg.PageMobileChapterCardAction(c.cache, driverutil.Int(p.ClassID), driverutil.Int(p.CourseID), p.KnowledgeID, p.CardIndex, driverutil.Int(p.Cpi)); cardErr == nil {
+				_, _ = p.AttachmentsDetection(card)
+			}
+		}
+		successEnc, faceErr := agg.PassVideoFaceAction(c.cache, p)
+		if faceErr != nil {
+			c.Logger.Debugf("xuexitong: video face capture for %s failed: %v", p.ObjectID, faceErr)
+		} else if successEnc != "" {
+			p.VideoFaceCaptureEnc = successEnc
+			p.VideoFaceCaptured = true
+			if p.Type == ctype.InsertAudio {
+				report, err = agg.AudioSubmitStudyTimeAction(c.cache, p, position, mode, isdrag)
+			} else {
+				report, err = agg.VideoSubmitStudyTimeAction(c.cache, p, position, mode, isdrag)
+			}
+			if err != nil {
+				return nil, core.Wrap(core.XueXiTong, "study.video", err)
+			}
+			if flag, ok := gojsonq.New().JSONString(report).Find("isPassed").(bool); ok {
+				passed = flag
+			}
+		}
 	}
 	progress := videoProgress(p)
 	if p.Duration > 0 {

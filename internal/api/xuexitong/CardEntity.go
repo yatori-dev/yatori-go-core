@@ -51,13 +51,18 @@ type PointVideoDto struct {
 	RT                  float64
 	VideoFaceCaptureEnc string
 	RandomCaptureTime   string //大概的下次人脸时间
-	AttDurationEnc      string
-	Enc                 string
-	Logger              *log.Logger
-	PUID                string
-	Mid                 string
-	IsJob               bool //是否为任务点，如果为任务点则为true，反之亦然
-	Session             *Session
+	// CardEnc 是章节卡片顶层的 enc，用于打开 studentstudy 页面获取
+	// video 级人脸采集的 videouuid/videoqrcEnc。
+	CardEnc                string
+	RandomFaceCaptureTimes []int
+	VideoFaceCaptured      bool
+	AttDurationEnc         string
+	Enc                    string
+	Logger                 *log.Logger
+	PUID                   string
+	Mid                    string
+	IsJob                  bool //是否为任务点，如果为任务点则为true，反之亦然
+	Session                *Session
 
 	Type  ctype.CardType
 	IsSet bool
@@ -413,6 +418,24 @@ func (p *PointVideoDto) AttachmentsDetection(attachment interface{}) (detected b
 			}
 			p.RT = rt
 			p.Attachment = attachment
+			if cardEnc, ok := attachmentMap["enc"].(string); ok {
+				p.CardEnc = cardEnc
+			} else if cardEnc, ok := attachment["enc"].(string); ok {
+				p.CardEnc = cardEnc
+			}
+			if list, ok := attachment["randomFaceCaptureTimeList"].([]interface{}); ok {
+				p.RandomFaceCaptureTimes = p.RandomFaceCaptureTimes[:0]
+				for _, item := range list {
+					switch value := item.(type) {
+					case float64:
+						p.RandomFaceCaptureTimes = append(p.RandomFaceCaptureTimes, int(value))
+					case string:
+						if parsed, err := strconv.Atoi(value); err == nil {
+							p.RandomFaceCaptureTimes = append(p.RandomFaceCaptureTimes, parsed)
+						}
+					}
+				}
+			}
 
 			jobID, ok := property["jobid"].(string)
 			if !ok {

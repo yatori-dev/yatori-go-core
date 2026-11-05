@@ -125,10 +125,12 @@ type FaceSignature struct {
 	CxTime string
 	SignK  string
 	SignT  string
-	// Sc and KeyPEM enable pure local signing: when both are set, the SDK
+	// Sc and KeyPEM enable pure local signing: when Sc is set, the SDK
 	// computes signk/signt itself instead of using CxTime/SignK/SignT.
-	// Sc is DeviceInfo.sc (32 hex), device bound; KeyPEM is the App's
-	// embedded RSA-1024 private key (PKCS#8 PEM).
+	// Sc is DeviceInfo.sc (32 hex), device bound. KeyPEM is optional: the
+	// App's embedded RSA-1024 private key ships with the SDK (encrypted at
+	// rest) and is decrypted on first use, so callers normally only need
+	// Cxcid + Sc.
 	Sc     string
 	KeyPEM string
 	// Chapter is the type-4 tuple used by chapter-level face checks

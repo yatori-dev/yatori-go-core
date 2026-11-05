@@ -232,7 +232,7 @@ func passFacePhoneCheck(cache *xuexitong.XueXiTUserCache, classId, courseId, cha
 	candidates := make([]candidate, 0, 5)
 	// 新版课程（faceNeedSignature=true）必须先走签名接口。
 	sign := cache.FaceSign
-	if sign != nil && sign.Cxcid != "" && cache.FaceSc != "" && len(cache.FaceKeyPEM) > 0 {
+	if sign != nil && sign.Cxcid != "" && cache.FaceSc != "" {
 		// 新版签名要求把上传得到的 objectId 和 liveDetectionStatus 一起签进去：
 		// faceCollect-<clazzId>-<userId>-<objectId>-<liveDetectionStatus>
 		dataParam := "faceCollect-" + classId + "-" + faceUID(cache) + "-" + objectId + "-0"
@@ -408,7 +408,7 @@ func PassFaceChapterAction(cache *xuexitong.XueXiTUserCache, courseId, classId, 
 			log2.Print(log2.INFO, "[", cache.Name, "] 课程级人脸图片上传失败(继续章节校验): ", uploadErr)
 		} else {
 			courseSign := *cache.FaceSign
-			if courseSign.Cxcid != "" && cache.FaceSc != "" && len(cache.FaceKeyPEM) > 0 {
+			if courseSign.Cxcid != "" && cache.FaceSc != "" {
 				dataParam := "faceCollect-" + classId + "-" + faceUID(cache) + "-" + courseObj + "-0"
 				if computed, signErr := xuexitong.SignFaceParam(dataParam, courseSign.Cxcid, cache.FaceSc, cache.FaceKeyPEM, time.Now()); signErr != nil {
 					log2.Print(log2.INFO, "[", cache.Name, "] 课程级人脸签名生成失败: ", signErr)
@@ -433,7 +433,7 @@ func PassFaceChapterAction(cache *xuexitong.XueXiTUserCache, courseId, classId, 
 	}
 	utils.HumanDelay(500*time.Millisecond, 1000*time.Millisecond)
 
-	if cxcid != "" && cache.FaceSc != "" && len(cache.FaceKeyPEM) > 0 {
+	if cxcid != "" && cache.FaceSc != "" {
 		dataParam := "faceCollect-" + classId + "-" + faceUID(cache) + "-" + objectId + "-0"
 		computed, signErr := xuexitong.SignFaceParam(dataParam, cxcid, cache.FaceSc, cache.FaceKeyPEM, time.Now())
 		if signErr != nil {
@@ -442,7 +442,7 @@ func PassFaceChapterAction(cache *xuexitong.XueXiTUserCache, courseId, classId, 
 		sign = &computed
 	}
 	if sign == nil {
-		return "", errors.New("缺少章节人脸签名：请配置 FaceSignature.Cxcid + FaceSignature.Sc + FaceSignature.KeyPEM（纯本地签名），或先在 App 人脸页面抓一次 type=4 签名")
+		return "", errors.New("缺少章节人脸签名：请配置 FaceSignature.Cxcid + FaceSignature.Sc（KeyPEM 已内置），或先在 App 人脸页面抓一次 type=4 签名")
 	}
 
 	body, err := cache.PassFaceQrPlanChapterSignedApi(classId, courseId, cpi, chapterId, objectId, *sign)
@@ -595,6 +595,84 @@ func PassFacePCAction(cache *xuexitong.XueXiTUserCache, courseId, classId, cpi, 
 	successEnc, _ := gojsonq.New().JSONString(stateApi).Find("videoFaceCaptureSuccessEnc").(string)
 
 	return uuid, qrEnc, ObjectId, successEnc, nil
+}
+
+// PassVideoFaceAction 处理视频播放中的随机人脸抓拍。
+//
+// 流程与 App/网页端 clientQRCodeFaceCollect.js 一致：
+//  1. 用卡片顶层 enc 打开 studentstudy，拿到 videouuid/videoqrcEnc；
+//  2. qr/produce 生成新的 uuid/enc；
+//  3. 上传扰动后的人脸图，拿 objectId；
+//  4. 对 faceCollect-<clazzId>-<uid>-<objectId>-0 本地签名；
+//  5. qr/updateqrstatus 提交，再轮询 qr/getqrstatus 取
+//     videoFaceCaptureSuccessEnc。
+func PassVideoFaceAction(cache *xuexitong.XueXiTUserCache, p *xuexitong.PointVideoDto) (string, error) {
+	faceImg, err := loadFaceImage(cache)
+	if err != nil {
+		return "", err
+	}
+	chapterId := strconv.Itoa(p.KnowledgeID)
+	uuid, qrEnc, err := cache.GetFaceQrCodeApi3(p.CourseID, p.ClassID, chapterId, p.Cpi, p.CardEnc, p.JobID, p.ObjectID)
+	if err != nil {
+		return "", err
+	}
+	if uuid == "" || qrEnc == "" {
+		return "", errors.New("视频人脸二维码为空（章节 enc 可能已失效）")
+	}
+
+	token, err := fetchFaceUploadToken(cache)
+	if err != nil {
+		return "", err
+	}
+	utils.HumanDelay(400*time.Millisecond, 900*time.Millisecond)
+	objectId, err := cache.UploadFaceImageApi(token, utils.ImageRGBDisturb(faceImg))
+	if err != nil {
+		return "", err
+	}
+	if objectId == "" {
+		return "", errors.New("视频人脸上传 objectId 为空")
+	}
+
+	cxcid := ""
+	if cache.FaceSignChapter != nil {
+		cxcid = cache.FaceSignChapter.Cxcid
+	}
+	if cxcid == "" && cache.FaceSign != nil {
+		cxcid = cache.FaceSign.Cxcid
+	}
+	if cxcid == "" || cache.FaceSc == "" {
+		return "", errors.New("缺少视频人脸签名：请配置 FaceSignature.Cxcid + FaceSignature.Sc")
+	}
+	dataParam := "faceCollect-" + p.ClassID + "-" + faceUID(cache) + "-" + objectId + "-0"
+	sign, err := xuexitong.SignFaceParam(dataParam, cxcid, cache.FaceSc, cache.FaceKeyPEM, time.Now())
+	if err != nil {
+		return "", err
+	}
+
+	body, err := cache.UpdateFaceQrStatusApi(
+		p.ClassID, p.CourseID, uuid, qrEnc, p.Cpi, chapterId,
+		objectId, p.JobID, p.ObjectID, p.RandomCaptureTime, sign,
+	)
+	if err != nil {
+		return "", err
+	}
+	if passed, reason := faceCheckResult(body); !passed {
+		return "", fmt.Errorf("视频人脸提交失败: %s", reason)
+	}
+
+	for i := 0; i < 8; i++ {
+		state, stateErr := cache.GetCourseFaceQrStateApi(
+			uuid, qrEnc, p.ClassID, p.CourseID, p.Cpi,
+			p.Mid, p.ObjectID, p.RandomCaptureTime, chapterId,
+		)
+		if stateErr == nil {
+			if successEnc, _ := gojsonq.New().JSONString(state).Find("videoFaceCaptureSuccessEnc").(string); successEnc != "" {
+				return successEnc, nil
+			}
+		}
+		time.Sleep(1500 * time.Millisecond)
+	}
+	return "", errors.New("视频人脸采集未返回 videoFaceCaptureSuccessEnc")
 }
 
 // ReLogin 重登

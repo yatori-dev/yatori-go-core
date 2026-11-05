@@ -60,6 +60,23 @@ func videoProgress(p *api.PointVideoDto) float64 {
 	return value
 }
 
+// videoFaceCaptureDue 判断当前播放位置是否已到视频随机人脸抓拍时间。
+// randomFaceCaptureTimeList 为空时，只有播放到结尾才尝试采集。
+func videoFaceCaptureDue(p *api.PointVideoDto, position int) bool {
+	if p == nil || position <= 0 {
+		return false
+	}
+	if len(p.RandomFaceCaptureTimes) == 0 {
+		return p.Duration > 0 && position >= p.Duration
+	}
+	for _, captureTime := range p.RandomFaceCaptureTimes {
+		if captureTime > 0 && position >= captureTime {
+			return true
+		}
+	}
+	return false
+}
+
 type questionWriter interface {
 	WriteQuestionForAIAction(cache *api.XueXiTUserCache, aiUrl, model string, aiType ctype.AiType, apiKey string) error
 	WriteQuestionForExternalAction(exUrl string) error

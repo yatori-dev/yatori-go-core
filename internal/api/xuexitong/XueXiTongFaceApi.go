@@ -196,8 +196,9 @@ func (cache *XueXiTUserCache) UploadFaceImageApi(token string, image image.Image
 
 	// 新版 App 使用 /upload/v2 + appid/timestamp/nonce/signature 注册人脸。
 	// 旧版 /upload 上传的 objectId 会被服务端判为“非法请求”。
-	const uploadAppID = "B44F2B1D-03D0-47FF-A458-B734A9BF1FD2"
-	const uploadSecret = "E39AB4163EC677E5BF3F80199945B1B4"
+	// appid/secret 以密文形式内置，运行时解密，避免明文出现在仓库里。
+	uploadAppID := FaceUploadAppID()
+	uploadSecret := FaceUploadSecret()
 	ts := time.Now().UnixMilli()
 	nonce := int64(mrand.Int31())
 	rawSign := fmt.Sprintf("appid#%s#nonce#%d#timestamp#%d#uploadtype#face#%s", uploadAppID, nonce, ts, uploadSecret)
@@ -992,6 +993,71 @@ func (cache *XueXiTUserCache) GetCourseFaceQrPlan3Api(clazzId, courseId, uuid, q
 }
 
 // 不知道是干啥的人脸接口，反正就是手机端如果点击打开课程阶段如果有人脸的话就会弹出来这玩意，这里面有人脸的接口那些玩意
+// UpdateFaceQrStatusApi 提交视频级人脸采集结果。
+//
+// 对应 pcFace/clientQRCodeFaceCollect.js 的 updateQrStatus：
+// POST /qr/updateqrstatus?uuid2=<uuid>&clazzId2=<clazzId>
+// 其中 signt/signk/cxtime/cxcid 是对
+// faceCollect-<clazzId>-<userId>-<objectId>-<liveDetectionStatus>
+// 的本地签名，缺一不可。
+func (cache *XueXiTUserCache) UpdateFaceQrStatusApi(
+	clazzId, courseId, uuid, qrcEnc, cpi, knowledgeId, objectId,
+	videoJobId, chapterVideoObjectId, videoCollectTime string, sign FaceSign,
+) (string, error) {
+	urlStr := "https://mooc1-api.chaoxing.com/qr/updateqrstatus?uuid2=" + uuid + "&clazzId2=" + clazzId
+	form := url.Values{}
+	form.Set("clazzId", clazzId)
+	form.Set("courseId", courseId)
+	form.Set("uuid", uuid)
+	form.Set("qrcEnc", qrcEnc)
+	form.Set("cpi", cpi)
+	form.Set("liveDetectionStatus", "0")
+	form.Set("signt", sign.SignT)
+	form.Set("signk", sign.SignK)
+	form.Set("cxtime", sign.CxTime)
+	form.Set("cxcid", sign.Cxcid)
+	form.Set("knowledgeid", knowledgeId)
+	form.Set("objectId", objectId)
+	form.Set("videojobid", videoJobId)
+	form.Set("videoCollectTime", videoCollectTime)
+	form.Set("chaptervideoobjectid", chapterVideoObjectId)
+
+	tr := &http.Transport{
+		TLSClientConfig: &tls.Config{},
+	}
+	if cache.IpProxySW {
+		tr.Proxy = func(req *http.Request) (*url.URL, error) {
+			return url.Parse("http://" + cache.ProxyIP)
+		}
+	}
+	client := &http.Client{Transport: tr}
+	req, err := http.NewRequest("POST", urlStr, strings.NewReader(form.Encode()))
+	if err != nil {
+		return "", err
+	}
+	req.Header.Add("User-Agent", GetUA("mobile"))
+	req.Header.Add("Accept", "*/*")
+	req.Header.Add("Host", "mooc1-api.chaoxing.com")
+	req.Header.Add("Connection", "keep-alive")
+	req.Header.Add("Content-Type", "application/x-www-form-urlencoded")
+	req.Header.Add("X-Requested-With", "XMLHttpRequest")
+	req.Header.Add("Origin", "https://mooc1-api.chaoxing.com")
+	for _, cookie := range cache.cookies {
+		req.AddCookie(cookie)
+	}
+	res, err := client.Do(req)
+	if err != nil {
+		return "", err
+	}
+	defer res.Body.Close()
+	body, err := ioutil.ReadAll(res.Body)
+	if err != nil {
+		return "", err
+	}
+	utils.CookiesAddNoRepetition(&cache.cookies, res.Cookies())
+	return string(body), nil
+}
+
 func (cache *XueXiTUserCache) GetCourseFaceStart(clazzId, courseId, knowledgeId, cpi string) {
 
 	urlStr := "https://mooc1-api.chaoxing.com/mooc-ans/knowledge/startface?clazzid=" + clazzId + "&courseid=" + courseId + "&knowledgeid=" + knowledgeId + "&cpi=" + cpi + "&type=1"
@@ -1313,6 +1379,9 @@ func (cache *XueXiTUserCache) PassFaceQrPlanChapterSignedApi(classId, courseId, 
 // 一次采集后可长期复用；keyPEM 是 App 内置的 RSA-1024 私钥。
 func SignFaceParam(dataParam, cxcid, sc string, keyPEM []byte, now time.Time) (FaceSign, error) {
 	var out FaceSign
+	if len(keyPEM) == 0 {
+		keyPEM = []byte(DefaultFaceKeyPEM())
+	}
 	block, _ := pem.Decode(keyPEM)
 	if block == nil {
 		return out, errors.New("人脸签名私钥解析失败")

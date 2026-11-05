@@ -11,3 +11,7 @@ face/*
 /package.json
 /package-lock.json
 /examples/assets/
+
+tmp_re/
+/assets/
+u_now.xml
