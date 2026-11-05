@@ -48,6 +48,10 @@ type StudyResult struct {
 	Kind      NodeKind
 	Submitted bool
 	Position  time.Duration
+	// Duration 是本次学习从平台实际拉到的媒体时长。部分平台（如学习通）
+	// 初始章节列表不带时长，需要 StudyActionStart 拉卡片后才拿得到；
+	// 调用方可用它回填 Node.Duration 再继续推进。
+	Duration  time.Duration
 	Progress  float64
 	Completed bool
 	Message   string

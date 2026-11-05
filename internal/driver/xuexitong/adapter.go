@@ -501,6 +501,7 @@ func (c *client) studyVideo(req core.StudyRequest, p *api.PointVideoDto, result 
 		}
 		result.Position = driverutil.Seconds(p.PlayTime)
 		result.Progress = videoProgress(p)
+		result.Duration = driverutil.Seconds(p.Duration)
 		return result, nil
 	}
 	if p.Session == nil {
@@ -508,6 +509,7 @@ func (c *client) studyVideo(req core.StudyRequest, p *api.PointVideoDto, result 
 			return nil, core.Wrap(core.XueXiTong, "study.video.fetch", err)
 		}
 	}
+	result.Duration = driverutil.Seconds(p.Duration)
 	position := int(req.Position.Seconds())
 	if position <= 0 {
 		position = p.PlayTime
@@ -596,6 +598,23 @@ func (c *client) studyVideo(req core.StudyRequest, p *api.PointVideoDto, result 
 }
 
 func (c *client) studyDocument(req core.StudyRequest, p *api.PointDocumentDto, result *core.StudyResult) (*core.StudyResult, error) {
+	// 文档任务点的 jtoken 在章节卡片 attachment 里，gas/knowledge 的
+	// iframe data 不带；缺 jtoken 时 ananas/job/document 会返回
+	// “无效的请求参数”。这里按卡片索引补拉一次手机端卡片。
+	if p.Jtoken == "" {
+		if card, _, err := agg.PageMobileChapterCardAction(
+			c.cache,
+			driverutil.Int(p.ClassID),
+			driverutil.Int(p.CourseID),
+			p.KnowledgeID,
+			p.CardIndex,
+			driverutil.Int(p.Cpi),
+		); err == nil {
+			_, _ = p.AttachmentsDetection(card)
+		} else {
+			c.Logger.Debugf("xuexitong: document card for %s failed: %v", p.ObjectID, err)
+		}
+	}
 	var (
 		report string
 		err    error
@@ -616,6 +635,16 @@ func (c *client) studyDocument(req core.StudyRequest, p *api.PointDocumentDto, r
 		return nil, core.Wrap(core.XueXiTong, "study.document", err)
 	}
 	if err := validateReadReport(report); err != nil {
+		// 部分课程会挂一些不属于当前账号任务点的文档（服务端直接返回
+		// “无效的请求参数”）。这类节点继续重试也不会成功，按非任务点
+		// 跳过，避免整门课被一个无效文档卡住。
+		if strings.Contains(report, "无效的请求参数") {
+			result.Submitted = false
+			result.Progress = 100
+			result.Completed = true
+			result.Message = report
+			return result, nil
+		}
 		return nil, core.Wrap(core.XueXiTong, "study.document", err)
 	}
 	result.Submitted = true
