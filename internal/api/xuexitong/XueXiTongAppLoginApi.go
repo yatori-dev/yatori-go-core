@@ -48,7 +48,7 @@ var (
 
 // AppLoginApi 走学习通 App 的登录链路：
 //
-//	logininfo(AES/ECB) -> v11/loginregister -> 本地生成 deviceInfo
+//	logininfo(AES/ECB) -> v11/loginregister -> 本地 deviceInfo（按账号持久化）
 //	-> userLogin4Uname.do -> clientId -> 本地 RSA 解密出 {cid, sc}
 //
 // 这样 cxcid/sc 不再依赖 App 抓包或手动配置。
@@ -57,6 +57,12 @@ func (cache *XueXiTUserCache) AppLoginApi(ctx context.Context) (*AppLoginResult,
 	password := cache.Password
 	if username == "" || password == "" {
 		return nil, errors.New("App 登录需要账号和密码")
+	}
+	// 同一账号复用同一套设备指纹；不同账号的型号、标识和 UA 令牌都不同。
+	profile := loadOrCreateAppDeviceProfile(username)
+	userAgent := strings.TrimSpace(profile.UserAgent)
+	if userAgent == "" {
+		userAgent = appLoginUserAgent
 	}
 	loginInfo, err := buildAppLoginInfo(username, password)
 	if err != nil {
@@ -87,7 +93,7 @@ func (cache *XueXiTUserCache) AppLoginApi(ctx context.Context) (*AppLoginResult,
 		return nil, reqErr
 	}
 	req1.Header.Set("Content-Type", "application/x-www-form-urlencoded")
-	req1.Header.Set("User-Agent", appLoginUserAgent)
+	req1.Header.Set("User-Agent", userAgent)
 	req1.Header.Set("Accept", "*/*")
 	req1.Header.Set("X-Requested-With", "XMLHttpRequest")
 	step1, err := client.Do(req1)
@@ -113,7 +119,7 @@ func (cache *XueXiTUserCache) AppLoginApi(ctx context.Context) (*AppLoginResult,
 		if checkErr != nil {
 			return nil, checkErr
 		}
-		checkReq.Header.Set("User-Agent", appLoginUserAgent)
+		checkReq.Header.Set("User-Agent", userAgent)
 		checkReq.Header.Set("Accept", "*/*")
 		checkResp, checkErr := client.Do(checkReq)
 		if checkErr != nil {
@@ -141,7 +147,7 @@ func (cache *XueXiTUserCache) AppLoginApi(ctx context.Context) (*AppLoginResult,
 		// 发送短信是显式动作：SDK 只把 SendSMS 交给调用方，由调用方
 		// 在用户确认后触发，避免一登录就给手机发验证码。
 		sendSMS := func(sendCtx context.Context) error {
-			return sendLoginSMSCode(sendCtx, client, phone, countryCode, first.WebURL)
+			return sendLoginSMSCode(sendCtx, client, phone, countryCode, userAgent, first.WebURL)
 		}
 		code, codeErr := cache.LoginCodeProvider(ctx, LoginCodeChallenge{
 			Kind:    "sms",
@@ -168,7 +174,7 @@ func (cache *XueXiTUserCache) AppLoginApi(ctx context.Context) (*AppLoginResult,
 			return nil, verifyErr
 		}
 		verifyReq.Header.Set("Content-Type", "application/x-www-form-urlencoded")
-		verifyReq.Header.Set("User-Agent", appLoginUserAgent)
+		verifyReq.Header.Set("User-Agent", userAgent)
 		verifyReq.Header.Set("Accept", "*/*")
 		verifyResp, verifyErr := client.Do(verifyReq)
 		if verifyErr != nil {
@@ -189,7 +195,7 @@ func (cache *XueXiTUserCache) AppLoginApi(ctx context.Context) (*AppLoginResult,
 			return nil, retryErr
 		}
 		retryReq.Header.Set("Content-Type", "application/x-www-form-urlencoded")
-		retryReq.Header.Set("User-Agent", appLoginUserAgent)
+		retryReq.Header.Set("User-Agent", userAgent)
 		retryReq.Header.Set("Accept", "*/*")
 		retryReq.Header.Set("X-Requested-With", "XMLHttpRequest")
 		retryResp, retryErr := client.Do(retryReq)
@@ -204,7 +210,7 @@ func (cache *XueXiTUserCache) AppLoginApi(ctx context.Context) (*AppLoginResult,
 		return nil, fmt.Errorf("App 登录未完成，仍需要短信/消息验证: %s", appBodySummary(step1Body))
 	}
 
-	deviceInfo, err := buildAppDeviceInfo()
+	deviceInfo, err := buildAppDeviceInfo(profile)
 	if err != nil {
 		return nil, err
 	}
@@ -223,7 +229,7 @@ func (cache *XueXiTUserCache) AppLoginApi(ctx context.Context) (*AppLoginResult,
 		return nil, reqErr
 	}
 	req2.Header.Set("Content-Type", "application/x-www-form-urlencoded")
-	req2.Header.Set("User-Agent", appLoginUserAgent)
+	req2.Header.Set("User-Agent", userAgent)
 	req2.Header.Set("Accept", "*/*")
 	req2.Header.Set("X-Requested-With", "XMLHttpRequest")
 	step2, err := client.Do(req2)
@@ -254,7 +260,7 @@ func (cache *XueXiTUserCache) AppLoginApi(ctx context.Context) (*AppLoginResult,
 	// 触发 mooc1-api 下发 k8s，后续章节/人脸接口需要。
 	k8sReq, _ := http.NewRequest("GET", "https://mooc1-api.chaoxing.com/", nil)
 	if k8sReq != nil {
-		k8sReq.Header.Set("User-Agent", appLoginUserAgent)
+		k8sReq.Header.Set("User-Agent", userAgent)
 		k8sReq.Header.Set("Accept", "*/*")
 		if k8sResp, k8sErr := client.Do(k8sReq); k8sErr == nil {
 			k8sResp.Body.Close()
@@ -309,28 +315,28 @@ func buildAppLoginInfo(username, password string) (string, error) {
 	return base64.StdEncoding.EncodeToString(encrypted), nil
 }
 
-func buildAppDeviceInfo() (string, error) {
+func buildAppDeviceInfo(profile *appDeviceProfile) (string, error) {
 	pub, err := appFacePublicKeyValue()
 	if err != nil {
 		return "", err
 	}
 	info := map[string]string{
-		"platform":       "android",
-		"brand":          "Xiaomi",
-		"app_ver":        "3.7.0.4",
-		"os_name":        "android",
-		"cdid":           "",
-		"deviceUniqueId": randomHex(16),
-		"mediaDrmId":     randomHex(16),
-		"os_ver":         "11",
+		"platform":       profile.Platform,
+		"brand":          profile.Brand,
+		"app_ver":        profile.AppVer,
+		"os_name":        profile.OSName,
+		"cdid":           profile.CDID,
+		"deviceUniqueId": profile.DeviceUniqueID,
+		"mediaDrmId":     profile.MediaDrmID,
+		"os_ver":         profile.OSVer,
 		"time_stamp":     strconv.FormatInt(time.Now().UnixMilli(), 10),
-		"os_lang":        "zh_CN",
-		"app_name":       "com.chaoxing.mobile",
-		"cpu_ar":         "arm64-v8a",
-		"hardware":       "qcom",
-		"resolution":     "1080x2206",
-		"android_id":     randomHex(8),
-		"signatures":     "",
+		"os_lang":        profile.OSLang,
+		"app_name":       profile.AppName,
+		"cpu_ar":         profile.CPUArch,
+		"hardware":       profile.Hardware,
+		"resolution":     profile.Resolution,
+		"android_id":     profile.AndroidID,
+		"signatures":     profile.Signatures,
 	}
 	raw, err := json.Marshal(info)
 	if err != nil {
