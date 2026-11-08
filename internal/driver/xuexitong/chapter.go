@@ -12,6 +12,8 @@ import (
 	"github.com/yatori-dev/yatori-go-core/v3/models/ctype"
 )
 
+var _ core.ChapterTester = (*client)(nil)
+
 // DoChapterTest 完成一个章节测验（章测）节点。
 //
 // Work.Raw 直接传 Tree 返回的 NodeWork.Raw，或者只传 NodeWork.ID，由 adapter
