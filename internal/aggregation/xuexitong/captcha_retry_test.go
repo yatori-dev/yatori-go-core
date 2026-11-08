@@ -42,3 +42,33 @@ func TestRetryCaptchaHonorsCancellation(t *testing.T) {
 		t.Fatalf("attempts=%d, err=%v", attempts, err)
 	}
 }
+
+func TestRetryImageCaptchaKeepsTrying(t *testing.T) {
+	oldDelay := imageCaptchaRetryDelay
+	imageCaptchaRetryDelay = 0
+	t.Cleanup(func() { imageCaptchaRetryDelay = oldDelay })
+
+	attempts := 0
+	err := retryImageCaptcha(context.Background(), "图片验证码", func() (bool, error) {
+		attempts++
+		return attempts == 10, nil
+	})
+	if err != nil || attempts != 10 {
+		t.Fatalf("attempts=%d, err=%v", attempts, err)
+	}
+}
+
+func TestRetryImageCaptchaStopsOnEndpointErrors(t *testing.T) {
+	oldDelay := imageCaptchaRetryDelay
+	imageCaptchaRetryDelay = 0
+	t.Cleanup(func() { imageCaptchaRetryDelay = oldDelay })
+
+	attempts := 0
+	err := retryImageCaptcha(context.Background(), "图片验证码", func() (bool, error) {
+		attempts++
+		return false, errors.New("接口不可用")
+	})
+	if err == nil || attempts != 3 {
+		t.Fatalf("attempts=%d, err=%v", attempts, err)
+	}
+}

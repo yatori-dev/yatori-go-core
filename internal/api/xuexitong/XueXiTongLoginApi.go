@@ -101,9 +101,9 @@ type XueXiTUserCache struct {
 
 // LoginCodeChallenge 描述一次登录验证码挑战。
 //
-// Kind 为 "image" 时 Image 是验证码图片；Kind 为 "sms" 时 Phone 是接收
-// 短信的手机号，SendSMS 用于让调用方在用户确认后主动触发服务端发送短信。
-// SDK 不会自动发送短信。
+// 图片验证码由 SDK 内置 ddddocr 持续识别重试，不会回调到这里；目前只有
+// Kind 为 "sms" 的挑战会回调，Phone 是接收短信的手机号，SendSMS 用于让
+// 调用方在用户确认后主动触发服务端发送短信。SDK 不会自动发送短信。
 type LoginCodeChallenge struct {
 	Kind    string
 	Prompt  string

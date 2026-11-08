@@ -363,7 +363,7 @@ var (
 )
 
 // xuexitongLoginCodeProvider 返回 LoginCodeProvider：
-//   - 图片验证码：直接用 ddddocr 自动识别，不打扰用户；
+//   - 图片验证码：SDK 内部用 ddddocr 持续识别重试，不会回调到这里；
 //   - 短信验证码：先提示输入 1，用户确认后才真正发送短信，再等待输入收到的验证码。
 //
 // 注意：core 只提供 SendSMS 这个“发送动作”，不会内嵌任何确认/输入逻辑。
@@ -378,7 +378,7 @@ func xuexitongLoginCodeProvider(t *testing.T) yatori.LoginCodeProvider {
 
 		switch req.Kind {
 		case "image":
-			// 图片验证码不打扰用户：返回空串，SDK 会自动回退到内置 ddddocr。
+			// 防御性分支：图片验证码由 SDK 内部 ddddocr 识别，不会回调到这里。
 			return "", nil
 		case "sms":
 			t.Logf("[短信验证] %s", strings.TrimSpace(req.Prompt))

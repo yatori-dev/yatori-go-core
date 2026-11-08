@@ -107,10 +107,11 @@ const (
 
 // LoginCodeRequest describes a verification challenge raised during login.
 //
-// Kind is "image" for a picture captcha or "sms" for a phone code. When
-// Kind is "image", Image contains the encoded captcha image. When Kind is
-// "sms", Phone contains the masked/full phone number and Prompt contains
-// the instruction.
+// Kind is "sms" for a phone code. Picture captchas are recognized internally
+// with ddddocr and are never raised to the provider, so Image stays empty in
+// practice; both fields are kept for compatibility with other platforms.
+// When Kind is "sms", Phone contains the masked/full phone number and Prompt
+// contains the instruction.
 type LoginCodeRequest struct {
 	Kind   string
 	Prompt string
