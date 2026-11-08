@@ -8,9 +8,8 @@ import (
 	"sync"
 	"time"
 
-	ddddocr "github.com/Changbaiqi/ddddocr-go/utils"
-
 	"github.com/yatori-dev/yatori-go-core/v3/core"
+	"github.com/yatori-dev/yatori-go-core/v3/internal/ocr"
 )
 
 // Base holds the state common to every adapter.
@@ -139,5 +138,5 @@ var ocrOnce sync.Once
 
 // EnsureOCR initializes the bundled OCR engine at most once.
 func EnsureOCR() {
-	ocrOnce.Do(func() { ddddocr.DDDDOcrCoreInit() })
+	ocrOnce.Do(ocr.Ensure)
 }

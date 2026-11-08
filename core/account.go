@@ -1,6 +1,7 @@
 package core
 
 import (
+	"context"
 	"fmt"
 	"net/url"
 	"os"
@@ -94,6 +95,40 @@ func (nopLogger) Errorf(string, ...any) {}
 // NopLogger returns a Logger that discards every message.
 func NopLogger() Logger { return nopLogger{} }
 
+// LoginMode selects how the SDK establishes a XueXiTong session.
+type LoginMode string
+
+const (
+	// LoginModeWeb uses the passport fanyalogin endpoint (default).
+	LoginModeWeb LoginMode = "web"
+	// LoginModeApp uses the App login chain (deviceInfo -> clientId -> cid/sc).
+	LoginModeApp LoginMode = "app"
+)
+
+// LoginCodeRequest describes a verification challenge raised during login.
+//
+// Kind is "image" for a picture captcha or "sms" for a phone code. When
+// Kind is "image", Image contains the encoded captcha image. When Kind is
+// "sms", Phone contains the masked/full phone number and Prompt contains
+// the instruction.
+type LoginCodeRequest struct {
+	Kind   string
+	Prompt string
+	Phone  string
+	Image  []byte
+	// SendSMS asks the platform to send an SMS code to Phone. It is only
+	// set for Kind == "sms". The SDK never sends the message on its own and
+	// performs no confirmation UI: whether and when to call SendSMS is fully
+	// decided by the caller (for example after the user types 1). After the
+	// message arrives, return the code the user received.
+	// When the platform cannot send codes directly, SendSMS is nil.
+	SendSMS func(ctx context.Context) error
+}
+
+// LoginCodeProvider is called when login needs a user supplied code.
+// Implementations may show the image, read from stdin, or ask a human.
+type LoginCodeProvider func(ctx context.Context, req LoginCodeRequest) (string, error)
+
 // Options controls runtime behaviour shared by all platform adapters.
 type Options struct {
 	// ProxyURL is an HTTP proxy such as http://127.0.0.1:7890.
@@ -116,6 +151,10 @@ type Options struct {
 	// whose face page sets faceNeedSignature=true. Capture it with
 	// `go run ./cmd/facesign` while the phone app is on the face page.
 	FaceSignature *FaceSignature
+	// LoginMode selects web login (default) or App login for XueXiTong.
+	LoginMode LoginMode
+	// LoginCodeProvider handles image/SMS codes raised during login.
+	LoginCodeProvider LoginCodeProvider
 }
 
 // FaceSignature is the signature tuple required by the new XueXiTong

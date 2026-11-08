@@ -71,6 +71,20 @@ type Logger = core.Logger
 // Options controls runtime behaviour shared by all adapters.
 type Options = core.Options
 
+// LoginMode selects web login or App login for XueXiTong.
+type LoginMode = core.LoginMode
+
+const (
+	LoginModeWeb = core.LoginModeWeb
+	LoginModeApp = core.LoginModeApp
+)
+
+// LoginCodeRequest describes an image/SMS verification challenge.
+type LoginCodeRequest = core.LoginCodeRequest
+
+// LoginCodeProvider supplies a code for a login challenge.
+type LoginCodeProvider = core.LoginCodeProvider
+
 // FaceSignature is the optional XueXiTong face-check signature tuple.
 type FaceSignature = core.FaceSignature
 

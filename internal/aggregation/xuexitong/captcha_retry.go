@@ -1,9 +1,12 @@
 package xuexitong
 
 import (
+	"bytes"
 	"context"
 	"errors"
 	"fmt"
+	"image"
+	"image/png"
 
 	xuexitongApi "github.com/yatori-dev/yatori-go-core/v3/internal/api/xuexitong"
 )
@@ -56,7 +59,7 @@ func passImageCaptcha(ctx context.Context, cache *xuexitongApi.XueXiTUserCache) 
 		if imgErr != nil {
 			return false, imgErr
 		}
-		code := ocrCaptchaImage(img)
+		code := solveLoginCaptcha(ctx, cache, img)
 		if code == "" {
 			return false, errors.New("验证码识别为空")
 		}
@@ -73,7 +76,7 @@ func passImageCaptcha(ctx context.Context, cache *xuexitongApi.XueXiTUserCache) 
 		if imgErr != nil {
 			return false, imgErr
 		}
-		code := ocrCaptchaImage(img)
+		code := solveLoginCaptcha(ctx, cache, img)
 		if code == "" {
 			return false, errors.New("验证码识别为空")
 		}
@@ -102,4 +105,21 @@ func passSliderCaptcha(ctx context.Context, cache *xuexitongApi.XueXiTUserCache,
 		return true, nil
 	})
 	return validate, err
+}
+
+func solveLoginCaptcha(ctx context.Context, cache *xuexitongApi.XueXiTUserCache, img image.Image) string {
+	if cache.LoginCodeProvider != nil {
+		var buffer bytes.Buffer
+		if err := png.Encode(&buffer, img); err == nil {
+			code, err := cache.LoginCodeProvider(ctx, xuexitongApi.LoginCodeChallenge{
+				Kind:   "image",
+				Prompt: "图片验证码",
+				Image:  buffer.Bytes(),
+			})
+			if err == nil && code != "" {
+				return code
+			}
+		}
+	}
+	return ocrCaptchaImage(img)
 }

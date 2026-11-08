@@ -99,6 +99,17 @@ func New(cfg core.Config) (core.Client, error) {
 			}
 		}
 	}
+	if provider := cfg.Options.LoginCodeProvider; provider != nil {
+		cache.LoginCodeProvider = func(ctx context.Context, challenge api.LoginCodeChallenge) (string, error) {
+			return provider(ctx, core.LoginCodeRequest{
+				Kind:    challenge.Kind,
+				Prompt:  challenge.Prompt,
+				Phone:   challenge.Phone,
+				Image:   challenge.Image,
+				SendSMS: challenge.SendSMS,
+			})
+		}
+	}
 	return &client{
 		Base:     driverutil.NewBase(cfg),
 		cache:    cache,
@@ -120,9 +131,22 @@ func (c *client) Capabilities() core.Capability {
 func (c *client) Login(ctx context.Context) error {
 	unlock := c.Lock()
 	defer unlock()
+	// App 登录模式：本地 deviceInfo -> clientId -> cid/sc。
+	if c.Config.Options.LoginMode == core.LoginModeApp {
+		if strings.TrimSpace(c.cache.Name) != "" && strings.TrimSpace(c.cache.Password) != "" {
+			if result, err := c.cache.AppLoginApi(ctx); err == nil {
+				c.Logger.Debugf("xuexitong: app login ok, cid=%s", result.Cxcid)
+				c.loggedIn = true
+				return nil
+			} else {
+				c.Logger.Warnf("xuexitong: app login failed, fallback to web login: %v", err)
+			}
+		}
+	}
 	if strings.TrimSpace(c.Config.Account.Cookie) != "" {
 		return c.loginWithCookieLocked(c.Config.Account.Cookie)
 	}
+	// 默认走网页端登录（fanyalogin）。
 	driverutil.EnsureOCR()
 	if err := agg.XueXiTLoginAction(c.cache); err != nil {
 		return core.Wrap(core.XueXiTong, "login", err)

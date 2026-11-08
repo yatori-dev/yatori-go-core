@@ -2,6 +2,7 @@ package xuexitong
 
 import (
 	"bytes"
+	"context"
 	"crypto/aes"
 	"crypto/cipher"
 	"crypto/md5"
@@ -93,7 +94,26 @@ type XueXiTUserCache struct {
 	// FaceSc / FaceKeyPEM 用于纯本地生成签名（不再依赖 App 抓包）。
 	FaceSc     string
 	FaceKeyPEM []byte
+	// LoginCodeProvider 是登录过程中图片验证码/短信验证码的回调。
+	// 返回用户输入的验证码；nil 时由 SDK 内置 OCR 处理图片验证码。
+	LoginCodeProvider LoginCodeProvider
 }
+
+// LoginCodeChallenge 描述一次登录验证码挑战。
+//
+// Kind 为 "image" 时 Image 是验证码图片；Kind 为 "sms" 时 Phone 是接收
+// 短信的手机号，SendSMS 用于让调用方在用户确认后主动触发服务端发送短信。
+// SDK 不会自动发送短信。
+type LoginCodeChallenge struct {
+	Kind    string
+	Prompt  string
+	Phone   string
+	Image   []byte
+	SendSMS func(ctx context.Context) error
+}
+
+// LoginCodeProvider 返回用户输入/识别出的验证码。
+type LoginCodeProvider func(ctx context.Context, challenge LoginCodeChallenge) (string, error)
 
 func (cache *XueXiTUserCache) GetCookie() string {
 	return cache.cookie
