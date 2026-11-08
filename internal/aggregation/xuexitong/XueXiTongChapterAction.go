@@ -567,6 +567,11 @@ func ChapterFetchCardsAction(
 					continue
 				}
 			default:
+				if !iframePointHasJobID(point) {
+					// ballchart / resourceVR 等是展示型模块，不带 jobid，不是任务点。
+					log2.Print(log2.DEBUG, "跳过非任务点模块: ", pointType)
+					continue
+				}
 				log2.Print(log2.INFO, "未知的任务点类型: ", pointType, fmt.Sprintf("%+v", point))
 				continue
 			}
@@ -664,6 +669,33 @@ func parseIframeData(htmlString string) ([]IframeAttributes, error) {
 
 	traverse(node)
 	return iframes, nil
+}
+
+// iframePointHasJobID 判断一个 iframe 模块是否挂载了任务点。
+// ballchart / resourceVR 等展示型模块的 Data 里只有 keyword/mid/previewUrl，
+// 没有 _jobid/jobid，不应该按“未知任务点”告警。
+func iframePointHasJobID(point IframeAttributes) bool {
+	if point.Data == nil {
+		return false
+	}
+	for _, key := range []string{"_jobid", "jobid"} {
+		switch value := point.Data[key].(type) {
+		case string:
+			value = strings.TrimSpace(value)
+			if value != "" && value != "0" {
+				return true
+			}
+		case float64:
+			if value != 0 {
+				return true
+			}
+		case int:
+			if value != 0 {
+				return true
+			}
+		}
+	}
+	return false
 }
 
 // applyVideoAttachmentFields 从 chapter cords 的 attachment 中补齐视频/音频的
