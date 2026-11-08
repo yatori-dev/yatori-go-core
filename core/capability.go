@@ -18,6 +18,7 @@ const (
 	CapExams
 	CapSignIn
 	CapQRCodeLogin
+	CapChapterTest
 )
 
 var capabilityNames = []struct {
@@ -33,6 +34,7 @@ var capabilityNames = []struct {
 	{CapExams, "exams"},
 	{CapSignIn, "sign-in"},
 	{CapQRCodeLogin, "qr-code-login"},
+	{CapChapterTest, "chapter-test"},
 }
 
 // Has reports whether all bits in want are present.

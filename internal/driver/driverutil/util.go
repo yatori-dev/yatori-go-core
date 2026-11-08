@@ -126,6 +126,26 @@ func SetString(target *map[string]string, key, value string) {
 	(*target)[key] = value
 }
 
+// CourseDayStart returns the local start of t's calendar day.
+// Date-only platform fields are often parsed at 00:00, so callers must
+// normalize before comparing them with time.Now.
+func CourseDayStart(t time.Time) time.Time {
+	if t.IsZero() {
+		return t
+	}
+	return time.Date(t.Year(), t.Month(), t.Day(), 0, 0, 0, 0, time.Local)
+}
+
+// CourseDayEnd returns the last instant of t's local calendar day.
+// End dates from platforms are inclusive: a course ending on 2026-11-08
+// is still open for the whole of 2026-11-08.
+func CourseDayEnd(t time.Time) time.Time {
+	if t.IsZero() {
+		return t
+	}
+	return time.Date(t.Year(), t.Month(), t.Day(), 23, 59, 59, int(time.Second-time.Nanosecond), time.Local)
+}
+
 // SetAny writes key/value into a map, creating it when nil.
 func SetAny(target *map[string]any, key string, value any) {
 	if *target == nil {

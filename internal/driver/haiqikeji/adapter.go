@@ -100,13 +100,13 @@ func (c *client) Courses(ctx context.Context) ([]core.Course, error) {
 	for _, item := range list {
 		c.courses[item.Id] = item
 		status := core.CourseStatusActive
-		if !item.StartDate.IsZero() && now.Before(item.StartDate) {
+		if !item.StartDate.IsZero() && now.Before(driverutil.CourseDayStart(item.StartDate)) {
 			status = core.CourseStatusNotStarted
 		}
-		if !item.EndDate.IsZero() && now.After(item.EndDate) {
+		if !item.EndDate.IsZero() && now.After(driverutil.CourseDayEnd(item.EndDate)) {
 			status = core.CourseStatusFinished
 		}
-		out = append(out, core.Course{
+		course := core.Course{
 			ID:      item.Id,
 			Name:    item.Name,
 			Teacher: item.LecturerName,
@@ -121,11 +121,17 @@ func (c *client) Courses(ctx context.Context) ([]core.Course, error) {
 				"code":       item.Code,
 				"clusterId":  strconv.Itoa(item.ClusterId),
 				"schoolId":   strconv.Itoa(item.SchoolId),
-				"startDate":  item.StartDate.Format("2006-01-02"),
-				"endDate":    item.EndDate.Format("2006-01-02"),
 			},
 			Raw: item,
-		})
+		}
+		// 平台可能不返回起止日期，零值不要导出成 "0001-01-01"。
+		if !item.StartDate.IsZero() {
+			course.Extra["startDate"] = item.StartDate.Format("2006-01-02")
+		}
+		if !item.EndDate.IsZero() {
+			course.Extra["endDate"] = item.EndDate.Format("2006-01-02")
+		}
+		out = append(out, course)
 	}
 	return out, nil
 }

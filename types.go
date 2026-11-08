@@ -36,6 +36,7 @@ const (
 	CapExams       = core.CapExams
 	CapSignIn      = core.CapSignIn
 	CapQRCodeLogin = core.CapQRCodeLogin
+	CapChapterTest = core.CapChapterTest
 )
 
 // Account carries credentials for one upstream account.
@@ -190,6 +191,9 @@ type Client = core.Client
 
 // QRCodeLogin is implemented by platforms that use an interactive QR login.
 type QRCodeLogin = core.QRCodeLogin
+
+// ChapterTester is implemented by platforms that expose chapter tests.
+type ChapterTester = core.ChapterTester
 
 // Factory constructs a Client for one platform.
 type Factory = core.Factory

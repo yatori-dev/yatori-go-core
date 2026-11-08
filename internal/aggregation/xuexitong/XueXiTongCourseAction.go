@@ -105,8 +105,12 @@ func XueXiTPullCourseActionContext(ctx context.Context, cache *xuexitong.XueXiTU
 			courseImage = v.Imageurl
 		}
 
+		cpi := channel.Cpi
+		if cpi <= 0 {
+			cpi = channel.Content.Cpi
+		}
 		course := XueXiTCourse{
-			Cpi:           channel.Cpi,
+			Cpi:           cpi,
 			Key:           classId,
 			CourseID:      courseID,
 			ChatID:        channel.Content.Chatid,
@@ -131,31 +135,10 @@ func XueXiTPullCourseActionContext(ctx context.Context, cache *xuexitong.XueXiTU
 		courseList = append(courseList, course)
 	}
 
-	//拉取课程完成度状态
-	courseListQueryData := ""
-	for i, course := range courseList {
-		courseListQueryData += fmt.Sprintf("%s_%d", course.Key, course.Cpi)
-		if i != len(courseList)-1 {
-			courseListQueryData += ","
-		}
-	}
-	courseStatusListJson, err := cache.CourseCompleteStatusApiContext(ctx, courseListQueryData, 5, nil)
-	if err != nil {
-		return nil, fmt.Errorf("[%s] 拉取课程完成状态失败: %w", cache.Name, err)
-	}
-	courseStatusList := gojsonq.New().JSONString(courseStatusListJson).Find("jobArray")
-	//fmt.Println(courseStatusList)
-	if courseStatusList == nil {
-		log2.Print(log2.INFO, "["+cache.Name+"] ", log2.BoldRed, " 无法拉取课程任务点进度数据,可能会导致出现不可遇见的BUG\n", courseStatusListJson)
-	} else {
-		for _, statusData := range courseStatusList.([]interface{}) {
-			index := strconv.Itoa(int(statusData.(map[string]any)["clazzId"].(float64)))
-			keyed := keyCourse[index]
-			courseList[keyed].JobFinishCount = int(statusData.(map[string]any)["jobFinishCount"].(float64))
-			courseList[keyed].JobRate = statusData.(map[string]any)["jobRate"].(float64)
-			courseList[keyed].JobCount = int(statusData.(map[string]any)["jobCount"].(float64))
-		}
-	}
+	// 拉取课程完成度状态。
+	// 课程多时接口对 clazzPersonStr 的长度/内容很敏感，这里分批查询；
+	// 某一批失败只影响该批进度，不再让整个课程列表拉取失败。
+	fillCourseStatuses(ctx, cache, courseList, keyCourse)
 
 	return courseList, nil
 }
@@ -335,4 +318,123 @@ func ChapterFetchPointActionContext(ctx context.Context, cache *xuexitong.XueXiT
 	}
 	//fmt.Println("任务点状态已更新")
 	return *chapters, nil
+}
+
+const courseStatusBatchSize = 20
+
+// fillCourseStatuses 分批拉取课程完成度。单批失败会拆半重试，
+// 最坏情况下只跳过该课程的进度，不影响课程列表本身。
+func fillCourseStatuses(ctx context.Context, cache *xuexitong.XueXiTUserCache, courseList []XueXiTCourse, keyCourse map[string]int) {
+	if len(courseList) == 0 {
+		return
+	}
+	pending := make(map[int][]int, 4)
+	for i := range courseList {
+		if strings.TrimSpace(courseList[i].Key) == "" || courseList[i].Cpi <= 0 {
+			continue
+		}
+		pending[courseList[i].Cpi] = append(pending[courseList[i].Cpi], i)
+	}
+	failed := 0
+	for _, indexes := range pending {
+		for start := 0; start < len(indexes); start += courseStatusBatchSize {
+			end := start + courseStatusBatchSize
+			if end > len(indexes) {
+				end = len(indexes)
+			}
+			_, batchFailed := fillCourseStatusBatch(ctx, cache, courseList, keyCourse, indexes[start:end])
+			failed += batchFailed
+		}
+	}
+	if failed > 0 {
+		log2.Print(log2.INFO, "["+cache.Name+"] ", log2.BoldRed,
+			"有 ", strconv.Itoa(failed), " 门课程的完成状态拉取失败，进度按 0% 处理")
+	}
+}
+
+func fillCourseStatusBatch(ctx context.Context, cache *xuexitong.XueXiTUserCache, courseList []XueXiTCourse, keyCourse map[string]int, indexes []int) (okCount, failedCount int) {
+	if len(indexes) == 0 {
+		return 0, 0
+	}
+	err := fetchCourseStatusBatch(ctx, cache, courseList, keyCourse, indexes)
+	if err == nil {
+		return len(indexes), 0
+	}
+	if len(indexes) == 1 {
+		log2.Print(log2.DEBUG, "["+cache.Name+"] 拉取课程完成状态失败，已跳过 ",
+			courseList[indexes[0]].CourseName, ": ", err)
+		return 0, 1
+	}
+	// 拆半定位坏掉的 clazzPersonStr，避免一条坏数据拖垮整批。
+	mid := len(indexes) / 2
+	okLeft, failedLeft := fillCourseStatusBatch(ctx, cache, courseList, keyCourse, indexes[:mid])
+	okRight, failedRight := fillCourseStatusBatch(ctx, cache, courseList, keyCourse, indexes[mid:])
+	return okLeft + okRight, failedLeft + failedRight
+}
+
+func fetchCourseStatusBatch(ctx context.Context, cache *xuexitong.XueXiTUserCache, courseList []XueXiTCourse, keyCourse map[string]int, indexes []int) error {
+	parts := make([]string, 0, len(indexes))
+	for _, index := range indexes {
+		parts = append(parts, fmt.Sprintf("%s_%d", courseList[index].Key, courseList[index].Cpi))
+	}
+	courseStatusListJson, err := cache.CourseCompleteStatusApiContext(ctx, strings.Join(parts, ","), 5, nil)
+	if err != nil {
+		return err
+	}
+	courseStatusList := gojsonq.New().JSONString(courseStatusListJson).Find("jobArray")
+	if courseStatusList == nil {
+		log2.Print(log2.DEBUG, "["+cache.Name+"] 无法拉取课程任务点进度数据: ", courseStatusListJson)
+		return nil
+	}
+	items, ok := courseStatusList.([]interface{})
+	if !ok {
+		return nil
+	}
+	for _, item := range items {
+		statusData, ok := item.(map[string]any)
+		if !ok {
+			continue
+		}
+		clazzID := courseStatusString(statusData["clazzId"])
+		if clazzID == "" {
+			continue
+		}
+		keyed, ok := keyCourse[clazzID]
+		if !ok || keyed < 0 || keyed >= len(courseList) {
+			continue
+		}
+		courseList[keyed].JobFinishCount = int(courseStatusFloat(statusData["jobFinishCount"]))
+		courseList[keyed].JobRate = courseStatusFloat(statusData["jobRate"])
+		courseList[keyed].JobCount = int(courseStatusFloat(statusData["jobCount"]))
+	}
+	return nil
+}
+
+func courseStatusString(value any) string {
+	switch v := value.(type) {
+	case string:
+		return v
+	case float64:
+		return strconv.Itoa(int(v))
+	case int:
+		return strconv.Itoa(v)
+	case json.Number:
+		return v.String()
+	default:
+		return ""
+	}
+}
+
+func courseStatusFloat(value any) float64 {
+	switch v := value.(type) {
+	case float64:
+		return v
+	case int:
+		return float64(v)
+	case json.Number:
+		f, _ := v.Float64()
+		return f
+	default:
+		return 0
+	}
 }

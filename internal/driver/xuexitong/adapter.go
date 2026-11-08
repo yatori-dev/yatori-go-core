@@ -125,7 +125,7 @@ func (c *client) Platform() core.Platform { return core.XueXiTong }
 
 func (c *client) Capabilities() core.Capability {
 	return core.CapLogin | core.CapCookieLogin | core.CapCourses | core.CapTree |
-		core.CapStudy | core.CapWorks | core.CapExams
+		core.CapStudy | core.CapWorks | core.CapExams | core.CapChapterTest
 }
 
 func (c *client) Login(ctx context.Context) error {
@@ -403,7 +403,7 @@ func (c *client) mapPoints(courseID string, cpi, classID int, points []api.Point
 		out = append(out, core.Node{
 			ID:       fmt.Sprintf("work:%d:%d:%s:%s", p.KnowledgeID, p.CardIndex, p.WorkID, p.JobID),
 			CourseID: courseID,
-			Name:     "work",
+			Name:     "章节测验",
 			Kind:     core.NodeWork,
 			Extra: map[string]string{
 				"knowledgeId": strconv.Itoa(p.KnowledgeID),

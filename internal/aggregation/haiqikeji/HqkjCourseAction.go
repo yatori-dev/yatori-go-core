@@ -118,13 +118,13 @@ func HqkjCourseListAction(cache *haiqikeji.HqkjUserCache) ([]HqkjCourse, error) 
 					zxcpksCourse.LecturerName = lecturerName
 				}
 				if startDate, ok := cs["startDate"].(string); ok {
-					turn, err := time.Parse("2006-01-02", startDate)
+					turn, err := time.ParseInLocation("2006-01-02", startDate, time.Local)
 					if err == nil {
 						zxcpksCourse.StartDate = turn
 					}
 				}
 				if endDate, ok := cs["endDate"].(string); ok {
-					turn, err := time.Parse("2006-01-02", endDate)
+					turn, err := time.ParseInLocation("2006-01-02", endDate, time.Local)
 					if err == nil {
 						zxcpksCourse.EndDate = turn
 					}

@@ -64,6 +64,13 @@ type QRCodeLogin interface {
 	WaitQRCode(ctx context.Context, token string) (Session, error)
 }
 
+// ChapterTester is implemented by adapters that can complete chapter tests
+// (章节测验) embedded in the course tree. Callers build a Work from a NodeWork
+// returned by Tree and pass its Raw data or ID through WorkRequest.
+type ChapterTester interface {
+	DoChapterTest(ctx context.Context, req WorkRequest) (*AnswerResult, error)
+}
+
 // Supports reports whether c implements every capability in want.
 func Supports(c Client, want Capability) bool {
 	if c == nil {

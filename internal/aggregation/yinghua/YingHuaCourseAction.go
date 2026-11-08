@@ -104,8 +104,8 @@ func CourseListAction(cache *yinghuaApi.YingHuaUserCache) ([]YingHuaCourse, erro
 		for _, item := range items {
 			// 每个 item 是 map[string]interface{} 类型
 			if obj, ok := item.(map[string]interface{}); ok {
-				startTime, _ := time.Parse("2006-01-02", obj["startDate"].(string)) //时间转换
-				endTime, _ := time.Parse("2006-01-02", obj["endDate"].(string))     //时间转换
+				startTime, _ := time.ParseInLocation("2006-01-02", obj["startDate"].(string), time.Local) //时间转换
+				endTime, _ := time.ParseInLocation("2006-01-02", obj["endDate"].(string), time.Local)     //时间转换
 				courseList = append(courseList, YingHuaCourse{Id: strconv.Itoa(int(obj["id"].(float64))), Name: obj["name"].(string), Mode: int(obj["mode"].(float64)), Progress: obj["progress"].(float64), StartDate: startTime, EndDate: endTime, VideoCount: int(obj["videoCount"].(float64)), VideoLearned: int(obj["videoLearned"].(float64))})
 			}
 		}
@@ -131,8 +131,8 @@ func CourseDetailAction(cache *yinghuaApi.YingHuaUserCache, courseId string) (Yi
 	json := gojsonq.New().JSONString(courseDetailJson).Find("result.data")
 	// 断言为切片并遍历
 	if obj, ok := json.(map[string]interface{}); ok {
-		startTime, _ := time.Parse("2006-01-02", obj["startDate"].(string)) //时间转换
-		endTime, _ := time.Parse("2006-01-02", obj["endDate"].(string))     //时间转换
+		startTime, _ := time.ParseInLocation("2006-01-02", obj["startDate"].(string), time.Local) //时间转换
+		endTime, _ := time.ParseInLocation("2006-01-02", obj["endDate"].(string), time.Local)     //时间转换
 		return YingHuaCourse{Id: strconv.Itoa(int(obj["id"].(float64))), Name: obj["name"].(string), Mode: int(obj["mode"].(float64)), Progress: obj["progress"].(float64), StartDate: startTime, EndDate: endTime, VideoCount: int(obj["videoCount"].(float64)), VideoLearned: int(obj["videoLearned"].(float64))}, nil
 	} else {
 		fmt.Println("无法将数据转换为预期的类型")
