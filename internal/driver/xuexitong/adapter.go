@@ -285,7 +285,56 @@ func (c *client) Tree(ctx context.Context, course core.Course) ([]core.Node, err
 	return out, nil
 }
 
+func (c *client) enrichPointsWithMobileCard(points []api.PointDto, classID, courseID, cpi int) {
+	type cardKey struct {
+		knowledge int
+		index     int
+	}
+	groups := make(map[cardKey][]int)
+	for i := range points {
+		p := &points[i]
+		knowledgeID := 0
+		cardIndex := 0
+		if p.PointVideoDto.ObjectID != "" {
+			if p.PointVideoDto.IsPassed || (p.PointVideoDto.Duration > 0 && p.PointVideoDto.PlayTime >= p.PointVideoDto.Duration) {
+				continue
+			}
+			knowledgeID = p.PointVideoDto.KnowledgeID
+			cardIndex = p.PointVideoDto.CardIndex
+		} else if p.PointDocumentDto.JobID != "" {
+			if p.PointDocumentDto.Read {
+				continue
+			}
+			knowledgeID = p.PointDocumentDto.KnowledgeID
+			cardIndex = p.PointDocumentDto.CardIndex
+		} else {
+			continue
+		}
+		key := cardKey{knowledge: knowledgeID, index: cardIndex}
+		groups[key] = append(groups[key], i)
+	}
+	for key, indexes := range groups {
+		card, err := fetchMobileCardCached(c.cache, classID, courseID, key.knowledge, key.index, cpi)
+		if err != nil {
+			continue
+		}
+		for _, index := range indexes {
+			p := &points[index]
+			if p.PointVideoDto.ObjectID != "" {
+				_, _ = p.PointVideoDto.AttachmentsDetection(card)
+			}
+			if p.PointDocumentDto.JobID != "" {
+				_, _ = p.PointDocumentDto.AttachmentsDetection(card)
+			}
+		}
+	}
+}
+
 func (c *client) mapPoints(courseID string, cpi, classID int, points []api.PointDto) []core.Node {
+	// gas/knowledge 的 iframe data 有时不带 isPassed/playTime/read，
+	// 会导致已经学完的视频/文档在 Tree 里仍显示 0%。这里按卡片补拉
+	// 手机端 attachment，用服务端真实状态回填后再计算进度。
+	c.enrichPointsWithMobileCard(points, classID, driverutil.Int(courseID), cpi)
 	videos, works, documents, hyperlinks, lives, bbs := api.ParsePointDto(points)
 	out := make([]core.Node, 0, len(videos)+len(works)+len(documents)+len(hyperlinks)+len(lives)+len(bbs))
 
@@ -297,13 +346,17 @@ func (c *client) mapPoints(courseID string, cpi, classID int, points []api.Point
 		}
 		id := fmt.Sprintf("video:%d:%d:%s:%s", p.KnowledgeID, p.CardIndex, p.ObjectID, p.JobID)
 		completed := p.IsPassed || (p.Duration > 0 && p.PlayTime >= p.Duration)
+		progress := videoProgress(p)
+		if p.IsPassed {
+			progress = 100
+		}
 		out = append(out, core.Node{
 			ID:        id,
 			CourseID:  courseID,
 			Name:      p.Title,
 			Kind:      kind,
 			Duration:  driverutil.Seconds(p.Duration),
-			Progress:  videoProgress(p),
+			Progress:  progress,
 			Completed: completed,
 			Extra: map[string]string{
 				"knowledgeId": strconv.Itoa(p.KnowledgeID),
@@ -625,6 +678,13 @@ func (c *client) studyDocument(req core.StudyRequest, p *api.PointDocumentDto, r
 			}
 		}
 	}
+	if p.Read {
+		result.Submitted = false
+		result.Progress = 100
+		result.Completed = true
+		result.Message = "文档已读，跳过"
+		return result, nil
+	}
 	var (
 		report string
 		err    error
@@ -646,9 +706,9 @@ func (c *client) studyDocument(req core.StudyRequest, p *api.PointDocumentDto, r
 	}
 	if err := validateReadReport(report); err != nil {
 		// 部分课程会挂一些不属于当前账号任务点的文档（服务端直接返回
-		// “无效的请求参数”）。这类节点继续重试也不会成功，按非任务点
-		// 跳过，避免整门课被一个无效文档卡住。
-		if strings.Contains(report, "无效的请求参数") {
+		// “无效的请求参数”）；也有文档接口直接返回空响应。这类节点
+		// 继续重试也不会成功，按非任务点跳过，避免整门课被卡住。
+		if strings.Contains(report, "无效的请求参数") || strings.TrimSpace(report) == "" {
 			result.Submitted = false
 			result.Progress = 100
 			result.Completed = true

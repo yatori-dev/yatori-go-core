@@ -354,6 +354,16 @@ func (p *PointVideoDto) AttachmentsDetection(attachment interface{}) (detected b
 			} else {
 				p.IsPassed = false
 			}
+			if playTime, ok := attachment["playTime"]; ok {
+				if value, err := strconv.ParseFloat(stringValue(playTime), 64); err == nil && value > 0 {
+					p.PlayTime = int(value / 1000)
+				}
+			}
+			if duration, ok := attachment["attDuration"]; ok {
+				if value, err := strconv.Atoi(stringValue(duration)); err == nil && value > 0 {
+					p.Duration = value
+				}
+			}
 
 			// 获取 "rt" 的值
 			rtObj, ok1 := property["rt"]
@@ -527,6 +537,21 @@ func (p *PointWorkDto) AttachmentsDetection(attachment interface{}) (detected bo
 	return flag, nil
 }
 
+func stringValue(value interface{}) string {
+	switch item := value.(type) {
+	case string:
+		return item
+	case float64:
+		return strconv.FormatFloat(item, 'f', -1, 64)
+	case int:
+		return strconv.Itoa(item)
+	case int64:
+		return strconv.FormatInt(item, 10)
+	default:
+		return ""
+	}
+}
+
 func (p *PointDocumentDto) AttachmentsDetection(attachment interface{}) (detected bool, err error) {
 	defer recoverAttachmentDetection("文档", &detected, &err)
 	attachmentMap, ok := attachment.(map[string]interface{})
@@ -629,25 +654,32 @@ func (p *PointDocumentDto) AttachmentsDetection(attachment interface{}) (detecte
 			}
 		} else if typeStr == "read" {
 			property, ok := att["property"].(map[string]interface{})
-			//if strings.Contains(p.Title, "二进制的由来.pdf") || p.KnowledgeID == 1008383209 {
-			//	fmt.Println("断点")
-			//}
 			if !ok {
 				return false, errors.New("invalid property structure")
 			}
 			if att["job"] != nil {
 				p.IsJob = att["job"].(bool)
 			}
-			jobid := property["jobid"]
-
-			if jobid == p.JobID {
-				p.Title = property["title"].(string)
-				//if property["jobid"] != nil {
-				//	p.JobID = property["jobid"].(string)
-				//}
-				p.Jtoken = att["jtoken"].(string)
+			// readv2 的 property 里通常没有 jobid，只有 _jobid=read-xxx 和 id=xxx。
+			jobID := stringValue(property["jobid"])
+			if jobID == "" {
+				jobID = stringValue(property["_jobid"])
 			}
-			if jobid != nil && p.JobID == jobid {
+			altJobID := stringValue(property["id"])
+			matched := jobID != "" && (jobID == p.JobID || "read-"+jobID == p.JobID)
+			if !matched && altJobID != "" {
+				matched = altJobID == p.JobID || "read-"+altJobID == p.JobID
+			}
+			if matched {
+				if title := stringValue(property["title"]); title != "" {
+					p.Title = title
+				}
+				if jtoken := stringValue(att["jtoken"]); jtoken != "" {
+					p.Jtoken = jtoken
+				}
+				if read, ok := property["read"].(bool); ok {
+					p.Read = read
+				}
 				break
 			}
 		}

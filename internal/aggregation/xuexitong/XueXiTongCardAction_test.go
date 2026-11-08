@@ -31,3 +31,15 @@ func TestParseAttachmentSettingReturnsObjectAndEnc(t *testing.T) {
 		t.Fatalf("unexpected enc: %q, attachment: %#v", enc, attachment)
 	}
 }
+
+func TestParseAttachmentSettingFallsBackToMArg(t *testing.T) {
+	html := `<html><body><script>var mArg = ""; try{ mArg = {"attachments":[{"type":"video"}],"defaults":{"fid":"1"}}; }catch(e){}</script></body></html>`
+	attachment, _, err := parseAttachmentSetting(html)
+	if err != nil {
+		t.Fatalf("unexpected error: %v", err)
+	}
+	items, ok := attachment["attachments"].([]interface{})
+	if !ok || len(items) != 1 {
+		t.Fatalf("unexpected attachment: %#v", attachment)
+	}
+}

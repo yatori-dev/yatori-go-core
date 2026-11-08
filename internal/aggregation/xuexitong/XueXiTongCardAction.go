@@ -184,23 +184,25 @@ func waitFaceCardPassed(cache *xuexitong.XueXiTUserCache, classId, courseId, kno
 }
 
 func parseAttachmentSetting(cardHtml string) (map[string]interface{}, string, error) {
+	if strings.TrimSpace(cardHtml) == "" {
+		return nil, "", APIError{Message: "章节卡片返回空响应（登录状态可能已失效）"}
+	}
 	doc, err := html.Parse(bytes.NewReader([]byte(cardHtml)))
 	if err != nil {
 		return nil, "", fmt.Errorf("解析章节卡片 HTML 失败: %w", err)
 	}
 
-	// Define the regex pattern to match window.AttachmentSetting JSON object
-	re := regexp.MustCompile(`(?s)window\.AttachmentSetting\s*=\s*(\{.*?\});`)
-	matches := re.FindStringSubmatch(cardHtml)
-	if len(matches) > 1 {
-		var attachment map[string]interface{}
-		if err := json.Unmarshal([]byte(matches[1]), &attachment); err != nil {
-			return nil, "", fmt.Errorf("解析 AttachmentSetting 失败: %w", err)
+	// 新版卡片可能只下发 window.mArg / mArg，不再有 AttachmentSetting；
+	// 两者 JSON 结构一致，按顺序兼容。用括号配对而不是正则以避免
+	// JSON 内部出现 "};" 时被截断。
+	var attachment map[string]interface{}
+	for _, marker := range []string{"window.AttachmentSetting", "window.mArg", "mArg"} {
+		if parsed, ok := extractJSONObjectAfter(cardHtml, marker); ok {
+			attachment = parsed
+			break
 		}
-		if attachment == nil {
-			return nil, "", APIError{Message: "AttachmentSetting 不是对象"}
-		}
-
+	}
+	if attachment != nil {
 		reEnc := regexp.MustCompile(`<input type="hidden" id="from" value="[^_]+_[^_]+_[^_]+_([^"]+)"/>`)
 		matchesEnc := reEnc.FindStringSubmatch(cardHtml)
 		enc := ""
@@ -236,10 +238,84 @@ func parseAttachmentSetting(cardHtml string) (map[string]interface{}, string, er
 			return nil, "", ChapterNotOpened{}
 		}
 		if blankTips == "" {
-			blankTips = "章节卡片缺少 AttachmentSetting"
+			lower := strings.ToLower(cardHtml)
+			if strings.Contains(lower, "passport") || strings.Contains(cardHtml, "用户登录") || strings.Contains(cardHtml, "请输入用户名") {
+				blankTips = "登录状态已失效，请重新登录"
+			} else {
+				blankTips = "章节卡片缺少 AttachmentSetting"
+			}
 		}
 		return nil, "", APIError{Message: blankTips}
 	}
+}
+
+// extractJSONObjectAfter 找到 marker 之后的 JSON 对象，按花括号配对
+// 提取完整对象，避免正则非贪婪匹配在嵌套 JSON/字符串处截断。
+// 同一个 marker 可能出现多次（例如 var mArg = ""; 和 mArg = {...}），
+// 逐个尝试直到解析出带 attachments/defaults 的卡片对象。
+func extractJSONObjectAfter(text, marker string) (map[string]interface{}, bool) {
+	offset := 0
+	for {
+		index := strings.Index(text[offset:], marker)
+		if index < 0 {
+			return nil, false
+		}
+		index += offset
+		relative := strings.IndexByte(text[index+len(marker):], '{')
+		if relative >= 0 {
+			start := index + len(marker) + relative
+			if attachment, ok := parseBalancedJSONObject(text, start); ok {
+				if attachment["attachments"] != nil || attachment["defaults"] != nil {
+					return attachment, true
+				}
+			}
+		}
+		offset = index + len(marker)
+	}
+}
+
+func parseBalancedJSONObject(text string, start int) (map[string]interface{}, bool) {
+	depth := 0
+	inString := false
+	escaped := false
+	for i := start; i < len(text); i++ {
+		char := text[i]
+		if inString {
+			if escaped {
+				escaped = false
+				continue
+			}
+			if char == '\\' {
+				escaped = true
+				continue
+			}
+			if char == '"' {
+				inString = false
+			}
+			continue
+		}
+		switch char {
+		case '"':
+			inString = true
+		case '{':
+			depth++
+		case '}':
+			depth--
+			if depth == 0 {
+				var attachment map[string]interface{}
+				raw := text[start : i+1]
+				if err := json.Unmarshal([]byte(raw), &attachment); err != nil || attachment == nil {
+					// 兼容 data="...&quot;..." 这种 HTML 转义后的 JSON。
+					raw = html.UnescapeString(raw)
+					if err := json.Unmarshal([]byte(raw), &attachment); err != nil || attachment == nil {
+						return nil, false
+					}
+				}
+				return attachment, true
+			}
+		}
+	}
+	return nil, false
 }
 
 func VideoDtoFetchAction(cache *xuexitong.XueXiTUserCache, p *xuexitong.PointVideoDto) (bool, error) {
