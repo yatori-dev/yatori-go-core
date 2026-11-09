@@ -697,31 +697,37 @@ func (p *PointHyperlinkDto) AttachmentsDetection(attachment interface{}) (detect
 	if !ok {
 		return false, errors.New("invalid attachment structure")
 	}
-
-	for _, a := range attachments {
-		att, _ := a.(map[string]interface{})
-		if att["jobid"] != nil {
-			if att["jobid"].(string) != p.JobID {
-				continue
-			}
-			property, ok := att["property"].(map[string]interface{})
-			if !ok {
-				return false, errors.New("invalid property structure")
-			}
-
-			p.Title = property["title"].(string)
-			if property["jobid"] != nil {
-				p.JobID = property["jobid"].(string)
-			}
-			if att["jtoken"] != nil {
-				p.Jtoken = att["jtoken"].(string)
-			}
-
-			return true, nil
-		}
-
+	if p.JobID == "" {
+		return false, nil
 	}
-	return true, nil
+
+	for _, item := range attachments {
+		att, _ := item.(map[string]interface{})
+		property, _ := att["property"].(map[string]interface{})
+		jobID := stringValue(att["jobid"])
+		propertyJobID := stringValue(property["jobid"])
+		if p.JobID != jobID && p.JobID != propertyJobID && p.JobID != stringValue(property["_jobid"]) {
+			continue
+		}
+		// 优先使用匹配附件的任务编号提交。
+		if jobID != "" {
+			p.JobID = jobID
+		} else if propertyJobID != "" {
+			p.JobID = propertyJobID
+		}
+		if title := stringValue(property["title"]); title != "" {
+			p.Title = title
+		} else if name := stringValue(property["name"]); name != "" {
+			p.Title = name
+		}
+		if token := stringValue(att["jtoken"]); token != "" {
+			p.Jtoken = token
+		} else if token := stringValue(property["jtoken"]); token != "" {
+			p.Jtoken = token
+		}
+		return true, nil
+	}
+	return false, nil
 }
 
 // 直播卡片

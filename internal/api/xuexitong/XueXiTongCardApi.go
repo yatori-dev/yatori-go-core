@@ -946,12 +946,6 @@ func (cache *XueXiTUserCache) ReadV2PointPeReport(p *PointDocumentDto, retry int
 
 // 外链完成接口
 func (cache *XueXiTUserCache) HyperlinkDtoCompleteReport(p *PointHyperlinkDto, retry int, lastErr error) (string, error) {
-	if retry < 0 {
-		return "", lastErr
-	}
-	urlStr := "https://mooc1.chaoxing.com/ananas/job/hyperlink?jobid=" + p.JobID + "&knowledgeid=" + strconv.Itoa(p.KnowledgeID) + "&courseid=" + p.CourseID + "&clazzid=" + p.ClassID + "&jtoken=" + p.Jtoken + "&checkMicroTopic=true&microTopicId=undefined&_dc=" + strconv.FormatInt(time.Now().UnixMilli(), 10)
-	method := "GET"
-
 	tr := &http.Transport{
 		TLSClientConfig: &tls.Config{},
 	}
@@ -964,6 +958,25 @@ func (cache *XueXiTUserCache) HyperlinkDtoCompleteReport(p *PointHyperlinkDto, r
 	client := &http.Client{
 		Transport: tr,
 	}
+	return cache.hyperlinkDtoCompleteReport(p, retry, lastErr, client)
+}
+
+func (cache *XueXiTUserCache) hyperlinkDtoCompleteReport(p *PointHyperlinkDto, retry int, lastErr error, client *http.Client) (string, error) {
+	if retry < 0 {
+		return "", lastErr
+	}
+	if p == nil || p.JobID == "" || p.KnowledgeID <= 0 || p.CourseID == "" || p.ClassID == "" {
+		return "", errors.New("外链任务缺少提交所需的标识")
+	}
+	params := url.Values{
+		"jobid": {p.JobID}, "knowledgeid": {strconv.Itoa(p.KnowledgeID)},
+		"courseid": {p.CourseID}, "clazzid": {p.ClassID}, "jtoken": {p.Jtoken},
+		"checkMicroTopic": {"true"}, "microTopicId": {"undefined"},
+		"_dc": {strconv.FormatInt(time.Now().UnixMilli(), 10)},
+	}
+	urlStr := "https://mooc1.chaoxing.com/ananas/job/hyperlink?" + params.Encode()
+	method := "GET"
+
 	req, err := http.NewRequest(method, urlStr, nil)
 
 	if err != nil {
@@ -982,13 +995,14 @@ func (cache *XueXiTUserCache) HyperlinkDtoCompleteReport(p *PointHyperlinkDto, r
 	if err != nil {
 		//fmt.Println(err)
 		time.Sleep(time.Duration(retry*5) * time.Second)
-		return cache.HyperlinkDtoCompleteReport(p, retry-1, lastErr)
+		return cache.hyperlinkDtoCompleteReport(p, retry-1, err, client)
 	}
-	defer res.Body.Close()
 	if res.StatusCode != http.StatusOK {
-		return cache.HyperlinkDtoCompleteReport(p, retry-1, fmt.Errorf("status code: %d", res.StatusCode))
+		res.Body.Close()
+		return cache.hyperlinkDtoCompleteReport(p, retry-1, fmt.Errorf("status code: %d", res.StatusCode), client)
 	}
 
+	defer res.Body.Close()
 	body, err := ioutil.ReadAll(res.Body)
 	if err != nil {
 		fmt.Println(err)
