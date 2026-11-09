@@ -139,7 +139,7 @@ func (c *client) Login(ctx context.Context) error {
 				c.loggedIn = true
 				return nil
 			} else {
-				c.Logger.Warnf("xuexitong: app login failed, fallback to web login: %v", err)
+				return core.Wrap(core.XueXiTong, "app_login", err)
 			}
 		}
 	}
@@ -456,7 +456,7 @@ func (c *client) mapPoints(courseID string, cpi, classID int, points []api.Point
 		out = append(out, core.Node{
 			ID:       fmt.Sprintf("link:%d:%d:%s:%s", p.KnowledgeID, p.CardIndex, p.ObjectID, p.JobID),
 			CourseID: courseID,
-			Name:     p.Title,
+			Name:     firstNonEmpty(p.Title, "外链任务"),
 			Kind:     core.NodeLink,
 			Extra: map[string]string{
 				"knowledgeId": strconv.Itoa(p.KnowledgeID),

@@ -48,10 +48,7 @@ func (cache *XueXiTUserCache) XueXiTProcessVerifyImage(retry int, lastErr error)
 	if err != nil {
 		return nil, err
 	}
-	for _, cookie := range cache.cookies {
-		req.AddCookie(cookie)
-	}
-	req.Header.Add("User-Agent", GetUA("mobile"))
+	cache.applyCourseSession(client, req, GetUA("mobile"))
 	req.Header.Add("Accept", "*/*")
 	req.Header.Add("Host", "mooc1.chaoxing.com")
 	req.Header.Add("Connection", "keep-alive")
@@ -108,11 +105,7 @@ func (cache *XueXiTUserCache) XueXiTChapterVerificationCodeApi(retry int, lastEr
 	}
 
 	// cookie
-	for _, cookie := range cache.cookies {
-		req.AddCookie(cookie)
-	}
-
-	req.Header.Add("User-Agent", GetUA("mobile"))
+	cache.applyCourseSession(client, req, GetUA("mobile"))
 	req.Header.Add("Accept", "*/*")
 	req.Header.Add("Host", "mooc1-api.chaoxing.com")
 	req.Header.Add("Connection", "keep-alive")
@@ -162,10 +155,7 @@ func (cache *XueXiTUserCache) XueXiTPassVerificationCode(code string, retry int,
 	if err != nil {
 		return false, err
 	}
-	for _, cookie := range cache.cookies {
-		req.AddCookie(cookie)
-	}
-	req.Header.Add("User-Agent", GetUA("mobile"))
+	cache.applyCourseSession(client, req, GetUA("mobile"))
 	req.Header.Add("Accept", "*/*")
 	req.Header.Add("Host", "mooc1.chaoxing.com")
 	req.Header.Add("Connection", "keep-alive")
@@ -208,10 +198,7 @@ func (cache *XueXiTUserCache) XueXiTPassCahpterVerificationCode(code string, ret
 	if err != nil {
 		return false, err
 	}
-	for _, cookie := range cache.cookies {
-		req.AddCookie(cookie)
-	}
-	req.Header.Add("User-Agent", GetUA("mobile"))
+	cache.applyCourseSession(client, req, GetUA("mobile"))
 	req.Header.Add("Accept", "*/*")
 	req.Header.Add("Host", "mooc1.chaoxing.com")
 	req.Header.Add("Connection", "keep-alive")

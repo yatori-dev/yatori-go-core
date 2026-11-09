@@ -336,10 +336,15 @@ func ChapterFetchCardsAction(
 				}
 			case string(ctype.Hyperlink):
 
-				jobID, ok3 := point.Data["_jobid"].(string)
+				jobID := iframePointJobID(point)
+				title, _ := point.Data["title"].(string)
+				if title == "" {
+					title, _ = point.Data["name"].(string)
+				}
+				jtoken, _ := point.Data["jtoken"].(string)
 				linkType, ok4 := point.Data["linkType"].(float64)
 
-				if ok3 && jobID != "" {
+				if jobID != "" {
 					pointObj.PointHyperlinkDto = xuexitong.PointHyperlinkDto{
 						CardIndex:   cardIndex,
 						CourseID:    strconv.Itoa(courseId),
@@ -348,6 +353,8 @@ func ChapterFetchCardsAction(
 						Cpi:         strconv.Itoa(cpi),
 						ObjectID:    "",
 						JobID:       jobID,
+						Title:       title,
+						Jtoken:      jtoken,
 						Type:        ctype.Hyperlink,
 						IsSet:       ok,
 					}
@@ -664,6 +671,24 @@ func parseIframeData(htmlString string) ([]IframeAttributes, error) {
 
 	traverse(node)
 	return iframes, nil
+}
+
+func iframePointJobID(point IframeAttributes) string {
+	for _, key := range []string{"_jobid", "jobid"} {
+		var id string
+		switch value := point.Data[key].(type) {
+		case string:
+			id = strings.TrimSpace(value)
+		case float64:
+			id = strconv.FormatFloat(value, 'f', -1, 64)
+		case int:
+			id = strconv.Itoa(value)
+		}
+		if id != "" && id != "0" {
+			return id
+		}
+	}
+	return ""
 }
 
 // applyVideoAttachmentFields 从 chapter cords 的 attachment 中补齐视频/音频的
