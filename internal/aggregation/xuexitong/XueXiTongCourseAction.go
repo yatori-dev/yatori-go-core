@@ -68,11 +68,7 @@ func XueXiTPullCourseActionContext(ctx context.Context, cache *xuexitong.XueXiTU
 	var xueXiTCourse xuexitong.XueXiTCourseJson
 	err = json.Unmarshal([]byte(courses), &xueXiTCourse)
 	if err != nil {
-		log2.Print(log2.INFO, "["+cache.Name+"] "+" 解析失败", courses)
-		log2.Print(log2.DEBUG, "["+cache.Name+"] "+" 解析失败", courses)
-
-		//panic(err)
-		return nil, err
+		return nil, fmt.Errorf("课程列表响应无法解析: %w", err)
 	}
 	log2.Print(log2.DEBUG, "["+cache.Name+"] "+" 课程数量："+strconv.Itoa(len(xueXiTCourse.ChannelList)))
 	// log2.Print(log2.INFO, "["+cache.Name+"] "+courses)

@@ -949,7 +949,20 @@ func (cache *XueXiTUserCache) HyperlinkDtoCompleteReport(p *PointHyperlinkDto, r
 	if retry < 0 {
 		return "", lastErr
 	}
-	urlStr := "https://mooc1.chaoxing.com/ananas/job/hyperlink?jobid=" + p.JobID + "&knowledgeid=" + strconv.Itoa(p.KnowledgeID) + "&courseid=" + p.CourseID + "&clazzid=" + p.ClassID + "&jtoken=" + p.Jtoken + "&checkMicroTopic=true&microTopicId=undefined&_dc=" + strconv.FormatInt(time.Now().UnixMilli(), 10)
+	if p == nil || p.JobID == "" || p.JobID == "0" || p.KnowledgeID <= 0 || p.CourseID == "" || p.ClassID == "" {
+		return "", errors.New("外链任务缺少提交所需的标识")
+	}
+	params := url.Values{
+		"jobid":       {p.JobID},
+		"knowledgeid": {strconv.Itoa(p.KnowledgeID)},
+		"courseid":    {p.CourseID},
+		"clazzid":     {p.ClassID},
+		"_dc":         {strconv.FormatInt(time.Now().UnixMilli(), 10)},
+	}
+	if p.Jtoken != "" {
+		params.Set("jtoken", p.Jtoken)
+	}
+	urlStr := "https://mooc1.chaoxing.com/ananas/job/hyperlink?" + params.Encode()
 	method := "GET"
 
 	tr := &http.Transport{
@@ -961,33 +974,39 @@ func (cache *XueXiTUserCache) HyperlinkDtoCompleteReport(p *PointHyperlinkDto, r
 			return url.Parse("http://" + cache.ProxyIP) // 设置代理
 		}
 	}
-	client := &http.Client{
-		Transport: tr,
-	}
+	client := newRequestClient(tr)
 	req, err := http.NewRequest(method, urlStr, nil)
 
 	if err != nil {
 		fmt.Println(err)
 		return "", err
 	}
-	req.Header.Add("User-Agent", utils.DefaultUserAgent)
-	req.Header.Add("Accept", "*/*")
-	req.Header.Add("Host", "mooc1.chaoxing.com")
-	req.Header.Add("Connection", "keep-alive")
-	for _, cookie := range cache.cookies {
-		req.AddCookie(cookie)
+	cache.applyCourseSession(client, req, utils.DefaultUserAgent)
+	req.Header.Set("Accept", "*/*")
+	client.CheckRedirect = func(next *http.Request, previous []*http.Request) error {
+		if next.URL.Scheme != req.URL.Scheme || next.URL.Host != req.URL.Host {
+			return http.ErrUseLastResponse
+		}
+		if len(previous) >= 10 {
+			return errors.New("外链提交接口重定向次数过多")
+		}
+		return nil
 	}
 
 	res, err := client.Do(req)
 	if err != nil {
-		//fmt.Println(err)
+		var requestErr *url.Error
+		if errors.As(err, &requestErr) {
+			err = requestErr.Err
+		}
 		time.Sleep(time.Duration(retry*5) * time.Second)
-		return cache.HyperlinkDtoCompleteReport(p, retry-1, lastErr)
+		return cache.HyperlinkDtoCompleteReport(p, retry-1, err)
 	}
-	defer res.Body.Close()
 	if res.StatusCode != http.StatusOK {
+		res.Body.Close()
 		return cache.HyperlinkDtoCompleteReport(p, retry-1, fmt.Errorf("status code: %d", res.StatusCode))
 	}
+	defer res.Body.Close()
 
 	body, err := ioutil.ReadAll(res.Body)
 	if err != nil {

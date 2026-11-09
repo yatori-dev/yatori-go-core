@@ -102,19 +102,21 @@ func (cache *XueXiTUserCache) AppLoginApi(ctx context.Context) (*AppLoginResult,
 	}
 	step1Body, _ := readAll(step1)
 	step1.Body.Close()
-	var first struct {
+	type loginReply struct {
 		Status bool   `json:"status"`
 		URL    string `json:"url"`
 		WebURL string `json:"webUrl"`
 		Mes    string `json:"mes"`
 	}
+	var first loginReply
 	if err := json.Unmarshal(step1Body, &first); err != nil {
-		return nil, fmt.Errorf("App 登录第一步响应异常: %s", appBodySummary(step1Body))
+		return nil, fmt.Errorf("App 登录第一步响应异常（%s）", appLoginReplyShape(step1.StatusCode, step1Body))
 	}
+	loginAddress := first.URL
 	if first.URL == "" && first.WebURL != "" {
 		// type=2：服务端要求短信/消息验证。拉起 checkmessage 页面，
 		// 解析隐藏参数，通过 LoginCodeProvider 让调用方输入短信验证码，
-		// 再提交 /v11/checkmessage 并重试登录。
+		// /v11/tocheckmessage 验证成功后通过 CLIENT_THIRD_LOGIN 继续 SSO。
 		checkReq, checkErr := http.NewRequest("GET", first.WebURL, nil)
 		if checkErr != nil {
 			return nil, checkErr
@@ -140,6 +142,9 @@ func (cache *XueXiTUserCache) AppLoginApi(ctx context.Context) (*AppLoginResult,
 		fid := hiddenInputValue(string(checkPage), "fid")
 		loginTimeout := hiddenInputValue(string(checkPage), "loginTimeout")
 		countryCode := hiddenInputValue(string(checkPage), "countrycode")
+		if countryCode == "" {
+			countryCode = "86"
+		}
 		checkType := hiddenInputValue(string(checkPage), "type")
 		if checkType == "" {
 			checkType = "0"
@@ -164,7 +169,7 @@ func (cache *XueXiTUserCache) AppLoginApi(ctx context.Context) (*AppLoginResult,
 		}
 		checkURL := "https://passport2.chaoxing.com/v11/checkmessage?enc2=" + url.QueryEscape(enc2) + "&time=" + url.QueryEscape(checkTime) + "&type=" + url.QueryEscape(checkType)
 		checkForm := url.Values{}
-		checkForm.Set("countrycode", hiddenInputValue(string(checkPage), "countrycode"))
+		checkForm.Set("countrycode", countryCode)
 		checkForm.Set("phone", phone)
 		checkForm.Set("vcode", code)
 		checkForm.Set("fid", fid)
@@ -182,39 +187,19 @@ func (cache *XueXiTUserCache) AppLoginApi(ctx context.Context) (*AppLoginResult,
 		}
 		verifyBody, _ := readAll(verifyResp)
 		verifyResp.Body.Close()
-		var verifyResult struct {
-			Status bool   `json:"status"`
-			Mes    string `json:"mes"`
+		loginAddress, err = appSMSLoginContinuation(verifyResp.StatusCode, verifyBody)
+		if err != nil {
+			return nil, err
 		}
-		if err := json.Unmarshal(verifyBody, &verifyResult); err != nil || !verifyResult.Status {
-			return nil, fmt.Errorf("短信验证失败: %s", appBodySummary(verifyBody))
-		}
-		// 验证通过后重试第一步，服务端应返回正常登录 url。
-		retryReq, retryErr := http.NewRequest("POST", "https://passport2-api.chaoxing.com/v11/loginregister", strings.NewReader(form.Encode()))
-		if retryErr != nil {
-			return nil, retryErr
-		}
-		retryReq.Header.Set("Content-Type", "application/x-www-form-urlencoded")
-		retryReq.Header.Set("User-Agent", userAgent)
-		retryReq.Header.Set("Accept", "*/*")
-		retryReq.Header.Set("X-Requested-With", "XMLHttpRequest")
-		retryResp, retryErr := client.Do(retryReq)
-		if retryErr != nil {
-			return nil, retryErr
-		}
-		retryBody, _ := readAll(retryResp)
-		retryResp.Body.Close()
-		_ = json.Unmarshal(retryBody, &first)
-	}
-	if !first.Status || first.URL == "" {
-		return nil, fmt.Errorf("App 登录未完成，仍需要短信/消息验证: %s", appBodySummary(step1Body))
+	} else if !first.Status || loginAddress == "" {
+		return nil, fmt.Errorf("App 登录未完成（%s）", appLoginReplyShape(step1.StatusCode, step1Body))
 	}
 
 	deviceInfo, err := buildAppDeviceInfo(profile)
 	if err != nil {
 		return nil, err
 	}
-	loginURL, err := url.Parse(first.URL)
+	loginURL, err := url.Parse(loginAddress)
 	if err != nil {
 		return nil, err
 	}
@@ -243,11 +228,11 @@ func (cache *XueXiTUserCache) AppLoginApi(ctx context.Context) (*AppLoginResult,
 		Result int                    `json:"result"`
 	}
 	if err := json.Unmarshal(step2Body, &second); err != nil {
-		return nil, fmt.Errorf("App 登录第二步响应异常: %s", appBodySummary(step2Body))
+		return nil, fmt.Errorf("App 单点登录响应异常（%s）", appLoginReplyShape(step2.StatusCode, step2Body))
 	}
 	clientID := stringValue(second.Msg["clientId"])
 	if clientID == "" {
-		return nil, fmt.Errorf("App 登录未返回 clientId: %s", appBodySummary(step2Body))
+		return nil, fmt.Errorf("App 单点登录未返回 clientId（%s）", appLoginReplyShape(step2.StatusCode, step2Body))
 	}
 	device, err := decryptAppClientID(clientID)
 	if err != nil {
@@ -268,6 +253,8 @@ func (cache *XueXiTUserCache) AppLoginApi(ctx context.Context) (*AppLoginResult,
 	}
 	cookies := collectAppCookies(jar)
 	cache.SetCookies(cookies)
+	cache.appSession = client
+	cache.appUserAgent = userAgent
 	puid := stringValue(second.Msg["puid"])
 	if puid == "" {
 		puid = stringValue(second.Msg["uid"])
@@ -464,6 +451,55 @@ func readAll(response *http.Response) ([]byte, error) {
 	buffer := new(bytes.Buffer)
 	_, err := buffer.ReadFrom(response.Body)
 	return buffer.Bytes(), err
+}
+
+// appSMSLoginContinuation follows the success handler in /v11/tocheckmessage.
+func appSMSLoginContinuation(statusCode int, body []byte) (string, error) {
+	var response struct {
+		Status bool            `json:"status"`
+		Type   json.RawMessage `json:"type"`
+	}
+	if statusCode < 200 || statusCode >= 300 || json.Unmarshal(body, &response) != nil || !response.Status {
+		return "", fmt.Errorf("短信验证失败（%s）", appLoginReplyShape(statusCode, body))
+	}
+	switch string(bytes.TrimSpace(response.Type)) {
+	case "1", `"1"`:
+		return "", errors.New("短信验证已通过，学习通要求先在官方页面修改密码")
+	}
+	return "https://sso.chaoxing.com/apis/login/userLogin4Uname.do?ft=true", nil
+}
+
+// appLoginReplyShape records protocol structure without exposing response values.
+func appLoginReplyShape(httpStatus int, body []byte) string {
+	var fields map[string]json.RawMessage
+	if json.Unmarshal(body, &fields) != nil || fields == nil {
+		return fmt.Sprintf("HTTP %d，非 JSON 对象", httpStatus)
+	}
+
+	status := "缺失"
+	if raw, ok := fields["status"]; ok {
+		switch string(bytes.TrimSpace(raw)) {
+		case "true":
+			status = "true"
+		case "false":
+			status = "false"
+		default:
+			status = "非布尔"
+		}
+	}
+
+	present := make([]string, 0, 8)
+	for _, key := range []string{"url", "webUrl", "redirectUrl", "type", "result", "data", "msg", "mes"} {
+		switch string(bytes.TrimSpace(fields[key])) {
+		case "", "null", `""`, "{}", "[]":
+		default:
+			present = append(present, key)
+		}
+	}
+	if len(present) == 0 {
+		present = append(present, "无")
+	}
+	return fmt.Sprintf("HTTP %d，status=%s，非空字段=%s", httpStatus, status, strings.Join(present, "/"))
 }
 
 func appBodySummary(body []byte) string {

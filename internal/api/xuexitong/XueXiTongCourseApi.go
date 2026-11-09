@@ -3,6 +3,7 @@ package xuexitong
 //注意Api类文件主需要写最原始的接口请求和最后的json的string形式返回，不需要用结构体序列化。
 //序列化和具体的功能实现请移步到Action代码文件中
 import (
+	"bytes"
 	"context"
 	"crypto/tls"
 	"io/ioutil"
@@ -10,6 +11,7 @@ import (
 	"net/url"
 	"strings"
 
+	"github.com/yatori-dev/yatori-go-core/v3/core"
 	"github.com/yatori-dev/yatori-go-core/v3/utils"
 )
 
@@ -40,11 +42,7 @@ func (cache *XueXiTUserCache) CourseListApiContext(ctx context.Context, retry in
 	if err != nil {
 		return "", err
 	}
-	for _, cookie := range cache.cookies {
-		req.AddCookie(cookie)
-	}
-	//req.Header.Add("User-Agent", "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/136.0.0.0 Safari/537.36 Edg/136.0.0.0")
-	req.Header.Add("User-Agent", GetUA("mobile"))
+	cache.applyCourseSession(client, req, GetUA("mobile"))
 	res, err := client.Do(req)
 	if err != nil {
 		return "", err
@@ -55,6 +53,10 @@ func (cache *XueXiTUserCache) CourseListApiContext(ctx context.Context, retry in
 	body, err := ioutil.ReadAll(res.Body)
 	if err != nil {
 		return "", err
+	}
+	if (res.Request != nil && res.Request.URL != nil && res.Request.URL.Hostname() == "passport2.chaoxing.com") ||
+		(bytes.Contains(body, []byte(`id="phone"`)) && bytes.Contains(body, []byte(`id="pwd"`))) {
+		return "", core.NotLoggedIn(core.XueXiTong, "courses")
 	}
 	if err := validateResponse("拉取课程列表", res, body); err != nil {
 		return "", err

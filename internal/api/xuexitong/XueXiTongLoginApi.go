@@ -78,12 +78,14 @@ type XueXiTUserCache struct {
 	Name     string //用户使用Phone
 	Password string //用户密码
 
-	UserID      string // 用户ID
-	JsonContent map[string]interface{}
-	cookies     []*http.Cookie
-	cookie      string //验证码用的session
-	IpProxySW   bool   // 是否开启代理
-	ProxyIP     string //代理IP
+	UserID       string // 用户ID
+	JsonContent  map[string]interface{}
+	cookies      []*http.Cookie
+	appSession   *http.Client
+	appUserAgent string
+	cookie       string //验证码用的session
+	IpProxySW    bool   // 是否开启代理
+	ProxyIP      string //代理IP
 
 	// FaceSign 是可选的课程人脸签名（新版 faceNeedSignature 课程需要）。
 	// 由学习通 App 的 CLIENT_FORM_SIGN 生成，可通过 cmd/facesign 采集。
@@ -118,8 +120,27 @@ type LoginCodeProvider func(ctx context.Context, challenge LoginCodeChallenge) (
 func (cache *XueXiTUserCache) GetCookie() string {
 	return cache.cookie
 }
-func (cache *XueXiTUserCache) GetCookies() []*http.Cookie        { return cache.cookies }
-func (cache *XueXiTUserCache) SetCookies(cookies []*http.Cookie) { cache.cookies = cookies }
+func (cache *XueXiTUserCache) GetCookies() []*http.Cookie { return cache.cookies }
+func (cache *XueXiTUserCache) SetCookies(cookies []*http.Cookie) {
+	cache.cookies = cookies
+	cache.appSession = nil
+	cache.appUserAgent = ""
+}
+
+// applyCourseSession keeps App login and course-related requests in the same HTTP session.
+// Cookie-based and web logins continue using the existing explicit cookies.
+func (cache *XueXiTUserCache) applyCourseSession(client *http.Client, req *http.Request, userAgent string) {
+	if cache.appSession != nil {
+		client.Transport = cache.appSession.Transport
+		client.Jar = cache.appSession.Jar
+		userAgent = cache.appUserAgent
+	} else {
+		for _, cookie := range cache.cookies {
+			req.AddCookie(cookie)
+		}
+	}
+	req.Header.Set("User-Agent", userAgent)
+}
 
 // GetUA 构建并获取 UA
 func GetUA(uaType string) string {
