@@ -58,17 +58,6 @@ func (cache *XueXiTUserCache) AppLoginApi(ctx context.Context) (*AppLoginResult,
 	if username == "" || password == "" {
 		return nil, errors.New("App 登录需要账号和密码")
 	}
-	// 同一账号复用同一套设备指纹；不同账号的型号、标识和 UA 令牌都不同。
-	profile := loadOrCreateAppDeviceProfile(username)
-	userAgent := strings.TrimSpace(profile.UserAgent)
-	if userAgent == "" {
-		userAgent = appLoginUserAgent
-	}
-	loginInfo, err := buildAppLoginInfo(username, password)
-	if err != nil {
-		return nil, err
-	}
-
 	jar, err := cookiejar.New(nil)
 	if err != nil {
 		return nil, err
@@ -80,6 +69,21 @@ func (cache *XueXiTUserCache) AppLoginApi(ctx context.Context) (*AppLoginResult,
 		}
 	}
 	client := &http.Client{Jar: jar, Transport: transport, Timeout: 30 * time.Second}
+	return cache.appLogin(ctx, client, loadOrCreateAppDeviceProfile(username))
+}
+
+func (cache *XueXiTUserCache) appLogin(ctx context.Context, client *http.Client, profile *appDeviceProfile) (*AppLoginResult, error) {
+	username := strings.TrimSpace(cache.Name)
+	password := cache.Password
+	// 同一账号复用同一套设备指纹；不同账号的型号、标识和 UA 令牌都不同。
+	userAgent := strings.TrimSpace(profile.UserAgent)
+	if userAgent == "" {
+		userAgent = appLoginUserAgent
+	}
+	loginInfo, err := buildAppLoginInfo(username, password)
+	if err != nil {
+		return nil, err
+	}
 
 	form := url.Values{}
 	form.Set("logininfo", loginInfo)
@@ -88,7 +92,7 @@ func (cache *XueXiTUserCache) AppLoginApi(ctx context.Context) (*AppLoginResult,
 	form.Set("loginType", "1")
 	form.Set("roleSelect", "true")
 	form.Set("entype", "1")
-	req1, reqErr := http.NewRequest("POST", "https://passport2-api.chaoxing.com/v11/loginregister", strings.NewReader(form.Encode()))
+	req1, reqErr := http.NewRequestWithContext(ctx, "POST", "https://passport2-api.chaoxing.com/v11/loginregister", strings.NewReader(form.Encode()))
 	if reqErr != nil {
 		return nil, reqErr
 	}
@@ -111,11 +115,12 @@ func (cache *XueXiTUserCache) AppLoginApi(ctx context.Context) (*AppLoginResult,
 	if err := json.Unmarshal(step1Body, &first); err != nil {
 		return nil, fmt.Errorf("App 登录第一步响应异常: %s", appBodySummary(step1Body))
 	}
+	loginAddress := first.URL
 	if first.URL == "" && first.WebURL != "" {
 		// type=2：服务端要求短信/消息验证。拉起 checkmessage 页面，
 		// 解析隐藏参数，通过 LoginCodeProvider 让调用方输入短信验证码，
-		// 再提交 /v11/checkmessage 并重试登录。
-		checkReq, checkErr := http.NewRequest("GET", first.WebURL, nil)
+		// 验证成功后沿用当前会话进入 SSO。
+		checkReq, checkErr := http.NewRequestWithContext(ctx, "GET", first.WebURL, nil)
 		if checkErr != nil {
 			return nil, checkErr
 		}
@@ -169,7 +174,7 @@ func (cache *XueXiTUserCache) AppLoginApi(ctx context.Context) (*AppLoginResult,
 		checkForm.Set("vcode", code)
 		checkForm.Set("fid", fid)
 		checkForm.Set("loginTimeout", loginTimeout)
-		verifyReq, verifyErr := http.NewRequest("POST", checkURL, strings.NewReader(checkForm.Encode()))
+		verifyReq, verifyErr := http.NewRequestWithContext(ctx, "POST", checkURL, strings.NewReader(checkForm.Encode()))
 		if verifyErr != nil {
 			return nil, verifyErr
 		}
@@ -180,33 +185,16 @@ func (cache *XueXiTUserCache) AppLoginApi(ctx context.Context) (*AppLoginResult,
 		if verifyErr != nil {
 			return nil, verifyErr
 		}
-		verifyBody, _ := readAll(verifyResp)
+		verifyBody, readErr := readAll(verifyResp)
 		verifyResp.Body.Close()
-		var verifyResult struct {
-			Status bool   `json:"status"`
-			Mes    string `json:"mes"`
+		if readErr != nil {
+			return nil, fmt.Errorf("短信验证响应读取失败: %w", readErr)
 		}
-		if err := json.Unmarshal(verifyBody, &verifyResult); err != nil || !verifyResult.Status {
-			return nil, fmt.Errorf("短信验证失败: %s", appBodySummary(verifyBody))
+		loginAddress, err = appSMSLoginContinuation(verifyResp.StatusCode, verifyBody)
+		if err != nil {
+			return nil, err
 		}
-		// 验证通过后重试第一步，服务端应返回正常登录 url。
-		retryReq, retryErr := http.NewRequest("POST", "https://passport2-api.chaoxing.com/v11/loginregister", strings.NewReader(form.Encode()))
-		if retryErr != nil {
-			return nil, retryErr
-		}
-		retryReq.Header.Set("Content-Type", "application/x-www-form-urlencoded")
-		retryReq.Header.Set("User-Agent", userAgent)
-		retryReq.Header.Set("Accept", "*/*")
-		retryReq.Header.Set("X-Requested-With", "XMLHttpRequest")
-		retryResp, retryErr := client.Do(retryReq)
-		if retryErr != nil {
-			return nil, retryErr
-		}
-		retryBody, _ := readAll(retryResp)
-		retryResp.Body.Close()
-		_ = json.Unmarshal(retryBody, &first)
-	}
-	if !first.Status || first.URL == "" {
+	} else if !first.Status || loginAddress == "" {
 		return nil, fmt.Errorf("App 登录未完成，仍需要短信/消息验证: %s", appBodySummary(step1Body))
 	}
 
@@ -214,7 +202,7 @@ func (cache *XueXiTUserCache) AppLoginApi(ctx context.Context) (*AppLoginResult,
 	if err != nil {
 		return nil, err
 	}
-	loginURL, err := url.Parse(first.URL)
+	loginURL, err := url.Parse(loginAddress)
 	if err != nil {
 		return nil, err
 	}
@@ -224,7 +212,7 @@ func (cache *XueXiTUserCache) AppLoginApi(ctx context.Context) (*AppLoginResult,
 	query.Set("hddInfoLen", strconv.Itoa(len(deviceInfo)))
 	loginURL.RawQuery = query.Encode()
 	step2Form := url.Values{"data": {deviceInfo}}
-	req2, reqErr := http.NewRequest("POST", loginURL.String(), strings.NewReader(step2Form.Encode()))
+	req2, reqErr := http.NewRequestWithContext(ctx, "POST", loginURL.String(), strings.NewReader(step2Form.Encode()))
 	if reqErr != nil {
 		return nil, reqErr
 	}
@@ -258,7 +246,7 @@ func (cache *XueXiTUserCache) AppLoginApi(ctx context.Context) (*AppLoginResult,
 	}
 
 	// 触发 mooc1-api 下发 k8s，后续章节/人脸接口需要。
-	k8sReq, _ := http.NewRequest("GET", "https://mooc1-api.chaoxing.com/", nil)
+	k8sReq, _ := http.NewRequestWithContext(ctx, "GET", "https://mooc1-api.chaoxing.com/", nil)
 	if k8sReq != nil {
 		k8sReq.Header.Set("User-Agent", userAgent)
 		k8sReq.Header.Set("Accept", "*/*")
@@ -266,7 +254,7 @@ func (cache *XueXiTUserCache) AppLoginApi(ctx context.Context) (*AppLoginResult,
 			k8sResp.Body.Close()
 		}
 	}
-	cookies := collectAppCookies(jar)
+	cookies := collectAppCookies(client.Jar)
 	cache.SetCookies(cookies)
 	puid := stringValue(second.Msg["puid"])
 	if puid == "" {
@@ -464,6 +452,22 @@ func readAll(response *http.Response) ([]byte, error) {
 	buffer := new(bytes.Buffer)
 	_, err := buffer.ReadFrom(response.Body)
 	return buffer.Bytes(), err
+}
+
+// appSMSLoginContinuation 与 /v11/tocheckmessage 的成功回调保持一致。
+func appSMSLoginContinuation(statusCode int, body []byte) (string, error) {
+	var response struct {
+		Status bool            `json:"status"`
+		Type   json.RawMessage `json:"type"`
+	}
+	if statusCode < 200 || statusCode >= 300 || json.Unmarshal(body, &response) != nil || !response.Status {
+		return "", fmt.Errorf("短信验证失败: %s", appBodySummary(body))
+	}
+	switch string(bytes.TrimSpace(response.Type)) {
+	case "1", `"1"`:
+		return "", errors.New("短信验证已通过，学习通要求先在官方页面修改密码")
+	}
+	return "https://sso.chaoxing.com/apis/login/userLogin4Uname.do?ft=true", nil
 }
 
 func appBodySummary(body []byte) string {
