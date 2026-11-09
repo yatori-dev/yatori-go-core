@@ -331,6 +331,9 @@ func (c *client) enrichPointsWithMobileCard(points []api.PointDto, classID, cour
 			}
 			knowledgeID = p.PointDocumentDto.KnowledgeID
 			cardIndex = p.PointDocumentDto.CardIndex
+		} else if p.PointHyperlinkDto.JobID != "" {
+			knowledgeID = p.PointHyperlinkDto.KnowledgeID
+			cardIndex = p.PointHyperlinkDto.CardIndex
 		} else {
 			continue
 		}
@@ -349,6 +352,9 @@ func (c *client) enrichPointsWithMobileCard(points []api.PointDto, classID, cour
 			}
 			if p.PointDocumentDto.JobID != "" {
 				_, _ = p.PointDocumentDto.AttachmentsDetection(card)
+			}
+			if p.PointHyperlinkDto.JobID != "" {
+				_, _ = p.PointHyperlinkDto.AttachmentsDetection(card)
 			}
 		}
 	}
