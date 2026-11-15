@@ -86,8 +86,8 @@ func (cache *XueXiTUserCache) PullExamListHtmlApi(courseId string, classId strin
 		fmt.Println(err)
 		return "", err
 	}
-	//req.Header.Add("User-Agent", GetUA("mobile"))
-	req.Header.Add("User-Agent", XXTEXAMUA)
+	//req.Header.Add("User-Agent", cache.UA())
+	req.Header.Add("User-Agent", cache.UA())
 	req.Header.Add("Accept", "text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,image/apng,*/*;q=0.8")
 	req.Header.Add("Upgrade-Insecure-Requests", "1")
 	req.Header.Add("accept-language", "zh_CN")
@@ -158,7 +158,7 @@ func (cache *XueXiTUserCache) PullExamEnterInformHtmlApi(
 		return "", "", err
 	}
 
-	req.Header.Add("User-Agent", XXTEXAMUA)
+	req.Header.Add("User-Agent", cache.UA())
 	req.Header.Add("Accept", "text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,image/apng,*/*;q=0.8")
 	req.Header.Add("Upgrade-Insecure-Requests", "1")
 	req.Header.Add("accept-language", "zh_CN")
@@ -227,7 +227,7 @@ func (cache *XueXiTUserCache) PullExamPaperHtmlApi(courseId, classId, examId, so
 		fmt.Println(err)
 		return "", err
 	}
-	req.Header.Add("User-Agent", XXTEXAMUA)
+	req.Header.Add("User-Agent", cache.UA())
 	req.Header.Add("Accept", "text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,image/apng,*/*;q=0.8")
 	req.Header.Add("Upgrade-Insecure-Requests", "1")
 	//req.Header.Add("Referer", "https://mooc1-api.chaoxing.com/exam-ans/exam/phone/task-exam?taskrefId=8186945&courseId=258101827&classId=134204187&userId=346635955&role=&source=0&enc_task=e8a0e0f5b2faa978194ba2b19eef6371&cpi=411545273&vx=0")
@@ -277,7 +277,7 @@ func (cache *XueXiTUserCache) PullExamListHtmlTwoApi(urlStr string, retry int, l
 		fmt.Println(err)
 		return "", err
 	}
-	req.Header.Add("User-Agent", XXTEXAMUA)
+	req.Header.Add("User-Agent", cache.UA())
 	req.Header.Add("Accept", "text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,image/apng,*/*;q=0.8")
 	req.Header.Add("Upgrade-Insecure-Requests", "1")
 	//req.Header.Add("Referer", "https://mooc1-api.chaoxing.com/exam-ans/exam/phone/task-exam?taskrefId=8186945&courseId=258101827&classId=134204187&userId=346635955&role=&source=0&enc_task=e8a0e0f5b2faa978194ba2b19eef6371&cpi=411545273&vx=0")
@@ -323,7 +323,7 @@ func (cache *XueXiTUserCache) PullReDoExamPaperHtmlApi(urlStr string, retry int,
 		fmt.Println(err)
 		return "", err
 	}
-	req.Header.Add("User-Agent", XXTEXAMUA)
+	req.Header.Add("User-Agent", cache.UA())
 	req.Header.Add("Accept", "text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,image/apng,*/*;q=0.8")
 	req.Header.Add("Upgrade-Insecure-Requests", "1")
 	//req.Header.Add("Referer", "https://mooc1-api.chaoxing.com/exam-ans/exam/phone/task-exam?taskrefId=8186945&courseId=258101827&classId=134204187&userId=346635955&role=&source=0&enc_task=e8a0e0f5b2faa978194ba2b19eef6371&cpi=411545273&vx=0")
@@ -348,7 +348,6 @@ func (cache *XueXiTUserCache) PullReDoExamPaperHtmlApi(urlStr string, retry int,
 		return "", err
 	}
 	if strings.Contains(string(body), "访问异常（请升级学习通APP最新版本）") {
-		XXTEXAMUA = GetUA("iphone")
 		return cache.PullReDoExamPaperHtmlApi(urlStr, retry-1, errors.New("提示APP版本问题"))
 	}
 	//fmt.Println(string(body))
@@ -390,8 +389,8 @@ func (cache *XueXiTUserCache) StartReExamApi(examId, examAnswerId, courseId, cla
 	req.Header.Add("Sec-Fetch-Dest", "empty")
 	req.Header.Add("Sec-Fetch-Mode", "cors")
 	req.Header.Add("Sec-Fetch-Site", "same-origin")
-	//req.Header.Add("User-Agent", GetUA("mobile"))
-	req.Header.Add("User-Agent", XXTEXAMUA)
+	//req.Header.Add("User-Agent", cache.UA())
+	req.Header.Add("User-Agent", cache.UA())
 	req.Header.Add("X-Requested-With", "XMLHttpRequest")
 	req.Header.Add("sec-ch-ua", "\"\"")
 	req.Header.Add("sec-ch-ua-mobile", "?1")
@@ -435,8 +434,8 @@ func (cache *XueXiTUserCache) PullReExamPaperHtmlApi(urlStr string) (string, err
 		fmt.Println(err)
 		return "", err
 	}
-	//req.Header.Add("User-Agent", GetUA("mobile"))
-	req.Header.Add("User-Agent", XXTEXAMUA)
+	//req.Header.Add("User-Agent", cache.UA())
+	req.Header.Add("User-Agent", cache.UA())
 	req.Header.Add("Accept", "text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,image/apng,*/*;q=0.8")
 	req.Header.Add("Upgrade-Insecure-Requests", "1")
 	//req.Header.Add("Referer", "https://mooc1-api.chaoxing.com/exam-ans/exam/phone/task-exam?taskrefId=8186945&courseId=258101827&classId=134204187&userId=346635955&role=&source=0&enc_task=e8a0e0f5b2faa978194ba2b19eef6371&cpi=411545273&vx=0")
@@ -490,8 +489,8 @@ func (cache *XueXiTUserCache) PullExamQuestionApi(courseId, classId, tId, id, cp
 		fmt.Println(err)
 		return "", err
 	}
-	//req.Header.Add("User-Agent", GetUA("mobile"))
-	req.Header.Add("User-Agent", XXTEXAMUA)
+	//req.Header.Add("User-Agent", cache.UA())
+	req.Header.Add("User-Agent", cache.UA())
 	req.Header.Add("Accept", "text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,image/apng,*/*;q=0.8")
 	req.Header.Add("Upgrade-Insecure-Requests", "1")
 	req.Header.Add("Accept-Language", "zh-CN,en-US;q=0.9")
@@ -627,8 +626,8 @@ func (cache *XueXiTUserCache) SubmitExamAnswerApi(question *XXTExamQuestionSubmi
 		fmt.Println(err)
 		return "", err
 	}
-	//req.Header.Add("User-Agent", GetUA("mobile"))
-	req.Header.Add("User-Agent", XXTEXAMUA)
+	//req.Header.Add("User-Agent", cache.UA())
+	req.Header.Add("User-Agent", cache.UA())
 	req.Header.Add("Accept", "application/json, text/javascript, */*; q=0.01")
 	req.Header.Add("Origin", "https://mooc1-api.chaoxing.com")
 	req.Header.Add("X-Requested-With", "XMLHttpRequest")

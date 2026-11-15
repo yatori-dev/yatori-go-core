@@ -80,8 +80,15 @@ const (
 	LoginModeApp = core.LoginModeApp
 )
 
-// LoginCodeRequest describes an image/SMS verification challenge.
+// LoginCodeRequest describes a login verification challenge.
 type LoginCodeRequest = core.LoginCodeRequest
+
+// Login code kinds.
+const (
+	LoginCodeKindImage    = core.LoginCodeKindImage
+	LoginCodeKindSMS      = core.LoginCodeKindSMS
+	LoginCodeKindPassword = core.LoginCodeKindPassword
+)
 
 // LoginCodeProvider supplies a code for a login challenge.
 type LoginCodeProvider = core.LoginCodeProvider

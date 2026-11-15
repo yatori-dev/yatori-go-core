@@ -242,7 +242,6 @@ func EnterExamAction(cache *xuexitong.XueXiTUserCache, exam *XXTExam) error {
 
 	}
 	if strings.Contains(pullPaperHtml, "访问异常（请升级学习通APP最新版本）") {
-		xuexitong.XXTEXAMUA = xuexitong.GetUA("iphone")
 		return EnterExamAction(cache, exam)
 	}
 	qsEntity, err1 := HtmlQuestionTurnEntity(pullPaperHtml)
@@ -348,9 +347,6 @@ func (question *XXTExamQuestion) SubmitExamAnswerAction(cache *xuexitong.XueXiTU
 	// 拟人化间隔: 模拟作答停顿后再提交
 	utils.HumanDelay(800*time.Millisecond, 2200*time.Millisecond)
 	api, err := cache.SubmitExamAnswerApi(&question.XXTExamQuestionSubmitEntity, !isSubmit)
-	if isSubmit { //用于提交试卷后的处理
-		xuexitong.XXTEXAMUA = xuexitong.GetUA("mobile") //回复原ua
-	}
 	if err != nil {
 		return "", err
 	}

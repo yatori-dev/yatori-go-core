@@ -15,7 +15,6 @@ import (
 	"time"
 
 	"github.com/google/uuid"
-	"github.com/yatori-dev/yatori-go-core/v3/utils"
 )
 
 // 拉取任务点链接数据
@@ -45,7 +44,7 @@ func (cache *XueXiTUserCache) PullBbsCircleIdApi(mid, jobid string, isPortal boo
 		fmt.Println(err)
 		return "", "", nil
 	}
-	req.Header.Add("User-Agent", utils.DefaultUserAgent)
+	req.Header.Add("User-Agent", cache.UA())
 	req.Header.Add("Accept", "*/*")
 	req.Header.Add("Host", "mooc1.chaoxing.com")
 	req.Header.Add("Connection", "keep-alive")
@@ -104,7 +103,7 @@ func (cache *XueXiTUserCache) PullUtEnc(courseId, clazzid, chapterId, enc string
 	}
 
 	//req.Header.Add("User-Agent", "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/136.0.0.0 Safari/537.36 Edg/136.0.0.0")
-	req.Header.Add("User-Agent", utils.DefaultUserAgent)
+	req.Header.Add("User-Agent", cache.UA())
 	req.Header.Add("Accept", "*/*")
 	req.Header.Add("Host", "groupweb.chaoxing.com")
 	req.Header.Add("Connection", "keep-alive")
@@ -163,7 +162,7 @@ func (cache *XueXiTUserCache) PullBbsInfoApi(id1, id2, courseId, classId string,
 	if err != nil {
 		return "", err
 	}
-	req.Header.Add("User-Agent", utils.DefaultUserAgent)
+	req.Header.Add("User-Agent", cache.UA())
 	req.Header.Add("Accept", "*/*")
 	req.Header.Add("Host", "groupweb.chaoxing.com")
 	req.Header.Add("Connection", "keep-alive")
@@ -215,7 +214,7 @@ func (cache *XueXiTUserCache) PullPhoneBbsInfoApi(mtopid, jobid, knowledgeid, co
 		fmt.Println(err)
 		return "", err
 	}
-	req.Header.Add("User-Agent", GetUA("mobile"))
+	req.Header.Add("User-Agent", cache.UA())
 	req.Header.Add("Accept", "text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,image/apng,*/*;q=0.8")
 	req.Header.Add("Upgrade-Insecure-Requests", "1")
 	//req.Header.Add("Referer", "https://mooc1-api.chaoxing.com/ananas/modules/insertbbs/index.html?v=2025-1128-0958")
@@ -287,7 +286,7 @@ func (cache *XueXiTUserCache) PullPhoneBbsDetailApi(topicId string) (string, err
 		fmt.Println(err)
 		return "", err
 	}
-	req.Header.Add("User-Agent", GetUA("mobile"))
+	req.Header.Add("User-Agent", cache.UA())
 	req.Header.Add("Connection", "Keep-Alive")
 	req.Header.Add("Accept-Language", "zh_CN")
 	req.Header.Add("Content-Type", "application/x-www-form-urlencoded")
@@ -341,7 +340,7 @@ func (cache *XueXiTUserCache) AnswerBbsApi(topicUUid, courseId, classId, topic_c
 	if err != nil {
 		return "", err
 	}
-	req.Header.Add("User-Agent", utils.DefaultUserAgent)
+	req.Header.Add("User-Agent", cache.UA())
 	req.Header.Add("Accept", "*/*")
 	req.Header.Add("Host", "groupweb.chaoxing.com")
 	req.Header.Add("Connection", "keep-alive")
@@ -412,7 +411,7 @@ func (cache *XueXiTUserCache) AnswerPhoneBbsApi(classId, topicUUID, content stri
 		fmt.Println(err)
 		return "", err
 	}
-	req.Header.Add("User-Agent", GetUA("mobile"))
+	req.Header.Add("User-Agent", cache.UA())
 	req.Header.Add("Connection", "Keep-Alive")
 	req.Header.Add("Accept-Language", "zh_CN")
 	req.Header.Add("Content-Type", "application/x-www-form-urlencoded")

@@ -74,7 +74,7 @@ func (cache *XueXiTUserCache) PageMobileChapterCard(
 	for _, cookie := range cache.cookies {
 		req.AddCookie(cookie)
 	}
-	req.Header.Add("User-Agent", GetUA("mobile"))
+	req.Header.Add("User-Agent", cache.UA())
 	req.Header.Add("Accept", "*/*")
 	req.Header.Add("Host", "mooc1-api.chaoxing.com")
 	req.Header.Add("Connection", "keep-alive")
@@ -137,7 +137,7 @@ func (cache *XueXiTUserCache) VideoDtoFetch(p *PointVideoDto, retry int, lastErr
 	resp.Header.Add("Host", " mooc1-api.chaoxing.com")
 	resp.Header.Add("Connection", " keep-alive")
 	//resp.Header.Add("User-Agent", " Mozilla/5.0 (Linux; Android 12; SM-N9006 Build/V417IR; wv) AppleWebKit/537.36 (KHTML, like Gecko) Version/4.0 Chrome/95.0.4638.74 Mobile Safari/537.36 (schild:e9b05c3f9fb49fef2f516e86ac3c4ff1) (device:SM-N9006) Language/zh_CN com.chaoxing.mobile/ChaoXingStudy_3_6.3.7_android_phone_10822_249 (@Kalimdor)_4627cad9c4b6415cba5dc6cac39e6c96")
-	resp.Header.Add("User-Agent", GetUA("mobile"))
+	resp.Header.Add("User-Agent", cache.UA())
 	resp.Header.Add("X-Requested-With", " XMLHttpRequest")
 	resp.Header.Add("Accept", " */*")
 	resp.Header.Add("Sec-Fetch-Site", " same-origin")
@@ -197,8 +197,8 @@ func (cache *XueXiTUserCache) VideoSubmitStudyTimeApi(p *PointVideoDto, playingT
 		return "", nil
 	}
 
-	req.Header.Add("User-Agent", "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/139.0.0.0 Safari/537.36 Edg/139.0.0.0")
-	//req.Header.Add("User-Agent", GetUA("mobile"))
+	req.Header.Add("User-Agent", cache.UA())
+	//req.Header.Add("User-Agent", cache.UA())
 	req.Header.Add("Sec-Ch-Ua-Platform", "Windows")
 	req.Header.Add("Accept", "*/*")
 	req.Header.Add("Host", "mooc1.chaoxing.com")
@@ -279,8 +279,8 @@ func (cache *XueXiTUserCache) VideoSubmitStudyTimePEApi(p *PointVideoDto, playin
 		return "", err
 	}
 
-	//req.Header.Add("User-Agent", "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/139.0.0.0 Safari/537.36 Edg/139.0.0.0")
-	req.Header.Add("User-Agent", GetUA("mobile"))
+	//req.Header.Add("User-Agent", cache.UA())
+	req.Header.Add("User-Agent", cache.UA())
 	req.Header.Add("Sec-Ch-Ua-Platform", "Windows")
 	req.Header.Add("Accept", "*/*")
 	req.Header.Add("Host", "mooc1.chaoxing.com")
@@ -383,7 +383,7 @@ func (cache *XueXiTUserCache) VideoDtoPlayReport(p *PointVideoDto, playingTime i
 	}
 
 	//resp.Header.Add("User-Agent", "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/139.0.0.0 Safari/537.36 Edg/139.0.0.0")
-	resp.Header.Add("User-Agent", GetUA("mobile"))
+	resp.Header.Add("User-Agent", cache.UA())
 	resp.Header.Add("Sec-Ch-Ua-Platform", "Windows")
 	resp.Header.Add("Accept", "*/*")
 	resp.Header.Add("Host", "mooc1.chaoxing.com")
@@ -475,8 +475,8 @@ func (cache *XueXiTUserCache) WorkFetchQuestion(p *PointWorkDto, retry int, last
 		fmt.Println(err)
 		return "", err
 	}
-	//req.Header.Add("User-Agent", "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/139.0.0.0 Safari/537.36 Edg/139.0.0.0")
-	req.Header.Add("User-Agent", GetUA("mobile"))
+	//req.Header.Add("User-Agent", cache.UA())
+	req.Header.Add("User-Agent", cache.UA())
 	//req.Header.Add("Sec-Ch-Ua-Platform", "Windows")
 	req.Header.Add("Accept", "*/*")
 	req.Header.Add("Host", "mooc1-api.chaoxing.com")
@@ -557,8 +557,8 @@ func (cache *XueXiTUserCache) WorkFetch1Question(p *PointWorkDto, retry int, las
 		fmt.Println(err)
 		return "", err
 	}
-	//req.Header.Add("User-Agent", "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/139.0.0.0 Safari/537.36 Edg/139.0.0.0")
-	req.Header.Add("User-Agent", GetUA("mobile"))
+	//req.Header.Add("User-Agent", cache.UA())
+	req.Header.Add("User-Agent", cache.UA())
 	//req.Header.Add("Sec-Ch-Ua-Platform", "Windows")
 	req.Header.Add("Accept", "*/*")
 	req.Header.Add("Host", "mooc1-api.chaoxing.com")
@@ -623,8 +623,8 @@ func (cache *XueXiTUserCache) WorkFetch2Question(p *PointWorkDto, retry int, las
 		fmt.Println(err)
 		return "", err
 	}
-	//req.Header.Add("User-Agent", "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/139.0.0.0 Safari/537.36 Edg/139.0.0.0")
-	req.Header.Add("User-Agent", GetUA("mobile"))
+	//req.Header.Add("User-Agent", cache.UA())
+	req.Header.Add("User-Agent", cache.UA())
 	//req.Header.Add("Sec-Ch-Ua-Platform", "Windows")
 	req.Header.Add("Accept", "*/*")
 	req.Header.Add("Host", "mooc1-api.chaoxing.com")
@@ -684,8 +684,8 @@ func (cache *XueXiTUserCache) WorkCommit(p *PointWorkDto, fields []WorkInputFiel
 	for _, cookie := range cache.cookies {
 		req.AddCookie(cookie)
 	}
-	//req.Header.Add("User-Agent", "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/139.0.0.0 Safari/537.36 Edg/139.0.0.0")
-	req.Header.Add("User-Agent", GetUA("mobile"))
+	//req.Header.Add("User-Agent", cache.UA())
+	req.Header.Add("User-Agent", cache.UA())
 	req.Header.Add("Sec-Ch-Ua-Platform", "Windows")
 	req.Header.Add("Content-Type", "application/json")
 	req.Header.Add("Accept", "*/*")
@@ -743,7 +743,7 @@ func (cache *XueXiTUserCache) DocumentDtoReadingReport(p *PointDocumentDto, retr
 	}
 
 	//resp.Header.Add("User-Agent", "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/139.0.0.0 Safari/537.36 Edg/139.0.0.0")
-	resp.Header.Add("User-Agent", GetUA("mobile"))
+	resp.Header.Add("User-Agent", cache.UA())
 	resp.Header.Add("Sec-Ch-Ua-Platform", "Windows")
 	resp.Header.Add("Accept", "*/*")
 	resp.Header.Add("Host", "mooc1.chaoxing.com")
@@ -805,7 +805,7 @@ func (cache *XueXiTUserCache) DocumentDtoReadingBookReport(p *PointDocumentDto, 
 	}
 
 	//resp.Header.Add("User-Agent", "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/139.0.0.0 Safari/537.36 Edg/139.0.0.0")
-	resp.Header.Add("User-Agent", GetUA("mobile"))
+	resp.Header.Add("User-Agent", cache.UA())
 	resp.Header.Add("Sec-Ch-Ua-Platform", "Windows")
 	resp.Header.Add("Accept", "*/*")
 	resp.Header.Add("Host", "mooc1.chaoxing.com")
@@ -868,7 +868,7 @@ func (cache *XueXiTUserCache) ReadV2PointWebReport(p *PointDocumentDto, retry in
 	req.Header.Add("Sec-Fetch-Dest", "empty")
 	req.Header.Add("Sec-Fetch-Mode", "cors")
 	req.Header.Add("Sec-Fetch-Site", "same-origin")
-	req.Header.Add("User-Agent", utils.DefaultUserAgent)
+	req.Header.Add("User-Agent", cache.UA())
 	req.Header.Add("X-Requested-With", "XMLHttpRequest")
 	req.Header.Add("sec-ch-ua", "\"Microsoft Edge\";v=\"143\", \"Chromium\";v=\"143\", \"Not A(Brand\";v=\"24\"")
 	req.Header.Add("sec-ch-ua-mobile", "?0")
@@ -919,7 +919,7 @@ func (cache *XueXiTUserCache) ReadV2PointPeReport(p *PointDocumentDto, retry int
 		fmt.Println(err)
 		return "", err
 	}
-	req.Header.Add("User-Agent", GetUA("mobile"))
+	req.Header.Add("User-Agent", cache.UA())
 	req.Header.Add("X-Requested-With", "XMLHttpRequest")
 	req.Header.Add("Accept-Language", "zh-CN,en-US;q=0.9")
 	req.Header.Add("Accept", "*/*")
@@ -970,7 +970,7 @@ func (cache *XueXiTUserCache) HyperlinkDtoCompleteReport(p *PointHyperlinkDto, r
 		fmt.Println(err)
 		return "", err
 	}
-	req.Header.Add("User-Agent", utils.DefaultUserAgent)
+	req.Header.Add("User-Agent", cache.UA())
 	req.Header.Add("Accept", "*/*")
 	req.Header.Add("Host", "mooc1.chaoxing.com")
 	req.Header.Add("Connection", "keep-alive")
@@ -1025,7 +1025,7 @@ func (cache *XueXiTUserCache) PullLiveInfoApi(p *PointLiveDto, retry int, lastEr
 		return "", err
 	}
 
-	req.Header.Add("User-Agent", utils.DefaultUserAgent)
+	req.Header.Add("User-Agent", cache.UA())
 	req.Header.Add("Accept", "*/*")
 	req.Header.Add("Host", "mooc1.chaoxing.com")
 	req.Header.Add("Connection", "keep-alive")
@@ -1080,7 +1080,7 @@ func (cache *XueXiTUserCache) LiveRelationReport(p *PointLiveDto, retry int, las
 		return "", err
 	}
 
-	req.Header.Add("User-Agent", utils.DefaultUserAgent)
+	req.Header.Add("User-Agent", cache.UA())
 	req.Header.Add("Accept", "*/*")
 	req.Header.Add("Host", "mooc1.chaoxing.com")
 	req.Header.Add("Connection", "keep-alive")
@@ -1132,7 +1132,7 @@ func (cache *XueXiTUserCache) LiveWatchMomentReport(p *PointLiveDto, UParam stri
 		fmt.Println(err)
 		return "", nil
 	}
-	req.Header.Add("User-Agent", utils.DefaultUserAgent)
+	req.Header.Add("User-Agent", cache.UA())
 	req.Header.Add("Accept", "*/*")
 	req.Header.Add("Host", "zhibo.chaoxing.com")
 	req.Header.Add("Connection", "keep-alive")
@@ -1185,7 +1185,7 @@ func (cache *XueXiTUserCache) LiveSaveTimePcReport(p *PointLiveDto, retry int, l
 		return "", nil
 	}
 
-	req.Header.Add("User-Agent", utils.DefaultUserAgent)
+	req.Header.Add("User-Agent", cache.UA())
 	req.Header.Add("Accept", "*/*")
 	req.Header.Add("Host", "zhibo.chaoxing.com")
 	req.Header.Add("Connection", "keep-alive")

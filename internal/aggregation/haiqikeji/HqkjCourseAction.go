@@ -316,6 +316,37 @@ func HqkjNodeListAction(cache *haiqikeji.HqkjUserCache, course HqkjCourse) ([]Hq
 	return nodeList, nil
 }
 
+const (
+	hqkjHeartbeatBusy     = "心跳过于频繁"
+	hqkjHeartbeatMaxTries = 3
+)
+
+// 变量而非常量，便于测试时缩短等待时间。
+var hqkjHeartbeatRetryDelay = 30 * time.Second
+
+// submitHqkjStudyTime 处理服务端的“心跳过于频繁”。
+// 官网在进入视频后首次心跳也会返回该错误，等待约 30 秒后的第二次心跳即可成功。
+func submitHqkjStudyTime(cache *haiqikeji.HqkjUserCache, sessionId string, progress int) (string, error) {
+	var (
+		result string
+		err    error
+	)
+	for attempt := 1; attempt <= hqkjHeartbeatMaxTries; attempt++ {
+		result, err = cache.SubmitStudyTimeApi(sessionId, progress, 10, nil)
+		if err != nil {
+			return "", err
+		}
+		if !strings.Contains(result, hqkjHeartbeatBusy) {
+			return result, nil
+		}
+		if attempt == hqkjHeartbeatMaxTries {
+			break
+		}
+		time.Sleep(hqkjHeartbeatRetryDelay)
+	}
+	return result, nil
+}
+
 // 提交学时，秒刷
 func HqkjSubmitFastStudyTimeAction(cache *haiqikeji.HqkjUserCache, node HqkjNode) (string, error) {
 	startResult, err := cache.StartStudyApi(node.Id, node.CourseId, 5, nil)
@@ -335,7 +366,7 @@ func HqkjSubmitFastStudyTimeAction(cache *haiqikeji.HqkjUserCache, node HqkjNode
 		return "", fmt.Errorf("开始学习失败：%s", startResult)
 	}
 	time.Sleep(30 * time.Second) //先隔30s
-	submitResult, err := cache.SubmitStudyTimeApi(sessionId, 100, 10, nil)
+	submitResult, err := submitHqkjStudyTime(cache, sessionId, 100)
 	if err != nil {
 		return "", err
 	}
@@ -428,7 +459,7 @@ func HqkjStartStudyAction(cache *haiqikeji.HqkjUserCache, node HqkjNode) (string
 
 // 提交学时
 func HqkjSubmitStudyTimeAction(cache *haiqikeji.HqkjUserCache, node HqkjNode, sessionId string, progress int) (string, error) {
-	submitResult, err := cache.SubmitStudyTimeApi(sessionId, progress, 10, nil)
+	submitResult, err := submitHqkjStudyTime(cache, sessionId, progress)
 	if err != nil {
 		return "", err
 	}
@@ -439,7 +470,7 @@ func HqkjSubmitStudyTimeAction(cache *haiqikeji.HqkjUserCache, node HqkjNode, se
 			if err != nil {
 				return "", err
 			}
-			submitResult, err = cache.SubmitStudyTimeApi(sessionId, progress, 10, nil)
+			submitResult, err = submitHqkjStudyTime(cache, sessionId, progress)
 			if strings.Contains(submitResult, "令牌不匹配") || strings.Contains(submitResult, "认证失败") {
 				continue
 			}

@@ -16,7 +16,6 @@ import (
 
 	"github.com/PuerkitoBio/goquery"
 	"github.com/yatori-dev/yatori-go-core/v3/que-core/aiq"
-	"github.com/yatori-dev/yatori-go-core/v3/utils"
 )
 
 // 学习通AI包装
@@ -107,7 +106,7 @@ func (cache *XueXiTUserCache) xxtAiInformApi(clazzId, courseId, cpi string, retr
 		fmt.Println(err)
 		return "", err
 	}
-	req.Header.Add("User-Agent", utils.DefaultUserAgent)
+	req.Header.Add("User-Agent", cache.UA())
 	req.Header.Add("Accept", "text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3;q=0.7")
 	req.Header.Add("Cache-Control", "max-age=0")
 	req.Header.Add("sec-ch-ua", "\"Microsoft Edge\";v=\"143\", \"Chromium\";v=\"143\", \"Not A(Brand\";v=\"24\"")
@@ -152,7 +151,7 @@ func (cache *XueXiTUserCache) xxtAiAnswerApi(cozeEnc, userId, courseId, classId,
 	body := `[{"role":"user","content":"` + content + `","baseData":{"conversationId":"` + conversationId + `","userId":"` + userId + `","appId":"1192651262850","botId":"7438777570621653018","custom_variables":{"courseName":"` + courseName + `","studentName":"` + studentName + `","weakKnowledgePoint":"{}"},"shortcut_command":{},"sourceInfo":"","sdkFlag":"false","courseid":"` + courseId + `","clazzid":"` + classId + `","personid":"` + personId + `"}}]`
 
 	req, _ := http.NewRequest("POST", urlStr, bytes.NewBuffer([]byte(body)))
-	req.Header.Add("User-Agent", utils.DefaultUserAgent)
+	req.Header.Add("User-Agent", cache.UA())
 	req.Header.Add("sec-ch-ua-platform", "\"Windows\"")
 	req.Header.Add("sec-ch-ua", "\"Microsoft Edge\";v=\"143\", \"Chromium\";v=\"143\", \"Not A(Brand\";v=\"24\"")
 	req.Header.Add("sec-ch-ua-mobile", "?0")

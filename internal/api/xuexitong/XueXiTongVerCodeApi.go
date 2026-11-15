@@ -51,7 +51,7 @@ func (cache *XueXiTUserCache) XueXiTProcessVerifyImage(retry int, lastErr error)
 	for _, cookie := range cache.cookies {
 		req.AddCookie(cookie)
 	}
-	req.Header.Add("User-Agent", GetUA("mobile"))
+	req.Header.Add("User-Agent", cache.UA())
 	req.Header.Add("Accept", "*/*")
 	req.Header.Add("Host", "mooc1.chaoxing.com")
 	req.Header.Add("Connection", "keep-alive")
@@ -112,7 +112,7 @@ func (cache *XueXiTUserCache) XueXiTChapterVerificationCodeApi(retry int, lastEr
 		req.AddCookie(cookie)
 	}
 
-	req.Header.Add("User-Agent", GetUA("mobile"))
+	req.Header.Add("User-Agent", cache.UA())
 	req.Header.Add("Accept", "*/*")
 	req.Header.Add("Host", "mooc1-api.chaoxing.com")
 	req.Header.Add("Connection", "keep-alive")
@@ -165,7 +165,7 @@ func (cache *XueXiTUserCache) XueXiTPassVerificationCode(code string, retry int,
 	for _, cookie := range cache.cookies {
 		req.AddCookie(cookie)
 	}
-	req.Header.Add("User-Agent", GetUA("mobile"))
+	req.Header.Add("User-Agent", cache.UA())
 	req.Header.Add("Accept", "*/*")
 	req.Header.Add("Host", "mooc1.chaoxing.com")
 	req.Header.Add("Connection", "keep-alive")
@@ -211,7 +211,7 @@ func (cache *XueXiTUserCache) XueXiTPassCahpterVerificationCode(code string, ret
 	for _, cookie := range cache.cookies {
 		req.AddCookie(cookie)
 	}
-	req.Header.Add("User-Agent", GetUA("mobile"))
+	req.Header.Add("User-Agent", cache.UA())
 	req.Header.Add("Accept", "*/*")
 	req.Header.Add("Host", "mooc1.chaoxing.com")
 	req.Header.Add("Connection", "keep-alive")
@@ -262,7 +262,7 @@ func (cache *XueXiTUserCache) XueXiTSliderVerificationCodeApi(captchaId string, 
 		fmt.Println(err)
 		return "", err
 	}
-	req.Header.Add("User-Agent", GetUA("mobile"))
+	req.Header.Add("User-Agent", cache.UA())
 	req.Header.Add("Accept-Language", "zh-CN,en-US;q=0.9")
 	req.Header.Add("X-Requested-With", "com.chaoxing.mobile")
 	for _, cookie := range cache.cookies {
@@ -334,7 +334,7 @@ func (cache *XueXiTUserCache) XueXiTSliderVerificationImgApi(captchaId, serverTi
 		fmt.Println(err)
 		return "", err
 	}
-	req.Header.Add("User-Agent", GetUA("mobile"))
+	req.Header.Add("User-Agent", cache.UA())
 	req.Header.Add("Accept-Language", "zh-CN,en-US;q=0.9")
 	req.Header.Add("X-Requested-With", "com.chaoxing.mobile")
 	for _, cookie := range cache.cookies {
@@ -386,7 +386,7 @@ func (cache *XueXiTUserCache) PullSliderImgApi(imgUrl string, retry int, lastErr
 		fmt.Println(err)
 		return nil, err
 	}
-	req.Header.Add("User-Agent", GetUA("mobile"))
+	req.Header.Add("User-Agent", cache.UA())
 	req.Header.Add("Accept-Language", "zh-CN,en-US;q=0.9")
 	req.Header.Add("X-Requested-With", "com.chaoxing.mobile")
 	req.Header.Add("Accept", "*/*")
@@ -426,7 +426,7 @@ func (cache *XueXiTUserCache) PassSliderApi(captchaId, token, xPoint, runEnv, re
 	urlStr := "https://captcha.chaoxing.com/captcha/check/verification/result?callback=cx_captcha_function&captchaId=" + captchaId + "&type=slide&token=" + token + "&textClickArr=" + url.QueryEscape(`[{"x":`+xPoint+`}]`) + "&coordinate=" + url.QueryEscape(`[]`) + "&runEnv=" + runEnv + "&version=1.1.20&t=a&iv=" + iv + "&_=" + fmt.Sprintf("%d", time.Now().UnixMilli())
 
 	headers := map[string]string{
-		"User-Agent":       "Mozilla/5.0 (Linux; Android 8.1.0; MI 5X Build/OPM1.171019.019; wv) AppleWebKit/537.36 (KHTML, like Gecko) Version/4.0 Chrome/71.0.3578.99 Mobile Safari/537.36 (schild:ce5175d20950c8ee955fb03246f762da) (device:MI 5X) Language/zh_CN com.chaoxing.mobile/ChaoXingStudy_3_6.7.2_android_phone_10936_311 (@Kalimdor)_76c82452584d47e39ab79aa54ea86554",
+		"User-Agent":       cache.UA(),
 		"Accept-Language":  "zh-CN,en-US;q=0.9",
 		"X-Requested-With": "com.chaoxing.mobile",
 		"Accept":           "*/*",

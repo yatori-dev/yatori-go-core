@@ -43,7 +43,7 @@ func (cache *XueXiTUserCache) AudioPhoneSubmitTimeApi(p *PointVideoDto, playingT
 		fmt.Println(err)
 		return "", err
 	}
-	req.Header.Add("User-Agent", GetUA("mobile"))
+	req.Header.Add("User-Agent", cache.UA())
 	req.Header.Add("X-Requested-With", "XMLHttpRequest")
 	req.Header.Add("Accept-Language", "zh-CN,en-US;q=0.9")
 	req.Header.Add("Accept", "*/*")

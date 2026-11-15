@@ -364,7 +364,8 @@ var (
 
 // xuexitongLoginCodeProvider 返回 LoginCodeProvider：
 //   - 图片验证码：SDK 内部用 ddddocr 持续识别重试，不会回调到这里；
-//   - 短信验证码：先提示输入 1，用户确认后才真正发送短信，再等待输入收到的验证码。
+//   - 短信验证码：先提示输入 1，用户确认后才真正发送短信，再等待输入收到的验证码；
+//   - 二次密码：直接提示输入密码。
 //
 // 注意：core 只提供 SendSMS 这个“发送动作”，不会内嵌任何确认/输入逻辑。
 // 下面的“输入 1 才发送、再输入短信验证码”都是测试代码里的调用方策略。
@@ -376,11 +377,15 @@ func xuexitongLoginCodeProvider(t *testing.T) yatori.LoginCodeProvider {
 		xuexitongStdinMu.Lock()
 		defer xuexitongStdinMu.Unlock()
 
+		if req.LastError != "" {
+			t.Logf("上次验证失败（第 %d 次）：%s", req.Attempt, req.LastError)
+		}
+
 		switch req.Kind {
-		case "image":
+		case yatori.LoginCodeKindImage:
 			// 防御性分支：图片验证码由 SDK 内部 ddddocr 识别，不会回调到这里。
 			return "", nil
-		case "sms":
+		case yatori.LoginCodeKindSMS:
 			t.Logf("[短信验证] %s", strings.TrimSpace(req.Prompt))
 			if req.Phone != "" {
 				t.Logf("接收手机号: %s", req.Phone)
@@ -401,6 +406,12 @@ func xuexitongLoginCodeProvider(t *testing.T) yatori.LoginCodeProvider {
 			}
 			t.Log("短信验证码已发送（图片验证码已由 ddddocr 自动识别），请查看手机短信")
 			fmt.Print("请输入收到的短信验证码: ")
+		case yatori.LoginCodeKindPassword:
+			t.Logf("[密码验证] %s", strings.TrimSpace(req.Prompt))
+			if req.Phone != "" {
+				t.Logf("关联手机号: %s", req.Phone)
+			}
+			fmt.Print("请输入二次验证密码: ")
 		default:
 			t.Logf("[验证码] %s %s", req.Prompt, req.Phone)
 			fmt.Print("请输入验证码: ")

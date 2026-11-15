@@ -72,8 +72,7 @@ func loadOrCreateIMEI() string {
 }
 
 var IMEI = loadOrCreateIMEI()
-var XXTEXAMUA = GetUA("mobile") //专门用于学习通考试用的UA，如果签名UA用不了就用普通UA，傻逼学习通又在搞什么哟蛾子。
-// var XXTEXAMUA = GetUA("iphone") //专门用于学习通考试用的UA，如果签名UA用不了就用普通UA，傻逼学习通又在搞什么哟蛾子。
+
 type XueXiTUserCache struct {
 	Name     string //用户使用Phone
 	Password string //用户密码
@@ -94,6 +93,14 @@ type XueXiTUserCache struct {
 	// FaceSc / FaceKeyPEM 用于纯本地生成签名（不再依赖 App 抓包）。
 	FaceSc     string
 	FaceKeyPEM []byte
+	// ClientMode is "web" or "app". Web login/2FA use WebUserAgent; the
+	// app-only study APIs always use the account's Android identity.
+	ClientMode string
+	// UserAgent is the Android/API UA bound to this account. Study APIs
+	// (gas/clazz, knowledge/cards?isPhone=1) reject web UAs with 403.
+	UserAgent string
+	// WebUserAgent is the browser UA used by web login and 2FA endpoints.
+	WebUserAgent string
 	// LoginCodeProvider 是登录过程中图片验证码/短信验证码的回调。
 	// 返回用户输入的验证码；nil 时由 SDK 内置 OCR 处理图片验证码。
 	LoginCodeProvider LoginCodeProvider
@@ -101,15 +108,17 @@ type XueXiTUserCache struct {
 
 // LoginCodeChallenge 描述一次登录验证码挑战。
 //
-// 图片验证码由 SDK 内置 ddddocr 持续识别重试，不会回调到这里；目前只有
-// Kind 为 "sms" 的挑战会回调，Phone 是接收短信的手机号，SendSMS 用于让
-// 调用方在用户确认后主动触发服务端发送短信。SDK 不会自动发送短信。
+// 图片验证码由 SDK 内置 ddddocr 持续识别重试，不会回调到这里；目前会回调
+// LoginCodeKindSMS（短信验证码）和 LoginCodeKindPassword（二次密码）。
+// 短信挑战里 SendSMS 由调用方在用户确认后触发，SDK 不会自动发送。
 type LoginCodeChallenge struct {
-	Kind    string
-	Prompt  string
-	Phone   string
-	Image   []byte
-	SendSMS func(ctx context.Context) error
+	Kind      string
+	Prompt    string
+	Phone     string
+	Image     []byte
+	SendSMS   func(ctx context.Context) error
+	Attempt   int
+	LastError string
 }
 
 // LoginCodeProvider 返回用户输入/识别出的验证码。
@@ -120,6 +129,55 @@ func (cache *XueXiTUserCache) GetCookie() string {
 }
 func (cache *XueXiTUserCache) GetCookies() []*http.Cookie        { return cache.cookies }
 func (cache *XueXiTUserCache) SetCookies(cookies []*http.Cookie) { cache.cookies = cookies }
+
+// SetClientMode 固定本次会话的身份。
+//
+// 学习通的网页登录/二次验证使用浏览器 UA；但课程、章节卡片、视频文档提交
+// 这些接口只认 Android App UA（用桌面或移动浏览器 UA 会 403），所以这些
+// 接口统一使用该账号持久化的 Android 设备身份，避免每次请求随机切换 UA。
+func (cache *XueXiTUserCache) SetClientMode(mode string) {
+	switch strings.ToLower(strings.TrimSpace(mode)) {
+	case "app":
+		cache.ClientMode = "app"
+	default:
+		cache.ClientMode = "web"
+	}
+	cache.WebUserAgent = webLoginUserAgent
+	cache.ensureAPIUserAgent()
+}
+
+// IsAppMode reports whether this session uses the Android/App identity.
+func (cache *XueXiTUserCache) IsAppMode() bool {
+	return cache.ClientMode == "app"
+}
+
+// UA returns the Android/API UA bound to this account. It is stable for the
+// whole session and shared by web and App login modes because the study APIs
+// require an App UA.
+func (cache *XueXiTUserCache) UA() string {
+	return cache.ensureAPIUserAgent()
+}
+
+// WebUA returns the browser UA used by web login and 2FA endpoints.
+func (cache *XueXiTUserCache) WebUA() string {
+	if ua := strings.TrimSpace(cache.WebUserAgent); ua != "" {
+		return ua
+	}
+	return webLoginUserAgent
+}
+
+func (cache *XueXiTUserCache) ensureAPIUserAgent() string {
+	if ua := strings.TrimSpace(cache.UserAgent); ua != "" {
+		return ua
+	}
+	if name := strings.TrimSpace(cache.Name); name != "" {
+		profile := loadOrCreateAppDeviceProfile(name)
+		cache.UserAgent = profile.UserAgent
+		return cache.UserAgent
+	}
+	cache.UserAgent = GetUA("mobile")
+	return cache.UserAgent
+}
 
 // GetUA 构建并获取 UA
 func GetUA(uaType string) string {
@@ -215,7 +273,7 @@ func (cache *XueXiTUserCache) LoginApi(retry int) (string, error) {
 		Transport: tr,
 	}
 	// 发送请求
-	resp, err := client.PostForm("https://passport2.chaoxing.com/fanyalogin", url.Values{
+	form := url.Values{
 		"fid":               {"-1"},
 		"uname":             {phoneEncrypted},
 		"password":          {passwdEncrypted},
@@ -226,7 +284,18 @@ func (cache *XueXiTUserCache) LoginApi(retry int) (string, error) {
 		"doubleFactorLogin": {"0"},
 		"independentId":     {"0"},
 		"independentNameId": {"0"},
-	})
+	}
+	req, reqErr := http.NewRequest(http.MethodPost, "https://passport2.chaoxing.com/fanyalogin", strings.NewReader(form.Encode()))
+	if reqErr != nil {
+		return "", reqErr
+	}
+	req.Header.Set("Content-Type", "application/x-www-form-urlencoded")
+	req.Header.Set("User-Agent", cache.WebUA())
+	req.Header.Set("Accept", "application/json, text/javascript, */*; q=0.01")
+	req.Header.Set("X-Requested-With", "XMLHttpRequest")
+	req.Header.Set("Origin", "https://passport2.chaoxing.com")
+	req.Header.Set("Referer", "https://passport2.chaoxing.com/")
+	resp, err := client.Do(req)
 	if err != nil {
 		fmt.Println("Error sending request:", err)
 		return "", err
@@ -300,7 +369,7 @@ func (cache *XueXiTUserCache) MonitorApi() (string, error) {
 		return "", nil
 	}
 	//req.Header.Add("User-Agent", "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/136.0.0.0 Safari/537.36 Edg/136.0.0.0")
-	req.Header.Add("User-Agent", GetUA("mobile"))
+	req.Header.Add("User-Agent", cache.UA())
 	req.Header.Add("Accept", "*/*")
 	req.Header.Add("Host", "detect.chaoxing.com")
 	req.Header.Add("Connection", "keep-alive")

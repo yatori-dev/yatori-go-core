@@ -105,25 +105,40 @@ const (
 	LoginModeApp LoginMode = "app"
 )
 
+// Login code kinds raised by LoginCodeProvider.
+const (
+	// LoginCodeKindImage is kept for compatibility. Picture captchas are
+	// recognized internally with ddddocr and are not raised in practice.
+	LoginCodeKindImage = "image"
+	// LoginCodeKindSMS asks the caller to obtain an SMS code. SendSMS is set.
+	LoginCodeKindSMS = "sms"
+	// LoginCodeKindPassword asks the caller for a secondary password.
+	LoginCodeKindPassword = "password"
+)
+
 // LoginCodeRequest describes a verification challenge raised during login.
 //
-// Kind is "sms" for a phone code. Picture captchas are recognized internally
-// with ddddocr and are never raised to the provider, so Image stays empty in
-// practice; both fields are kept for compatibility with other platforms.
-// When Kind is "sms", Phone contains the masked/full phone number and Prompt
-// contains the instruction.
+// Kind is one of LoginCodeKindSMS or LoginCodeKindPassword. Picture captchas
+// are solved internally with ddddocr and are never raised to the provider, so
+// Image stays empty in practice; it is kept for compatibility.
+//
+// For SMS challenges Phone contains the receiving number and SendSMS is the
+// explicit send action. The SDK never sends the message on its own and
+// performs no confirmation UI: whether and when to call SendSMS is fully
+// decided by the caller (for example after the user types 1).
 type LoginCodeRequest struct {
 	Kind   string
 	Prompt string
 	Phone  string
 	Image  []byte
 	// SendSMS asks the platform to send an SMS code to Phone. It is only
-	// set for Kind == "sms". The SDK never sends the message on its own and
-	// performs no confirmation UI: whether and when to call SendSMS is fully
-	// decided by the caller (for example after the user types 1). After the
-	// message arrives, return the code the user received.
-	// When the platform cannot send codes directly, SendSMS is nil.
+	// set for Kind == LoginCodeKindSMS.
 	SendSMS func(ctx context.Context) error
+	// Attempt is 1-based. It increases when the previous code/password was
+	// rejected and the SDK asks again.
+	Attempt int
+	// LastError is the platform rejection reason from the previous attempt.
+	LastError string
 }
 
 // LoginCodeProvider is called when login needs a user supplied code.

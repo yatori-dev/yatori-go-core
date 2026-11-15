@@ -44,7 +44,7 @@ func (cache *XueXiTUserCache) CourseListApiContext(ctx context.Context, retry in
 		req.AddCookie(cookie)
 	}
 	//req.Header.Add("User-Agent", "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/136.0.0.0 Safari/537.36 Edg/136.0.0.0")
-	req.Header.Add("User-Agent", GetUA("mobile"))
+	req.Header.Add("User-Agent", cache.UA())
 	res, err := client.Do(req)
 	if err != nil {
 		return "", err
@@ -96,7 +96,7 @@ func (cache *XueXiTUserCache) CourseCompleteStatusApiContext(ctx context.Context
 	req.Header.Add("Sec-Fetch-Dest", "empty")
 	req.Header.Add("Sec-Fetch-Mode", "cors")
 	req.Header.Add("Sec-Fetch-Site", "same-origin")
-	req.Header.Add("User-Agent", "Mozilla/5.0 (Linux; Android 11; MI10 Build/OPM1.171019.019; wv) AppleWebKit/537.36 (KHTML, like Gecko) Version/4.0 Chrome/71.0.3578.99 Mobile Safari/537.36 (schild:5e5510ce86e012a7f489e7c488fc17b4) (device:MI10) Language/zh_CN com.chaoxing.mobile/ChaoXingStudy_3_6.6.4_android_phone_10831_263 (@Kalimdor)_c86f59bf72a9e4a0540b390d77d3ec3d Edg/142.0.0.0")
+	req.Header.Add("User-Agent", cache.UA())
 	req.Header.Add("X-Requested-With", "XMLHttpRequest")
 	req.Header.Add("sec-ch-ua", "\"\"")
 	req.Header.Add("sec-ch-ua-mobile", "?1")

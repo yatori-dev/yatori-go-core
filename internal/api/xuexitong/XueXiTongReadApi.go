@@ -67,7 +67,7 @@ func (cache *XueXiTUserCache) ReadSubmitTimeLog(p *PointDocumentDto, retry int, 
 	req.Header.Add("Sec-Fetch-Dest", "empty")
 	req.Header.Add("Sec-Fetch-Mode", "cors")
 	req.Header.Add("Sec-Fetch-Site", "cross-site")
-	req.Header.Add("User-Agent", GetUA("mobile"))
+	req.Header.Add("User-Agent", cache.UA())
 	req.Header.Add("X-Requested-With", "XMLHttpRequest")
 	req.Header.Add("sec-ch-ua", "\"Microsoft Edge\";v=\"143\", \"Chromium\";v=\"143\", \"Not A(Brand\";v=\"24\"")
 	req.Header.Add("sec-ch-ua-mobile", "?0")

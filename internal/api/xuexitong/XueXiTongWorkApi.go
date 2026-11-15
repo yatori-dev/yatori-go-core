@@ -93,7 +93,7 @@ func (cache *XueXiTUserCache) PullWorkListHtmlApi(courseId string, classId strin
 		fmt.Println(err)
 		return "", err
 	}
-	req.Header.Add("User-Agent", GetUA("mobile"))
+	req.Header.Add("User-Agent", cache.UA())
 	req.Header.Add("Accept", "text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,image/apng,*/*;q=0.8")
 	req.Header.Add("Upgrade-Insecure-Requests", "1")
 	req.Header.Add("accept-language", "zh_CN")
@@ -166,7 +166,7 @@ func (cache *XueXiTUserCache) PullWorkEnterInformHtmlApi(
 		return "", "", err
 	}
 
-	req.Header.Add("User-Agent", GetUA("mobile"))
+	req.Header.Add("User-Agent", cache.UA())
 	req.Header.Add("Accept", "text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,image/apng,*/*;q=0.8")
 	req.Header.Add("Upgrade-Insecure-Requests", "1")
 	req.Header.Add("accept-language", "zh_CN")
@@ -227,7 +227,7 @@ func (cache *XueXiTUserCache) PullWorkPaperHtmlApi(courseId, classId, workId, so
 		fmt.Println(err)
 		return "", err
 	}
-	req.Header.Add("User-Agent", GetUA("mobile"))
+	req.Header.Add("User-Agent", cache.UA())
 	req.Header.Add("Accept", "text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,image/apng,*/*;q=0.8")
 	req.Header.Add("Upgrade-Insecure-Requests", "1")
 	req.Header.Add("accept-language", "zh_CN")
@@ -364,7 +364,7 @@ func (cache *XueXiTUserCache) SubmitWorkAnswerApi(question *XXTWorkQuestionSubmi
 		fmt.Println(err)
 		return "", err
 	}
-	req.Header.Add("User-Agent", GetUA("mobile"))
+	req.Header.Add("User-Agent", cache.UA())
 	req.Header.Add("Accept", "application/json, text/javascript, */*; q=0.01")
 	req.Header.Add("Origin", "https://mooc1-api.chaoxing.com")
 	req.Header.Add("X-Requested-With", "XMLHttpRequest")
@@ -421,7 +421,7 @@ func (cache *XueXiTUserCache) PullWorkQuestionApi(courseId, classId, workId, sou
 		fmt.Println(err)
 		return "", err
 	}
-	req.Header.Add("User-Agent", GetUA("mobile"))
+	req.Header.Add("User-Agent", cache.UA())
 	req.Header.Add("Accept", "text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,image/apng,*/*;q=0.8")
 	req.Header.Add("Upgrade-Insecure-Requests", "1")
 	req.Header.Add("accept-language", "zh_CN")

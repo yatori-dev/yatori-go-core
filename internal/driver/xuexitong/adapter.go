@@ -3,6 +3,7 @@ package xuexitong
 import (
 	"context"
 	"fmt"
+	"os"
 	"strconv"
 	"strings"
 
@@ -12,6 +13,7 @@ import (
 	api "github.com/yatori-dev/yatori-go-core/v3/internal/api/xuexitong"
 	"github.com/yatori-dev/yatori-go-core/v3/internal/driver/driverutil"
 	"github.com/yatori-dev/yatori-go-core/v3/models/ctype"
+	log2 "github.com/yatori-dev/yatori-go-core/v3/utils/log"
 )
 
 func init() {
@@ -39,6 +41,8 @@ func New(cfg core.Config) (core.Client, error) {
 		Name:     cfg.Account.Username,
 		Password: cfg.Account.Password,
 	}
+	// 默认网页身份；App 登录成功后 AppLoginApi 会切换成 Android 身份。
+	cache.SetClientMode("web")
 	if enabled, proxy := driverutil.ProxyConfig(cfg); enabled {
 		cache.IpProxySW = true
 		cache.ProxyIP = proxy
@@ -102,11 +106,13 @@ func New(cfg core.Config) (core.Client, error) {
 	if provider := cfg.Options.LoginCodeProvider; provider != nil {
 		cache.LoginCodeProvider = func(ctx context.Context, challenge api.LoginCodeChallenge) (string, error) {
 			return provider(ctx, core.LoginCodeRequest{
-				Kind:    challenge.Kind,
-				Prompt:  challenge.Prompt,
-				Phone:   challenge.Phone,
-				Image:   challenge.Image,
-				SendSMS: challenge.SendSMS,
+				Kind:      challenge.Kind,
+				Prompt:    challenge.Prompt,
+				Phone:     challenge.Phone,
+				Image:     challenge.Image,
+				SendSMS:   challenge.SendSMS,
+				Attempt:   challenge.Attempt,
+				LastError: challenge.LastError,
 			})
 		}
 	}
@@ -139,16 +145,22 @@ func (c *client) Login(ctx context.Context) error {
 				c.loggedIn = true
 				return nil
 			} else {
+				log2.Print(log2.INFO, "xuexitong: App 登录失败:", err)
+				if strings.TrimSpace(os.Getenv("YATORI_APP_ONLY")) == "1" {
+					return core.Wrap(core.XueXiTong, "app login", err)
+				}
 				c.Logger.Warnf("xuexitong: app login failed, fallback to web login: %v", err)
 			}
 		}
 	}
 	if strings.TrimSpace(c.Config.Account.Cookie) != "" {
+		c.cache.SetClientMode("web")
 		return c.loginWithCookieLocked(c.Config.Account.Cookie)
 	}
-	// 默认走网页端登录（fanyalogin）。
+	// 默认走网页端登录（fanyalogin），并固定使用网页身份。
+	c.cache.SetClientMode("web")
 	driverutil.EnsureOCR()
-	if err := agg.XueXiTLoginAction(c.cache); err != nil {
+	if err := agg.XueXiTLoginActionContext(ctx, c.cache); err != nil {
 		return core.Wrap(core.XueXiTong, "login", err)
 	}
 	c.loggedIn = true
@@ -162,6 +174,7 @@ func (c *client) LoginWithCookie(ctx context.Context, cookie string) error {
 }
 
 func (c *client) loginWithCookieLocked(cookie string) error {
+	c.cache.SetClientMode("web")
 	c.cache.Password = cookie
 	if err := agg.XueXiTCookieLoginAction(c.cache); err != nil {
 		return core.Wrap(core.XueXiTong, "login_with_cookie", err)
