@@ -1,28 +1,17 @@
 package yinghua
 
-import (
-	"testing"
-	"time"
-)
+import "testing"
 
-func TestTimeWindowStatus(t *testing.T) {
-	now := time.Now()
-	if got := timeWindowStatus(now.Add(time.Hour), now.Add(2*time.Hour)); got != "not_started" {
-		t.Fatalf("timeWindowStatus() = %q, want not_started", got)
+func TestYinghuaStudyID(t *testing.T) {
+	cases := map[string]string{
+		`{"result":{"data":{"studyId":12345}}}`:   "12345",
+		`{"result":{"data":{"studyId":"67890"}}}`: "67890",
+		`{"result":{"data":{}}}`:                  "",
+		`not-json`:                                "",
 	}
-	if got := timeWindowStatus(now.Add(-time.Hour), now.Add(time.Hour)); got != "active" {
-		t.Fatalf("timeWindowStatus() = %q, want active", got)
-	}
-	if got := timeWindowStatus(now.Add(-2*time.Hour), now.Add(-time.Hour)); got != "finished" {
-		t.Fatalf("timeWindowStatus() = %q, want finished", got)
-	}
-}
-
-func TestPercent(t *testing.T) {
-	if got := percent(0.5); got != 50 {
-		t.Fatalf("percent(0.5) = %v, want 50", got)
-	}
-	if got := percent(100); got != 100 {
-		t.Fatalf("percent(100) = %v, want 100", got)
+	for report, want := range cases {
+		if got := yinghuaStudyID(report); got != want {
+			t.Fatalf("yinghuaStudyID(%q)=%q want %q", report, got, want)
+		}
 	}
 }

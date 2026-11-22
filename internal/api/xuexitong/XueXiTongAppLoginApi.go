@@ -333,7 +333,7 @@ func (cache *XueXiTUserCache) AppLoginApi(ctx context.Context) (*AppLoginResult,
 	if err := json.Unmarshal(step2Body, &second); err != nil {
 		return nil, fmt.Errorf("App 登录第二步响应异常: %s", appBodySummary(step2Body))
 	}
-	log2.Print(log2.INFO, "xuexitong: App 登录第二步返回 result=", second.Result, " msgKeys=", appMapKeys(second.Msg))
+	log2.Print(log2.INFO, "xuexitong: App 登录第二步返回 result=", strconv.Itoa(second.Result), " msgKeys=", appMapKeys(second.Msg))
 	clientID := stringValue(second.Msg["clientId"])
 	if clientID == "" {
 		return nil, fmt.Errorf("App 登录未返回 clientId: %s", appBodySummary(step2Body))

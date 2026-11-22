@@ -413,10 +413,14 @@ func (c *client) mapPoints(courseID string, cpi, classID int, points []api.Point
 	}
 	for i := range works {
 		p := &works[i]
+		name := "章节测验"
+		if strings.TrimSpace(p.WorkID) != "" {
+			name = fmt.Sprintf("章节测验[%s]", p.WorkID)
+		}
 		out = append(out, core.Node{
 			ID:       fmt.Sprintf("work:%d:%d:%s:%s", p.KnowledgeID, p.CardIndex, p.WorkID, p.JobID),
 			CourseID: courseID,
-			Name:     "章节测验",
+			Name:     name,
 			Kind:     core.NodeWork,
 			Extra: map[string]string{
 				"knowledgeId": strconv.Itoa(p.KnowledgeID),
@@ -585,9 +589,13 @@ func (c *client) studyVideo(req core.StudyRequest, p *api.PointVideoDto, result 
 			}
 			// 人脸锁/章节未开放等错误必须上抛，否则会继续用一个空的
 			// DToken 去请求视频状态，最终只看到 203 这种误导性错误。
-			return nil, core.Wrap(core.XueXiTong, "study.video.card", err)
-		}
-		if _, err := p.AttachmentsDetection(card); err != nil {
+			if strings.Contains(err.Error(), "章节未开放") || strings.Contains(err.Error(), "人脸") {
+				return nil, core.Wrap(core.XueXiTong, "study.video.card", err)
+			}
+			// 部分课程（如新青年/专题课）的卡片页没有 AttachmentSetting，
+			// 但视频点本身仍有 ObjectID/DToken，直接继续尝试视频初始化。
+			c.Logger.Warnf("xuexitong: video card for %s unavailable, continue with point data: %v", p.ObjectID, err)
+		} else if _, err := p.AttachmentsDetection(card); err != nil {
 			c.Logger.Debugf("xuexitong: attachment detection for %s failed: %v", p.ObjectID, err)
 		}
 	}
@@ -900,6 +908,7 @@ func (c *client) Exams(ctx context.Context, course core.Course) ([]core.Exam, er
 				"type":        item.Type,
 				"rawUrl":      item.RawURL,
 				"questionNum": strconv.Itoa(item.QuestionTotal),
+				"retake":      strconv.FormatBool(item.Retake),
 			},
 			Raw: item,
 		})
@@ -921,11 +930,20 @@ func (c *client) DoExam(ctx context.Context, req core.ExamRequest) (*core.Answer
 		return nil, core.Invalid(core.XueXiTong, "exam", "exam raw data is missing; call Exams first")
 	}
 	exam := *raw
-	if exam.QuestionTotal <= 0 {
-		return nil, core.Invalid(core.XueXiTong, "exam", "考试题目数量为 0，可能是考试未开放或列表数据不完整")
-	}
 	if err := agg.EnterExamAction(c.cache, &exam); err != nil {
+		message := err.Error()
+		if strings.Contains(message, "未开放") || strings.Contains(message, "未开始") ||
+			strings.Contains(message, "已结束") || strings.Contains(message, "不能") {
+			return &core.AnswerResult{TaskID: req.Exam.ID, Title: exam.Name, Message: message}, nil
+		}
 		return nil, core.Wrap(core.XueXiTong, "exam.enter", err)
+	}
+	if exam.QuestionTotal <= 0 {
+		return &core.AnswerResult{
+			TaskID:  req.Exam.ID,
+			Title:   exam.Name,
+			Message: "考试未开放或题目数量为 0，已跳过",
+		}, nil
 	}
 	result := &core.AnswerResult{TaskID: req.Exam.ID, Title: exam.Name}
 	for i := 0; i < exam.QuestionTotal; i++ {

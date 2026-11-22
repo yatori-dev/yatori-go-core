@@ -2,6 +2,9 @@ package xuexitong
 
 import (
 	"context"
+	"encoding/json"
+	"errors"
+	"fmt"
 	"sort"
 	"strings"
 
@@ -10,6 +13,7 @@ import (
 	api "github.com/yatori-dev/yatori-go-core/v3/internal/api/xuexitong"
 	"github.com/yatori-dev/yatori-go-core/v3/internal/driver/driverutil"
 	"github.com/yatori-dev/yatori-go-core/v3/models/ctype"
+	log2 "github.com/yatori-dev/yatori-go-core/v3/utils/log"
 )
 
 var _ core.ChapterTester = (*client)(nil)
@@ -39,6 +43,13 @@ func (c *client) DoChapterTest(ctx context.Context, req core.WorkRequest) (*core
 		driverutil.Int(point.Cpi),
 	)
 	if cardErr != nil {
+		if strings.Contains(cardErr.Error(), "AttachmentSetting") {
+			return &core.AnswerResult{
+				TaskID:  req.Work.ID,
+				Title:   firstNonEmpty(req.Work.Name, "章节测验"),
+				Message: "章测卡片格式不支持（缺少 AttachmentSetting），已跳过",
+			}, nil
+		}
 		return nil, core.Wrap(core.XueXiTong, "chapter_test.card", cardErr)
 	}
 	unfinished, detectErr := point.AttachmentsDetection(card)
@@ -65,9 +76,15 @@ func (c *client) DoChapterTest(ctx context.Context, req core.WorkRequest) (*core
 	if err := c.answerChapterTest(&question, req.Source); err != nil {
 		return nil, err
 	}
+	log2.Print(log2.INFO, fmt.Sprintf("xuexitong: 章测提交字段 enc_work_len=%d workAnswerId=%s answerId=%s jobid=%s total=%s questions=%d",
+		len(question.Enc_work), question.WorkAnswerId, question.AnswerId, question.JobId,
+		question.TotalQuestionNum, chapterTestQuestionCount(question)))
 	report, err := agg.WorkNewSubmitAnswerAction(c.cache, question, req.Submit)
 	if err != nil {
 		return nil, core.Wrap(core.XueXiTong, "chapter_test.submit", err)
+	}
+	if submitErr := chapterTestSubmitFailure(report); submitErr != nil {
+		return nil, core.Wrap(core.XueXiTong, "chapter_test.submit", submitErr)
 	}
 
 	return &core.AnswerResult{
@@ -90,6 +107,31 @@ func (c *client) resolveChapterTestPoint(work core.Work) (*api.PointWorkDto, err
 		}
 	}
 	return nil, core.Invalid(core.XueXiTong, "chapter_test", "chapter test node is missing; call Tree first")
+}
+
+func chapterTestQuestionCount(question api.Question) int {
+	return len(question.Choice) + len(question.Judge) + len(question.Fill) +
+		len(question.Short) + len(question.TermExplanation) + len(question.Essay) +
+		len(question.Matching) + len(question.Other)
+}
+
+func chapterTestSubmitFailure(report string) error {
+	var result struct {
+		Status bool   `json:"status"`
+		Msg    string `json:"msg"`
+	}
+	if err := json.Unmarshal([]byte(strings.TrimSpace(report)), &result); err != nil {
+		// 非 JSON 响应交给调用方按原始报文处理。
+		return nil
+	}
+	if result.Status {
+		return nil
+	}
+	message := strings.TrimSpace(result.Msg)
+	if message == "" {
+		message = "章节测验提交失败"
+	}
+	return errors.New(message)
 }
 
 func chapterTestHasQuestions(question api.Question) bool {

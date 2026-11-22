@@ -202,6 +202,16 @@ func parseAttachmentSetting(cardHtml string) (map[string]interface{}, string, er
 			break
 		}
 	}
+	// 兜底：某些课程把 mArg 写成转义字符串/JSON.parse，或换了变量名。
+	// 直接找包含 attachments/defaults 的 JSON 对象，避免整门课因为卡片格式差异全部失败。
+	if attachment == nil {
+		for _, key := range []string{`"attachments"`, `"defaults"`} {
+			if parsed := findJSONObjectContaining(cardHtml, key); parsed != nil {
+				attachment = parsed
+				break
+			}
+		}
+	}
 	if attachment != nil {
 		reEnc := regexp.MustCompile(`<input type="hidden" id="from" value="[^_]+_[^_]+_[^_]+_([^"]+)"/>`)
 		matchesEnc := reEnc.FindStringSubmatch(cardHtml)
@@ -271,6 +281,24 @@ func extractJSONObjectAfter(text, marker string) (map[string]interface{}, bool) 
 			}
 		}
 		offset = index + len(marker)
+	}
+}
+
+func findJSONObjectContaining(text, key string) map[string]interface{} {
+	search := 0
+	for {
+		index := strings.Index(text[search:], key)
+		if index < 0 {
+			return nil
+		}
+		index += search
+		for start := strings.LastIndex(text[:index], "{"); start >= 0; start = strings.LastIndex(text[:start], "{") {
+			attachment, ok := parseBalancedJSONObject(text, start)
+			if ok && (attachment["attachments"] != nil || attachment["defaults"] != nil) {
+				return attachment
+			}
+		}
+		search = index + len(key)
 	}
 }
 

@@ -27,6 +27,7 @@ type XXTExam struct {
 	Status            string `json:"status"`
 	RemainTime        string `json:"remain_time"`
 	RawURL            string `json:"raw_url"`
+	Retake            bool   `json:"retake"`
 	Params            map[string]string
 	CourseId          string `json:"course_id"`
 	UserId            string `json:"user_id"`
@@ -132,6 +133,9 @@ func PullExamListAction(cache *xuexitong.XueXiTUserCache, course XueXiTCourse) (
 			EncTask:    params["enc_task"],
 			MsgId:      params["msgId"],
 		}
+		exam.Retake = strings.Contains(li.Text(), "重考") ||
+			strings.Contains(strings.ToLower(rawURL), "retake") ||
+			strings.Contains(strings.ToLower(rawURL), "reexam")
 		examList = append(examList, exam)
 	})
 
@@ -156,7 +160,7 @@ func EnterExamAction(cache *xuexitong.XueXiTUserCache, exam *XXTExam) error {
 	}
 	isReExam := false
 	//如果可以重考
-	if strings.Contains(enterHtml, `bnt_retake">重考</a>`) {
+	if strings.Contains(enterHtml, "bnt_retake") {
 		reExamUrl, _ := doc.Find("a.bnt_retake").Attr("data")
 		enterHtml, err = cache.PullReExamPaperHtmlApi(reExamUrl)
 		if err != nil {

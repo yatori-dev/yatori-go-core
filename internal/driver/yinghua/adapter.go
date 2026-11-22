@@ -7,6 +7,7 @@ import (
 	"strings"
 	"time"
 
+	"github.com/thedevsaddam/gojsonq"
 	"github.com/yatori-dev/yatori-go-core/v3/core"
 	agg "github.com/yatori-dev/yatori-go-core/v3/internal/aggregation/yinghua"
 	api "github.com/yatori-dev/yatori-go-core/v3/internal/api/yinghua"
@@ -28,6 +29,9 @@ type client struct {
 	trees   map[string][]agg.YingHuaNode
 	works   map[string]*agg.YingHuaWork
 	exams   map[string]*agg.YingHuaExam
+	// studyIDs 保存 /api/node/study.json 返回的 studyId；
+	// 后续心跳必须带同一个 studyId，否则平台会当成新会话。
+	studyIDs map[string]string
 }
 
 // New constructs a YingHua client.
@@ -45,13 +49,14 @@ func New(cfg core.Config) (core.Client, error) {
 		cache.ProxyIP = proxy
 	}
 	return &client{
-		Base:    driverutil.NewBase(cfg),
-		cache:   cache,
-		courses: map[string]agg.YingHuaCourse{},
-		nodes:   map[string]agg.YingHuaNode{},
-		trees:   map[string][]agg.YingHuaNode{},
-		works:   map[string]*agg.YingHuaWork{},
-		exams:   map[string]*agg.YingHuaExam{},
+		Base:     driverutil.NewBase(cfg),
+		cache:    cache,
+		courses:  map[string]agg.YingHuaCourse{},
+		nodes:    map[string]agg.YingHuaNode{},
+		trees:    map[string][]agg.YingHuaNode{},
+		works:    map[string]*agg.YingHuaWork{},
+		exams:    map[string]*agg.YingHuaExam{},
+		studyIDs: map[string]string{},
 	}, nil
 }
 
@@ -221,9 +226,23 @@ func (c *client) Study(ctx context.Context, req core.StudyRequest) (*core.StudyR
 	if node.VideoDuration > 0 && position > node.VideoDuration {
 		position = node.VideoDuration
 	}
-	report, err := api.SubmitStudyTimeApi(*c.cache, node.Id, "0", position, 10, nil)
+	if req.Action == core.StudyActionStart {
+		// 每次 start 都重新建立学习会话，避免复用上次残留的 studyId。
+		delete(c.studyIDs, node.Id)
+	}
+	studyID := c.studyIDs[node.Id]
+	if strings.TrimSpace(studyID) == "" {
+		studyID = "0"
+	}
+	report, err := api.SubmitStudyTimeApi(*c.cache, node.Id, studyID, position, 10, nil)
 	if err != nil {
 		return nil, core.Wrap(core.YingHua, "study", err)
+	}
+	if nextID := yinghuaStudyID(report); nextID != "" {
+		c.studyIDs[node.Id] = nextID
+	}
+	if req.Action == core.StudyActionFinish {
+		defer delete(c.studyIDs, node.Id)
 	}
 	progress := float64(node.Progress)
 	if node.VideoDuration > 0 {
@@ -495,6 +514,16 @@ func timeWindowStatus(start, end time.Time) string {
 		return "finished"
 	}
 	return "active"
+}
+
+func yinghuaStudyID(report string) string {
+	switch value := gojsonq.New().JSONString(report).Find("result.data.studyId").(type) {
+	case float64:
+		return strconv.Itoa(int(value))
+	case string:
+		return strings.TrimSpace(value)
+	}
+	return ""
 }
 
 func percent(value float64) float64 {
